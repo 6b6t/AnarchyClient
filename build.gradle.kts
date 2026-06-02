@@ -19,6 +19,7 @@ base {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
@@ -29,6 +30,8 @@ dependencies {
     implementation("com.google.code.gson:gson:2.14.0")
     implementation("net.lenni0451.commons:core:1.9.2")
     implementation("net.lenni0451.commons:animation:1.9.2")
+    implementation("com.github.Lenni0451.rivet:core:40c6f6c3a7")
+    include("com.github.Lenni0451.rivet:core:40c6f6c3a7")
     add("include", "net.lenni0451.commons:core:1.9.2")
     add("include", "net.lenni0451.commons:animation:1.9.2")
 
