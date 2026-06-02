@@ -140,18 +140,7 @@ public final class Blaze3DRenderer {
             return;
         }
 
-        float radius = Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
-        if (radius <= 0) {
-            this.fill(x, y, width, height, color);
-            return;
-        }
-
-        this.fill(x + radius, y, width - radius * 2, height, color);
-        this.fill(x, y + radius, width, height - radius * 2, color);
-        this.fillArc(x + radius, y + radius, radius, GuiShapeGeometry.HALF_CIRCLE, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, color);
-        this.fillArc(x + width - radius, y + radius, radius, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.FULL_CIRCLE, color);
-        this.fillArc(x + width - radius, y + height - radius, radius, 0, GuiShapeGeometry.QUARTER_CIRCLE, color);
-        this.fillArc(x + radius, y + height - radius, radius, GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.HALF_CIRCLE, color);
+        this.submitShape(GuiShapeGeometry.filledRoundedRect(x, y, width, height, cornerRadius, argb(color)));
     }
 
     private void outlineRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final float outlineWidth, final Color color) {
@@ -159,20 +148,7 @@ public final class Blaze3DRenderer {
             return;
         }
 
-        float radius = Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
-        if (radius <= 0) {
-            this.outlineRect(x, y, width, height, outlineWidth, color);
-            return;
-        }
-
-        this.fill(x + radius, y, width - radius * 2, outlineWidth, color);
-        this.fill(x + radius, y + height - outlineWidth, width - radius * 2, outlineWidth, color);
-        this.fill(x, y + radius, outlineWidth, height - radius * 2, color);
-        this.fill(x + width - outlineWidth, y + radius, outlineWidth, height - radius * 2, color);
-        this.outlineArc(x + radius, y + radius, radius, outlineWidth, GuiShapeGeometry.HALF_CIRCLE, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, color);
-        this.outlineArc(x + width - radius, y + radius, radius, outlineWidth, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.FULL_CIRCLE, color);
-        this.outlineArc(x + width - radius, y + height - radius, radius, outlineWidth, 0, GuiShapeGeometry.QUARTER_CIRCLE, color);
-        this.outlineArc(x + radius, y + height - radius, radius, outlineWidth, GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.HALF_CIRCLE, color);
+        this.submitShape(GuiShapeGeometry.outlinedRoundedRect(x, y, width, height, cornerRadius, outlineWidth, argb(color)));
     }
 
     private void outlineRect(final float x, final float y, final float width, final float height, final float outlineWidth, final Color color) {
@@ -229,13 +205,6 @@ public final class Blaze3DRenderer {
             return;
         }
         this.graphics.fill(RenderPipelines.GUI, floor(x), floor(y), ceil(x + width), ceil(y + height), argb(color));
-    }
-
-    private void fillArc(final float x, final float y, final float radius, final float startAngle, final float endAngle, final Color color) {
-        if (radius <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
-        this.submitShape(GuiShapeGeometry.filledArc(x, y, radius, startAngle, endAngle, argb(color)));
     }
 
     private void outlineArc(final float x, final float y, final float radius, final float outlineWidth,

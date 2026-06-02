@@ -14,28 +14,46 @@ class GuiShapeGeometryTest {
     private static final int COLOR = 0xFF336699;
 
     @Test
-    void lineUsesSinglePerpendicularQuad() {
+    void lineUsesBodyQuadWithRoundCaps() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.line(0, 0, 10, 0, 4, COLOR);
 
-        assertEquals(4, vertices.size());
-        assertVertex(vertices.getFirst(), 0, 2);
-        assertVertex(vertices.get(1), 10, 2);
-        assertVertex(vertices.get(2), 10, -2);
-        assertVertex(vertices.get(3), 0, -2);
+        assertEquals(4 + GuiShapeGeometry.segmentsForArc(2, GuiShapeGeometry.FULL_CIRCLE) * 8, vertices.size());
+        assertVertex(vertices.getFirst(), 2, 2);
+        assertVertex(vertices.get(1), 8, 2);
+        assertVertex(vertices.get(2), 8, -2);
+        assertVertex(vertices.get(3), 2, -2);
+        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
+        assertContainsVertex(vertices, 2, 0);
+        assertContainsVertex(vertices, 8, 0);
+    }
+
+    @Test
+    void diagonalLineUsesInsetBodyWithRoundCaps() {
+        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.line(0, 0, 10, 10, 2, COLOR);
+        float offset = (float) Math.sqrt(0.5D);
+
+        assertEquals(4 + GuiShapeGeometry.segmentsForArc(1, GuiShapeGeometry.FULL_CIRCLE) * 8, vertices.size());
+        assertVertex(vertices.getFirst(), 0, offset * 2F);
+        assertVertex(vertices.get(1), 10 - offset * 2F, 10);
+        assertVertex(vertices.get(2), 10, 10 - offset * 2F);
+        assertVertex(vertices.get(3), offset * 2F, 0);
         assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
     }
 
     @Test
-    void diagonalLineUsesRotatedQuad() {
-        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.line(0, 0, 10, 10, 2, COLOR);
-        float offset = (float) Math.sqrt(0.5D);
+    void roundedRectUsesCapsuleWhenRadiusReachesHalfHeight() {
+        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 24, 4, 2, COLOR);
 
-        assertEquals(4, vertices.size());
-        assertVertex(vertices.getFirst(), -offset, offset);
-        assertVertex(vertices.get(1), 10 - offset, 10 + offset);
-        assertVertex(vertices.get(2), 10 + offset, 10 - offset);
-        assertVertex(vertices.get(3), offset, -offset);
-        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
+        assertEquals(GuiShapeGeometry.line(0, 2, 24, 2, 4, COLOR), vertices);
+    }
+
+    @Test
+    void roundedRectKeepsQuarterCornersForSmallRadius() {
+        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 24, 10, 2, COLOR);
+
+        assertTrue(vertices.size() > GuiShapeGeometry.solidRect(2, 0, 20, 10, COLOR).size());
+        assertContainsVertex(vertices, 2, 2);
+        assertContainsVertex(vertices, 22, 8);
     }
 
     @Test
@@ -78,6 +96,10 @@ class GuiShapeGeometryTest {
         assertEquals(x, vertex.x(), 0.0001F);
         assertEquals(y, vertex.y(), 0.0001F);
         assertEquals(COLOR, vertex.color());
+    }
+
+    private static void assertContainsVertex(final List<GuiShapeGeometry.Vertex> vertices, final float x, final float y) {
+        assertTrue(vertices.stream().anyMatch(vertex -> Math.abs(vertex.x() - x) <= 0.0001F && Math.abs(vertex.y() - y) <= 0.0001F));
     }
 
     private static void assertGuiWinding(final GuiShapeGeometry.Vertex first, final GuiShapeGeometry.Vertex second,

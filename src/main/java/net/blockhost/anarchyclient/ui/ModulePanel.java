@@ -58,6 +58,7 @@ public final class ModulePanel extends Container {
     private static final float PADDING = 6;
     private static final float GAP = 5;
     private static final float INTRO_HEIGHT = HEADER_HEIGHT + PADDING;
+    private static final float CONTROL_RADIUS = 2F;
     private static final long WINDOW_HEIGHT_ANIMATION_NANOS = 180_000_000L;
     private static final long FOCUS_PULSE_NANOS = 260_000_000L;
 
@@ -319,7 +320,7 @@ public final class ModulePanel extends Container {
 
     private static Button button(final Component child, final Button.ClickListener listener) {
         Button button = new Button(child, listener);
-        button.cornerRadius().set(0F);
+        button.cornerRadius().set(CONTROL_RADIUS);
         button.outlineWidth().set(1F);
         button.inactiveColor().set(SURFACE);
         button.inactiveOutlineColor().set(BORDER_SOFT);
@@ -337,7 +338,7 @@ public final class ModulePanel extends Container {
         checkbox.backgroundColor().set(SURFACE_DARK);
         checkbox.outlineColor().set(BORDER);
         checkbox.checkColor().set(ACTIVE);
-        checkbox.cornerRadius().set(0F);
+        checkbox.cornerRadius().set(CONTROL_RADIUS);
         checkbox.fixedSize(new Size(18, 18));
         return checkbox;
     }
@@ -356,8 +357,10 @@ public final class ModulePanel extends Container {
         slider.thumbColor().set(TEXT);
         slider.thumbClickColor().set(ACTIVE);
         slider.barHeight().set(3F);
+        slider.barCornerRadius().set(CONTROL_RADIUS);
         slider.thumbWidth().set(8F);
         slider.thumbHeight().set(8F);
+        slider.thumbCornerRadius().set(CONTROL_RADIUS);
         slider.fixedSize(new Size(-1, 14));
         return slider;
     }
@@ -640,7 +643,7 @@ public final class ModulePanel extends Container {
             field.focusedOutlineColor().set(ACTIVE);
             field.cursorColor().set(TEXT);
             field.selectionColor().set(Color.fromRGBA(0, 212, 170, 90));
-            field.cornerRadius().set(0F);
+            field.cornerRadius().set(CONTROL_RADIUS);
             field.valueChangeListener().add(value -> {
                 setting.value(value);
                 ModulePanel.this.save();

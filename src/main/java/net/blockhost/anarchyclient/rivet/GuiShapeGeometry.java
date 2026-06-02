@@ -30,6 +30,54 @@ final class GuiShapeGeometry {
         );
     }
 
+    static List<Vertex> filledRoundedRect(final float x, final float y, final float width, final float height,
+                                          final float cornerRadius, final int color) {
+        float radius = clampedCornerRadius(width, height, cornerRadius);
+        if (radius <= EPSILON) {
+            return solidRect(x, y, width, height, color);
+        }
+        if (isCapsuleRadius(width, height, radius)) {
+            return capsule(x, y, width, height, color);
+        }
+
+        List<Vertex> vertices = new ArrayList<>();
+        vertices.addAll(solidRect(x + radius, y, width - radius * 2F, height, color));
+        vertices.addAll(solidRect(x, y + radius, width, height - radius * 2F, color));
+        vertices.addAll(filledArc(x + radius, y + radius, radius, HALF_CIRCLE, HALF_CIRCLE + QUARTER_CIRCLE, color));
+        vertices.addAll(filledArc(x + width - radius, y + radius, radius, HALF_CIRCLE + QUARTER_CIRCLE, FULL_CIRCLE, color));
+        vertices.addAll(filledArc(x + width - radius, y + height - radius, radius, 0, QUARTER_CIRCLE, color));
+        vertices.addAll(filledArc(x + radius, y + height - radius, radius, QUARTER_CIRCLE, HALF_CIRCLE, color));
+        return vertices;
+    }
+
+    static List<Vertex> outlinedRoundedRect(final float x, final float y, final float width, final float height,
+                                            final float cornerRadius, final float outlineWidth, final int color) {
+        if (outlineWidth <= 0) {
+            return List.of();
+        }
+
+        float radius = clampedCornerRadius(width, height, cornerRadius);
+        if (radius <= EPSILON) {
+            return outlinedRect(x, y, width, height, outlineWidth, color);
+        }
+
+        float stroke = Math.min(outlineWidth, Math.min(width, height) / 2F);
+        List<Vertex> vertices = new ArrayList<>();
+        vertices.addAll(solidRect(x + radius, y, width - radius * 2F, stroke, color));
+        vertices.addAll(solidRect(x + radius, y + height - stroke, width - radius * 2F, stroke, color));
+        vertices.addAll(solidRect(x, y + radius, stroke, height - radius * 2F, color));
+        vertices.addAll(solidRect(x + width - stroke, y + radius, stroke, height - radius * 2F, color));
+        vertices.addAll(ringArc(x + radius, y + radius, radius, Math.max(0, radius - stroke), HALF_CIRCLE, HALF_CIRCLE + QUARTER_CIRCLE, color));
+        vertices.addAll(ringArc(x + width - radius, y + radius, radius, Math.max(0, radius - stroke), HALF_CIRCLE + QUARTER_CIRCLE, FULL_CIRCLE, color));
+        vertices.addAll(ringArc(x + width - radius, y + height - radius, radius, Math.max(0, radius - stroke), 0, QUARTER_CIRCLE, color));
+        vertices.addAll(ringArc(x + radius, y + height - radius, radius, Math.max(0, radius - stroke), QUARTER_CIRCLE, HALF_CIRCLE, color));
+        return vertices;
+    }
+
+    static List<Vertex> solidRect(final float x, final float y, final float width, final float height, final int color) {
+        return gradientRect(x, y, width, height, color, color, color, color);
+    }
+
     static List<Vertex> line(final float x1, final float y1, final float x2, final float y2, final float width, final int color) {
         if (width <= 0) {
             return List.of();
@@ -43,14 +91,29 @@ final class GuiShapeGeometry {
         }
 
         float halfWidth = width / 2F;
+        if (length <= width) {
+            return filledCircle(x1 + dx / 2F, y1 + dy / 2F, halfWidth, color);
+        }
+
+        float unitX = dx / length;
+        float unitY = dy / length;
         float offsetX = -dy / length * halfWidth;
         float offsetY = dx / length * halfWidth;
-        return quad(
-                new Vertex(x1 + offsetX, y1 + offsetY, color),
-                new Vertex(x1 - offsetX, y1 - offsetY, color),
-                new Vertex(x2 - offsetX, y2 - offsetY, color),
-                new Vertex(x2 + offsetX, y2 + offsetY, color)
-        );
+        float bodyX1 = x1 + unitX * halfWidth;
+        float bodyY1 = y1 + unitY * halfWidth;
+        float bodyX2 = x2 - unitX * halfWidth;
+        float bodyY2 = y2 - unitY * halfWidth;
+
+        List<Vertex> vertices = new ArrayList<>(4 + segmentsForArc(halfWidth, FULL_CIRCLE) * 8);
+        vertices.addAll(quad(
+                new Vertex(bodyX1 + offsetX, bodyY1 + offsetY, color),
+                new Vertex(bodyX1 - offsetX, bodyY1 - offsetY, color),
+                new Vertex(bodyX2 - offsetX, bodyY2 - offsetY, color),
+                new Vertex(bodyX2 + offsetX, bodyY2 + offsetY, color)
+        ));
+        vertices.addAll(filledCircle(bodyX1, bodyY1, halfWidth, color));
+        vertices.addAll(filledCircle(bodyX2, bodyY2, halfWidth, color));
+        return vertices;
     }
 
     static List<Vertex> filledTriangle(final float x1, final float y1, final float x2, final float y2,
@@ -172,6 +235,42 @@ final class GuiShapeGeometry {
                 (float) (y + Math.sin(angle) * radius),
                 color
         );
+    }
+
+    private static List<Vertex> capsule(final float x, final float y, final float width, final float height, final int color) {
+        if (width <= 0 || height <= 0) {
+            return List.of();
+        }
+        if (width >= height) {
+            return line(x, y + height / 2F, x + width, y + height / 2F, height, color);
+        }
+        return line(x + width / 2F, y, x + width / 2F, y + height, width, color);
+    }
+
+    private static List<Vertex> outlinedRect(final float x, final float y, final float width, final float height,
+                                             final float outlineWidth, final int color) {
+        if (width <= 0 || height <= 0 || outlineWidth <= 0) {
+            return List.of();
+        }
+
+        float stroke = Math.min(outlineWidth, Math.min(width, height) / 2F);
+        List<Vertex> vertices = new ArrayList<>();
+        vertices.addAll(solidRect(x, y, width, stroke, color));
+        vertices.addAll(solidRect(x, y + height - stroke, width, stroke, color));
+        vertices.addAll(solidRect(x, y, stroke, height, color));
+        vertices.addAll(solidRect(x + width - stroke, y, stroke, height, color));
+        return vertices;
+    }
+
+    private static float clampedCornerRadius(final float width, final float height, final float cornerRadius) {
+        if (width <= 0 || height <= 0 || cornerRadius <= 0) {
+            return 0;
+        }
+        return Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
+    }
+
+    private static boolean isCapsuleRadius(final float width, final float height, final float radius) {
+        return radius >= Math.min(width, height) / 2F - EPSILON;
     }
 
     private static List<Vertex> quad(final Vertex first, final Vertex second, final Vertex third, final Vertex fourth) {
