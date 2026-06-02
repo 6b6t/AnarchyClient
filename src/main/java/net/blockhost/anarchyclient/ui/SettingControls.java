@@ -32,4 +32,14 @@ final class SettingControls {
         }
         return false;
     }
+
+    static void setNumberFromProgress(final NumberSetting setting, final double progress) {
+        double clampedProgress = Math.max(0, Math.min(1, progress));
+        double raw = setting.min() + (setting.max() - setting.min()) * clampedProgress;
+        double step = setting.step();
+        if (step > 0) {
+            raw = setting.min() + Math.round((raw - setting.min()) / step) * step;
+        }
+        setting.value(raw);
+    }
 }
