@@ -45,6 +45,80 @@ jobs:
       - name: Build
         run: ./gradlew build --stacktrace
 
+      - name: Build Changelog
+        id: github_release
+        uses: mikepenz/release-changelog-builder-action@v6
+        with:
+          mode: COMMIT
+          toTag: ${{ github.ref }}
+          configurationJson: |
+            {
+              "template": "#{{CHANGELOG}}",
+              "commit_template": "- [`#{{SHORT_MERGE_SHA}}`](https://github.com/6b6t/AnarchyClient/commit/#{{MERGE_SHA}}) #{{TITLE}}",
+              "categories": [
+                {
+                    "title": "## 🚀 Features",
+                    "labels": ["feat", "feature"]
+                },
+                {
+                    "title": "## 🐛 Fixes",
+                    "labels": ["fix", "bug"]
+                },
+                {
+                    "title": "## 🏎️ Performance",
+                    "labels": ["perf"]
+                },
+                {
+                    "title": "## 🏗 Refactor",
+                    "labels": ["refactor"]
+                },
+                {
+                    "title": "## 📝 Documentation",
+                    "labels": ["docs"]
+                },
+                {
+                    "title": "## 🔨 Build",
+                    "labels": ["build", "chore", "ci"]
+                },
+                {
+                    "title": "## 💅 Style",
+                    "labels": ["style"]
+                },
+                {
+                    "title": "## 🧪 Tests",
+                    "labels": ["test"]
+                },
+                {
+                    "title": "## 💬 Other",
+                    "labels": []
+                },
+                {
+                  "title": "## 📦 Dependencies",
+                  "labels": ["dependencies"]
+                }
+              ],
+              "empty_template": "no changes",
+              "label_extractor": [
+                {
+                  "pattern": "^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test){1}(\\([\\w\\-\\.]+\\))?(!)?: ([\\w ])+([\\s\\S]*)",
+                  "on_property": "title",
+                  "target": "$1"
+                }
+              ],
+              "custom_placeholders": [
+                {
+                  "name": "SHORT_MERGE_SHA",
+                  "source": "MERGE_SHA",
+                  "transformer": {
+                    "pattern": "^([0-9a-f]{7})[0-9a-f]*$",
+                    "target": "$1"
+                  }
+                }
+              ]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
@@ -52,7 +126,7 @@ jobs:
           name: AnarchyClient ${{ inputs.version }}
           target_commitish: ${{ github.ref_name }}
           prerelease: ${{ inputs.prerelease }}
-          generate_release_notes: true
+          body: ${{ steps.github_release.outputs.changelog }}
           files: build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
