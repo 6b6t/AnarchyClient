@@ -12,6 +12,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,6 +46,40 @@ class ClientConfigTest {
         assertEquals(7.5, loadedModule.numberSetting.value());
         assertEquals("saved", loadedModule.stringSetting.value());
         assertEquals("Second", loadedModule.selectSetting.value());
+    }
+
+    @Test
+    void savesAndLoadsUiState() {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        ClientConfig saved = new ClientConfig(new ModuleManager(), path);
+        saved.categoryWindow(ModuleCategory.COMBAT, 24.5F, 48.25F);
+        saved.categoryWindow(ModuleCategory.FUN, 96F, 128F);
+        saved.categoryOrder(List.of(
+                ModuleCategory.FUN,
+                ModuleCategory.HUD,
+                ModuleCategory.PLAYER,
+                ModuleCategory.MOVEMENT,
+                ModuleCategory.RENDER,
+                ModuleCategory.COMBAT
+        ));
+        saved.expandedModules(Set.of("auto_gg", "nyan_cat_gif_spammer"));
+
+        saved.save();
+
+        ClientConfig loaded = new ClientConfig(new ModuleManager(), path);
+        loaded.load();
+
+        assertEquals(new ClientConfig.CategoryWindowState(24.5F, 48.25F), loaded.categoryWindow(ModuleCategory.COMBAT).orElseThrow());
+        assertEquals(new ClientConfig.CategoryWindowState(96F, 128F), loaded.categoryWindow(ModuleCategory.FUN).orElseThrow());
+        assertEquals(List.of(
+                ModuleCategory.FUN,
+                ModuleCategory.HUD,
+                ModuleCategory.PLAYER,
+                ModuleCategory.MOVEMENT,
+                ModuleCategory.RENDER,
+                ModuleCategory.COMBAT
+        ), loaded.categoryOrder().orElseThrow());
+        assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
     }
 
     private static final class ConfigModule extends Module {

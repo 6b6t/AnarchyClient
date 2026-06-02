@@ -89,9 +89,9 @@ public final class ModulePanel extends Container {
         super(AbsoluteLayout.INSTANCE);
         this.modules = modules;
         this.config = config;
-        for (ModuleCategory category : ModuleCategory.values()) {
-            this.expandedModules.addAll(this.modules.byCategory(category).stream().map(Module::id).toList());
-            this.zOrder.add(category);
+        this.restoreExpandedModules();
+        this.restoreZOrder();
+        for (ModuleCategory category : this.zOrder) {
             CategoryWindow window = new CategoryWindow(this, category);
             this.categoryWindows.put(category, window);
             this.addChild(window);
@@ -135,6 +135,7 @@ public final class ModulePanel extends Container {
         window.x(clamp(mouseX - this.dragOffsetX, 6, Math.max(6, this.lastSize.width() - width - 6)));
         window.y(clamp(mouseY - this.dragOffsetY, 8, Math.max(8, this.lastSize.height() - HEADER_HEIGHT - 8)));
         this.applyWindowLayouts(this.lastSize);
+        this.saveWindowState(category);
         this.rivet().recalculateNextFrame();
         return true;
     }
@@ -143,6 +144,8 @@ public final class ModulePanel extends Container {
         boolean handled = this.draggingCategory == category;
         if (handled) {
             this.draggingCategory = null;
+            this.saveWindowState(category);
+            this.save();
         }
         return handled;
     }
@@ -151,7 +154,9 @@ public final class ModulePanel extends Container {
         if (!this.expandedModules.remove(module.id())) {
             this.expandedModules.add(module.id());
         }
+        this.config.expandedModules(this.expandedModules);
         group.rebuild();
+        this.save();
         this.rivet().recalculateNextFrame();
     }
 
@@ -161,6 +166,31 @@ public final class ModulePanel extends Container {
 
     private boolean isExpanded(final Module module) {
         return this.expandedModules.contains(module.id());
+    }
+
+    private void restoreExpandedModules() {
+        this.config.expandedModules().ifPresentOrElse(
+                this.expandedModules::addAll,
+                () -> {
+                    for (Module module : this.modules.all()) {
+                        this.expandedModules.add(module.id());
+                    }
+                }
+        );
+    }
+
+    private void restoreZOrder() {
+        this.config.categoryOrder().ifPresentOrElse(
+                this.zOrder::addAll,
+                () -> this.zOrder.addAll(List.of(ModuleCategory.values()))
+        );
+    }
+
+    private void saveWindowState(final ModuleCategory category) {
+        WindowState window = this.windows.get(category);
+        if (window != null) {
+            this.config.categoryWindow(category, window.x(), window.y());
+        }
     }
 
     private void ensureWindows(final Size size) {
@@ -176,7 +206,7 @@ public final class ModulePanel extends Container {
         float rowHeight = HEADER_HEIGHT + PADDING * 2 + MODULE_HEADER_HEIGHT + GAP + 18;
         int index = 0;
         for (ModuleCategory category : ModuleCategory.values()) {
-            WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0));
+            WindowState window = this.windows.computeIfAbsent(category, this::initialWindowState);
             if (window.x() == 0 && window.y() == 0) {
                 window.x(margin + (index % columns) * stepX);
                 window.y(28 + (index / columns) * rowHeight);
@@ -185,6 +215,12 @@ public final class ModulePanel extends Container {
             window.y(clamp(window.y(), margin, Math.max(margin, size.height() - HEADER_HEIGHT - margin)));
             index++;
         }
+    }
+
+    private WindowState initialWindowState(final ModuleCategory category) {
+        return this.config.categoryWindow(category)
+                .map(state -> new WindowState(state.x(), state.y()))
+                .orElseGet(() -> new WindowState(0, 0));
     }
 
     private void applyWindowLayouts(final Size size) {
@@ -199,6 +235,7 @@ public final class ModulePanel extends Container {
     private void bringToFront(final ModuleCategory category) {
         this.zOrder.remove(category);
         this.zOrder.add(category);
+        this.config.categoryOrder(this.zOrder);
         this.sortChildren((left, right) -> {
             ModuleCategory leftCategory = ((CategoryWindow) left).category();
             ModuleCategory rightCategory = ((CategoryWindow) right).category();
