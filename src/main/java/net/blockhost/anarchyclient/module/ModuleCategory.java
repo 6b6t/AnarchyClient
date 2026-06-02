@@ -6,8 +6,7 @@ public enum ModuleCategory {
     MOVEMENT("Movement"),
     PLAYER("Player"),
     HUD("HUD"),
-    FUN("Fun"),
-    MISC("Misc");
+    FUN("Fun");
 
     private final String displayName;
 

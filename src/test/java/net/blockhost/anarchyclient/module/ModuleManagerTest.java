@@ -21,7 +21,7 @@ class ModuleManagerTest {
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> manager.register(new TestModule("test", ModuleCategory.MISC))
+                () -> manager.register(new TestModule("test", ModuleCategory.FUN))
         );
 
         assertEquals("Duplicate module id: test", exception.getMessage());
@@ -31,15 +31,15 @@ class ModuleManagerTest {
     void filtersModulesByCategoryInRegistrationOrder() {
         ModuleManager manager = new ModuleManager();
         Module combatA = new TestModule("combat_a", ModuleCategory.COMBAT);
-        Module misc = new TestModule("misc", ModuleCategory.MISC);
+        Module fun = new TestModule("fun", ModuleCategory.FUN);
         Module combatB = new TestModule("combat_b", ModuleCategory.COMBAT);
 
         manager.register(combatA);
-        manager.register(misc);
+        manager.register(fun);
         manager.register(combatB);
 
         assertEquals(List.of(combatA, combatB), manager.byCategory(ModuleCategory.COMBAT));
-        assertEquals(Optional.of(misc), manager.find("misc"));
+        assertEquals(Optional.of(fun), manager.find("fun"));
     }
 
     @Test

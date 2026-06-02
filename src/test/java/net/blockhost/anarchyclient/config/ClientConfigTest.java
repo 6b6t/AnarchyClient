@@ -75,7 +75,7 @@ class ClientConfigTest {
                 .build()));
 
         private ConfigModule() {
-            super("config_module", "Config Module", ModuleCategory.MISC);
+            super("config_module", "Config Module", ModuleCategory.FUN);
         }
     }
 }

@@ -73,7 +73,7 @@ public final class NyanCatGifSpammerModule extends Module {
     private Animation animation;
 
     public NyanCatGifSpammerModule() {
-        super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.MISC);
+        super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.FUN);
     }
 
     @Override
