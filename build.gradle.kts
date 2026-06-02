@@ -1,11 +1,13 @@
 plugins {
     id("net.fabricmc.fabric-loom") version "1.16.2"
+    id("io.freefair.lombok") version "9.5.0"
     id("maven-publish")
 }
 
 val minecraftVersion = "26.1.2"
 val loaderVersion = "0.19.2"
 val fabricApiVersion = "0.148.2+26.1.2"
+val immutablesVersion = "2.12.2"
 val javaVersion = 25
 
 version = "0.1.0-SNAPSHOT"
@@ -30,10 +32,13 @@ dependencies {
     add("include", "net.lenni0451.commons:core:1.9.2")
     add("include", "net.lenni0451.commons:animation:1.9.2")
 
+    compileOnly("org.immutables:value-annotations:$immutablesVersion")
+    annotationProcessor("org.immutables:value:$immutablesVersion")
+    testCompileOnly("org.immutables:value-annotations:$immutablesVersion")
+    testAnnotationProcessor("org.immutables:value:$immutablesVersion")
+
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly("org.jetbrains:annotations:26.1.0")
-    compileOnly("org.projectlombok:lombok:1.18.46")
-    annotationProcessor("org.projectlombok:lombok:1.18.46")
 
     testImplementation(platform("org.junit:junit-bom:6.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")

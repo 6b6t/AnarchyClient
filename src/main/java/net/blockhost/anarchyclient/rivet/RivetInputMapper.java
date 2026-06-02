@@ -8,6 +8,8 @@ import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.EnumSet;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 public final class RivetInputMapper {
@@ -15,8 +17,8 @@ public final class RivetInputMapper {
     private RivetInputMapper() {
     }
 
-    public static KeyEvent key(final net.minecraft.client.input.KeyEvent event) {
-        return new KeyEvent(fromGlfw(event.key()), modifiers(event.modifiers()));
+    public static Optional<KeyEvent> key(final net.minecraft.client.input.KeyEvent event) {
+        return fromGlfw(event.key()).map(key -> new KeyEvent(key, modifiers(event.modifiers())));
     }
 
     public static MouseButtonEvent mouse(final net.minecraft.client.input.MouseButtonEvent event) {
@@ -37,8 +39,26 @@ public final class RivetInputMapper {
         return modifiers;
     }
 
-    public static Key fromGlfw(final int key) {
-        return switch (key) {
+    public static Optional<Key> fromGlfw(final int key) {
+        return Optional.ofNullable(switch (key) {
+            case GLFW.GLFW_KEY_SPACE -> Key.SPACE;
+            case GLFW.GLFW_KEY_APOSTROPHE -> Key.APOSTROPHE;
+            case GLFW.GLFW_KEY_COMMA -> Key.COMMA;
+            case GLFW.GLFW_KEY_MINUS -> Key.MINUS;
+            case GLFW.GLFW_KEY_PERIOD -> Key.PERIOD;
+            case GLFW.GLFW_KEY_SLASH -> Key.SLASH;
+            case GLFW.GLFW_KEY_0 -> Key.KB_0;
+            case GLFW.GLFW_KEY_1 -> Key.KB_1;
+            case GLFW.GLFW_KEY_2 -> Key.KB_2;
+            case GLFW.GLFW_KEY_3 -> Key.KB_3;
+            case GLFW.GLFW_KEY_4 -> Key.KB_4;
+            case GLFW.GLFW_KEY_5 -> Key.KB_5;
+            case GLFW.GLFW_KEY_6 -> Key.KB_6;
+            case GLFW.GLFW_KEY_7 -> Key.KB_7;
+            case GLFW.GLFW_KEY_8 -> Key.KB_8;
+            case GLFW.GLFW_KEY_9 -> Key.KB_9;
+            case GLFW.GLFW_KEY_SEMICOLON -> Key.SEMICOLON;
+            case GLFW.GLFW_KEY_EQUAL -> Key.EQUAL;
             case GLFW.GLFW_KEY_A -> Key.A;
             case GLFW.GLFW_KEY_B -> Key.B;
             case GLFW.GLFW_KEY_C -> Key.C;
@@ -65,22 +85,103 @@ public final class RivetInputMapper {
             case GLFW.GLFW_KEY_X -> Key.X;
             case GLFW.GLFW_KEY_Y -> Key.Y;
             case GLFW.GLFW_KEY_Z -> Key.Z;
+            case GLFW.GLFW_KEY_LEFT_BRACKET -> Key.LEFT_BRACKET;
+            case GLFW.GLFW_KEY_BACKSLASH -> Key.BACKSLASH;
+            case GLFW.GLFW_KEY_RIGHT_BRACKET -> Key.RIGHT_BRACKET;
+            case GLFW.GLFW_KEY_GRAVE_ACCENT -> Key.GRAVE_ACCENT;
             case GLFW.GLFW_KEY_ESCAPE -> Key.ESCAPE;
             case GLFW.GLFW_KEY_ENTER -> Key.ENTER;
             case GLFW.GLFW_KEY_TAB -> Key.TAB;
             case GLFW.GLFW_KEY_BACKSPACE -> Key.BACKSPACE;
+            case GLFW.GLFW_KEY_INSERT -> Key.INSERT;
+            case GLFW.GLFW_KEY_DELETE -> Key.DELETE;
+            case GLFW.GLFW_KEY_RIGHT -> Key.RIGHT;
+            case GLFW.GLFW_KEY_LEFT -> Key.LEFT;
+            case GLFW.GLFW_KEY_DOWN -> Key.DOWN;
+            case GLFW.GLFW_KEY_UP -> Key.UP;
+            case GLFW.GLFW_KEY_PAGE_UP -> Key.PAGE_UP;
+            case GLFW.GLFW_KEY_PAGE_DOWN -> Key.PAGE_DOWN;
+            case GLFW.GLFW_KEY_HOME -> Key.HOME;
+            case GLFW.GLFW_KEY_END -> Key.END;
+            case GLFW.GLFW_KEY_CAPS_LOCK -> Key.CAPS_LOCK;
+            case GLFW.GLFW_KEY_SCROLL_LOCK -> Key.SCROLL_LOCK;
+            case GLFW.GLFW_KEY_NUM_LOCK -> Key.NUM_LOCK;
+            case GLFW.GLFW_KEY_PRINT_SCREEN -> Key.PRINT_SCREEN;
+            case GLFW.GLFW_KEY_PAUSE -> Key.PAUSE;
+            case GLFW.GLFW_KEY_F1 -> Key.F1;
+            case GLFW.GLFW_KEY_F2 -> Key.F2;
+            case GLFW.GLFW_KEY_F3 -> Key.F3;
+            case GLFW.GLFW_KEY_F4 -> Key.F4;
+            case GLFW.GLFW_KEY_F5 -> Key.F5;
+            case GLFW.GLFW_KEY_F6 -> Key.F6;
+            case GLFW.GLFW_KEY_F7 -> Key.F7;
+            case GLFW.GLFW_KEY_F8 -> Key.F8;
+            case GLFW.GLFW_KEY_F9 -> Key.F9;
+            case GLFW.GLFW_KEY_F10 -> Key.F10;
+            case GLFW.GLFW_KEY_F11 -> Key.F11;
+            case GLFW.GLFW_KEY_F12 -> Key.F12;
+            case GLFW.GLFW_KEY_F13 -> Key.F13;
+            case GLFW.GLFW_KEY_F14 -> Key.F14;
+            case GLFW.GLFW_KEY_F15 -> Key.F15;
+            case GLFW.GLFW_KEY_F16 -> Key.F16;
+            case GLFW.GLFW_KEY_F17 -> Key.F17;
+            case GLFW.GLFW_KEY_F18 -> Key.F18;
+            case GLFW.GLFW_KEY_F19 -> Key.F19;
+            case GLFW.GLFW_KEY_F20 -> Key.F20;
+            case GLFW.GLFW_KEY_F21 -> Key.F21;
+            case GLFW.GLFW_KEY_F22 -> Key.F22;
+            case GLFW.GLFW_KEY_F23 -> Key.F23;
+            case GLFW.GLFW_KEY_F24 -> Key.F24;
+            case GLFW.GLFW_KEY_KP_0 -> Key.KP_0;
+            case GLFW.GLFW_KEY_KP_1 -> Key.KP_1;
+            case GLFW.GLFW_KEY_KP_2 -> Key.KP_2;
+            case GLFW.GLFW_KEY_KP_3 -> Key.KP_3;
+            case GLFW.GLFW_KEY_KP_4 -> Key.KP_4;
+            case GLFW.GLFW_KEY_KP_5 -> Key.KP_5;
+            case GLFW.GLFW_KEY_KP_6 -> Key.KP_6;
+            case GLFW.GLFW_KEY_KP_7 -> Key.KP_7;
+            case GLFW.GLFW_KEY_KP_8 -> Key.KP_8;
+            case GLFW.GLFW_KEY_KP_9 -> Key.KP_9;
+            case GLFW.GLFW_KEY_KP_DECIMAL -> Key.KP_DECIMAL;
+            case GLFW.GLFW_KEY_KP_DIVIDE -> Key.KP_DIVIDE;
+            case GLFW.GLFW_KEY_KP_MULTIPLY -> Key.KP_MULTIPLY;
+            case GLFW.GLFW_KEY_KP_SUBTRACT -> Key.KP_SUBTRACT;
+            case GLFW.GLFW_KEY_KP_ADD -> Key.KP_ADD;
+            case GLFW.GLFW_KEY_KP_ENTER -> Key.KP_ENTER;
+            case GLFW.GLFW_KEY_KP_EQUAL -> Key.KP_EQUAL;
             case GLFW.GLFW_KEY_LEFT_SHIFT -> Key.LEFT_SHIFT;
-            case GLFW.GLFW_KEY_RIGHT_SHIFT -> Key.RIGHT_SHIFT;
             case GLFW.GLFW_KEY_LEFT_CONTROL -> Key.LEFT_CONTROL;
-            case GLFW.GLFW_KEY_RIGHT_CONTROL -> Key.RIGHT_CONTROL;
             case GLFW.GLFW_KEY_LEFT_ALT -> Key.LEFT_ALT;
+            case GLFW.GLFW_KEY_LEFT_SUPER -> Key.LEFT_SUPER;
+            case GLFW.GLFW_KEY_RIGHT_SHIFT -> Key.RIGHT_SHIFT;
+            case GLFW.GLFW_KEY_RIGHT_CONTROL -> Key.RIGHT_CONTROL;
             case GLFW.GLFW_KEY_RIGHT_ALT -> Key.RIGHT_ALT;
-            default -> Key.SPACE;
-        };
+            case GLFW.GLFW_KEY_RIGHT_SUPER -> Key.RIGHT_SUPER;
+            case GLFW.GLFW_KEY_MENU -> Key.MENU;
+            default -> null;
+        });
     }
 
-    public static int toGlfw(final Key key) {
-        return switch (key) {
+    public static OptionalInt toGlfw(final Key key) {
+        return OptionalInt.of(switch (key) {
+            case SPACE -> GLFW.GLFW_KEY_SPACE;
+            case APOSTROPHE -> GLFW.GLFW_KEY_APOSTROPHE;
+            case COMMA -> GLFW.GLFW_KEY_COMMA;
+            case MINUS -> GLFW.GLFW_KEY_MINUS;
+            case PERIOD -> GLFW.GLFW_KEY_PERIOD;
+            case SLASH -> GLFW.GLFW_KEY_SLASH;
+            case KB_0 -> GLFW.GLFW_KEY_0;
+            case KB_1 -> GLFW.GLFW_KEY_1;
+            case KB_2 -> GLFW.GLFW_KEY_2;
+            case KB_3 -> GLFW.GLFW_KEY_3;
+            case KB_4 -> GLFW.GLFW_KEY_4;
+            case KB_5 -> GLFW.GLFW_KEY_5;
+            case KB_6 -> GLFW.GLFW_KEY_6;
+            case KB_7 -> GLFW.GLFW_KEY_7;
+            case KB_8 -> GLFW.GLFW_KEY_8;
+            case KB_9 -> GLFW.GLFW_KEY_9;
+            case SEMICOLON -> GLFW.GLFW_KEY_SEMICOLON;
+            case EQUAL -> GLFW.GLFW_KEY_EQUAL;
             case A -> GLFW.GLFW_KEY_A;
             case B -> GLFW.GLFW_KEY_B;
             case C -> GLFW.GLFW_KEY_C;
@@ -107,17 +208,79 @@ public final class RivetInputMapper {
             case X -> GLFW.GLFW_KEY_X;
             case Y -> GLFW.GLFW_KEY_Y;
             case Z -> GLFW.GLFW_KEY_Z;
-            case LEFT_SHIFT -> GLFW.GLFW_KEY_LEFT_SHIFT;
-            case RIGHT_SHIFT -> GLFW.GLFW_KEY_RIGHT_SHIFT;
-            case LEFT_CONTROL -> GLFW.GLFW_KEY_LEFT_CONTROL;
-            case RIGHT_CONTROL -> GLFW.GLFW_KEY_RIGHT_CONTROL;
-            case LEFT_ALT -> GLFW.GLFW_KEY_LEFT_ALT;
-            case RIGHT_ALT -> GLFW.GLFW_KEY_RIGHT_ALT;
+            case LEFT_BRACKET -> GLFW.GLFW_KEY_LEFT_BRACKET;
+            case BACKSLASH -> GLFW.GLFW_KEY_BACKSLASH;
+            case RIGHT_BRACKET -> GLFW.GLFW_KEY_RIGHT_BRACKET;
+            case GRAVE_ACCENT -> GLFW.GLFW_KEY_GRAVE_ACCENT;
             case ESCAPE -> GLFW.GLFW_KEY_ESCAPE;
             case ENTER -> GLFW.GLFW_KEY_ENTER;
             case TAB -> GLFW.GLFW_KEY_TAB;
             case BACKSPACE -> GLFW.GLFW_KEY_BACKSPACE;
-            default -> GLFW.GLFW_KEY_SPACE;
-        };
+            case INSERT -> GLFW.GLFW_KEY_INSERT;
+            case DELETE -> GLFW.GLFW_KEY_DELETE;
+            case RIGHT -> GLFW.GLFW_KEY_RIGHT;
+            case LEFT -> GLFW.GLFW_KEY_LEFT;
+            case DOWN -> GLFW.GLFW_KEY_DOWN;
+            case UP -> GLFW.GLFW_KEY_UP;
+            case PAGE_UP -> GLFW.GLFW_KEY_PAGE_UP;
+            case PAGE_DOWN -> GLFW.GLFW_KEY_PAGE_DOWN;
+            case HOME -> GLFW.GLFW_KEY_HOME;
+            case END -> GLFW.GLFW_KEY_END;
+            case CAPS_LOCK -> GLFW.GLFW_KEY_CAPS_LOCK;
+            case SCROLL_LOCK -> GLFW.GLFW_KEY_SCROLL_LOCK;
+            case NUM_LOCK -> GLFW.GLFW_KEY_NUM_LOCK;
+            case PRINT_SCREEN -> GLFW.GLFW_KEY_PRINT_SCREEN;
+            case PAUSE -> GLFW.GLFW_KEY_PAUSE;
+            case F1 -> GLFW.GLFW_KEY_F1;
+            case F2 -> GLFW.GLFW_KEY_F2;
+            case F3 -> GLFW.GLFW_KEY_F3;
+            case F4 -> GLFW.GLFW_KEY_F4;
+            case F5 -> GLFW.GLFW_KEY_F5;
+            case F6 -> GLFW.GLFW_KEY_F6;
+            case F7 -> GLFW.GLFW_KEY_F7;
+            case F8 -> GLFW.GLFW_KEY_F8;
+            case F9 -> GLFW.GLFW_KEY_F9;
+            case F10 -> GLFW.GLFW_KEY_F10;
+            case F11 -> GLFW.GLFW_KEY_F11;
+            case F12 -> GLFW.GLFW_KEY_F12;
+            case F13 -> GLFW.GLFW_KEY_F13;
+            case F14 -> GLFW.GLFW_KEY_F14;
+            case F15 -> GLFW.GLFW_KEY_F15;
+            case F16 -> GLFW.GLFW_KEY_F16;
+            case F17 -> GLFW.GLFW_KEY_F17;
+            case F18 -> GLFW.GLFW_KEY_F18;
+            case F19 -> GLFW.GLFW_KEY_F19;
+            case F20 -> GLFW.GLFW_KEY_F20;
+            case F21 -> GLFW.GLFW_KEY_F21;
+            case F22 -> GLFW.GLFW_KEY_F22;
+            case F23 -> GLFW.GLFW_KEY_F23;
+            case F24 -> GLFW.GLFW_KEY_F24;
+            case KP_0 -> GLFW.GLFW_KEY_KP_0;
+            case KP_1 -> GLFW.GLFW_KEY_KP_1;
+            case KP_2 -> GLFW.GLFW_KEY_KP_2;
+            case KP_3 -> GLFW.GLFW_KEY_KP_3;
+            case KP_4 -> GLFW.GLFW_KEY_KP_4;
+            case KP_5 -> GLFW.GLFW_KEY_KP_5;
+            case KP_6 -> GLFW.GLFW_KEY_KP_6;
+            case KP_7 -> GLFW.GLFW_KEY_KP_7;
+            case KP_8 -> GLFW.GLFW_KEY_KP_8;
+            case KP_9 -> GLFW.GLFW_KEY_KP_9;
+            case KP_DECIMAL -> GLFW.GLFW_KEY_KP_DECIMAL;
+            case KP_DIVIDE -> GLFW.GLFW_KEY_KP_DIVIDE;
+            case KP_MULTIPLY -> GLFW.GLFW_KEY_KP_MULTIPLY;
+            case KP_SUBTRACT -> GLFW.GLFW_KEY_KP_SUBTRACT;
+            case KP_ADD -> GLFW.GLFW_KEY_KP_ADD;
+            case KP_ENTER -> GLFW.GLFW_KEY_KP_ENTER;
+            case KP_EQUAL -> GLFW.GLFW_KEY_KP_EQUAL;
+            case LEFT_SHIFT -> GLFW.GLFW_KEY_LEFT_SHIFT;
+            case LEFT_CONTROL -> GLFW.GLFW_KEY_LEFT_CONTROL;
+            case LEFT_ALT -> GLFW.GLFW_KEY_LEFT_ALT;
+            case LEFT_SUPER -> GLFW.GLFW_KEY_LEFT_SUPER;
+            case RIGHT_SHIFT -> GLFW.GLFW_KEY_RIGHT_SHIFT;
+            case RIGHT_CONTROL -> GLFW.GLFW_KEY_RIGHT_CONTROL;
+            case RIGHT_ALT -> GLFW.GLFW_KEY_RIGHT_ALT;
+            case RIGHT_SUPER -> GLFW.GLFW_KEY_RIGHT_SUPER;
+            case MENU -> GLFW.GLFW_KEY_MENU;
+        });
     }
 }

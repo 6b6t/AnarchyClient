@@ -5,8 +5,16 @@ import com.google.gson.JsonPrimitive;
 
 public final class StringSetting extends Setting<String> {
 
-    public StringSetting(final String id, final String name, final String defaultValue) {
-        super(id, name, defaultValue);
+    private StringSetting(final StringSettingSpec spec) {
+        super(spec.id(), spec.name(), spec.defaultValue());
+    }
+
+    public static ImmutableStringSettingSpec.IdBuildStage builder() {
+        return ImmutableStringSettingSpec.builder();
+    }
+
+    public static StringSetting from(final StringSettingSpec spec) {
+        return new StringSetting(spec);
     }
 
     @Override

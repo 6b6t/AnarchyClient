@@ -9,11 +9,19 @@ public final class NumberSetting extends Setting<Double> {
     private final double max;
     private final double step;
 
-    public NumberSetting(final String id, final String name, final double defaultValue, final double min, final double max, final double step) {
-        super(id, name, defaultValue);
-        this.min = min;
-        this.max = max;
-        this.step = step;
+    private NumberSetting(final NumberSettingSpec spec) {
+        super(spec.id(), spec.name(), spec.defaultValue());
+        this.min = spec.min();
+        this.max = spec.max();
+        this.step = spec.step();
+    }
+
+    public static ImmutableNumberSettingSpec.IdBuildStage builder() {
+        return ImmutableNumberSettingSpec.builder();
+    }
+
+    public static NumberSetting from(final NumberSettingSpec spec) {
+        return new NumberSetting(spec);
     }
 
     public double min() {

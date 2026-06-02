@@ -81,12 +81,12 @@ public final class AnarchyClientScreen extends Screen {
             this.onClose();
             return true;
         }
-        return this.rivet != null && this.rivet.onKeyDown(RivetInputMapper.key(event));
+        return this.rivet != null && RivetInputMapper.key(event).map(this.rivet::onKeyDown).orElse(false);
     }
 
     @Override
     public boolean keyReleased(final net.minecraft.client.input.KeyEvent event) {
-        return this.rivet != null && this.rivet.onKeyUp(RivetInputMapper.key(event));
+        return this.rivet != null && RivetInputMapper.key(event).map(this.rivet::onKeyUp).orElse(false);
     }
 
     @Override

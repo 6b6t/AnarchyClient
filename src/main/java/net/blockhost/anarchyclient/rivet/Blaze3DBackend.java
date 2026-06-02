@@ -28,7 +28,7 @@ public final class Blaze3DBackend implements Backend {
 
     @Override
     public ShapedText shapeText(final String text, final Color color) {
-        return new MinecraftShapedText(this.client.font, text);
+        return new MinecraftShapedText(this.client.font, text, color);
     }
 
     @Override
@@ -37,7 +37,8 @@ public final class Blaze3DBackend implements Backend {
         for (TextSection section : line.sections()) {
             builder.append(section.text());
         }
-        return new MinecraftShapedText(this.client.font, builder.toString());
+        Color color = line.sections().isEmpty() ? Color.WHITE : line.sections().getFirst().format().color();
+        return new MinecraftShapedText(this.client.font, builder.toString(), color);
     }
 
     @Override
@@ -51,7 +52,7 @@ public final class Blaze3DBackend implements Backend {
                 builder.append(section.text());
             }
         }
-        return new MinecraftShapedText(this.client.font, builder.toString());
+        return new MinecraftShapedText(this.client.font, builder.toString(), Color.WHITE);
     }
 
     @Override
@@ -68,6 +69,8 @@ public final class Blaze3DBackend implements Backend {
 
     @Override
     public boolean isKeyDown(final Key key) {
-        return GLFW.glfwGetKey(this.client.getWindow().handle(), RivetInputMapper.toGlfw(key)) == GLFW.GLFW_PRESS;
+        return RivetInputMapper.toGlfw(key)
+                .stream()
+                .anyMatch(glfwKey -> GLFW.glfwGetKey(this.client.getWindow().handle(), glfwKey) == GLFW.GLFW_PRESS);
     }
 }

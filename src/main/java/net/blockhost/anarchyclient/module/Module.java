@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.setting.Setting;
 import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public abstract class Module {
@@ -12,6 +13,7 @@ public abstract class Module {
     private final String name;
     private final ModuleCategory category;
     private final List<Setting<?>> settings = new ArrayList<>();
+    private final List<Setting<?>> settingsView = Collections.unmodifiableList(this.settings);
     private boolean enabled;
 
     protected Module(final String id, final String name, final ModuleCategory category) {
@@ -53,7 +55,7 @@ public abstract class Module {
     }
 
     public final List<Setting<?>> settings() {
-        return List.copyOf(this.settings);
+        return this.settingsView;
     }
 
     protected final <T extends Setting<?>> T setting(final T setting) {

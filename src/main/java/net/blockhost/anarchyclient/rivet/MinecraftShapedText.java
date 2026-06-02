@@ -1,11 +1,12 @@
 package net.blockhost.anarchyclient.rivet;
 
+import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.text.ShapedTextBlock;
 import net.lenni0451.rivet.math.Point;
 import net.lenni0451.rivet.math.Rectangle;
 import net.minecraft.client.gui.Font;
 
-public record MinecraftShapedText(Font font, String text) implements ShapedTextBlock {
+public record MinecraftShapedText(Font font, String text, Color color) implements ShapedTextBlock {
 
     @Override
     public Rectangle visualBounds() {

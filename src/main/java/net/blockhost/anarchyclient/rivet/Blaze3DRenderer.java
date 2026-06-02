@@ -82,7 +82,7 @@ public final class Blaze3DRenderer {
                 if (text.shapedText() instanceof MinecraftShapedText shaped) {
                     String[] lines = shaped.text().split("\n", -1);
                     for (int i = 0; i < lines.length; i++) {
-                        this.graphics.text(this.client.font, lines[i], Math.round(text.x()), Math.round(text.y() + i * this.client.font.lineHeight), 0xFFE7E2D8, false);
+                        this.graphics.text(this.client.font, lines[i], Math.round(text.x()), Math.round(text.y() + i * this.client.font.lineHeight), argb(shaped.color()), false);
                     }
                 }
             }

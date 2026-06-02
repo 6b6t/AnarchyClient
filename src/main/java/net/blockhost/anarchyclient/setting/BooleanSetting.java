@@ -5,8 +5,16 @@ import com.google.gson.JsonPrimitive;
 
 public final class BooleanSetting extends Setting<Boolean> {
 
-    public BooleanSetting(final String id, final String name, final boolean defaultValue) {
-        super(id, name, defaultValue);
+    private BooleanSetting(final BooleanSettingSpec spec) {
+        super(spec.id(), spec.name(), spec.defaultValue());
+    }
+
+    public static ImmutableBooleanSettingSpec.IdBuildStage builder() {
+        return ImmutableBooleanSettingSpec.builder();
+    }
+
+    public static BooleanSetting from(final BooleanSettingSpec spec) {
+        return new BooleanSetting(spec);
     }
 
     @Override

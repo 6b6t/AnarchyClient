@@ -14,8 +14,19 @@ import net.minecraft.world.item.Items;
 
 public final class AutoTotemModule extends Module {
 
-    private final NumberSetting healthThreshold = this.setting(new NumberSetting("health_threshold", "Health", 12.0, 1.0, 36.0, 0.5));
-    private final BooleanSetting includeAbsorption = this.setting(new BooleanSetting("include_absorption", "Absorption", true));
+    private final NumberSetting healthThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("health_threshold")
+            .name("Health")
+            .defaultValue(12.0)
+            .min(1.0)
+            .max(36.0)
+            .step(0.5)
+            .build()));
+    private final BooleanSetting includeAbsorption = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("include_absorption")
+            .name("Absorption")
+            .defaultValue(true)
+            .build()));
     private int cooldownTicks;
 
     public AutoTotemModule() {
@@ -52,7 +63,7 @@ public final class AutoTotemModule extends Module {
             return;
         }
 
-        int menuSlot = this.toInventoryMenuSlot(inventorySlot);
+        int menuSlot = toInventoryMenuSlot(inventorySlot);
         if (menuSlot < 0) {
             return;
         }
@@ -73,7 +84,7 @@ public final class AutoTotemModule extends Module {
         return -1;
     }
 
-    private int toInventoryMenuSlot(final int inventorySlot) {
+    static int toInventoryMenuSlot(final int inventorySlot) {
         if (Inventory.isHotbarSlot(inventorySlot)) {
             return InventoryMenu.USE_ROW_SLOT_START + inventorySlot;
         }

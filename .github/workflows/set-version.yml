@@ -1,0 +1,40 @@
+name: set-version
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version to write into build.gradle.kts
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to write into build.gradle.kts
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  set-version:
+    name: Set Version
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set version
+        run: |
+          sed -i 's/^version = ".*"/version = "${{ inputs.version }}"/g' build.gradle.kts
+
+      - name: Commit version
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore(release): bump version to ${{ inputs.version }}"
+          file_pattern: build.gradle.kts

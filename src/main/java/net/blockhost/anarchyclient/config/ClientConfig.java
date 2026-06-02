@@ -9,6 +9,8 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -18,14 +20,19 @@ import java.nio.file.Path;
 
 public final class ClientConfig {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private final ModuleManager modules;
     private final Path path;
 
     public ClientConfig(final ModuleManager modules) {
+        this(modules, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
+    }
+
+    public ClientConfig(final ModuleManager modules, final Path path) {
         this.modules = modules;
-        this.path = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json");
+        this.path = path;
     }
 
     public void load() {
@@ -59,7 +66,8 @@ public final class ClientConfig {
                     setting.fromJson(settings.get(setting.id()));
                 }
             }
-        } catch (RuntimeException | IOException ignored) {
+        } catch (RuntimeException | IOException exception) {
+            LOGGER.warn("Failed to load AnarchyClient config from {}", this.path, exception);
             this.save();
         }
     }
@@ -85,7 +93,8 @@ public final class ClientConfig {
             try (Writer writer = Files.newBufferedWriter(this.path)) {
                 GSON.toJson(root, writer);
             }
-        } catch (IOException ignored) {
+        } catch (IOException exception) {
+            LOGGER.warn("Failed to save AnarchyClient config to {}", this.path, exception);
         }
     }
 }
