@@ -10,7 +10,7 @@ val fabricApiVersion = "0.148.2+26.1.2"
 val immutablesVersion = "2.12.2"
 val javaVersion = 25
 
-version = "0.0.3"
+version = "0.0.4"
 group = "net.blockhost"
 
 base {
