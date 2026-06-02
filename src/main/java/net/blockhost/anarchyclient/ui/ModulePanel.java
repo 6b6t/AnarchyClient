@@ -54,6 +54,7 @@ public final class ModulePanel extends Container {
     private static final float NUMBER_ROW_HEIGHT = 38;
     private static final float SELECT_ROW_HEIGHT = 26;
     private static final float STRING_ROW_HEIGHT = 31;
+    private static final float TOGGLE_CELL_WIDTH = 24;
     private static final float PADDING = 6;
     private static final float GAP = 5;
 
@@ -89,6 +90,7 @@ public final class ModulePanel extends Container {
         this.modules = modules;
         this.config = config;
         for (ModuleCategory category : ModuleCategory.values()) {
+            this.expandedModules.addAll(this.modules.byCategory(category).stream().map(Module::id).toList());
             this.zOrder.add(category);
             CategoryWindow window = new CategoryWindow(this, category);
             this.categoryWindows.put(category, window);
@@ -174,7 +176,6 @@ public final class ModulePanel extends Container {
         float rowHeight = HEADER_HEIGHT + PADDING * 2 + MODULE_HEADER_HEIGHT + GAP + 18;
         int index = 0;
         for (ModuleCategory category : ModuleCategory.values()) {
-            boolean newWindow = !this.windows.containsKey(category);
             WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0));
             if (window.x() == 0 && window.y() == 0) {
                 window.x(margin + (index % columns) * stepX);
@@ -182,9 +183,6 @@ public final class ModulePanel extends Container {
             }
             window.x(clamp(window.x(), margin, Math.max(margin, size.width() - width - margin)));
             window.y(clamp(window.y(), margin, Math.max(margin, size.height() - HEADER_HEIGHT - margin)));
-            if (newWindow) {
-                this.expandedModules.addAll(this.modules.byCategory(category).stream().map(Module::id).toList());
-            }
             index++;
         }
     }
@@ -284,6 +282,13 @@ public final class ModulePanel extends Container {
         checkbox.cornerRadius().set(0F);
         checkbox.fixedSize(new Size(18, 18));
         return checkbox;
+    }
+
+    private static GridLayoutOptions toggleCell(final int column, final float rowHeight) {
+        return new GridLayoutOptions(column, 0)
+                .withAnchor(GridAnchor.CENTER)
+                .withWidth(TOGGLE_CELL_WIDTH)
+                .withHeight(rowHeight);
     }
 
     private static Slider slider(final NumberSetting setting) {
@@ -451,7 +456,7 @@ public final class ModulePanel extends Container {
                 module.enabled(value);
                 ModulePanel.this.save();
             });
-            enabled.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withWidth(24F).withHeight(MODULE_HEADER_HEIGHT));
+            enabled.layoutOptions(toggleCell(1, MODULE_HEADER_HEIGHT));
             this.addChild(expand);
             this.addChild(enabled);
         }
@@ -499,7 +504,7 @@ public final class ModulePanel extends Container {
                 setting.value(checked);
                 ModulePanel.this.save();
             });
-            value.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withWidth(24F).withHeight(BOOLEAN_ROW_HEIGHT));
+            value.layoutOptions(toggleCell(1, BOOLEAN_ROW_HEIGHT));
             this.addChild(name);
             this.addChild(value);
         }
