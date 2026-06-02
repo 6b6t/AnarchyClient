@@ -6,6 +6,7 @@ import net.lenni0451.rivet.backend.render.RenderCommand;
 import net.lenni0451.rivet.backend.render.RenderElement;
 import net.lenni0451.rivet.backend.render.RenderList;
 import net.lenni0451.rivet.backend.render.TransformCommand;
+import net.lenni0451.rivet.math.Rectangle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -78,17 +79,23 @@ public final class Blaze3DRenderer {
             case RenderCommand.FillTriangle triangle -> this.fill(Math.min(triangle.x1(), Math.min(triangle.x2(), triangle.x3())), Math.min(triangle.y1(), Math.min(triangle.y2(), triangle.y3())), Math.max(1, Math.abs(triangle.x2() - triangle.x1())), Math.max(1, Math.abs(triangle.y3() - triangle.y1())), triangle.color());
             case RenderCommand.Line line -> this.fill(Math.min(line.x1(), line.x2()), Math.min(line.y1(), line.y2()), Math.max(line.width(), Math.abs(line.x2() - line.x1())), Math.max(line.width(), Math.abs(line.y2() - line.y1())), line.color());
             case RenderCommand.FillGradientRect rect -> this.graphics.fillGradient(Math.round(rect.x()), Math.round(rect.y()), Math.round(rect.x() + rect.width()), Math.round(rect.y() + rect.height()), argb(rect.ctl()), argb(rect.cbr()));
-            case RenderCommand.Text text -> {
-                if (text.shapedText() instanceof MinecraftShapedText shaped) {
-                    String[] lines = shaped.text().split("\n", -1);
-                    for (int i = 0; i < lines.length; i++) {
-                        this.graphics.text(this.client.font, lines[i], Math.round(text.x()), Math.round(text.y() + i * this.client.font.lineHeight), argb(shaped.color()), false);
-                    }
-                }
-            }
+            case RenderCommand.Text text -> this.text(text);
             case RenderCommand.Image ignored -> {
             }
             case RenderCommand.CustomRenderCommand<?> custom -> this.renderCustom(custom);
+        }
+    }
+
+    private void text(final RenderCommand.Text text) {
+        if (!(text.shapedText() instanceof MinecraftShapedText shaped)) {
+            return;
+        }
+        Rectangle bounds = shaped.visualBounds();
+        String[] lines = shaped.text().split("\n", -1);
+        int x = Math.round(text.x() + bounds.x());
+        int y = Math.round(text.y() + bounds.y());
+        for (int i = 0; i < lines.length; i++) {
+            this.graphics.text(this.client.font, lines[i], x, y + i * this.client.font.lineHeight, argb(shaped.color()), false);
         }
     }
 
