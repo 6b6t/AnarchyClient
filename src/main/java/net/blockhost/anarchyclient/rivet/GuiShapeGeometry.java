@@ -45,7 +45,7 @@ final class GuiShapeGeometry {
         float halfWidth = width / 2F;
         float offsetX = -dy / length * halfWidth;
         float offsetY = dx / length * halfWidth;
-        return List.of(
+        return quad(
                 new Vertex(x1 + offsetX, y1 + offsetY, color),
                 new Vertex(x1 - offsetX, y1 - offsetY, color),
                 new Vertex(x2 - offsetX, y2 - offsetY, color),
@@ -55,12 +55,13 @@ final class GuiShapeGeometry {
 
     static List<Vertex> filledTriangle(final float x1, final float y1, final float x2, final float y2,
                                        final float x3, final float y3, final int color) {
-        return List.of(
-                new Vertex(x1, y1, color),
-                new Vertex(x2, y2, color),
-                new Vertex(x3, y3, color),
-                new Vertex(x3, y3, color)
-        );
+        Vertex first = new Vertex(x1, y1, color);
+        Vertex second = new Vertex(x2, y2, color);
+        Vertex third = new Vertex(x3, y3, color);
+        if (signedArea(first, second, third) > 0) {
+            return List.of(first, third, second, second);
+        }
+        return List.of(first, second, third, third);
     }
 
     static List<Vertex> filledCircle(final float x, final float y, final float radius, final int color) {
@@ -83,13 +84,12 @@ final class GuiShapeGeometry {
         for (int index = 0; index < segments; index++) {
             float angleA = startAngle + step * index;
             float angleB = startAngle + step * (index + 1);
-            Vertex center = new Vertex(x, y, color);
-            Vertex edgeA = arcVertex(x, y, radius, angleA, color);
-            Vertex edgeB = arcVertex(x, y, radius, angleB, color);
-            vertices.add(center);
-            vertices.add(edgeA);
-            vertices.add(edgeB);
-            vertices.add(edgeB);
+            vertices.addAll(quad(
+                    arcVertex(x, y, radius, angleA, color),
+                    new Vertex(x, y, color),
+                    new Vertex(x, y, color),
+                    arcVertex(x, y, radius, angleB, color)
+            ));
         }
         return vertices;
     }
@@ -112,10 +112,12 @@ final class GuiShapeGeometry {
         for (int index = 0; index < segments; index++) {
             float angleA = startAngle + step * index;
             float angleB = startAngle + step * (index + 1);
-            vertices.add(arcVertex(x, y, outerRadius, angleA, color));
-            vertices.add(arcVertex(x, y, clampedInnerRadius, angleA, color));
-            vertices.add(arcVertex(x, y, clampedInnerRadius, angleB, color));
-            vertices.add(arcVertex(x, y, outerRadius, angleB, color));
+            vertices.addAll(quad(
+                    arcVertex(x, y, outerRadius, angleA, color),
+                    arcVertex(x, y, clampedInnerRadius, angleA, color),
+                    arcVertex(x, y, clampedInnerRadius, angleB, color),
+                    arcVertex(x, y, outerRadius, angleB, color)
+            ));
         }
         return vertices;
     }
@@ -170,6 +172,26 @@ final class GuiShapeGeometry {
                 (float) (y + Math.sin(angle) * radius),
                 color
         );
+    }
+
+    private static List<Vertex> quad(final Vertex first, final Vertex second, final Vertex third, final Vertex fourth) {
+        if (signedArea(first, second, third, fourth) > 0) {
+            return List.of(first, fourth, third, second);
+        }
+        return List.of(first, second, third, fourth);
+    }
+
+    private static float signedArea(final Vertex first, final Vertex second, final Vertex third) {
+        return (first.x() * second.y() - second.x() * first.y())
+                + (second.x() * third.y() - third.x() * second.y())
+                + (third.x() * first.y() - first.x() * third.y());
+    }
+
+    private static float signedArea(final Vertex first, final Vertex second, final Vertex third, final Vertex fourth) {
+        return (first.x() * second.y() - second.x() * first.y())
+                + (second.x() * third.y() - third.x() * second.y())
+                + (third.x() * fourth.y() - fourth.x() * third.y())
+                + (fourth.x() * first.y() - first.x() * fourth.y());
     }
 
     private static int floor(final float value) {

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GuiShapeGeometryTest {
 
@@ -18,9 +19,10 @@ class GuiShapeGeometryTest {
 
         assertEquals(4, vertices.size());
         assertVertex(vertices.getFirst(), 0, 2);
-        assertVertex(vertices.get(1), 0, -2);
+        assertVertex(vertices.get(1), 10, 2);
         assertVertex(vertices.get(2), 10, -2);
-        assertVertex(vertices.get(3), 10, 2);
+        assertVertex(vertices.get(3), 0, -2);
+        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
     }
 
     @Test
@@ -30,18 +32,20 @@ class GuiShapeGeometryTest {
 
         assertEquals(4, vertices.size());
         assertVertex(vertices.getFirst(), -offset, offset);
-        assertVertex(vertices.get(1), offset, -offset);
+        assertVertex(vertices.get(1), 10 - offset, 10 + offset);
         assertVertex(vertices.get(2), 10 + offset, 10 - offset);
-        assertVertex(vertices.get(3), 10 - offset, 10 + offset);
+        assertVertex(vertices.get(3), offset, -offset);
+        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
     }
 
     @Test
-    void filledCircleUsesDegenerateGuiQuads() {
+    void filledCircleUsesVisibleGuiWedges() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledCircle(5, 6, 8, COLOR);
 
         assertEquals(GuiShapeGeometry.segmentsForArc(8, GuiShapeGeometry.FULL_CIRCLE) * 4, vertices.size());
-        assertVertex(vertices.getFirst(), 5, 6);
-        assertVertex(vertices.get(2), vertices.get(3).x(), vertices.get(3).y());
+        assertVertex(vertices.get(1), 5, 6);
+        assertVertex(vertices.get(2), 5, 6);
+        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
     }
 
     @Test
@@ -59,6 +63,7 @@ class GuiShapeGeometryTest {
 
         assertEquals(segments * 4, vertices.size());
         assertVertex(vertices.get(3), vertices.get(4).x(), vertices.get(4).y());
+        assertGuiWinding(vertices.getFirst(), vertices.get(1), vertices.get(2), vertices.get(3));
     }
 
     @Test
@@ -73,5 +78,14 @@ class GuiShapeGeometryTest {
         assertEquals(x, vertex.x(), 0.0001F);
         assertEquals(y, vertex.y(), 0.0001F);
         assertEquals(COLOR, vertex.color());
+    }
+
+    private static void assertGuiWinding(final GuiShapeGeometry.Vertex first, final GuiShapeGeometry.Vertex second,
+                                         final GuiShapeGeometry.Vertex third, final GuiShapeGeometry.Vertex fourth) {
+        float area = (first.x() * second.y() - second.x() * first.y())
+                + (second.x() * third.y() - third.x() * second.y())
+                + (third.x() * fourth.y() - fourth.x() * third.y())
+                + (fourth.x() * first.y() - first.x() * fourth.y());
+        assertTrue(area <= 0.0001F);
     }
 }
