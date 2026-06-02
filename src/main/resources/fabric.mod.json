@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "anarchyclient",
+  "version": "${version}",
+  "name": "AnarchyClient",
+  "description": "6b6t utility mod.",
+  "authors": [
+    "6b6t"
+  ],
+  "contact": {
+    "issues": "https://github.com/6b6t/AnarchyClient/issues",
+    "sources": "https://github.com/6b6t/AnarchyClient"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.blockhost.anarchyclient.AnarchyClient"
+    ]
+  },
+  "depends": {
+    "fabric-api": "*",
+    "fabricloader": ">=0.19.2",
+    "minecraft": "26.1.2",
+    "java": ">=25"
+  }
+}
