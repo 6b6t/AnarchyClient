@@ -4,6 +4,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.joml.Matrix3x2fc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 final class GuiShapeGeometry {
@@ -36,17 +37,19 @@ final class GuiShapeGeometry {
         if (radius <= EPSILON) {
             return solidRect(x, y, width, height, color);
         }
-        if (isCapsuleRadius(width, height, radius)) {
-            return capsule(x, y, width, height, color);
-        }
 
-        List<Vertex> vertices = new ArrayList<>();
-        vertices.addAll(solidRect(x + radius, y, width - radius * 2F, height, color));
-        vertices.addAll(solidRect(x, y + radius, width, height - radius * 2F, color));
-        vertices.addAll(filledArc(x + radius, y + radius, radius, HALF_CIRCLE, HALF_CIRCLE + QUARTER_CIRCLE, color));
-        vertices.addAll(filledArc(x + width - radius, y + radius, radius, HALF_CIRCLE + QUARTER_CIRCLE, FULL_CIRCLE, color));
-        vertices.addAll(filledArc(x + width - radius, y + height - radius, radius, 0, QUARTER_CIRCLE, color));
-        vertices.addAll(filledArc(x + radius, y + height - radius, radius, QUARTER_CIRCLE, HALF_CIRCLE, color));
+        List<Float> breakpoints = roundedRectBreakpoints(x, width, radius);
+        List<Vertex> vertices = new ArrayList<>(Math.max(0, breakpoints.size() - 1) * 4);
+        for (int index = 0; index < breakpoints.size() - 1; index++) {
+            float left = breakpoints.get(index);
+            float right = breakpoints.get(index + 1);
+            if (right - left <= EPSILON) {
+                continue;
+            }
+            VerticalSpan leftSpan = roundedRectSpanAtX(left, x, y, width, height, radius);
+            VerticalSpan rightSpan = roundedRectSpanAtX(right, x, y, width, height, radius);
+            addVerticalStrip(vertices, left, leftSpan.top(), leftSpan.bottom(), right, rightSpan.top(), rightSpan.bottom(), color);
+        }
         return vertices;
     }
 
@@ -62,15 +65,39 @@ final class GuiShapeGeometry {
         }
 
         float stroke = Math.min(outlineWidth, Math.min(width, height) / 2F);
-        List<Vertex> vertices = new ArrayList<>();
-        vertices.addAll(solidRect(x + radius, y, width - radius * 2F, stroke, color));
-        vertices.addAll(solidRect(x + radius, y + height - stroke, width - radius * 2F, stroke, color));
-        vertices.addAll(solidRect(x, y + radius, stroke, height - radius * 2F, color));
-        vertices.addAll(solidRect(x + width - stroke, y + radius, stroke, height - radius * 2F, color));
-        vertices.addAll(ringArc(x + radius, y + radius, radius, Math.max(0, radius - stroke), HALF_CIRCLE, HALF_CIRCLE + QUARTER_CIRCLE, color));
-        vertices.addAll(ringArc(x + width - radius, y + radius, radius, Math.max(0, radius - stroke), HALF_CIRCLE + QUARTER_CIRCLE, FULL_CIRCLE, color));
-        vertices.addAll(ringArc(x + width - radius, y + height - radius, radius, Math.max(0, radius - stroke), 0, QUARTER_CIRCLE, color));
-        vertices.addAll(ringArc(x + radius, y + height - radius, radius, Math.max(0, radius - stroke), QUARTER_CIRCLE, HALF_CIRCLE, color));
+        float innerX = x + stroke;
+        float innerY = y + stroke;
+        float innerWidth = width - stroke * 2F;
+        float innerHeight = height - stroke * 2F;
+        if (innerWidth <= EPSILON || innerHeight <= EPSILON) {
+            return filledRoundedRect(x, y, width, height, radius, color);
+        }
+
+        float innerRadius = Math.max(0, radius - stroke);
+        List<Float> breakpoints = roundedRectBreakpoints(x, width, radius);
+        addRoundedRectBreakpoints(breakpoints, innerX, innerWidth, innerRadius);
+        sortAndDedupe(breakpoints);
+
+        List<Vertex> vertices = new ArrayList<>(Math.max(0, breakpoints.size() - 1) * 8);
+        for (int index = 0; index < breakpoints.size() - 1; index++) {
+            float left = breakpoints.get(index);
+            float right = breakpoints.get(index + 1);
+            if (right - left <= EPSILON) {
+                continue;
+            }
+
+            VerticalSpan outerLeft = roundedRectSpanAtX(left, x, y, width, height, radius);
+            VerticalSpan outerRight = roundedRectSpanAtX(right, x, y, width, height, radius);
+            VerticalSpan innerLeft = roundedRectSpanAtX(left, innerX, innerY, innerWidth, innerHeight, innerRadius);
+            VerticalSpan innerRight = roundedRectSpanAtX(right, innerX, innerY, innerWidth, innerHeight, innerRadius);
+            if (innerLeft == null || innerRight == null) {
+                addVerticalStrip(vertices, left, outerLeft.top(), outerLeft.bottom(), right, outerRight.top(), outerRight.bottom(), color);
+                continue;
+            }
+
+            addVerticalStrip(vertices, left, outerLeft.top(), innerLeft.top(), right, outerRight.top(), innerRight.top(), color);
+            addVerticalStrip(vertices, left, innerLeft.bottom(), outerLeft.bottom(), right, innerRight.bottom(), outerRight.bottom(), color);
+        }
         return vertices;
     }
 
@@ -111,8 +138,9 @@ final class GuiShapeGeometry {
                 new Vertex(bodyX2 - offsetX, bodyY2 - offsetY, color),
                 new Vertex(bodyX2 + offsetX, bodyY2 + offsetY, color)
         ));
-        vertices.addAll(filledCircle(bodyX1, bodyY1, halfWidth, color));
-        vertices.addAll(filledCircle(bodyX2, bodyY2, halfWidth, color));
+        float angle = (float) Math.atan2(dy, dx);
+        vertices.addAll(filledArc(bodyX1, bodyY1, halfWidth, angle + QUARTER_CIRCLE, angle + HALF_CIRCLE + QUARTER_CIRCLE, color));
+        vertices.addAll(filledArc(bodyX2, bodyY2, halfWidth, angle - QUARTER_CIRCLE, angle + QUARTER_CIRCLE, color));
         return vertices;
     }
 
@@ -237,16 +265,6 @@ final class GuiShapeGeometry {
         );
     }
 
-    private static List<Vertex> capsule(final float x, final float y, final float width, final float height, final int color) {
-        if (width <= 0 || height <= 0) {
-            return List.of();
-        }
-        if (width >= height) {
-            return line(x, y + height / 2F, x + width, y + height / 2F, height, color);
-        }
-        return line(x + width / 2F, y, x + width / 2F, y + height, width, color);
-    }
-
     private static List<Vertex> outlinedRect(final float x, final float y, final float width, final float height,
                                              final float outlineWidth, final int color) {
         if (width <= 0 || height <= 0 || outlineWidth <= 0) {
@@ -269,8 +287,77 @@ final class GuiShapeGeometry {
         return Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
     }
 
-    private static boolean isCapsuleRadius(final float width, final float height, final float radius) {
-        return radius >= Math.min(width, height) / 2F - EPSILON;
+    private static List<Float> roundedRectBreakpoints(final float x, final float width, final float radius) {
+        List<Float> breakpoints = new ArrayList<>();
+        addRoundedRectBreakpoints(breakpoints, x, width, radius);
+        sortAndDedupe(breakpoints);
+        return breakpoints;
+    }
+
+    private static void addRoundedRectBreakpoints(final List<Float> breakpoints, final float x, final float width, final float radius) {
+        if (width <= 0) {
+            return;
+        }
+
+        breakpoints.add(x);
+        breakpoints.add(x + width);
+        if (radius <= EPSILON) {
+            return;
+        }
+
+        int segments = segmentsForArc(radius, QUARTER_CIRCLE);
+        for (int index = 0; index <= segments; index++) {
+            float progress = (float) index / segments;
+            breakpoints.add(x + radius * progress);
+            breakpoints.add(x + width - radius + radius * progress);
+        }
+    }
+
+    private static VerticalSpan roundedRectSpanAtX(final float position, final float x, final float y,
+                                                   final float width, final float height, final float radius) {
+        if (position < x - EPSILON || position > x + width + EPSILON || width <= 0 || height <= 0) {
+            return null;
+        }
+        if (radius <= EPSILON) {
+            return new VerticalSpan(y, y + height);
+        }
+
+        float leftCenter = x + radius;
+        float rightCenter = x + width - radius;
+        if (position < leftCenter) {
+            return roundedVerticalSpan(position - leftCenter, y, height, radius);
+        }
+        if (position > rightCenter) {
+            return roundedVerticalSpan(position - rightCenter, y, height, radius);
+        }
+        return new VerticalSpan(y, y + height);
+    }
+
+    private static VerticalSpan roundedVerticalSpan(final float dx, final float y, final float height, final float radius) {
+        float extent = (float) Math.sqrt(Math.max(0, radius * radius - dx * dx));
+        return new VerticalSpan(y + radius - extent, y + height - radius + extent);
+    }
+
+    private static void addVerticalStrip(final List<Vertex> vertices, final float left, final float topLeft, final float bottomLeft,
+                                         final float right, final float topRight, final float bottomRight, final int color) {
+        if (right - left <= EPSILON || (bottomLeft - topLeft <= EPSILON && bottomRight - topRight <= EPSILON)) {
+            return;
+        }
+        vertices.addAll(quad(
+                new Vertex(left, topLeft, color),
+                new Vertex(left, bottomLeft, color),
+                new Vertex(right, bottomRight, color),
+                new Vertex(right, topRight, color)
+        ));
+    }
+
+    private static void sortAndDedupe(final List<Float> values) {
+        Collections.sort(values);
+        for (int index = values.size() - 1; index > 0; index--) {
+            if (Math.abs(values.get(index) - values.get(index - 1)) <= EPSILON) {
+                values.remove(index);
+            }
+        }
     }
 
     private static List<Vertex> quad(final Vertex first, final Vertex second, final Vertex third, final Vertex fourth) {
@@ -302,5 +389,8 @@ final class GuiShapeGeometry {
     }
 
     record Vertex(float x, float y, int color) {
+    }
+
+    private record VerticalSpan(float top, float bottom) {
     }
 }

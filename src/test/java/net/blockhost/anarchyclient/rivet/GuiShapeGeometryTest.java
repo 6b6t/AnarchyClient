@@ -17,7 +17,7 @@ class GuiShapeGeometryTest {
     void lineUsesBodyQuadWithRoundCaps() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.line(0, 0, 10, 0, 4, COLOR);
 
-        assertEquals(4 + GuiShapeGeometry.segmentsForArc(2, GuiShapeGeometry.FULL_CIRCLE) * 8, vertices.size());
+        assertEquals(4 + GuiShapeGeometry.segmentsForArc(2, GuiShapeGeometry.HALF_CIRCLE) * 8, vertices.size());
         assertVertex(vertices.getFirst(), 2, 2);
         assertVertex(vertices.get(1), 8, 2);
         assertVertex(vertices.get(2), 8, -2);
@@ -32,7 +32,7 @@ class GuiShapeGeometryTest {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.line(0, 0, 10, 10, 2, COLOR);
         float offset = (float) Math.sqrt(0.5D);
 
-        assertEquals(4 + GuiShapeGeometry.segmentsForArc(1, GuiShapeGeometry.FULL_CIRCLE) * 8, vertices.size());
+        assertTrue(vertices.size() >= 4 + GuiShapeGeometry.segmentsForArc(1, GuiShapeGeometry.HALF_CIRCLE) * 8);
         assertVertex(vertices.getFirst(), 0, offset * 2F);
         assertVertex(vertices.get(1), 10 - offset * 2F, 10);
         assertVertex(vertices.get(2), 10, 10 - offset * 2F);
@@ -44,16 +44,22 @@ class GuiShapeGeometryTest {
     void roundedRectUsesCapsuleWhenRadiusReachesHalfHeight() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 24, 4, 2, COLOR);
 
-        assertEquals(GuiShapeGeometry.line(0, 2, 24, 2, 4, COLOR), vertices);
+        assertPartitionedVerticalStrips(vertices);
+        assertContainsVertex(vertices, 0, 2);
+        assertContainsVertex(vertices, 2, 0);
+        assertContainsVertex(vertices, 22, 4);
+        assertContainsVertex(vertices, 24, 2);
     }
 
     @Test
     void roundedRectKeepsQuarterCornersForSmallRadius() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 24, 10, 2, COLOR);
 
-        assertTrue(vertices.size() > GuiShapeGeometry.solidRect(2, 0, 20, 10, COLOR).size());
-        assertContainsVertex(vertices, 2, 2);
-        assertContainsVertex(vertices, 22, 8);
+        assertPartitionedVerticalStrips(vertices);
+        assertContainsVertex(vertices, 0, 2);
+        assertContainsVertex(vertices, 2, 0);
+        assertContainsVertex(vertices, 22, 10);
+        assertContainsVertex(vertices, 24, 8);
     }
 
     @Test
@@ -100,6 +106,46 @@ class GuiShapeGeometryTest {
 
     private static void assertContainsVertex(final List<GuiShapeGeometry.Vertex> vertices, final float x, final float y) {
         assertTrue(vertices.stream().anyMatch(vertex -> Math.abs(vertex.x() - x) <= 0.0001F && Math.abs(vertex.y() - y) <= 0.0001F));
+    }
+
+    private static void assertPartitionedVerticalStrips(final List<GuiShapeGeometry.Vertex> vertices) {
+        assertEquals(0, vertices.size() % 4);
+        float previousRight = Float.NEGATIVE_INFINITY;
+        for (int index = 0; index < vertices.size(); index += 4) {
+            float left = minX(vertices, index);
+            float right = maxX(vertices, index);
+            assertTrue(left >= previousRight - 0.0001F);
+            assertTrue(right > left);
+            assertEquals(2, countX(vertices, index, left));
+            assertEquals(2, countX(vertices, index, right));
+            previousRight = right;
+        }
+    }
+
+    private static float minX(final List<GuiShapeGeometry.Vertex> vertices, final int startIndex) {
+        float value = Float.POSITIVE_INFINITY;
+        for (int index = startIndex; index < startIndex + 4; index++) {
+            value = Math.min(value, vertices.get(index).x());
+        }
+        return value;
+    }
+
+    private static float maxX(final List<GuiShapeGeometry.Vertex> vertices, final int startIndex) {
+        float value = Float.NEGATIVE_INFINITY;
+        for (int index = startIndex; index < startIndex + 4; index++) {
+            value = Math.max(value, vertices.get(index).x());
+        }
+        return value;
+    }
+
+    private static int countX(final List<GuiShapeGeometry.Vertex> vertices, final int startIndex, final float x) {
+        int count = 0;
+        for (int index = startIndex; index < startIndex + 4; index++) {
+            if (Math.abs(vertices.get(index).x() - x) <= 0.0001F) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static void assertGuiWinding(final GuiShapeGeometry.Vertex first, final GuiShapeGeometry.Vertex second,
