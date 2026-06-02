@@ -5,6 +5,8 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 
+import java.math.BigDecimal;
+
 final class SettingControls {
 
     private SettingControls() {
@@ -13,7 +15,7 @@ final class SettingControls {
     static String displayValue(final Setting<?> setting) {
         Object value = setting.value();
         if (value instanceof Double number) {
-            return number % 1 == 0 ? Integer.toString(number.intValue()) : String.format("%.1f", number);
+            return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
         }
         return String.valueOf(value);
     }

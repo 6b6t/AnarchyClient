@@ -7,15 +7,15 @@ import net.minecraft.client.Minecraft;
 
 public final class FullbrightModule extends Module {
 
-    private final NumberSetting gamma = this.setting(NumberSetting.from(NumberSetting.builder()
-            .id("gamma")
-            .name("Gamma")
-            .defaultValue(15.0)
-            .min(1.0)
-            .max(25.0)
-            .step(1.0)
+    private final NumberSetting brightness = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("brightness")
+            .name("Brightness")
+            .defaultValue(1.0)
+            .min(0.0)
+            .max(1.0)
+            .step(0.05)
             .build()));
-    private Double previousGamma;
+    private Double previousBrightness;
 
     public FullbrightModule() {
         super("fullbright", "Fullbright", ModuleCategory.RENDER);
@@ -23,18 +23,18 @@ public final class FullbrightModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (this.previousGamma == null) {
-            this.previousGamma = client.options.gamma().get();
+        if (this.previousBrightness == null) {
+            this.previousBrightness = client.options.gamma().get();
         }
-        client.options.gamma().set(this.gamma.value());
+        client.options.gamma().set(this.brightness.value());
     }
 
     @Override
     protected void onDisable() {
         Minecraft client = Minecraft.getInstance();
-        if (this.previousGamma != null) {
-            client.options.gamma().set(this.previousGamma);
-            this.previousGamma = null;
+        if (this.previousBrightness != null) {
+            client.options.gamma().set(this.previousBrightness);
+            this.previousBrightness = null;
         }
     }
 }

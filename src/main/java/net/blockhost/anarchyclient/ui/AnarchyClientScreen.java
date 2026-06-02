@@ -32,6 +32,7 @@ public final class AnarchyClientScreen extends Screen {
     protected void init() {
         Minecraft client = Minecraft.getInstance();
         this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, new Size(this.width, this.height));
+        this.rivet.theme(new AnarchyClientTheme()).snapToInteger(true);
         this.rivet.root().addChild(new ModulePanel(this.modules, this.config));
     }
 
@@ -95,7 +96,14 @@ public final class AnarchyClientScreen extends Screen {
         if (text.isEmpty()) {
             return false;
         }
-        return this.rivet != null && this.rivet.onCharTyped(new CharEvent(text.charAt(0)));
+        if (this.rivet == null) {
+            return false;
+        }
+        boolean handled = false;
+        for (int index = 0; index < text.length(); index++) {
+            handled |= this.rivet.onCharTyped(new CharEvent(text.charAt(index)));
+        }
+        return handled;
     }
 
     @Override

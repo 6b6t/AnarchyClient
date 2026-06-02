@@ -6,17 +6,36 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.StringSetting;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
+import net.lenni0451.rivet.component.container.Button;
+import net.lenni0451.rivet.component.container.Container;
+import net.lenni0451.rivet.component.container.ScrollContainer;
+import net.lenni0451.rivet.component.impl.Checkbox;
+import net.lenni0451.rivet.component.impl.FormattedLabel;
+import net.lenni0451.rivet.component.impl.TextField;
+import net.lenni0451.rivet.component.impl.slider.Slider;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.input.mouse.MouseMoveEvent;
-import net.lenni0451.rivet.input.mouse.MouseScrollEvent;
+import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
+import net.lenni0451.rivet.layout.absolute.AbsoluteLayoutOptions;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.layout.grid.GridLayout;
+import net.lenni0451.rivet.layout.grid.GridLayoutOptions;
+import net.lenni0451.rivet.layout.list.VerticalListLayout;
+import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
+import net.lenni0451.rivet.text.model.TextFormat;
+import net.lenni0451.rivet.text.model.TextLine;
 import net.lenni0451.rivet.text.model.TextOrigin;
+import net.lenni0451.rivet.text.model.TextSection;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -25,19 +44,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class ModulePanel extends Component {
+public final class ModulePanel extends Container {
 
     private static final float MIN_WINDOW_WIDTH = 170;
     private static final float MAX_WINDOW_WIDTH = 224;
     private static final float HEADER_HEIGHT = 20;
     private static final float MODULE_HEADER_HEIGHT = 24;
     private static final float BOOLEAN_ROW_HEIGHT = 24;
-    private static final float NUMBER_ROW_HEIGHT = 34;
+    private static final float NUMBER_ROW_HEIGHT = 38;
+    private static final float SELECT_ROW_HEIGHT = 26;
+    private static final float STRING_ROW_HEIGHT = 31;
     private static final float PADDING = 6;
     private static final float GAP = 5;
-    private static final float SWITCH_WIDTH = 19;
-    private static final float SWITCH_HEIGHT = 8;
-    private static final float SLIDER_HEIGHT = 3;
 
     private static final Color BACKDROP_TOP = Color.fromRGBA(5, 5, 6, 70);
     private static final Color BACKDROP_BOTTOM = Color.fromRGBA(5, 5, 6, 118);
@@ -54,153 +72,42 @@ public final class ModulePanel extends Component {
     private static final Color MUTED = Color.fromRGB(154, 150, 142);
     private static final Color FAINT = Color.fromRGB(96, 94, 90);
     private static final Color ACTIVE = Color.fromRGB(0, 212, 170);
-    private static final Color OFF = Color.fromRGB(95, 98, 106);
-    private static final Color TRACK = Color.fromRGBA(50, 50, 56, 210);
 
     private final ModuleManager modules;
     private final ClientConfig config;
     private final Map<ModuleCategory, WindowState> windows = new EnumMap<>(ModuleCategory.class);
+    private final Map<ModuleCategory, CategoryWindow> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> zOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
     private Size lastSize = Size.EMPTY;
     private ModuleCategory draggingCategory;
     private float dragOffsetX;
     private float dragOffsetY;
-    private NumberDrag activeNumberDrag;
-    private float mouseX = -Float.MAX_VALUE;
-    private float mouseY = -Float.MAX_VALUE;
 
     public ModulePanel(final ModuleManager modules, final ClientConfig config) {
+        super(AbsoluteLayout.INSTANCE);
         this.modules = modules;
         this.config = config;
         for (ModuleCategory category : ModuleCategory.values()) {
             this.zOrder.add(category);
+            CategoryWindow window = new CategoryWindow(this, category);
+            this.categoryWindows.put(category, window);
+            this.addChild(window);
         }
     }
 
     @Override
     public void render(final Renderer renderer, final Rectangle bounds) {
-        this.ensureWindows(bounds.size());
-
         renderer.fillGradientRect(0, 0, bounds.width(), bounds.height(), BACKDROP_TOP, BACKDROP_TOP, BACKDROP_BOTTOM, BACKDROP_BOTTOM);
-        text(renderer, "AnarchyClient", 10, 17, TEXT);
-
-        for (ModuleCategory category : this.zOrder) {
-            this.renderWindow(renderer, bounds, category);
-        }
+        renderer.text(this.rivet().backend().shapeText("AnarchyClient", TEXT), 10, 17, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
+        super.render(renderer, bounds);
     }
 
     @Override
-    protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-        if (event.button() != MouseButton.LEFT) {
-            return false;
-        }
-        this.ensureWindows(bounds.size());
-
-        for (int index = this.zOrder.size() - 1; index >= 0; index--) {
-            ModuleCategory category = this.zOrder.get(index);
-            WindowState window = this.windows.get(category);
-            WindowLayout layout = this.windowLayout(category, bounds);
-            if (!layout.bounds().contains(event.x(), event.y())) {
-                continue;
-            }
-
-            this.bringToFront(category);
-            if (layout.header().contains(event.x(), event.y())) {
-                this.draggingCategory = category;
-                this.dragOffsetX = event.x() - window.x();
-                this.dragOffsetY = event.y() - window.y();
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-
-            ClickTarget target = this.findTarget(layout, event.x(), event.y());
-            if (target == null) {
-                return true;
-            }
-            if (target.kind() == TargetKind.MODULE_TOGGLE) {
-                target.module().toggle();
-                this.config.save();
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-            if (target.kind() == TargetKind.MODULE_EXPAND) {
-                this.toggleExpanded(target.module());
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-            if (target.setting() instanceof BooleanSetting bool) {
-                bool.value(!bool.value());
-                this.config.save();
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-            if (target.setting() instanceof NumberSetting number) {
-                this.activeNumberDrag = new NumberDrag(number, target.controlBounds());
-                this.setNumberFromMouse(number, target.controlBounds(), event.x());
-                this.config.save();
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-            if (SettingControls.adjust(target.setting())) {
-                this.config.save();
-                this.rivet().recalculateNextFrame();
-                return true;
-            }
-            return true;
-        }
-        return true;
-    }
-
-    @Override
-    protected boolean onComponentMouseMove(final MouseMoveEvent event, final Rectangle bounds) {
-        this.mouseX = event.x();
-        this.mouseY = event.y();
-        if (this.draggingCategory != null) {
-            WindowState window = this.windows.get(this.draggingCategory);
-            float windowWidth = windowWidth(bounds.size());
-            window.x(clamp(event.x() - this.dragOffsetX, 6, Math.max(6, bounds.width() - windowWidth - 6)));
-            window.y(clamp(event.y() - this.dragOffsetY, 8, Math.max(8, bounds.height() - HEADER_HEIGHT - 8)));
-            this.rivet().recalculateNextFrame();
-            return true;
-        }
-        if (this.activeNumberDrag != null) {
-            this.setNumberFromMouse(this.activeNumberDrag.setting(), this.activeNumberDrag.bounds(), event.x());
-            this.config.save();
-            this.rivet().recalculateNextFrame();
-            return true;
-        }
-        this.rivet().recalculateNextFrame();
-        return false;
-    }
-
-    @Override
-    protected boolean onComponentMouseUp(final MouseButtonEvent event, final Rectangle bounds) {
-        if (event.button() != MouseButton.LEFT) {
-            return false;
-        }
-        boolean handled = this.draggingCategory != null || this.activeNumberDrag != null;
-        this.draggingCategory = null;
-        this.activeNumberDrag = null;
-        return handled;
-    }
-
-    @Override
-    protected boolean onComponentMouseScroll(final MouseScrollEvent event, final Rectangle bounds) {
-        this.ensureWindows(bounds.size());
-        for (int index = this.zOrder.size() - 1; index >= 0; index--) {
-            ModuleCategory category = this.zOrder.get(index);
-            WindowLayout layout = this.windowLayout(category, bounds);
-            if (!layout.bounds().contains(event.x(), event.y())) {
-                continue;
-            }
-            WindowState window = this.windows.get(category);
-            float maxScroll = Math.max(0, layout.contentHeight() - layout.viewport().height());
-            window.scroll(clamp(window.scroll() - event.scrollY() * 12, 0, maxScroll));
-            this.rivet().recalculateNextFrame();
-            return true;
-        }
-        return false;
+    public void computeLayout(final Size size) {
+        this.ensureWindows(size);
+        this.applyWindowLayouts(size);
+        super.computeLayout(size);
     }
 
     @Override
@@ -208,142 +115,50 @@ public final class ModulePanel extends Component {
         return constraints;
     }
 
-    private void renderWindow(final Renderer renderer, final Rectangle screen, final ModuleCategory category) {
-        WindowLayout layout = this.windowLayout(category, screen);
+    private void startDrag(final ModuleCategory category, final float mouseX, final float mouseY) {
         WindowState window = this.windows.get(category);
-        boolean active = this.zOrder.getLast() == category;
-
-        renderer.fillRect(layout.bounds().x() + 2, layout.bounds().y() + 3, layout.bounds().width(), layout.bounds().height(), SHADOW);
-        renderer.fillRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), active ? WINDOW_ACTIVE : WINDOW);
-        renderer.outlineRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), 1, active ? BORDER : BORDER_SOFT);
-        renderer.fillRect(layout.header().x(), layout.header().y(), layout.header().width(), layout.header().height(), HEADER);
-        renderer.fillRect(layout.header().x(), layout.header().y(), 3, layout.header().height(), ACTIVE);
-        renderer.fillRect(layout.header().x() + 8, layout.header().y() + 4, 10, 1, FAINT);
-        renderer.fillRect(layout.header().x() + 8, layout.header().y() + 7, 10, 1, FAINT);
-
-        text(renderer, category.displayName(), layout.header().x() + 22, layout.header().y() + 14, TEXT);
-
-        renderer.scissor(layout.viewport().x(), layout.viewport().y(), layout.viewport().width(), layout.viewport().height(), () -> {
-            float y = layout.contentY() - window.scroll();
-            for (Module module : this.modules.byCategory(category)) {
-                y = this.renderModule(renderer, layout, module, y);
-            }
-        });
+        this.bringToFront(category);
+        this.draggingCategory = category;
+        this.dragOffsetX = mouseX - window.x();
+        this.dragOffsetY = mouseY - window.y();
+        this.rivet().recalculateNextFrame();
     }
 
-    private float renderModule(final Renderer renderer, final WindowLayout layout, final Module module, final float y) {
-        Rectangle moduleHeader = new Rectangle(layout.contentX(), y, layout.contentWidth(), MODULE_HEADER_HEIGHT);
-        boolean expanded = this.isExpanded(module);
-
-        boolean hovered = moduleHeader.contains(this.mouseX, this.mouseY);
-        renderer.fillRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), hovered ? SURFACE_HOVER : SURFACE);
-        renderer.line(moduleHeader.x(), moduleHeader.maxY(), moduleHeader.maxX(), moduleHeader.maxY(), 1, BORDER_SOFT);
-        text(renderer, expanded ? "-" : "+", moduleHeader.x() + 7, moduleHeader.y() + 16, MUTED);
-        text(renderer, module.name(), moduleHeader.x() + 20, moduleHeader.y() + 16, TEXT);
-        this.renderSwitch(renderer, moduleHeader.maxX() - SWITCH_WIDTH - 8, moduleHeader.y() + 8, module.enabled());
-
-        float nextY = moduleHeader.maxY();
-        if (!expanded) {
-            return nextY + GAP;
+    private boolean drag(final ModuleCategory category, final float mouseX, final float mouseY) {
+        if (this.draggingCategory != category) {
+            return false;
         }
-
-        List<Setting<?>> settings = module.settings();
-        for (int index = 0; index < settings.size(); index++) {
-            Setting<?> setting = settings.get(index);
-            Rectangle row = new Rectangle(layout.contentX(), nextY, layout.contentWidth(), settingRowHeight(setting));
-            renderer.fillRect(row.x(), row.y(), row.width(), row.height(), index % 2 == 0 ? SURFACE_DARK : WINDOW);
-            this.renderSetting(renderer, row, setting);
-            nextY = row.maxY();
-        }
-        return nextY + GAP;
-    }
-
-    private void renderSetting(final Renderer renderer, final Rectangle row, final Setting<?> setting) {
-        if (setting instanceof BooleanSetting bool) {
-            text(renderer, setting.name(), row.x() + 9, row.y() + 15, MUTED);
-            this.renderSwitch(renderer, row.maxX() - SWITCH_WIDTH - 9, row.y() + 8, bool.value());
-            return;
-        }
-        if (setting instanceof NumberSetting number) {
-            text(renderer, setting.name(), row.x() + 9, row.y() + 13, MUTED);
-            textRight(renderer, SettingControls.displayValue(setting), row.maxX() - 9, row.y() + 13, TEXT);
-            Rectangle slider = sliderBounds(row);
-            renderer.fillRect(slider.x(), slider.y(), slider.width(), slider.height(), TRACK);
-            float fill = slider.width() * numberProgress(number);
-            renderer.fillRect(slider.x(), slider.y(), fill, slider.height(), ACTIVE);
-            renderer.fillRect(slider.x() + fill - 1, slider.y() - 2, 2, slider.height() + 4, TEXT);
-            return;
-        }
-        text(renderer, setting.name(), row.x() + 9, row.y() + 15, MUTED);
-        textRight(renderer, SettingControls.displayValue(setting), row.maxX() - 9, row.y() + 15, TEXT);
-    }
-
-    private void renderSwitch(final Renderer renderer, final float x, final float y, final boolean enabled) {
-        renderer.fillRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, enabled ? ACTIVE : OFF);
-        renderer.fillRect(x + (enabled ? SWITCH_WIDTH - 7 : 2), y + 2, 5, 5, TEXT);
-    }
-
-    private ClickTarget findTarget(final WindowLayout layout, final float mouseX, final float mouseY) {
-        WindowState window = this.windows.get(layout.category());
-        float y = layout.contentY() - window.scroll();
-        for (Module module : this.modules.byCategory(layout.category())) {
-            Rectangle moduleHeader = new Rectangle(layout.contentX(), y, layout.contentWidth(), MODULE_HEADER_HEIGHT);
-            Rectangle toggle = new Rectangle(moduleHeader.maxX() - SWITCH_WIDTH - 9, moduleHeader.y() + 4, SWITCH_WIDTH + 9, MODULE_HEADER_HEIGHT - 8);
-            if (toggle.contains(mouseX, mouseY)) {
-                return new ClickTarget(TargetKind.MODULE_TOGGLE, module, null, toggle);
-            }
-            if (moduleHeader.contains(mouseX, mouseY)) {
-                return new ClickTarget(TargetKind.MODULE_EXPAND, module, null, moduleHeader);
-            }
-            y = moduleHeader.maxY();
-            if (this.isExpanded(module)) {
-                for (Setting<?> setting : module.settings()) {
-                    Rectangle row = new Rectangle(layout.contentX(), y, layout.contentWidth(), settingRowHeight(setting));
-                    if (row.contains(mouseX, mouseY)) {
-                        Rectangle control = setting instanceof NumberSetting ? sliderBounds(row) : row;
-                        return new ClickTarget(TargetKind.SETTING, module, setting, control);
-                    }
-                    y = row.maxY();
-                }
-            }
-            y += GAP;
-        }
-        return null;
-    }
-
-    private WindowLayout windowLayout(final ModuleCategory category, final Rectangle screen) {
         WindowState window = this.windows.get(category);
-        float contentHeight = this.categoryContentHeight(category);
-        float width = windowWidth(screen.size());
-        float maxHeight = Math.max(HEADER_HEIGHT + PADDING * 2, screen.height() - 42);
-        float height = Math.min(HEADER_HEIGHT + PADDING * 2 + contentHeight, maxHeight);
-        Rectangle bounds = new Rectangle(window.x(), window.y(), width, height);
-        Rectangle header = new Rectangle(bounds.x(), bounds.y(), bounds.width(), HEADER_HEIGHT);
-        Rectangle viewport = new Rectangle(bounds.x() + PADDING, bounds.y() + HEADER_HEIGHT + PADDING, bounds.width() - PADDING * 2, height - HEADER_HEIGHT - PADDING * 2);
-        return new WindowLayout(category, bounds, header, viewport, contentHeight);
+        float width = windowWidth(this.lastSize);
+        window.x(clamp(mouseX - this.dragOffsetX, 6, Math.max(6, this.lastSize.width() - width - 6)));
+        window.y(clamp(mouseY - this.dragOffsetY, 8, Math.max(8, this.lastSize.height() - HEADER_HEIGHT - 8)));
+        this.applyWindowLayouts(this.lastSize);
+        this.rivet().recalculateNextFrame();
+        return true;
     }
 
-    private float categoryContentHeight(final ModuleCategory category) {
-        float height = 0;
-        for (Module module : this.modules.byCategory(category)) {
-            height += MODULE_HEADER_HEIGHT + GAP;
-            if (this.isExpanded(module)) {
-                for (Setting<?> setting : module.settings()) {
-                    height += settingRowHeight(setting);
-                }
-            }
+    private boolean stopDrag(final ModuleCategory category) {
+        boolean handled = this.draggingCategory == category;
+        if (handled) {
+            this.draggingCategory = null;
         }
-        return Math.max(height, MODULE_HEADER_HEIGHT);
+        return handled;
+    }
+
+    private void toggleExpanded(final Module module, final ModuleGroup group) {
+        if (!this.expandedModules.remove(module.id())) {
+            this.expandedModules.add(module.id());
+        }
+        group.rebuild();
+        this.rivet().recalculateNextFrame();
+    }
+
+    private void save() {
+        this.config.save();
     }
 
     private boolean isExpanded(final Module module) {
         return this.expandedModules.contains(module.id());
-    }
-
-    private void toggleExpanded(final Module module) {
-        if (!this.expandedModules.remove(module.id())) {
-            this.expandedModules.add(module.id());
-        }
     }
 
     private void ensureWindows(final Size size) {
@@ -360,7 +175,7 @@ public final class ModulePanel extends Component {
         int index = 0;
         for (ModuleCategory category : ModuleCategory.values()) {
             boolean newWindow = !this.windows.containsKey(category);
-            WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0, 0));
+            WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0));
             if (window.x() == 0 && window.y() == 0) {
                 window.x(margin + (index % columns) * stepX);
                 window.y(28 + (index / columns) * rowHeight);
@@ -374,17 +189,58 @@ public final class ModulePanel extends Component {
         }
     }
 
+    private void applyWindowLayouts(final Size size) {
+        float width = windowWidth(size);
+        for (ModuleCategory category : ModuleCategory.values()) {
+            WindowState window = this.windows.get(category);
+            float height = windowHeight(category, size);
+            this.categoryWindows.get(category).layoutOptions(new AbsoluteLayoutOptions(window.x(), window.y(), width, height));
+        }
+    }
+
     private void bringToFront(final ModuleCategory category) {
         this.zOrder.remove(category);
         this.zOrder.add(category);
+        this.sortChildren((left, right) -> {
+            ModuleCategory leftCategory = ((CategoryWindow) left).category();
+            ModuleCategory rightCategory = ((CategoryWindow) right).category();
+            return Integer.compare(this.zOrder.indexOf(leftCategory), this.zOrder.indexOf(rightCategory));
+        });
     }
 
-    private void setNumberFromMouse(final NumberSetting setting, final Rectangle slider, final float mouseX) {
-        SettingControls.setNumberFromProgress(setting, (mouseX - slider.x()) / slider.width());
+    private boolean isActive(final ModuleCategory category) {
+        return this.zOrder.getLast() == category;
     }
 
-    private static Rectangle sliderBounds(final Rectangle row) {
-        return new Rectangle(row.x() + 9, row.y() + 23, row.width() - 18, SLIDER_HEIGHT);
+    private float categoryContentHeight(final ModuleCategory category) {
+        float height = 0;
+        for (Module module : this.modules.byCategory(category)) {
+            height += MODULE_HEADER_HEIGHT + GAP;
+            if (this.isExpanded(module)) {
+                for (Setting<?> setting : module.settings()) {
+                    height += settingRowHeight(setting);
+                }
+            }
+        }
+        return Math.max(height, MODULE_HEADER_HEIGHT);
+    }
+
+    private float windowHeight(final ModuleCategory category, final Size size) {
+        float maxHeight = Math.max(HEADER_HEIGHT + PADDING * 2, size.height() - 42);
+        return Math.min(HEADER_HEIGHT + PADDING * 2 + this.categoryContentHeight(category), maxHeight);
+    }
+
+    private static float settingRowHeight(final Setting<?> setting) {
+        if (setting instanceof NumberSetting) {
+            return NUMBER_ROW_HEIGHT;
+        }
+        if (setting instanceof StringSetting) {
+            return STRING_ROW_HEIGHT;
+        }
+        if (setting instanceof SelectSetting) {
+            return SELECT_ROW_HEIGHT;
+        }
+        return BOOLEAN_ROW_HEIGHT;
     }
 
     private static float windowWidth(final Size size) {
@@ -393,67 +249,348 @@ public final class ModulePanel extends Component {
         return clamp(available / categoryCount, MIN_WINDOW_WIDTH, MAX_WINDOW_WIDTH);
     }
 
-    private static float numberProgress(final NumberSetting setting) {
-        double range = setting.max() - setting.min();
-        if (range <= 0) {
-            return 0;
-        }
-        return (float) clamp((setting.value() - setting.min()) / range, 0, 1);
-    }
-
-    private void text(final Renderer renderer, final String text, final float x, final float baselineY, final Color color) {
-        renderer.text(this.rivet().backend().shapeText(text, color), x, baselineY, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
-    }
-
-    private void textRight(final Renderer renderer, final String text, final float rightX, final float baselineY, final Color color) {
-        renderer.text(this.rivet().backend().shapeText(text, color), rightX, baselineY, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.BASELINE);
-    }
-
-    private static float settingRowHeight(final Setting<?> setting) {
-        return setting instanceof NumberSetting ? NUMBER_ROW_HEIGHT : BOOLEAN_ROW_HEIGHT;
-    }
-
     private static float clamp(final double value, final double min, final double max) {
         return (float) Math.max(min, Math.min(max, value));
     }
 
-    private record WindowLayout(ModuleCategory category, Rectangle bounds, Rectangle header, Rectangle viewport, float contentHeight) {
+    private static FormattedLabel label(final String text, final Color color) {
+        FormattedLabel label = new FormattedLabel(new TextLine(new TextSection(text, TextFormat.DEFAULT.withColor(color))));
+        label.horizontalOrigin(TextOrigin.Horizontal.LOGICAL_LEFT);
+        label.verticalOrigin(TextOrigin.Vertical.LOGICAL_CENTER);
+        label.interactive(false);
+        return label;
+    }
 
-        float contentX() {
-            return this.viewport.x();
+    private static Button button(final Component child, final Button.ClickListener listener) {
+        Button button = new Button(child, listener);
+        button.cornerRadius().set(0F);
+        button.outlineWidth().set(1F);
+        button.inactiveColor().set(SURFACE);
+        button.inactiveOutlineColor().set(BORDER_SOFT);
+        button.activeColor().set(SURFACE_HOVER);
+        button.activeOutlineColor().set(BORDER);
+        button.clickColor().set(SURFACE_DARK);
+        button.clickOutlineColor().set(BORDER);
+        button.innerPadding().set(new Padding(6, 3, 6, 3));
+        button.clickOn().set(Button.ClickOn.UP);
+        return button;
+    }
+
+    private static Checkbox checkbox(final boolean checked) {
+        Checkbox checkbox = new Checkbox(checked);
+        checkbox.backgroundColor().set(SURFACE_DARK);
+        checkbox.outlineColor().set(BORDER);
+        checkbox.checkColor().set(ACTIVE);
+        checkbox.cornerRadius().set(0F);
+        checkbox.fixedSize(new Size(18, 18));
+        return checkbox;
+    }
+
+    private static Slider slider(final NumberSetting setting) {
+        Slider slider = new Slider(setting.min(), setting.max(), setting.step(), setting.value());
+        slider.barColor().set(Color.fromRGBA(50, 50, 56, 210));
+        slider.activeBarColor().set(ACTIVE);
+        slider.thumbColor().set(TEXT);
+        slider.thumbClickColor().set(ACTIVE);
+        slider.barHeight().set(3F);
+        slider.thumbWidth().set(8F);
+        slider.thumbHeight().set(8F);
+        slider.fixedSize(new Size(-1, 14));
+        return slider;
+    }
+
+    private final class CategoryWindow extends Container {
+
+        private final ModuleCategory category;
+        private final WindowHeader header;
+        private final ScrollContainer scroll;
+
+        private CategoryWindow(final ModulePanel panel, final ModuleCategory category) {
+            super(AbsoluteLayout.INSTANCE);
+            this.category = category;
+            this.header = new WindowHeader(panel, category);
+            Container list = new Container(new VerticalListLayout((int) GAP, true));
+            for (Module module : ModulePanel.this.modules.byCategory(category)) {
+                list.addChild(new ModuleGroup(module));
+            }
+            this.scroll = new ScrollContainer(list);
+            this.scroll.barColor().set(Color.fromRGBA(154, 150, 142, 80));
+            this.scroll.barHoverColor().set(Color.fromRGBA(154, 150, 142, 130));
+            this.scroll.barClickColor().set(Color.fromRGBA(0, 212, 170, 170));
+            this.scroll.scrollSpeed().set(18F);
+            this.addChild(this.header);
+            this.addChild(this.scroll);
         }
 
-        float contentY() {
-            return this.viewport.y();
+        private ModuleCategory category() {
+            return this.category;
         }
 
-        float contentWidth() {
-            return this.viewport.width();
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            boolean active = ModulePanel.this.isActive(this.category);
+            renderer.fillRect(2, 3, bounds.width(), bounds.height(), SHADOW);
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), active ? WINDOW_ACTIVE : WINDOW);
+            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, active ? BORDER : BORDER_SOFT);
+            super.render(renderer, bounds);
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.header.layoutOptions(new AbsoluteLayoutOptions(0, 0, size.width(), HEADER_HEIGHT));
+            this.scroll.layoutOptions(new AbsoluteLayoutOptions(
+                    PADDING,
+                    HEADER_HEIGHT + PADDING,
+                    Math.max(0, size.width() - PADDING * 2),
+                    Math.max(0, size.height() - HEADER_HEIGHT - PADDING * 2)
+            ));
+            super.computeLayout(size);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return constraints;
         }
     }
 
-    private record ClickTarget(TargetKind kind, Module module, Setting<?> setting, Rectangle controlBounds) {
+    private static final class WindowHeader extends Component {
+
+        private final ModulePanel panel;
+        private final ModuleCategory category;
+
+        private WindowHeader(final ModulePanel panel, final ModuleCategory category) {
+            this.panel = panel;
+            this.category = category;
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), HEADER);
+            renderer.fillRect(0, 0, 3, bounds.height(), ACTIVE);
+            renderer.fillRect(8, 8, 10, 1, FAINT);
+            renderer.fillRect(8, 11, 10, 1, FAINT);
+            renderer.text(this.rivet().backend().shapeText(this.category.displayName(), TEXT), 22, 14, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (event.button() != MouseButton.LEFT) {
+                return false;
+            }
+            this.panel.startDrag(this.category, bounds.x() + event.x(), bounds.y() + event.y());
+            return true;
+        }
+
+        @Override
+        protected boolean onComponentMouseMove(final MouseMoveEvent event, final Rectangle bounds) {
+            return this.panel.drag(this.category, bounds.x() + event.x(), bounds.y() + event.y());
+        }
+
+        @Override
+        protected boolean onComponentMouseUp(final MouseButtonEvent event, final Rectangle bounds) {
+            return event.button() == MouseButton.LEFT && this.panel.stopDrag(this.category);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(MIN_WINDOW_WIDTH, HEADER_HEIGHT);
+        }
     }
 
-    private record NumberDrag(NumberSetting setting, Rectangle bounds) {
+    private final class ModuleGroup extends Container {
+
+        private final Module module;
+
+        private ModuleGroup(final Module module) {
+            super(new VerticalListLayout(0, true));
+            this.module = module;
+            this.rebuild();
+        }
+
+        private void rebuild() {
+            this.clearChildren();
+            this.addChild(new ModuleHeader(this.module, this));
+            if (ModulePanel.this.isExpanded(this.module)) {
+                int index = 0;
+                for (Setting<?> setting : this.module.settings()) {
+                    this.addChild(settingRow(setting, index++));
+                }
+            }
+            if (this.parent() != null) {
+                this.parent().requestLayoutRecalculation();
+            }
+        }
+
+        private Component settingRow(final Setting<?> setting, final int index) {
+            if (setting instanceof BooleanSetting bool) {
+                return new BooleanSettingRow(bool, index);
+            }
+            if (setting instanceof NumberSetting number) {
+                return new NumberSettingRow(number, index);
+            }
+            if (setting instanceof SelectSetting select) {
+                return new SelectSettingRow(select, index);
+            }
+            if (setting instanceof StringSetting string) {
+                return new StringSettingRow(string, index);
+            }
+            return new ValueSettingRow(setting, index);
+        }
     }
 
-    private enum TargetKind {
-        MODULE_TOGGLE,
-        MODULE_EXPAND,
-        SETTING
+    private final class ModuleHeader extends Container {
+
+        private ModuleHeader(final Module module, final ModuleGroup group) {
+            super(new GridLayout(4, 0));
+            this.fixedSize(new Size(-1, MODULE_HEADER_HEIGHT));
+            FormattedLabel name = label((ModulePanel.this.isExpanded(module) ? "- " : "+ ") + module.name(), TEXT);
+            Button expand = button(name, ignored -> ModulePanel.this.toggleExpanded(module, group));
+            expand.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.BOTH).withWeightX(1).withHeight(MODULE_HEADER_HEIGHT));
+            Checkbox enabled = checkbox(module.enabled());
+            enabled.toggleListener().add(value -> {
+                module.enabled(value);
+                ModulePanel.this.save();
+            });
+            enabled.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withWidth(24F).withHeight(MODULE_HEADER_HEIGHT));
+            this.addChild(expand);
+            this.addChild(enabled);
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
+            super.render(renderer, bounds);
+            renderer.line(0, bounds.height(), bounds.width(), bounds.height(), 1, BORDER_SOFT);
+        }
+    }
+
+    private abstract static class SettingRow extends Container {
+
+        private final int index;
+        private final float height;
+
+        private SettingRow(final int index, final float height) {
+            super(new GridLayout(6, 0));
+            this.index = index;
+            this.height = height;
+            this.fixedSize(new Size(-1, height));
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), this.index % 2 == 0 ? SURFACE_DARK : WINDOW);
+            super.render(renderer, bounds);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), this.height);
+        }
+    }
+
+    private final class BooleanSettingRow extends SettingRow {
+
+        private BooleanSettingRow(final BooleanSetting setting, final int index) {
+            super(index, BOOLEAN_ROW_HEIGHT);
+            FormattedLabel name = label(setting.name(), MUTED);
+            name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withAnchor(GridAnchor.LEFT).withHeight(BOOLEAN_ROW_HEIGHT));
+            Checkbox value = checkbox(setting.value());
+            value.toggleListener().add(checked -> {
+                setting.value(checked);
+                ModulePanel.this.save();
+            });
+            value.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withWidth(24F).withHeight(BOOLEAN_ROW_HEIGHT));
+            this.addChild(name);
+            this.addChild(value);
+        }
+    }
+
+    private final class NumberSettingRow extends SettingRow {
+
+        private NumberSettingRow(final NumberSetting setting, final int index) {
+            super(index, NUMBER_ROW_HEIGHT);
+            FormattedLabel name = label(setting.name(), MUTED);
+            name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(16F));
+            FormattedLabel value = label(SettingControls.displayValue(setting), TEXT);
+            value.horizontalOrigin(TextOrigin.Horizontal.VISUAL_RIGHT);
+            value.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withHeight(16F));
+            Slider slider = slider(setting);
+            slider.valueChangeListener().add(number -> {
+                setting.value(number);
+                value.text(new TextLine(new TextSection(SettingControls.displayValue(setting), TextFormat.DEFAULT.withColor(TEXT))));
+                ModulePanel.this.save();
+            });
+            slider.layoutOptions(new GridLayoutOptions(0, 1).withColumnSpan(2).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(18F));
+            this.addChild(name);
+            this.addChild(value);
+            this.addChild(slider);
+        }
+    }
+
+    private final class SelectSettingRow extends SettingRow {
+
+        private SelectSettingRow(final SelectSetting setting, final int index) {
+            super(index, SELECT_ROW_HEIGHT);
+            FormattedLabel name = label(setting.name(), MUTED);
+            name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(SELECT_ROW_HEIGHT));
+            FormattedLabel current = label(setting.value(), TEXT);
+            current.horizontalOrigin(TextOrigin.Horizontal.VISUAL_RIGHT);
+            Button value = button(current, ignored -> {
+                setting.next();
+                current.text(new TextLine(new TextSection(setting.value(), TextFormat.DEFAULT.withColor(TEXT))));
+                ModulePanel.this.save();
+            });
+            value.layoutOptions(new GridLayoutOptions(1, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withWidth(72F).withHeight(SELECT_ROW_HEIGHT - 4));
+            this.addChild(name);
+            this.addChild(value);
+        }
+    }
+
+    private final class StringSettingRow extends SettingRow {
+
+        private StringSettingRow(final StringSetting setting, final int index) {
+            super(index, STRING_ROW_HEIGHT);
+            FormattedLabel name = label(setting.name(), MUTED);
+            name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(STRING_ROW_HEIGHT));
+            TextField field = new TextField(setting.value());
+            field.backgroundColor().set(SURFACE_DARK);
+            field.outlineColor().set(BORDER_SOFT);
+            field.focusedOutlineColor().set(ACTIVE);
+            field.cursorColor().set(TEXT);
+            field.selectionColor().set(Color.fromRGBA(0, 212, 170, 90));
+            field.cornerRadius().set(0F);
+            field.valueChangeListener().add(value -> {
+                setting.value(value);
+                ModulePanel.this.save();
+            });
+            field.layoutOptions(new GridLayoutOptions(1, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withWidth(96F).withHeight(STRING_ROW_HEIGHT - 6));
+            this.addChild(name);
+            this.addChild(field);
+        }
+    }
+
+    private static final class ValueSettingRow extends SettingRow {
+
+        private ValueSettingRow(final Setting<?> setting, final int index) {
+            super(index, BOOLEAN_ROW_HEIGHT);
+            FormattedLabel name = label(setting.name(), MUTED);
+            name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(BOOLEAN_ROW_HEIGHT));
+            FormattedLabel value = label(SettingControls.displayValue(setting), TEXT);
+            value.horizontalOrigin(TextOrigin.Horizontal.VISUAL_RIGHT);
+            value.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withHeight(BOOLEAN_ROW_HEIGHT));
+            this.addChild(name);
+            this.addChild(value);
+        }
     }
 
     private static final class WindowState {
 
         private float x;
         private float y;
-        private float scroll;
 
-        private WindowState(final float x, final float y, final float scroll) {
+        private WindowState(final float x, final float y) {
             this.x = x;
             this.y = y;
-            this.scroll = scroll;
         }
 
         private float x() {
@@ -470,14 +607,6 @@ public final class ModulePanel extends Component {
 
         private void y(final float y) {
             this.y = y;
-        }
-
-        private float scroll() {
-            return this.scroll;
-        }
-
-        private void scroll(final float scroll) {
-            this.scroll = scroll;
         }
     }
 }

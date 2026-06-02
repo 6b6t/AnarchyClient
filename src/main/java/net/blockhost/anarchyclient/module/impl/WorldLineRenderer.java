@@ -48,9 +48,11 @@ final class WorldLineRenderer {
 
         vertices.addVertex(matrices.last(), (float) x1, (float) y1, (float) z1)
                 .setColor(color.red(), color.green(), color.blue(), color.alpha())
+                .setLineWidth(1.0F)
                 .setNormal(matrices.last(), normalX, normalY, normalZ);
         vertices.addVertex(matrices.last(), (float) x2, (float) y2, (float) z2)
                 .setColor(color.red(), color.green(), color.blue(), color.alpha())
+                .setLineWidth(1.0F)
                 .setNormal(matrices.last(), normalX, normalY, normalZ);
     }
 

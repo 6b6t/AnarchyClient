@@ -7,7 +7,6 @@ import net.lenni0451.rivet.backend.text.ShapedTextBlock;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.text.model.TextBlock;
 import net.lenni0451.rivet.text.model.TextLine;
-import net.lenni0451.rivet.text.model.TextSection;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
@@ -33,26 +32,12 @@ public final class Blaze3DBackend implements Backend {
 
     @Override
     public ShapedText shapeText(final TextLine line) {
-        StringBuilder builder = new StringBuilder();
-        for (TextSection section : line.sections()) {
-            builder.append(section.text());
-        }
-        Color color = line.sections().isEmpty() ? Color.WHITE : line.sections().getFirst().format().color();
-        return new MinecraftShapedText(this.client.font, builder.toString(), color);
+        return new MinecraftShapedText(this.client.font, line);
     }
 
     @Override
     public ShapedTextBlock shapeText(final TextBlock block) {
-        StringBuilder builder = new StringBuilder();
-        for (TextLine line : block.lines()) {
-            if (!builder.isEmpty()) {
-                builder.append('\n');
-            }
-            for (TextSection section : line.sections()) {
-                builder.append(section.text());
-            }
-        }
-        return new MinecraftShapedText(this.client.font, builder.toString(), Color.WHITE);
+        return new MinecraftShapedText(this.client.font, block);
     }
 
     @Override
