@@ -27,15 +27,16 @@ import java.util.Set;
 
 public final class ModulePanel extends Component {
 
-    private static final float WINDOW_WIDTH = 316;
-    private static final float HEADER_HEIGHT = 28;
-    private static final float MODULE_HEADER_HEIGHT = 34;
-    private static final float SETTING_ROW_HEIGHT = 40;
-    private static final float PADDING = 8;
-    private static final float GAP = 8;
-    private static final float SWITCH_WIDTH = 38;
-    private static final float SWITCH_HEIGHT = 16;
-    private static final float SLIDER_HEIGHT = 5;
+    private static final float MIN_WINDOW_WIDTH = 170;
+    private static final float MAX_WINDOW_WIDTH = 224;
+    private static final float HEADER_HEIGHT = 20;
+    private static final float MODULE_HEADER_HEIGHT = 24;
+    private static final float SETTING_ROW_HEIGHT = 28;
+    private static final float PADDING = 6;
+    private static final float GAP = 5;
+    private static final float SWITCH_WIDTH = 24;
+    private static final float SWITCH_HEIGHT = 10;
+    private static final float SLIDER_HEIGHT = 3;
 
     private static final Color BACKDROP_TOP = Color.fromRGBA(5, 5, 6, 70);
     private static final Color BACKDROP_BOTTOM = Color.fromRGBA(5, 5, 6, 118);
@@ -78,7 +79,7 @@ public final class ModulePanel extends Component {
         this.ensureWindows(bounds.size());
 
         renderer.fillGradientRect(0, 0, bounds.width(), bounds.height(), BACKDROP_TOP, BACKDROP_TOP, BACKDROP_BOTTOM, BACKDROP_BOTTOM);
-        text(renderer, "AnarchyClient", 18, 28, TEXT);
+        text(renderer, "AnarchyClient", 10, 17, TEXT);
 
         for (ModuleCategory category : this.zOrder) {
             this.renderWindow(renderer, bounds, category);
@@ -146,7 +147,8 @@ public final class ModulePanel extends Component {
     protected boolean onComponentMouseMove(final MouseMoveEvent event, final Rectangle bounds) {
         if (this.draggingCategory != null) {
             WindowState window = this.windows.get(this.draggingCategory);
-            window.x(clamp(event.x() - this.dragOffsetX, 8, Math.max(8, bounds.width() - WINDOW_WIDTH - 8)));
+            float windowWidth = windowWidth(bounds.size());
+            window.x(clamp(event.x() - this.dragOffsetX, 6, Math.max(6, bounds.width() - windowWidth - 6)));
             window.y(clamp(event.y() - this.dragOffsetY, 8, Math.max(8, bounds.height() - HEADER_HEIGHT - 8)));
             this.rivet().recalculateNextFrame();
             return true;
@@ -182,7 +184,7 @@ public final class ModulePanel extends Component {
             }
             WindowState window = this.windows.get(category);
             float maxScroll = Math.max(0, layout.contentHeight() - layout.viewport().height());
-            window.scroll(clamp(window.scroll() - event.scrollY() * 18, 0, maxScroll));
+            window.scroll(clamp(window.scroll() - event.scrollY() * 12, 0, maxScroll));
             this.rivet().recalculateNextFrame();
             return true;
         }
@@ -199,14 +201,14 @@ public final class ModulePanel extends Component {
         WindowState window = this.windows.get(category);
         boolean active = this.zOrder.getLast() == category;
 
-        renderer.fillRect(layout.bounds().x() + 4, layout.bounds().y() + 5, layout.bounds().width(), layout.bounds().height(), SHADOW);
+        renderer.fillRect(layout.bounds().x() + 3, layout.bounds().y() + 3, layout.bounds().width(), layout.bounds().height(), SHADOW);
         renderer.fillRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), active ? WINDOW_ACTIVE : WINDOW);
         renderer.outlineRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), 1, active ? BORDER : BORDER_SOFT);
         renderer.fillRect(layout.header().x(), layout.header().y(), layout.header().width(), layout.header().height(), HEADER);
         renderer.fillRect(layout.header().x(), layout.header().y(), 3, layout.header().height(), ACTIVE);
 
-        text(renderer, category.displayName(), layout.header().x() + 12, layout.header().y() + 18, TEXT);
-        text(renderer, Integer.toString(this.modules.byCategory(category).size()), layout.header().maxX() - 20, layout.header().y() + 18, MUTED);
+        text(renderer, category.displayName(), layout.header().x() + 9, layout.header().y() + 14, TEXT);
+        text(renderer, Integer.toString(this.modules.byCategory(category).size()), layout.header().maxX() - 14, layout.header().y() + 14, MUTED);
 
         renderer.scissor(layout.viewport().x(), layout.viewport().y(), layout.viewport().width(), layout.viewport().height(), () -> {
             float y = layout.contentY() - window.scroll();
@@ -222,9 +224,9 @@ public final class ModulePanel extends Component {
 
         renderer.fillRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), SURFACE);
         renderer.outlineRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), 1, BORDER_SOFT);
-        text(renderer, expanded ? "-" : "+", moduleHeader.x() + 10, moduleHeader.y() + 21, MUTED);
-        text(renderer, module.name(), moduleHeader.x() + 28, moduleHeader.y() + 21, TEXT);
-        this.renderSwitch(renderer, moduleHeader.maxX() - SWITCH_WIDTH - 10, moduleHeader.y() + 9, module.enabled());
+        text(renderer, expanded ? "-" : "+", moduleHeader.x() + 7, moduleHeader.y() + 16, MUTED);
+        text(renderer, module.name(), moduleHeader.x() + 20, moduleHeader.y() + 16, TEXT);
+        this.renderSwitch(renderer, moduleHeader.maxX() - SWITCH_WIDTH - 7, moduleHeader.y() + 7, module.enabled());
 
         float nextY = moduleHeader.maxY();
         if (!expanded) {
@@ -246,27 +248,27 @@ public final class ModulePanel extends Component {
 
     private void renderSetting(final Renderer renderer, final Rectangle row, final Setting<?> setting) {
         if (setting instanceof BooleanSetting bool) {
-            text(renderer, setting.name(), row.x() + 12, row.y() + 24, MUTED);
-            this.renderSwitch(renderer, row.maxX() - SWITCH_WIDTH - 12, row.y() + 12, bool.value());
+            text(renderer, setting.name(), row.x() + 9, row.y() + 18, MUTED);
+            this.renderSwitch(renderer, row.maxX() - SWITCH_WIDTH - 9, row.y() + 9, bool.value());
             return;
         }
         if (setting instanceof NumberSetting number) {
-            text(renderer, setting.name(), row.x() + 12, row.y() + 17, MUTED);
-            text(renderer, SettingControls.displayValue(setting), row.maxX() - 54, row.y() + 17, TEXT);
+            text(renderer, setting.name(), row.x() + 9, row.y() + 13, MUTED);
+            text(renderer, SettingControls.displayValue(setting), row.maxX() - 32, row.y() + 13, TEXT);
             Rectangle slider = sliderBounds(row);
             renderer.fillRect(slider.x(), slider.y(), slider.width(), slider.height(), TRACK);
             float fill = slider.width() * numberProgress(number);
             renderer.fillRect(slider.x(), slider.y(), fill, slider.height(), ACTIVE);
-            renderer.fillRect(slider.x() + fill - 2, slider.y() - 3, 4, slider.height() + 6, TEXT);
+            renderer.fillRect(slider.x() + fill - 1, slider.y() - 2, 3, slider.height() + 4, TEXT);
             return;
         }
-        text(renderer, setting.name(), row.x() + 12, row.y() + 24, MUTED);
-        text(renderer, SettingControls.displayValue(setting), row.x() + 118, row.y() + 24, TEXT);
+        text(renderer, setting.name(), row.x() + 9, row.y() + 18, MUTED);
+        text(renderer, SettingControls.displayValue(setting), row.x() + 88, row.y() + 18, TEXT);
     }
 
     private void renderSwitch(final Renderer renderer, final float x, final float y, final boolean enabled) {
         renderer.fillRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, enabled ? ACTIVE : OFF);
-        renderer.fillRect(x + (enabled ? SWITCH_WIDTH - 14 : 2), y + 2, 12, 12, TEXT);
+        renderer.fillRect(x + (enabled ? SWITCH_WIDTH - 8 : 2), y + 2, 6, 6, TEXT);
     }
 
     private ClickTarget findTarget(final WindowLayout layout, final float mouseX, final float mouseY) {
@@ -274,7 +276,7 @@ public final class ModulePanel extends Component {
         float y = layout.contentY() - window.scroll();
         for (Module module : this.modules.byCategory(layout.category())) {
             Rectangle moduleHeader = new Rectangle(layout.contentX(), y, layout.contentWidth(), MODULE_HEADER_HEIGHT);
-            Rectangle toggle = new Rectangle(moduleHeader.maxX() - SWITCH_WIDTH - 10, moduleHeader.y() + 7, SWITCH_WIDTH + 10, MODULE_HEADER_HEIGHT - 14);
+            Rectangle toggle = new Rectangle(moduleHeader.maxX() - SWITCH_WIDTH - 9, moduleHeader.y() + 4, SWITCH_WIDTH + 9, MODULE_HEADER_HEIGHT - 8);
             if (toggle.contains(mouseX, mouseY)) {
                 return new ClickTarget(TargetKind.MODULE_TOGGLE, module, null, toggle);
             }
@@ -300,9 +302,10 @@ public final class ModulePanel extends Component {
     private WindowLayout windowLayout(final ModuleCategory category, final Rectangle screen) {
         WindowState window = this.windows.get(category);
         float contentHeight = this.categoryContentHeight(category);
+        float width = windowWidth(screen.size());
         float maxHeight = Math.max(HEADER_HEIGHT + PADDING * 2, screen.height() - 42);
         float height = Math.min(HEADER_HEIGHT + PADDING * 2 + contentHeight, maxHeight);
-        Rectangle bounds = new Rectangle(window.x(), window.y(), WINDOW_WIDTH, height);
+        Rectangle bounds = new Rectangle(window.x(), window.y(), width, height);
         Rectangle header = new Rectangle(bounds.x(), bounds.y(), bounds.width(), HEADER_HEIGHT);
         Rectangle viewport = new Rectangle(bounds.x() + PADDING, bounds.y() + HEADER_HEIGHT + PADDING, bounds.width() - PADDING * 2, height - HEADER_HEIGHT - PADDING * 2);
         return new WindowLayout(category, bounds, header, viewport, contentHeight);
@@ -335,18 +338,20 @@ public final class ModulePanel extends Component {
         }
         this.lastSize = size;
 
-        float x = 24;
-        float y = 52;
+        float width = windowWidth(size);
+        float margin = 10;
+        float x = margin;
+        float y = 28;
         int index = 0;
         for (ModuleCategory category : ModuleCategory.values()) {
             boolean newWindow = !this.windows.containsKey(category);
             WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0, 0));
             if (window.x() == 0 && window.y() == 0) {
-                window.x(x + index * (WINDOW_WIDTH + 14));
-                window.y(y + index * 18);
+                window.x(x + index * (width + GAP + 3));
+                window.y(y);
             }
-            window.x(clamp(window.x(), 8, Math.max(8, size.width() - WINDOW_WIDTH - 8)));
-            window.y(clamp(window.y(), 8, Math.max(8, size.height() - HEADER_HEIGHT - 8)));
+            window.x(clamp(window.x(), margin, Math.max(margin, size.width() - width - margin)));
+            window.y(clamp(window.y(), margin, Math.max(margin, size.height() - HEADER_HEIGHT - margin)));
             if (newWindow) {
                 this.expandedModules.addAll(this.modules.byCategory(category).stream().map(Module::id).toList());
             }
@@ -364,7 +369,13 @@ public final class ModulePanel extends Component {
     }
 
     private static Rectangle sliderBounds(final Rectangle row) {
-        return new Rectangle(row.x() + 12, row.y() + 28, row.width() - 24, SLIDER_HEIGHT);
+        return new Rectangle(row.x() + 9, row.y() + 20, row.width() - 18, SLIDER_HEIGHT);
+    }
+
+    private static float windowWidth(final Size size) {
+        int categoryCount = Math.max(1, ModuleCategory.values().length);
+        float available = size.width() - 20 - (categoryCount - 1) * (GAP + 3);
+        return clamp(available / categoryCount, MIN_WINDOW_WIDTH, MAX_WINDOW_WIDTH);
     }
 
     private static float numberProgress(final NumberSetting setting) {
