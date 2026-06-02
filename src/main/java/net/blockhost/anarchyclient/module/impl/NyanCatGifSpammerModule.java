@@ -6,10 +6,6 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -34,7 +30,6 @@ import org.w3c.dom.Node;
 
 public final class NyanCatGifSpammerModule extends Module {
 
-    private static final Identifier HUD_ID = Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "nyan_cat_overlay");
     private static final Identifier GIF_RESOURCE = Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "textures/nyan_cat.gif");
     private static final int TICKS_PER_SECOND = 20;
 
@@ -81,10 +76,6 @@ public final class NyanCatGifSpammerModule extends Module {
         super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.MISC);
     }
 
-    public static void registerHud() {
-        HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_ID, new Overlay());
-    }
-
     @Override
     public void tick(final Minecraft client) {
         if (client.player == null) {
@@ -105,7 +96,8 @@ public final class NyanCatGifSpammerModule extends Module {
         this.cooldownTicks--;
     }
 
-    public void render(final Minecraft client, final GuiGraphicsExtractor graphics) {
+    @Override
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
         if (!this.enabled() || this.activeTicks <= 0 || client.screen instanceof AnarchyClientScreen) {
             return;
         }
@@ -294,15 +286,4 @@ public final class NyanCatGifSpammerModule extends Module {
         }
     }
 
-    private static final class Overlay implements HudElement {
-
-        @Override
-        public void extractRenderState(final GuiGraphicsExtractor graphics, final DeltaTracker deltaTracker) {
-            Minecraft client = Minecraft.getInstance();
-            AnarchyClient.MODULES.find("nyan_cat_gif_spammer")
-                    .filter(NyanCatGifSpammerModule.class::isInstance)
-                    .map(NyanCatGifSpammerModule.class::cast)
-                    .ifPresent(module -> module.render(client, graphics));
-        }
-    }
 }

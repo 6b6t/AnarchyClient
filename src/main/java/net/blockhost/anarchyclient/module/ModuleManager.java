@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module;
 
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +44,22 @@ public final class ModuleManager {
         for (Module module : this.modules.values()) {
             if (module.enabled()) {
                 module.tick(client);
+            }
+        }
+    }
+
+    public void renderWorld(final LevelRenderContext context) {
+        for (Module module : this.modules.values()) {
+            if (module.enabled()) {
+                module.renderWorld(context);
+            }
+        }
+    }
+
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
+        for (Module module : this.modules.values()) {
+            if (module.enabled()) {
+                module.renderHud(client, graphics);
             }
         }
     }

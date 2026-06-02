@@ -5,11 +5,13 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +31,7 @@ class ClientConfigTest {
         savedModule.enabledSetting.value(false);
         savedModule.numberSetting.value(7.5);
         savedModule.stringSetting.value("saved");
+        savedModule.selectSetting.value("Second");
 
         new ClientConfig(savedModules, path).save();
 
@@ -41,6 +44,7 @@ class ClientConfigTest {
         assertEquals(false, loadedModule.enabledSetting.value());
         assertEquals(7.5, loadedModule.numberSetting.value());
         assertEquals("saved", loadedModule.stringSetting.value());
+        assertEquals("Second", loadedModule.selectSetting.value());
     }
 
     private static final class ConfigModule extends Module {
@@ -62,6 +66,12 @@ class ClientConfigTest {
                 .id("string_setting")
                 .name("String Setting")
                 .defaultValue("default")
+                .build()));
+        private final SelectSetting selectSetting = this.setting(SelectSetting.from(SelectSetting.builder()
+                .id("select_setting")
+                .name("Select Setting")
+                .defaultValue("First")
+                .addAllOptions(List.of("First", "Second"))
                 .build()));
 
         private ConfigModule() {

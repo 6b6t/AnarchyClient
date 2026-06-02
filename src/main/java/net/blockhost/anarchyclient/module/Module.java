@@ -1,7 +1,9 @@
 package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.setting.Setting;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +66,12 @@ public abstract class Module {
     }
 
     public void tick(final Minecraft client) {
+    }
+
+    public void renderWorld(final LevelRenderContext context) {
+    }
+
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
     }
 
     protected void onEnable() {

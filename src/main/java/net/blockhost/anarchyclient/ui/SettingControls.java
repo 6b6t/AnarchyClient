@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 
 final class SettingControls {
@@ -28,6 +29,10 @@ final class SettingControls {
                 next = number.min();
             }
             number.value(next);
+            return true;
+        }
+        if (setting instanceof SelectSetting select) {
+            select.next();
             return true;
         }
         return false;

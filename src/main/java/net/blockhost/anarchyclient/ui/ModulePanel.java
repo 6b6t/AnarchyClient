@@ -142,6 +142,11 @@ public final class ModulePanel extends Component {
                 this.rivet().recalculateNextFrame();
                 return true;
             }
+            if (SettingControls.adjust(target.setting())) {
+                this.config.save();
+                this.rivet().recalculateNextFrame();
+                return true;
+            }
             return true;
         }
         return true;
@@ -349,15 +354,16 @@ public final class ModulePanel extends Component {
 
         float width = windowWidth(size);
         float margin = 10;
-        float x = margin;
-        float y = 28;
+        float stepX = width + GAP + 3;
+        int columns = Math.max(1, (int) Math.floor((size.width() - margin * 2 + GAP + 3) / stepX));
+        float rowHeight = HEADER_HEIGHT + PADDING * 2 + MODULE_HEADER_HEIGHT + GAP + 18;
         int index = 0;
         for (ModuleCategory category : ModuleCategory.values()) {
             boolean newWindow = !this.windows.containsKey(category);
             WindowState window = this.windows.computeIfAbsent(category, ignored -> new WindowState(0, 0, 0));
             if (window.x() == 0 && window.y() == 0) {
-                window.x(x + index * (width + GAP + 3));
-                window.y(y);
+                window.x(margin + (index % columns) * stepX);
+                window.y(28 + (index / columns) * rowHeight);
             }
             window.x(clamp(window.x(), margin, Math.max(margin, size.width() - width - margin)));
             window.y(clamp(window.y(), margin, Math.max(margin, size.height() - HEADER_HEIGHT - margin)));

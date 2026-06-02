@@ -35,4 +35,19 @@ class NyanCatGifSpammerModuleTest {
             assertTrue(ticks >= 60 && ticks <= 100);
         }
     }
+
+    @Test
+    void chatSpammerParsesPipeSeparatedMessages() {
+        assertEquals(
+                java.util.List.of("hello", "gg", "bye"),
+                ChatSpammerModule.parseMessages(" hello | | gg | bye ")
+        );
+    }
+
+    @Test
+    void autoEatTriggersForLowHungerOrHealth() {
+        assertTrue(AutoEatModule.shouldEat(10, 20.0F, 14.0, 10.0));
+        assertTrue(AutoEatModule.shouldEat(20, 8.0F, 14.0, 10.0));
+        assertEquals(false, AutoEatModule.shouldEat(20, 20.0F, 14.0, 10.0));
+    }
 }
