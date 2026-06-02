@@ -84,6 +84,21 @@ class ClientConfigTest {
         assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
     }
 
+    @Test
+    void defaultsToNoExpandedModules() {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        ClientConfig config = new ClientConfig(new ModuleManager(), path);
+
+        config.load();
+
+        assertEquals(Set.of(), config.expandedModules().orElseThrow());
+
+        ClientConfig reloaded = new ClientConfig(new ModuleManager(), path);
+        reloaded.load();
+
+        assertEquals(Set.of(), reloaded.expandedModules().orElseThrow());
+    }
+
     private static final class ConfigModule extends Module {
 
         private final BooleanSetting enabledSetting = this.setting(BooleanSetting.from(BooleanSetting.builder()

@@ -37,7 +37,7 @@ public final class ClientConfig {
     private final Path path;
     private final Map<ModuleCategory, CategoryWindowState> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
-    private Set<String> expandedModules;
+    private final Set<String> expandedModules = new HashSet<>();
 
     public ClientConfig(final ModuleManager modules) {
         this(modules, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
@@ -51,7 +51,7 @@ public final class ClientConfig {
     public void load() {
         this.categoryWindows.clear();
         this.categoryOrder.clear();
-        this.expandedModules = null;
+        this.expandedModules.clear();
         if (!Files.exists(this.path)) {
             this.save();
             return;
@@ -110,14 +110,12 @@ public final class ClientConfig {
     }
 
     public Optional<Set<String>> expandedModules() {
-        if (this.expandedModules == null) {
-            return Optional.empty();
-        }
         return Optional.of(Set.copyOf(this.expandedModules));
     }
 
     public void expandedModules(final Set<String> moduleIds) {
-        this.expandedModules = new HashSet<>(moduleIds);
+        this.expandedModules.clear();
+        this.expandedModules.addAll(moduleIds);
     }
 
     public void save() {
@@ -207,11 +205,9 @@ public final class ClientConfig {
             ui.add("categories", categories);
         }
 
-        if (this.expandedModules != null) {
-            JsonArray expanded = new JsonArray();
-            this.expandedModules.stream().sorted().forEach(expanded::add);
-            ui.add("expandedModules", expanded);
-        }
+        JsonArray expanded = new JsonArray();
+        this.expandedModules.stream().sorted().forEach(expanded::add);
+        ui.add("expandedModules", expanded);
 
         if (!this.categoryOrder.isEmpty()) {
             JsonArray categories = new JsonArray();

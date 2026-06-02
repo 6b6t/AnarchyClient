@@ -180,14 +180,7 @@ public final class ModulePanel extends Container {
     }
 
     private void restoreExpandedModules() {
-        this.config.expandedModules().ifPresentOrElse(
-                this.expandedModules::addAll,
-                () -> {
-                    for (Module module : this.modules.all()) {
-                        this.expandedModules.add(module.id());
-                    }
-                }
-        );
+        this.config.expandedModules().ifPresent(this.expandedModules::addAll);
     }
 
     private void restoreZOrder() {
