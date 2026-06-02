@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
+import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -30,6 +31,7 @@ public final class AnarchyClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        AnarchyClientRenderPipelines.initialize();
         ModuleRegistry.registerDefaults(MODULES);
         CONFIG.load();
 

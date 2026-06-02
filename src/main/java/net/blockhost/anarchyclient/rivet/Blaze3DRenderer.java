@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.rivet;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.RenderCommand;
 import net.lenni0451.rivet.backend.render.RenderElement;
@@ -140,7 +141,7 @@ public final class Blaze3DRenderer {
             return;
         }
 
-        this.submitShape(GuiShapeGeometry.filledRoundedRect(x, y, width, height, cornerRadius, argb(color)));
+        this.submitSurfaceShape(GuiShapeGeometry.filledRoundedRect(x, y, width, height, cornerRadius, argb(color)), width, height, color);
     }
 
     private void outlineRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final float outlineWidth, final Color color) {
@@ -204,6 +205,10 @@ public final class Blaze3DRenderer {
         if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
             return;
         }
+        if (this.usesMatrixPanel(width, height, color)) {
+            this.submitShape(GuiShapeGeometry.solidRect(x, y, width, height, argb(color)), AnarchyClientRenderPipelines.MATRIX_PANEL, true);
+            return;
+        }
         this.graphics.fill(RenderPipelines.GUI, floor(x), floor(y), ceil(x + width), ceil(y + height), argb(color));
     }
 
@@ -216,6 +221,18 @@ public final class Blaze3DRenderer {
     }
 
     private void submitShape(final List<GuiShapeGeometry.Vertex> vertices) {
+        this.submitShape(vertices, RenderPipelines.GUI, false);
+    }
+
+    private void submitSurfaceShape(final List<GuiShapeGeometry.Vertex> vertices, final float width, final float height, final Color color) {
+        if (this.usesMatrixPanel(width, height, color)) {
+            this.submitShape(vertices, AnarchyClientRenderPipelines.MATRIX_PANEL, true);
+            return;
+        }
+        this.submitShape(vertices);
+    }
+
+    private void submitShape(final List<GuiShapeGeometry.Vertex> vertices, final RenderPipeline pipeline, final boolean useUv) {
         if (vertices.isEmpty()) {
             return;
         }
@@ -228,13 +245,27 @@ public final class Blaze3DRenderer {
         }
 
         this.graphics.guiRenderState.addGuiElement(new Blaze3DGuiShapeRenderState(
-                RenderPipelines.GUI,
+                pipeline,
                 TextureSetup.noTexture(),
                 pose,
                 vertices,
+                useUv,
                 scissorArea,
                 bounds
         ));
+    }
+
+    private boolean usesMatrixPanel(final float width, final float height, final Color color) {
+        if (width < 8 || height < 8) {
+            return false;
+        }
+        int alpha = color.getAlpha();
+        int red = color.getRed();
+        int green = color.getGreen();
+        int blue = color.getBlue();
+        int max = Math.max(red, Math.max(green, blue));
+        int min = Math.min(red, Math.min(green, blue));
+        return alpha >= 90 && max >= 10 && max <= 64 && max - min <= 12;
     }
 
     private ScreenRectangle currentScissorArea() {

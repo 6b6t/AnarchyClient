@@ -18,6 +18,9 @@ import net.minecraft.network.chat.Component;
 
 public final class AnarchyClientScreen extends Screen {
 
+    private static final int MATRIX_BACKDROP_TOP = 0x78020A05;
+    private static final int MATRIX_BACKDROP_BOTTOM = 0xB8001008;
+
     private final ModuleManager modules;
     private final ClientConfig config;
     private Rivet rivet;
@@ -46,12 +49,18 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
-        this.extractTransparentBackground(graphics);
         if (this.rivet != null) {
             this.rivet.size(new Size(this.width, this.height));
             this.rivet.onMouseMove(new MouseMoveEvent(mouseX, mouseY));
             new Blaze3DRenderer(Minecraft.getInstance(), graphics).render(this.rivet.render());
         }
+    }
+
+    @Override
+    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
+        graphics.blurBeforeThisStratum();
+        graphics.fillGradient(0, 0, this.width, this.height, MATRIX_BACKDROP_TOP, MATRIX_BACKDROP_BOTTOM);
+        this.minecraft.gui.extractDeferredSubtitles();
     }
 
     @Override

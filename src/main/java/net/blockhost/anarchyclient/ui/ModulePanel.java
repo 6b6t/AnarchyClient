@@ -76,7 +76,7 @@ public final class ModulePanel extends Container {
     private static final Color TEXT = Color.fromRGB(236, 232, 224);
     private static final Color MUTED = Color.fromRGB(154, 150, 142);
     private static final Color FAINT = Color.fromRGB(96, 94, 90);
-    private static final Color ACTIVE = Color.fromRGB(0, 212, 170);
+    private static final Color ACTIVE = Color.fromRGB(0, 236, 92);
 
     private final ModuleManager modules;
     private final ClientConfig config;
@@ -383,7 +383,7 @@ public final class ModulePanel extends Container {
             this.scroll = new ScrollContainer(list);
             this.scroll.barColor().set(Color.fromRGBA(154, 150, 142, 80));
             this.scroll.barHoverColor().set(Color.fromRGBA(154, 150, 142, 130));
-            this.scroll.barClickColor().set(Color.fromRGBA(0, 212, 170, 170));
+            this.scroll.barClickColor().set(Color.fromRGBA(0, 236, 92, 170));
             this.scroll.scrollSpeed().set(18F);
             this.addChild(this.header);
             this.addChild(this.scroll);
@@ -642,7 +642,7 @@ public final class ModulePanel extends Container {
             field.outlineColor().set(BORDER_SOFT);
             field.focusedOutlineColor().set(ACTIVE);
             field.cursorColor().set(TEXT);
-            field.selectionColor().set(Color.fromRGBA(0, 212, 170, 90));
+            field.selectionColor().set(Color.fromRGBA(0, 236, 92, 90));
             field.cornerRadius().set(CONTROL_RADIUS);
             field.valueChangeListener().add(value -> {
                 setting.value(value);
