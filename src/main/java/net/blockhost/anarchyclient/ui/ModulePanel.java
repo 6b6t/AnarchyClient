@@ -57,6 +57,9 @@ public final class ModulePanel extends Container {
     private static final float TOGGLE_CELL_WIDTH = 24;
     private static final float PADDING = 6;
     private static final float GAP = 5;
+    private static final float INTRO_HEIGHT = HEADER_HEIGHT + PADDING;
+    private static final long WINDOW_HEIGHT_ANIMATION_NANOS = 180_000_000L;
+    private static final long FOCUS_PULSE_NANOS = 260_000_000L;
 
     private static final Color BACKDROP_TOP = Color.fromRGBA(5, 5, 6, 70);
     private static final Color BACKDROP_BOTTOM = Color.fromRGBA(5, 5, 6, 118);
@@ -77,6 +80,7 @@ public final class ModulePanel extends Container {
     private final ModuleManager modules;
     private final ClientConfig config;
     private final Map<ModuleCategory, WindowState> windows = new EnumMap<>(ModuleCategory.class);
+    private final Map<ModuleCategory, HeightAnimation> heightAnimations = new EnumMap<>(ModuleCategory.class);
     private final Map<ModuleCategory, CategoryWindow> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> zOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
@@ -84,6 +88,7 @@ public final class ModulePanel extends Container {
     private ModuleCategory draggingCategory;
     private float dragOffsetX;
     private float dragOffsetY;
+    private boolean animationsActive;
 
     public ModulePanel(final ModuleManager modules, final ClientConfig config) {
         super(AbsoluteLayout.INSTANCE);
@@ -103,12 +108,17 @@ public final class ModulePanel extends Container {
         renderer.fillGradientRect(0, 0, bounds.width(), bounds.height(), BACKDROP_TOP, BACKDROP_TOP, BACKDROP_BOTTOM, BACKDROP_BOTTOM);
         renderer.text(this.rivet().backend().shapeText("AnarchyClient", TEXT), 10, 17, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
         super.render(renderer, bounds);
+        if (this.animationsActive) {
+            this.rivet().recalculateNextFrame();
+        }
     }
 
     @Override
     public void computeLayout(final Size size) {
+        long now = System.nanoTime();
+        this.animationsActive = false;
         this.ensureWindows(size);
-        this.applyWindowLayouts(size);
+        this.applyWindowLayouts(size, now);
         super.computeLayout(size);
     }
 
@@ -134,7 +144,7 @@ public final class ModulePanel extends Container {
         float width = windowWidth(this.lastSize);
         window.x(clamp(mouseX - this.dragOffsetX, 6, Math.max(6, this.lastSize.width() - width - 6)));
         window.y(clamp(mouseY - this.dragOffsetY, 8, Math.max(8, this.lastSize.height() - HEADER_HEIGHT - 8)));
-        this.applyWindowLayouts(this.lastSize);
+        this.applyWindowLayouts(this.lastSize, System.nanoTime());
         this.saveWindowState(category);
         this.rivet().recalculateNextFrame();
         return true;
@@ -223,19 +233,30 @@ public final class ModulePanel extends Container {
                 .orElseGet(() -> new WindowState(0, 0));
     }
 
-    private void applyWindowLayouts(final Size size) {
+    private void applyWindowLayouts(final Size size, final long now) {
         float width = windowWidth(size);
         for (ModuleCategory category : ModuleCategory.values()) {
             WindowState window = this.windows.get(category);
-            float height = windowHeight(category, size);
+            float height = this.animatedWindowHeight(category, windowHeight(category, size), now);
             this.categoryWindows.get(category).layoutOptions(new AbsoluteLayoutOptions(window.x(), window.y(), width, height));
         }
+    }
+
+    private float animatedWindowHeight(final ModuleCategory category, final float targetHeight, final long now) {
+        HeightAnimation animation = this.heightAnimations.computeIfAbsent(category, ignored -> HeightAnimation.intro(targetHeight, now));
+        float height = animation.height(targetHeight, now);
+        this.animationsActive |= animation.active(now);
+        return height;
     }
 
     private void bringToFront(final ModuleCategory category) {
         this.zOrder.remove(category);
         this.zOrder.add(category);
         this.config.categoryOrder(this.zOrder);
+        CategoryWindow window = this.categoryWindows.get(category);
+        if (window != null) {
+            window.pulseFocus();
+        }
         this.sortChildren((left, right) -> {
             ModuleCategory leftCategory = ((CategoryWindow) left).category();
             ModuleCategory rightCategory = ((CategoryWindow) right).category();
@@ -346,6 +367,7 @@ public final class ModulePanel extends Container {
         private final ModuleCategory category;
         private final WindowHeader header;
         private final ScrollContainer scroll;
+        private long focusPulseStartNanos;
 
         private CategoryWindow(final ModulePanel panel, final ModuleCategory category) {
             super(AbsoluteLayout.INSTANCE);
@@ -371,10 +393,28 @@ public final class ModulePanel extends Container {
         @Override
         public void render(final Renderer renderer, final Rectangle bounds) {
             boolean active = ModulePanel.this.isActive(this.category);
+            float pulse = this.focusPulse();
             renderer.fillRect(2, 3, bounds.width(), bounds.height(), SHADOW);
             renderer.fillRect(0, 0, bounds.width(), bounds.height(), active ? WINDOW_ACTIVE : WINDOW);
-            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, active ? BORDER : BORDER_SOFT);
             super.render(renderer, bounds);
+            if (pulse > 0) {
+                renderer.fillRect(0, HEADER_HEIGHT, 1 + pulse * 2, Math.max(0, bounds.height() - HEADER_HEIGHT), ACTIVE.multiplyAlpha(0.42F * pulse));
+                renderer.fillRect(0, 0, bounds.width(), 1, ACTIVE.multiplyAlpha(0.22F * pulse));
+            }
+            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, Color.interpolate(pulse, active ? BORDER : BORDER_SOFT, ACTIVE));
+            ModulePanel.this.animationsActive |= pulse > 0;
+        }
+
+        private void pulseFocus() {
+            this.focusPulseStartNanos = System.nanoTime();
+        }
+
+        private float focusPulse() {
+            if (this.focusPulseStartNanos == 0) {
+                return 0;
+            }
+            float progress = animationProgress(this.focusPulseStartNanos, FOCUS_PULSE_NANOS, System.nanoTime());
+            return progress >= 1 ? 0 : 1 - easeOutCubic(progress);
         }
 
         @Override
@@ -650,5 +690,59 @@ public final class ModulePanel extends Container {
         private void y(final float y) {
             this.y = y;
         }
+    }
+
+    private static final class HeightAnimation {
+
+        private float start;
+        private float current;
+        private float target;
+        private long startedAt;
+
+        private HeightAnimation(final float start, final float target, final long now) {
+            this.start = start;
+            this.current = start;
+            this.target = target;
+            this.startedAt = now;
+        }
+
+        private static HeightAnimation intro(final float target, final long now) {
+            return new HeightAnimation(Math.min(target, INTRO_HEIGHT), target, now);
+        }
+
+        private float height(final float targetHeight, final long now) {
+            if (Math.abs(this.target - targetHeight) > 0.5F) {
+                this.start = this.current;
+                this.target = targetHeight;
+                this.startedAt = now;
+            }
+            float progress = animationProgress(this.startedAt, WINDOW_HEIGHT_ANIMATION_NANOS, now);
+            this.current = lerp(this.start, this.target, easeOutCubic(progress));
+            if (progress >= 1 || Math.abs(this.current - this.target) <= 0.5F) {
+                this.current = this.target;
+            }
+            return this.current;
+        }
+
+        private boolean active(final long now) {
+            return Math.abs(this.current - this.target) > 0.5F
+                    && animationProgress(this.startedAt, WINDOW_HEIGHT_ANIMATION_NANOS, now) < 1;
+        }
+    }
+
+    private static float animationProgress(final long startedAt, final long durationNanos, final long now) {
+        if (startedAt == 0 || durationNanos <= 0) {
+            return 1;
+        }
+        return clamp((double) (now - startedAt) / durationNanos, 0, 1);
+    }
+
+    private static float easeOutCubic(final float progress) {
+        float inverse = 1 - progress;
+        return 1 - inverse * inverse * inverse;
+    }
+
+    private static float lerp(final float start, final float end, final float progress) {
+        return start + (end - start) * progress;
     }
 }
