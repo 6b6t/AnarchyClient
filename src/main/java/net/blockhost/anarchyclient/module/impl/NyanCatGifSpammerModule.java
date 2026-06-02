@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
@@ -105,7 +106,7 @@ public final class NyanCatGifSpammerModule extends Module {
     }
 
     public void render(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (!this.enabled() || this.activeTicks <= 0) {
+        if (!this.enabled() || this.activeTicks <= 0 || client.screen instanceof AnarchyClientScreen) {
             return;
         }
         Animation loadedAnimation = this.animation;

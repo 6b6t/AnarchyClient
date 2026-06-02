@@ -31,23 +31,25 @@ public final class ModulePanel extends Component {
     private static final float MAX_WINDOW_WIDTH = 224;
     private static final float HEADER_HEIGHT = 20;
     private static final float MODULE_HEADER_HEIGHT = 24;
-    private static final float SETTING_ROW_HEIGHT = 28;
+    private static final float BOOLEAN_ROW_HEIGHT = 24;
+    private static final float NUMBER_ROW_HEIGHT = 34;
     private static final float PADDING = 6;
     private static final float GAP = 5;
-    private static final float SWITCH_WIDTH = 24;
-    private static final float SWITCH_HEIGHT = 10;
+    private static final float SWITCH_WIDTH = 19;
+    private static final float SWITCH_HEIGHT = 8;
     private static final float SLIDER_HEIGHT = 3;
 
     private static final Color BACKDROP_TOP = Color.fromRGBA(5, 5, 6, 70);
     private static final Color BACKDROP_BOTTOM = Color.fromRGBA(5, 5, 6, 118);
     private static final Color SHADOW = Color.fromRGBA(0, 0, 0, 96);
-    private static final Color WINDOW = Color.fromRGBA(17, 17, 19, 196);
-    private static final Color WINDOW_ACTIVE = Color.fromRGBA(22, 22, 25, 218);
+    private static final Color WINDOW = Color.fromRGBA(17, 17, 19, 186);
+    private static final Color WINDOW_ACTIVE = Color.fromRGBA(22, 22, 25, 206);
     private static final Color HEADER = Color.fromRGBA(34, 34, 38, 232);
-    private static final Color SURFACE = Color.fromRGBA(25, 25, 28, 184);
-    private static final Color SURFACE_DARK = Color.fromRGBA(12, 12, 14, 126);
-    private static final Color BORDER = Color.fromRGBA(82, 82, 92, 222);
-    private static final Color BORDER_SOFT = Color.fromRGBA(54, 54, 62, 180);
+    private static final Color SURFACE = Color.fromRGBA(25, 25, 28, 164);
+    private static final Color SURFACE_HOVER = Color.fromRGBA(34, 34, 38, 186);
+    private static final Color SURFACE_DARK = Color.fromRGBA(12, 12, 14, 98);
+    private static final Color BORDER = Color.fromRGBA(82, 82, 92, 196);
+    private static final Color BORDER_SOFT = Color.fromRGBA(54, 54, 62, 120);
     private static final Color TEXT = Color.fromRGB(236, 232, 224);
     private static final Color MUTED = Color.fromRGB(154, 150, 142);
     private static final Color FAINT = Color.fromRGB(96, 94, 90);
@@ -65,6 +67,8 @@ public final class ModulePanel extends Component {
     private float dragOffsetX;
     private float dragOffsetY;
     private NumberDrag activeNumberDrag;
+    private float mouseX = -Float.MAX_VALUE;
+    private float mouseY = -Float.MAX_VALUE;
 
     public ModulePanel(final ModuleManager modules, final ClientConfig config) {
         this.modules = modules;
@@ -145,6 +149,8 @@ public final class ModulePanel extends Component {
 
     @Override
     protected boolean onComponentMouseMove(final MouseMoveEvent event, final Rectangle bounds) {
+        this.mouseX = event.x();
+        this.mouseY = event.y();
         if (this.draggingCategory != null) {
             WindowState window = this.windows.get(this.draggingCategory);
             float windowWidth = windowWidth(bounds.size());
@@ -159,6 +165,7 @@ public final class ModulePanel extends Component {
             this.rivet().recalculateNextFrame();
             return true;
         }
+        this.rivet().recalculateNextFrame();
         return false;
     }
 
@@ -201,14 +208,15 @@ public final class ModulePanel extends Component {
         WindowState window = this.windows.get(category);
         boolean active = this.zOrder.getLast() == category;
 
-        renderer.fillRect(layout.bounds().x() + 3, layout.bounds().y() + 3, layout.bounds().width(), layout.bounds().height(), SHADOW);
+        renderer.fillRect(layout.bounds().x() + 2, layout.bounds().y() + 3, layout.bounds().width(), layout.bounds().height(), SHADOW);
         renderer.fillRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), active ? WINDOW_ACTIVE : WINDOW);
         renderer.outlineRect(layout.bounds().x(), layout.bounds().y(), layout.bounds().width(), layout.bounds().height(), 1, active ? BORDER : BORDER_SOFT);
         renderer.fillRect(layout.header().x(), layout.header().y(), layout.header().width(), layout.header().height(), HEADER);
         renderer.fillRect(layout.header().x(), layout.header().y(), 3, layout.header().height(), ACTIVE);
+        renderer.fillRect(layout.header().x() + 8, layout.header().y() + 4, 10, 1, FAINT);
+        renderer.fillRect(layout.header().x() + 8, layout.header().y() + 7, 10, 1, FAINT);
 
-        text(renderer, category.displayName(), layout.header().x() + 9, layout.header().y() + 14, TEXT);
-        text(renderer, Integer.toString(this.modules.byCategory(category).size()), layout.header().maxX() - 14, layout.header().y() + 14, MUTED);
+        text(renderer, category.displayName(), layout.header().x() + 22, layout.header().y() + 14, TEXT);
 
         renderer.scissor(layout.viewport().x(), layout.viewport().y(), layout.viewport().width(), layout.viewport().height(), () -> {
             float y = layout.contentY() - window.scroll();
@@ -222,11 +230,12 @@ public final class ModulePanel extends Component {
         Rectangle moduleHeader = new Rectangle(layout.contentX(), y, layout.contentWidth(), MODULE_HEADER_HEIGHT);
         boolean expanded = this.isExpanded(module);
 
-        renderer.fillRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), SURFACE);
-        renderer.outlineRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), 1, BORDER_SOFT);
+        boolean hovered = moduleHeader.contains(this.mouseX, this.mouseY);
+        renderer.fillRect(moduleHeader.x(), moduleHeader.y(), moduleHeader.width(), moduleHeader.height(), hovered ? SURFACE_HOVER : SURFACE);
+        renderer.line(moduleHeader.x(), moduleHeader.maxY(), moduleHeader.maxX(), moduleHeader.maxY(), 1, BORDER_SOFT);
         text(renderer, expanded ? "-" : "+", moduleHeader.x() + 7, moduleHeader.y() + 16, MUTED);
         text(renderer, module.name(), moduleHeader.x() + 20, moduleHeader.y() + 16, TEXT);
-        this.renderSwitch(renderer, moduleHeader.maxX() - SWITCH_WIDTH - 7, moduleHeader.y() + 7, module.enabled());
+        this.renderSwitch(renderer, moduleHeader.maxX() - SWITCH_WIDTH - 8, moduleHeader.y() + 8, module.enabled());
 
         float nextY = moduleHeader.maxY();
         if (!expanded) {
@@ -236,39 +245,37 @@ public final class ModulePanel extends Component {
         List<Setting<?>> settings = module.settings();
         for (int index = 0; index < settings.size(); index++) {
             Setting<?> setting = settings.get(index);
-            Rectangle row = new Rectangle(layout.contentX(), nextY, layout.contentWidth(), SETTING_ROW_HEIGHT);
+            Rectangle row = new Rectangle(layout.contentX(), nextY, layout.contentWidth(), settingRowHeight(setting));
             renderer.fillRect(row.x(), row.y(), row.width(), row.height(), index % 2 == 0 ? SURFACE_DARK : WINDOW);
-            renderer.line(row.x() + 12, row.y(), row.maxX() - 12, row.y(), 1, BORDER_SOFT);
             this.renderSetting(renderer, row, setting);
             nextY = row.maxY();
         }
-        renderer.line(layout.contentX(), nextY, layout.contentX() + layout.contentWidth(), nextY, 1, BORDER_SOFT);
         return nextY + GAP;
     }
 
     private void renderSetting(final Renderer renderer, final Rectangle row, final Setting<?> setting) {
         if (setting instanceof BooleanSetting bool) {
-            text(renderer, setting.name(), row.x() + 9, row.y() + 18, MUTED);
-            this.renderSwitch(renderer, row.maxX() - SWITCH_WIDTH - 9, row.y() + 9, bool.value());
+            text(renderer, setting.name(), row.x() + 9, row.y() + 15, MUTED);
+            this.renderSwitch(renderer, row.maxX() - SWITCH_WIDTH - 9, row.y() + 8, bool.value());
             return;
         }
         if (setting instanceof NumberSetting number) {
             text(renderer, setting.name(), row.x() + 9, row.y() + 13, MUTED);
-            text(renderer, SettingControls.displayValue(setting), row.maxX() - 32, row.y() + 13, TEXT);
+            textRight(renderer, SettingControls.displayValue(setting), row.maxX() - 9, row.y() + 13, TEXT);
             Rectangle slider = sliderBounds(row);
             renderer.fillRect(slider.x(), slider.y(), slider.width(), slider.height(), TRACK);
             float fill = slider.width() * numberProgress(number);
             renderer.fillRect(slider.x(), slider.y(), fill, slider.height(), ACTIVE);
-            renderer.fillRect(slider.x() + fill - 1, slider.y() - 2, 3, slider.height() + 4, TEXT);
+            renderer.fillRect(slider.x() + fill - 1, slider.y() - 2, 2, slider.height() + 4, TEXT);
             return;
         }
-        text(renderer, setting.name(), row.x() + 9, row.y() + 18, MUTED);
-        text(renderer, SettingControls.displayValue(setting), row.x() + 88, row.y() + 18, TEXT);
+        text(renderer, setting.name(), row.x() + 9, row.y() + 15, MUTED);
+        textRight(renderer, SettingControls.displayValue(setting), row.maxX() - 9, row.y() + 15, TEXT);
     }
 
     private void renderSwitch(final Renderer renderer, final float x, final float y, final boolean enabled) {
         renderer.fillRect(x, y, SWITCH_WIDTH, SWITCH_HEIGHT, enabled ? ACTIVE : OFF);
-        renderer.fillRect(x + (enabled ? SWITCH_WIDTH - 8 : 2), y + 2, 6, 6, TEXT);
+        renderer.fillRect(x + (enabled ? SWITCH_WIDTH - 7 : 2), y + 2, 5, 5, TEXT);
     }
 
     private ClickTarget findTarget(final WindowLayout layout, final float mouseX, final float mouseY) {
@@ -286,7 +293,7 @@ public final class ModulePanel extends Component {
             y = moduleHeader.maxY();
             if (this.isExpanded(module)) {
                 for (Setting<?> setting : module.settings()) {
-                    Rectangle row = new Rectangle(layout.contentX(), y, layout.contentWidth(), SETTING_ROW_HEIGHT);
+                    Rectangle row = new Rectangle(layout.contentX(), y, layout.contentWidth(), settingRowHeight(setting));
                     if (row.contains(mouseX, mouseY)) {
                         Rectangle control = setting instanceof NumberSetting ? sliderBounds(row) : row;
                         return new ClickTarget(TargetKind.SETTING, module, setting, control);
@@ -316,7 +323,9 @@ public final class ModulePanel extends Component {
         for (Module module : this.modules.byCategory(category)) {
             height += MODULE_HEADER_HEIGHT + GAP;
             if (this.isExpanded(module)) {
-                height += module.settings().size() * SETTING_ROW_HEIGHT;
+                for (Setting<?> setting : module.settings()) {
+                    height += settingRowHeight(setting);
+                }
             }
         }
         return Math.max(height, MODULE_HEADER_HEIGHT);
@@ -369,7 +378,7 @@ public final class ModulePanel extends Component {
     }
 
     private static Rectangle sliderBounds(final Rectangle row) {
-        return new Rectangle(row.x() + 9, row.y() + 20, row.width() - 18, SLIDER_HEIGHT);
+        return new Rectangle(row.x() + 9, row.y() + 23, row.width() - 18, SLIDER_HEIGHT);
     }
 
     private static float windowWidth(final Size size) {
@@ -388,6 +397,14 @@ public final class ModulePanel extends Component {
 
     private void text(final Renderer renderer, final String text, final float x, final float baselineY, final Color color) {
         renderer.text(this.rivet().backend().shapeText(text, color), x, baselineY, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
+    }
+
+    private void textRight(final Renderer renderer, final String text, final float rightX, final float baselineY, final Color color) {
+        renderer.text(this.rivet().backend().shapeText(text, color), rightX, baselineY, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.BASELINE);
+    }
+
+    private static float settingRowHeight(final Setting<?> setting) {
+        return setting instanceof NumberSetting ? NUMBER_ROW_HEIGHT : BOOLEAN_ROW_HEIGHT;
     }
 
     private static float clamp(final double value, final double min, final double max) {
