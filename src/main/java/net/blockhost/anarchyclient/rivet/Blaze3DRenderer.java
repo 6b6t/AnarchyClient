@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.rivet;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.RenderCommand;
 import net.lenni0451.rivet.backend.render.RenderElement;
@@ -8,8 +7,13 @@ import net.lenni0451.rivet.backend.render.RenderList;
 import net.lenni0451.rivet.backend.render.TransformCommand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
+import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+
+import java.util.List;
 
 public final class Blaze3DRenderer {
 
@@ -132,6 +136,10 @@ public final class Blaze3DRenderer {
     }
 
     private void fillRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final Color color) {
+        if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
+            return;
+        }
+
         float radius = Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
         if (radius <= 0) {
             this.fill(x, y, width, height, color);
@@ -140,13 +148,17 @@ public final class Blaze3DRenderer {
 
         this.fill(x + radius, y, width - radius * 2, height, color);
         this.fill(x, y + radius, width, height - radius * 2, color);
-        this.fillCircle(x + radius, y + radius, radius, color);
-        this.fillCircle(x + width - radius, y + radius, radius, color);
-        this.fillCircle(x + radius, y + height - radius, radius, color);
-        this.fillCircle(x + width - radius, y + height - radius, radius, color);
+        this.fillArc(x + radius, y + radius, radius, GuiShapeGeometry.HALF_CIRCLE, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, color);
+        this.fillArc(x + width - radius, y + radius, radius, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.FULL_CIRCLE, color);
+        this.fillArc(x + width - radius, y + height - radius, radius, 0, GuiShapeGeometry.QUARTER_CIRCLE, color);
+        this.fillArc(x + radius, y + height - radius, radius, GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.HALF_CIRCLE, color);
     }
 
     private void outlineRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final float outlineWidth, final Color color) {
+        if (width <= 0 || height <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
+            return;
+        }
+
         float radius = Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
         if (radius <= 0) {
             this.outlineRect(x, y, width, height, outlineWidth, color);
@@ -157,13 +169,17 @@ public final class Blaze3DRenderer {
         this.fill(x + radius, y + height - outlineWidth, width - radius * 2, outlineWidth, color);
         this.fill(x, y + radius, outlineWidth, height - radius * 2, color);
         this.fill(x + width - outlineWidth, y + radius, outlineWidth, height - radius * 2, color);
-        this.outlineCircle(x + radius, y + radius, radius, outlineWidth, color);
-        this.outlineCircle(x + width - radius, y + radius, radius, outlineWidth, color);
-        this.outlineCircle(x + radius, y + height - radius, radius, outlineWidth, color);
-        this.outlineCircle(x + width - radius, y + height - radius, radius, outlineWidth, color);
+        this.outlineArc(x + radius, y + radius, radius, outlineWidth, GuiShapeGeometry.HALF_CIRCLE, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, color);
+        this.outlineArc(x + width - radius, y + radius, radius, outlineWidth, GuiShapeGeometry.HALF_CIRCLE + GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.FULL_CIRCLE, color);
+        this.outlineArc(x + width - radius, y + height - radius, radius, outlineWidth, 0, GuiShapeGeometry.QUARTER_CIRCLE, color);
+        this.outlineArc(x + radius, y + height - radius, radius, outlineWidth, GuiShapeGeometry.QUARTER_CIRCLE, GuiShapeGeometry.HALF_CIRCLE, color);
     }
 
     private void outlineRect(final float x, final float y, final float width, final float height, final float outlineWidth, final Color color) {
+        if (width <= 0 || height <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
+            return;
+        }
+
         this.fill(x, y, width, outlineWidth, color);
         this.fill(x, y + height - outlineWidth, width, outlineWidth, color);
         this.fill(x, y, outlineWidth, height, color);
@@ -171,92 +187,89 @@ public final class Blaze3DRenderer {
     }
 
     private void fillCircle(final float x, final float y, final float radius, final Color color) {
-        int minY = floor(y - radius);
-        int maxY = ceil(y + radius);
-        for (int py = minY; py < maxY; py++) {
-            double dy = py + 0.5D - y;
-            double halfWidth = Math.sqrt(Math.max(0, radius * radius - dy * dy));
-            this.fill((float) (x - halfWidth), py, (float) (halfWidth * 2), 1, color);
+        if (radius <= 0 || color.getAlpha() <= 0) {
+            return;
         }
+        this.submitShape(GuiShapeGeometry.filledCircle(x, y, radius, argb(color)));
     }
 
     private void outlineCircle(final float x, final float y, final float radius, final float outlineWidth, final Color color) {
-        if (outlineWidth <= 0) {
+        if (radius <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        int samples = Math.max(24, (int) Math.ceil(radius * 8));
-        for (int i = 0; i < samples; i++) {
-            double angle = Math.PI * 2D * i / samples;
-            float px = (float) (x + Math.cos(angle) * radius);
-            float py = (float) (y + Math.sin(angle) * radius);
-            this.fill(px - outlineWidth / 2F, py - outlineWidth / 2F, outlineWidth, outlineWidth, color);
-        }
+        this.outlineArc(x, y, radius, outlineWidth, 0, GuiShapeGeometry.FULL_CIRCLE, color);
     }
 
     private void fillTriangle(final float x1, final float y1, final float x2, final float y2, final float x3, final float y3, final Color color) {
-        int minY = floor(Math.min(y1, Math.min(y2, y3)));
-        int maxY = ceil(Math.max(y1, Math.max(y2, y3)));
-        for (int py = minY; py < maxY; py++) {
-            float y = py + 0.5F;
-            float[] intersections = new float[3];
-            int count = 0;
-            count = addIntersection(intersections, count, x1, y1, x2, y2, y);
-            count = addIntersection(intersections, count, x2, y2, x3, y3, y);
-            count = addIntersection(intersections, count, x3, y3, x1, y1, y);
-            if (count >= 2) {
-                float minX = Math.min(intersections[0], intersections[1]);
-                float maxX = Math.max(intersections[0], intersections[1]);
-                this.fill(minX, py, Math.max(1, maxX - minX), 1, color);
-            }
+        if (color.getAlpha() <= 0) {
+            return;
         }
+        this.submitShape(GuiShapeGeometry.filledTriangle(x1, y1, x2, y2, x3, y3, argb(color)));
     }
 
     private void line(final float x1, final float y1, final float x2, final float y2, final float width, final Color color) {
-        if (Math.abs(y1 - y2) < 0.001F) {
-            this.fill(Math.min(x1, x2), y1 - width / 2F, Math.abs(x2 - x1), width, color);
+        if (width <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        if (Math.abs(x1 - x2) < 0.001F) {
-            this.fill(x1 - width / 2F, Math.min(y1, y2), width, Math.abs(y2 - y1), color);
-            return;
-        }
-
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        int steps = Math.max(1, (int) Math.ceil(Math.max(Math.abs(dx), Math.abs(dy))));
-        for (int i = 0; i <= steps; i++) {
-            float progress = (float) i / steps;
-            this.fill(x1 + dx * progress - width / 2F, y1 + dy * progress - width / 2F, width, width, color);
-        }
+        this.submitShape(GuiShapeGeometry.line(x1, y1, x2, y2, width, argb(color)));
     }
 
     private void fillGradientRect(final float x, final float y, final float width, final float height, final Color ctl, final Color cbl, final Color cbr, final Color ctr) {
-        if (ctl.equals(ctr) && cbl.equals(cbr)) {
-            this.graphics.fillGradient(floor(x), floor(y), ceil(x + width), ceil(y + height), argb(ctl), argb(cbl));
+        if (width <= 0 || height <= 0) {
             return;
         }
-        int rows = Math.max(1, ceil(height));
-        for (int row = 0; row < rows; row++) {
-            float progress = rows == 1 ? 0 : (float) row / (rows - 1);
-            Color left = Color.interpolate(progress, ctl, cbl);
-            Color right = Color.interpolate(progress, ctr, cbr);
-            this.fill(x, y + row, width, 1, Color.interpolate(0.5F, left, right));
+        if (ctl.getAlpha() <= 0 && cbl.getAlpha() <= 0 && cbr.getAlpha() <= 0 && ctr.getAlpha() <= 0) {
+            return;
         }
+        this.submitShape(GuiShapeGeometry.gradientRect(x, y, width, height, argb(ctl), argb(cbl), argb(cbr), argb(ctr)));
     }
 
     private void fill(final float x, final float y, final float width, final float height, final Color color) {
         if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        this.graphics.fill((RenderPipeline) RenderPipelines.GUI, floor(x), floor(y), ceil(x + width), ceil(y + height), argb(color));
+        this.graphics.fill(RenderPipelines.GUI, floor(x), floor(y), ceil(x + width), ceil(y + height), argb(color));
     }
 
-    private static int addIntersection(final float[] intersections, final int count, final float x1, final float y1, final float x2, final float y2, final float y) {
-        if ((y1 <= y && y2 > y) || (y2 <= y && y1 > y)) {
-            intersections[count] = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
-            return count + 1;
+    private void fillArc(final float x, final float y, final float radius, final float startAngle, final float endAngle, final Color color) {
+        if (radius <= 0 || color.getAlpha() <= 0) {
+            return;
         }
-        return count;
+        this.submitShape(GuiShapeGeometry.filledArc(x, y, radius, startAngle, endAngle, argb(color)));
+    }
+
+    private void outlineArc(final float x, final float y, final float radius, final float outlineWidth,
+                            final float startAngle, final float endAngle, final Color color) {
+        if (radius <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
+            return;
+        }
+        this.submitShape(GuiShapeGeometry.ringArc(x, y, radius, Math.max(0, radius - outlineWidth), startAngle, endAngle, argb(color)));
+    }
+
+    private void submitShape(final List<GuiShapeGeometry.Vertex> vertices) {
+        if (vertices.isEmpty()) {
+            return;
+        }
+
+        Matrix3x2f pose = new Matrix3x2f(this.graphics.pose());
+        ScreenRectangle scissorArea = this.currentScissorArea();
+        ScreenRectangle bounds = GuiShapeGeometry.bounds(vertices, pose, scissorArea);
+        if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) {
+            return;
+        }
+
+        this.graphics.guiRenderState.addGuiElement(new Blaze3DGuiShapeRenderState(
+                RenderPipelines.GUI,
+                TextureSetup.noTexture(),
+                pose,
+                vertices,
+                scissorArea,
+                bounds
+        ));
+    }
+
+    private ScreenRectangle currentScissorArea() {
+        return this.graphics.scissorStack.peek();
     }
 
     private static int floor(final float value) {

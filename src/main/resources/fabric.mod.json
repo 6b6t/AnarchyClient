@@ -18,6 +18,10 @@
       "net.blockhost.anarchyclient.AnarchyClient"
     ]
   },
+  "accessWidener": "anarchyclient.accesswidener",
+  "mixins": [
+    "anarchyclient.mixins.json"
+  ],
   "depends": {
     "fabric-api": "*",
     "fabricloader": ">=0.19.2",

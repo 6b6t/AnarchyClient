@@ -49,6 +49,8 @@ dependencies {
 }
 
 loom {
+    accessWidenerPath.set(file("src/main/resources/anarchyclient.accesswidener"))
+
     runConfigs.all {
         ideConfigGenerated(true)
         runDir = "run"
