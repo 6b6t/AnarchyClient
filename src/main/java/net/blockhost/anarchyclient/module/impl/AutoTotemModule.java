@@ -4,16 +4,24 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerInput;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.List;
+
 public final class AutoTotemModule extends Module {
 
+    private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("mode")
+            .name("Mode")
+            .defaultValue("Totem")
+            .addAllOptions(List.of("Totem", "Crystal", "Golden Apple", "Shield"))
+            .build()));
     private final NumberSetting healthThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("health_threshold")
             .name("Health")
@@ -25,6 +33,24 @@ public final class AutoTotemModule extends Module {
     private final BooleanSetting includeAbsorption = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("include_absorption")
             .name("Absorption")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting emergencyTotem = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("emergency_totem")
+            .name("Emergency")
+            .defaultValue(true)
+            .build()));
+    private final NumberSetting fallDistanceThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("fall_distance_threshold")
+            .name("Fall")
+            .defaultValue(12.0)
+            .min(0.0)
+            .max(80.0)
+            .step(1.0)
+            .build()));
+    private final BooleanSetting fireTotem = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("fire_totem")
+            .name("Fire")
             .defaultValue(true)
             .build()));
     private int cooldownTicks;
@@ -40,44 +66,51 @@ public final class AutoTotemModule extends Module {
             return;
         }
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || player.containerMenu == null || player.inventoryMenu == null) {
-            return;
-        }
-        if (client.screen != null || player.containerMenu.containerId != InventoryMenu.CONTAINER_ID) {
+        if (player == null || !InventoryActions.canUseInventoryMenu(client, player)) {
             return;
         }
 
-        float health = player.getHealth();
-        if (this.includeAbsorption.value()) {
-            health += player.getAbsorptionAmount();
-        }
-        if (health > this.healthThreshold.value()) {
-            return;
-        }
-        if (player.getOffhandItem().is(Items.TOTEM_OF_UNDYING)) {
+        Item desiredItem = this.desiredItem(player);
+        if (player.getOffhandItem().is(desiredItem)) {
             return;
         }
 
-        int inventorySlot = this.findTotemSlot(player.getInventory());
+        int inventorySlot = this.findItemSlot(player.getInventory(), desiredItem);
         if (inventorySlot < 0) {
             return;
         }
 
-        int menuSlot = toInventoryMenuSlot(inventorySlot);
-        if (menuSlot < 0) {
-            return;
+        if (InventoryActions.moveToOffhand(client, player, inventorySlot)) {
+            this.cooldownTicks = 5;
         }
-
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, menuSlot, 0, ContainerInput.PICKUP, player);
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, InventoryMenu.SHIELD_SLOT, 0, ContainerInput.PICKUP, player);
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, menuSlot, 0, ContainerInput.PICKUP, player);
-        this.cooldownTicks = 5;
     }
 
-    private int findTotemSlot(final Inventory inventory) {
+    private Item desiredItem(final LocalPlayer player) {
+        if (this.emergencyTotem.value() && this.needsTotem(player)) {
+            return Items.TOTEM_OF_UNDYING;
+        }
+        return switch (this.mode.value()) {
+            case "Crystal" -> Items.END_CRYSTAL;
+            case "Golden Apple" -> Items.GOLDEN_APPLE;
+            case "Shield" -> Items.SHIELD;
+            default -> Items.TOTEM_OF_UNDYING;
+        };
+    }
+
+    private boolean needsTotem(final LocalPlayer player) {
+        float health = player.getHealth();
+        if (this.includeAbsorption.value()) {
+            health += player.getAbsorptionAmount();
+        }
+        return health <= this.healthThreshold.value()
+                || player.fallDistance >= this.fallDistanceThreshold.value()
+                || this.fireTotem.value() && player.isOnFire();
+    }
+
+    private int findItemSlot(final Inventory inventory, final Item item) {
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (stack.is(Items.TOTEM_OF_UNDYING)) {
+            if (stack.is(item)) {
                 return slot;
             }
         }
@@ -85,12 +118,6 @@ public final class AutoTotemModule extends Module {
     }
 
     static int toInventoryMenuSlot(final int inventorySlot) {
-        if (Inventory.isHotbarSlot(inventorySlot)) {
-            return InventoryMenu.USE_ROW_SLOT_START + inventorySlot;
-        }
-        if (inventorySlot >= Inventory.getSelectionSize() && inventorySlot < Inventory.INVENTORY_SIZE) {
-            return InventoryMenu.INV_SLOT_START + inventorySlot - Inventory.getSelectionSize();
-        }
-        return -1;
+        return InventoryActions.toInventoryMenuSlot(inventorySlot);
     }
 }

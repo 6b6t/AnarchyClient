@@ -6,6 +6,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -40,6 +41,31 @@ public final class EspModule extends Module {
             .id("passive_mobs")
             .name("Passives")
             .defaultValue(false)
+            .build()));
+    private final BooleanSetting invisibles = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("invisibles")
+            .name("Invisibles")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting ignoreFriends = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("ignore_friends")
+            .name("Friends")
+            .defaultValue(true)
+            .build()));
+    private final StringSetting friends = this.setting(StringSetting.from(StringSetting.builder()
+            .id("friends")
+            .name("Friend List")
+            .defaultValue("")
+            .build()));
+    private final BooleanSetting ignoreTeams = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("ignore_teams")
+            .name("Teams")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting antiBot = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("anti_bot")
+            .name("Anti Bot")
+            .defaultValue(true)
             .build()));
     private final BooleanSetting lineOfSightFade = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("line_of_sight_fade")
@@ -97,15 +123,13 @@ public final class EspModule extends Module {
     }
 
     boolean shouldRender(final Entity entity, final Player player) {
-        if (!EntityTargeting.isValidLivingTarget(entity, player)) {
-            return false;
-        }
-        return this.players.value() && EntityTargeting.isPlayer(entity)
-                || this.hostileMobs.value() && EntityTargeting.isHostile(entity)
-                || this.passiveMobs.value() && EntityTargeting.isPassive(entity);
+        return EntityTargeting.isAllowedTarget(entity, player, this.targetOptions());
     }
 
     private WorldLineRenderer.Color color(final Entity entity, final double distance, final int alpha) {
+        if (EntityTargeting.isFriend(entity, this.friends.value())) {
+            return new WorldLineRenderer.Color(98, 170, 255, alpha);
+        }
         return switch (this.colorMode.value()) {
             case "Distance" -> {
                 int red = (int) Math.min(255, distance * 3);
@@ -123,5 +147,18 @@ public final class EspModule extends Module {
                 yield new WorldLineRenderer.Color(245, 205, 92, alpha);
             }
         };
+    }
+
+    private EntityTargeting.Options targetOptions() {
+        return new EntityTargeting.Options(
+                this.players.value(),
+                this.hostileMobs.value(),
+                this.passiveMobs.value(),
+                this.invisibles.value(),
+                this.ignoreFriends.value(),
+                this.friends.value(),
+                this.ignoreTeams.value(),
+                this.antiBot.value()
+        );
     }
 }

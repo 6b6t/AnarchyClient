@@ -13,6 +13,16 @@ public final class AutoSprintModule extends Module {
             .name("Keep Sprint")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting omniSprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("omni_sprint")
+            .name("Omni")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting allowUsingItem = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("allow_using_item")
+            .name("Use Item")
+            .defaultValue(false)
+            .build()));
 
     public AutoSprintModule() {
         super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT);
@@ -24,7 +34,13 @@ public final class AutoSprintModule extends Module {
         if (player == null || player.input == null) {
             return;
         }
-        if (player.input.hasForwardImpulse() && !player.isCrouching() && !player.isUsingItem() || this.keepSprint.value() && player.isSprinting()) {
+        boolean moving = this.omniSprint.value()
+                ? player.input.keyPresses.forward() || player.input.keyPresses.backward() || player.input.keyPresses.left() || player.input.keyPresses.right()
+                : player.input.hasForwardImpulse();
+        boolean blocked = player.isCrouching()
+                || player.isInWater()
+                || !this.allowUsingItem.value() && player.isUsingItem();
+        if ((moving || this.keepSprint.value() && player.isSprinting()) && !blocked) {
             player.setSprinting(true);
         }
     }

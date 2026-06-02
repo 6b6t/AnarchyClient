@@ -31,6 +31,14 @@ public final class ChatSpammerModule extends Module {
             .max(300.0)
             .step(5.0)
             .build()));
+    private final NumberSetting jitterSeconds = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("jitter_seconds")
+            .name("Jitter")
+            .defaultValue(3.0)
+            .min(0.0)
+            .max(60.0)
+            .step(1.0)
+            .build()));
     private final Random random = new Random();
     private int cooldownTicks;
     private int messageIndex;
@@ -53,7 +61,7 @@ public final class ChatSpammerModule extends Module {
             this.schedule();
             return;
         }
-        client.getConnection().sendChat(this.nextMessage(parsedMessages));
+        ChatActions.send(client, this.nextMessage(parsedMessages));
         this.schedule();
     }
 
@@ -79,6 +87,7 @@ public final class ChatSpammerModule extends Module {
     }
 
     private void schedule() {
-        this.cooldownTicks = Math.max(1, (int) Math.round(this.intervalSeconds.value() * 20));
+        double jitter = this.jitterSeconds.value() <= 0.0 ? 0.0 : this.random.nextDouble() * this.jitterSeconds.value() * 2.0 - this.jitterSeconds.value();
+        this.cooldownTicks = Math.max(1, (int) Math.round((this.intervalSeconds.value() + jitter) * 20));
     }
 }

@@ -5,15 +5,18 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public final class KillAuraModule extends Module {
 
@@ -37,7 +40,31 @@ public final class KillAuraModule extends Module {
             .id("priority")
             .name("Priority")
             .defaultValue("Nearest")
-            .addAllOptions(List.of("Nearest", "Lowest HP"))
+            .addAllOptions(List.of("Nearest", "Lowest HP", "Lowest Armor"))
+            .build()));
+    private final NumberSetting minCps = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("min_cps")
+            .name("Min CPS")
+            .defaultValue(8.0)
+            .min(1.0)
+            .max(20.0)
+            .step(1.0)
+            .build()));
+    private final NumberSetting maxCps = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("max_cps")
+            .name("Max CPS")
+            .defaultValue(12.0)
+            .min(1.0)
+            .max(20.0)
+            .step(1.0)
+            .build()));
+    private final NumberSetting minCharge = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("min_charge")
+            .name("Charge")
+            .defaultValue(0.85)
+            .min(0.0)
+            .max(1.0)
+            .step(0.05)
             .build()));
     private final BooleanSetting players = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("players")
@@ -59,11 +86,56 @@ public final class KillAuraModule extends Module {
             .name("Line Sight")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting invisibles = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("invisibles")
+            .name("Invisibles")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting ignoreFriends = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("ignore_friends")
+            .name("Friends")
+            .defaultValue(true)
+            .build()));
+    private final StringSetting friends = this.setting(StringSetting.from(StringSetting.builder()
+            .id("friends")
+            .name("Friend List")
+            .defaultValue("")
+            .build()));
+    private final BooleanSetting ignoreTeams = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("ignore_teams")
+            .name("Teams")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting antiBot = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("anti_bot")
+            .name("Anti Bot")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("rotate")
+            .name("Rotate")
+            .defaultValue(true)
+            .build()));
+    private final NumberSetting maxTurnDegrees = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("max_turn_degrees")
+            .name("Turn")
+            .defaultValue(45.0)
+            .min(5.0)
+            .max(180.0)
+            .step(5.0)
+            .build()));
+    private final BooleanSetting pauseUsingItem = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("pause_using_item")
+            .name("Use Pause")
+            .defaultValue(true)
+            .build()));
     private final BooleanSetting pauseInGui = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("pause_in_gui")
             .name("Pause GUI")
             .defaultValue(true)
             .build()));
+    private final Random random = new Random();
+    private int attackDelayTicks;
 
     public KillAuraModule() {
         super("kill_aura", "Kill Aura", ModuleCategory.COMBAT);
@@ -78,21 +150,37 @@ public final class KillAuraModule extends Module {
         if (this.pauseInGui.value() && client.screen != null) {
             return;
         }
-        if (player.getAttackStrengthScale(0.0F) < 1.0F) {
+        if (this.pauseUsingItem.value() && player.isUsingItem()) {
             return;
         }
 
         Optional<LivingEntity> target = this.findTarget(client, player);
-        target.ifPresent(entity -> {
-            client.gameMode.attack(player, entity);
-            player.swing(InteractionHand.MAIN_HAND);
-        });
+        if (target.isEmpty()) {
+            return;
+        }
+        LivingEntity entity = target.orElseThrow();
+        if (this.rotate.value()) {
+            rotateToward(player, entity, this.maxTurnDegrees.value().floatValue());
+        }
+        if (this.attackDelayTicks > 0) {
+            this.attackDelayTicks--;
+            return;
+        }
+        if (player.getAttackStrengthScale(0.0F) < this.minCharge.value()) {
+            return;
+        }
+
+        client.gameMode.attack(player, entity);
+        player.swing(InteractionHand.MAIN_HAND);
+        this.attackDelayTicks = this.randomAttackDelay();
     }
 
     Optional<LivingEntity> findTarget(final Minecraft client, final LocalPlayer player) {
-        Comparator<LivingEntity> comparator = "Lowest HP".equals(this.priority.value())
-                ? Comparator.comparingDouble(LivingEntity::getHealth).thenComparingDouble(player::distanceToSqr)
-                : Comparator.comparingDouble(player::distanceToSqr);
+        Comparator<LivingEntity> comparator = switch (this.priority.value()) {
+            case "Lowest HP" -> Comparator.comparingDouble(LivingEntity::getHealth).thenComparingDouble(player::distanceToSqr);
+            case "Lowest Armor" -> Comparator.comparingInt(LivingEntity::getArmorValue).thenComparingDouble(player::distanceToSqr);
+            default -> Comparator.comparingDouble(player::distanceToSqr);
+        };
 
         return findTarget(client.level.entitiesForRendering(), player, this.range.value(), this.fov.value(), this.requireLineOfSight.value(), comparator);
     }
@@ -101,8 +189,9 @@ public final class KillAuraModule extends Module {
                                              final double fov, final boolean requireLineOfSight,
                                              final Comparator<LivingEntity> comparator) {
         double rangeSqr = range * range;
+        EntityTargeting.Options options = this.targetOptions();
         return toStream(entities)
-                .filter(entity -> this.acceptsTargetType(entity) && EntityTargeting.isValidLivingTarget(entity, player))
+                .filter(entity -> EntityTargeting.isAllowedTarget(entity, player, options))
                 .map(LivingEntity.class::cast)
                 .filter(entity -> player.distanceToSqr(entity) <= rangeSqr)
                 .filter(entity -> !requireLineOfSight || player.hasLineOfSight(entity))
@@ -110,10 +199,17 @@ public final class KillAuraModule extends Module {
                 .min(comparator);
     }
 
-    private boolean acceptsTargetType(final Entity entity) {
-        return this.players.value() && EntityTargeting.isPlayer(entity)
-                || this.hostileMobs.value() && EntityTargeting.isHostile(entity)
-                || this.passiveMobs.value() && EntityTargeting.isPassive(entity);
+    private EntityTargeting.Options targetOptions() {
+        return new EntityTargeting.Options(
+                this.players.value(),
+                this.hostileMobs.value(),
+                this.passiveMobs.value(),
+                this.invisibles.value(),
+                this.ignoreFriends.value(),
+                this.friends.value(),
+                this.ignoreTeams.value(),
+                this.antiBot.value()
+        );
     }
 
     static boolean isInsideFov(final LocalPlayer player, final LivingEntity target, final double fov) {
@@ -128,5 +224,38 @@ public final class KillAuraModule extends Module {
 
     private static java.util.stream.Stream<Entity> toStream(final Iterable<Entity> entities) {
         return java.util.stream.StreamSupport.stream(entities.spliterator(), false);
+    }
+
+    private int randomAttackDelay() {
+        double lower = Math.min(this.minCps.value(), this.maxCps.value());
+        double upper = Math.max(this.minCps.value(), this.maxCps.value());
+        double cps = lower + this.random.nextDouble() * (upper - lower);
+        return Math.max(1, (int) Math.round(20.0 / cps));
+    }
+
+    private static void rotateToward(final LocalPlayer player, final LivingEntity target, final float maxTurnDegrees) {
+        Vec3 delta = target.getBoundingBox().getCenter().subtract(player.getEyePosition());
+        double horizontal = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
+        float targetYRot = (float) Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0F;
+        float targetXRot = (float) -Math.toDegrees(Math.atan2(delta.y, horizontal));
+        player.setYRot(stepAngle(player.getYRot(), targetYRot, maxTurnDegrees));
+        player.setXRot(stepAngle(player.getXRot(), targetXRot, maxTurnDegrees));
+    }
+
+    private static float stepAngle(final float current, final float target, final float maxStep) {
+        float delta = wrapDegrees(target - current);
+        float clamped = Math.max(-maxStep, Math.min(maxStep, delta));
+        return current + clamped;
+    }
+
+    private static float wrapDegrees(final float value) {
+        float wrapped = value % 360.0F;
+        if (wrapped >= 180.0F) {
+            wrapped -= 360.0F;
+        }
+        if (wrapped < -180.0F) {
+            wrapped += 360.0F;
+        }
+        return wrapped;
     }
 }

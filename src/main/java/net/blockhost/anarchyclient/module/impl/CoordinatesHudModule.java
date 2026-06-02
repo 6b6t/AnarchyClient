@@ -29,6 +29,21 @@ public final class CoordinatesHudModule extends Module {
             .name("Ping")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting showLinkedCoords = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_linked_coords")
+            .name("Linked XYZ")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showSpeed = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_speed")
+            .name("Speed")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showFacing = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_facing")
+            .name("Facing")
+            .defaultValue(true)
+            .build()));
 
     public CoordinatesHudModule() {
         super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD);
@@ -39,14 +54,7 @@ public final class CoordinatesHudModule extends Module {
         if (client.player == null || client.screen instanceof AnarchyClientScreen) {
             return;
         }
-        List<String> lines = this.lines(client);
-        int width = lines.stream().mapToInt(client.font::width).max().orElse(0);
-        int x = this.corner.value().endsWith("Right") ? graphics.guiWidth() - width - 6 : 6;
-        int y = this.corner.value().startsWith("Bottom") ? graphics.guiHeight() - lines.size() * 10 - 6 : 6;
-        graphics.fill(x - 3, y - 3, x + width + 3, y + lines.size() * 10 + 1, 0x66000000);
-        for (int index = 0; index < lines.size(); index++) {
-            graphics.text(client.font, lines.get(index), x, y + index * 10, 0xFFECE8E0, true);
-        }
+        HudText.panel(client, graphics, this.lines(client), this.corner.value(), 0xFFECE8E0);
     }
 
     List<String> lines(final Minecraft client) {
@@ -55,7 +63,19 @@ public final class CoordinatesHudModule extends Module {
             return lines;
         }
         lines.add(String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
+        if (this.showLinkedCoords.value()) {
+            double scale = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? 8.0 : 0.125;
+            String label = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? "OW" : "Nether";
+            lines.add(String.format("%s %.1f %.1f", label, client.player.getX() * scale, client.player.getZ() * scale));
+        }
         lines.add(client.player.level().dimension().identifier().toString());
+        if (this.showFacing.value()) {
+            lines.add("Facing " + client.player.getDirection().getName());
+        }
+        if (this.showSpeed.value()) {
+            double speed = client.player.getDeltaMovement().horizontalDistance() * 20.0;
+            lines.add(String.format("%.2f b/s", speed));
+        }
         if (this.showFps.value()) {
             lines.add(client.getFps() + " FPS");
         }

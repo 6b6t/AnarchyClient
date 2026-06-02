@@ -4,8 +4,10 @@ public enum ModuleCategory {
     COMBAT("Combat"),
     RENDER("Render"),
     MOVEMENT("Movement"),
+    WORLD("World"),
     PLAYER("Player"),
     HUD("HUD"),
+    MISC("Misc"),
     FUN("Fun");
 
     private final String displayName;

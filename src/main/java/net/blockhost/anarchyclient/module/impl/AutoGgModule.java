@@ -40,7 +40,7 @@ public final class AutoGgModule extends Module {
 
         boolean dead = client.player.isDeadOrDying();
         if (dead && !this.wasDead && this.cooldownTicks <= 0) {
-            client.getConnection().sendChat(this.message.value());
+            ChatActions.send(client, this.message.value());
             this.cooldownTicks = (int) Math.round(this.cooldownSeconds.value() * 20);
         }
         this.wasDead = dead;

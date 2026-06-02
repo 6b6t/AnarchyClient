@@ -77,7 +77,9 @@ class ClientConfigTest {
                 ModuleCategory.PLAYER,
                 ModuleCategory.MOVEMENT,
                 ModuleCategory.RENDER,
-                ModuleCategory.COMBAT
+                ModuleCategory.COMBAT,
+                ModuleCategory.WORLD,
+                ModuleCategory.MISC
         ), loaded.categoryOrder().orElseThrow());
         assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
     }
