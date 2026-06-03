@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 
 public final class ParkourModule extends Module {
@@ -23,17 +24,16 @@ public final class ParkourModule extends Module {
     }
 
     @Override
-    public void tick(final Minecraft client) {
+    public void updateInput(final Minecraft client, final ClientInput input) {
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
         }
         LocalPlayer player = client.player;
-        if (player == null || player.input == null || client.screen != null || this.cooldownTicks > 0) {
+        if (player == null || player.input != input || client.screen != null || this.cooldownTicks > 0) {
             return;
         }
-        if (player.onGround() && player.input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, this.lookAhead.value())) {
-            player.input.keyPresses = InputStates.withJump(player.input.keyPresses, true);
-            player.jumpFromGround();
+        if (player.onGround() && input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, this.lookAhead.value())) {
+            input.keyPresses = InputStates.withJump(input.keyPresses, true);
             this.cooldownTicks = 8;
         }
     }

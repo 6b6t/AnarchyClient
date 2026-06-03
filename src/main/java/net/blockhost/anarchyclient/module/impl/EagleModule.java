@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 
 public final class EagleModule extends Module {
@@ -16,32 +17,18 @@ public final class EagleModule extends Module {
             .max(0.9)
             .step(0.05)
             .build()));
-    private boolean pressingSneak;
 
     public EagleModule() {
         super("eagle", "Eagle", ModuleCategory.MOVEMENT);
     }
 
     @Override
-    public void tick(final Minecraft client) {
+    public void updateInput(final Minecraft client, final ClientInput input) {
         LocalPlayer player = client.player;
-        if (player == null || player.input == null || client.screen != null) {
+        if (player == null || player.input != input || client.screen != null) {
             return;
         }
         boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, this.lookAhead.value());
-        player.input.keyPresses = InputStates.withShift(player.input.keyPresses, shouldSneak);
-        if (shouldSneak || this.pressingSneak) {
-            client.options.keyShift.setDown(shouldSneak);
-            this.pressingSneak = shouldSneak;
-        }
-    }
-
-    @Override
-    protected void onDisable() {
-        Minecraft client = Minecraft.getInstance();
-        if (client.options != null) {
-            client.options.keyShift.setDown(false);
-        }
-        this.pressingSneak = false;
+        input.keyPresses = InputStates.withShift(input.keyPresses, input.keyPresses.shift() || shouldSneak);
     }
 }

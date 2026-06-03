@@ -2,7 +2,10 @@
   "required": true,
   "package": "net.blockhost.anarchyclient.mixin",
   "compatibilityLevel": "JAVA_25",
-  "client": [],
+  "client": [
+    "KeyboardInputMixin",
+    "PlayerMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

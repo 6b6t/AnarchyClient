@@ -3,12 +3,15 @@ package net.blockhost.anarchyclient.module;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.world.entity.player.Player;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,22 +55,44 @@ class ModuleManagerTest {
         enabled.enabled(true);
 
         manager.tick(null);
+        manager.updateInput(null, new ClientInput());
         manager.renderWorld(null);
         manager.renderHud(null, null);
 
         assertEquals(1, enabled.ticks);
+        assertEquals(1, enabled.inputUpdates);
         assertEquals(1, enabled.worldRenders);
         assertEquals(1, enabled.hudRenders);
         assertEquals(0, disabled.ticks);
+        assertEquals(0, disabled.inputUpdates);
         assertEquals(0, disabled.worldRenders);
         assertEquals(0, disabled.hudRenders);
+    }
+
+    @Test
+    void returnsTrueWhenEnabledModulePreventsEdgeFall() {
+        ModuleManager manager = new ModuleManager();
+        TestModule enabled = new TestModule("enabled", ModuleCategory.MOVEMENT);
+        TestModule disabled = new TestModule("disabled", ModuleCategory.MOVEMENT);
+        manager.register(enabled);
+        manager.register(disabled);
+        enabled.preventEdgeFall = true;
+        disabled.preventEdgeFall = true;
+        enabled.enabled(true);
+
+        assertTrue(manager.preventEdgeFall(null, null));
+
+        enabled.enabled(false);
+        assertFalse(manager.preventEdgeFall(null, null));
     }
 
     private static final class TestModule extends Module {
 
         private int ticks;
+        private int inputUpdates;
         private int worldRenders;
         private int hudRenders;
+        private boolean preventEdgeFall;
 
         private TestModule(final String id, final ModuleCategory category) {
             super(id, id, category);
@@ -76,6 +101,16 @@ class ModuleManagerTest {
         @Override
         public void tick(final Minecraft client) {
             this.ticks++;
+        }
+
+        @Override
+        public void updateInput(final Minecraft client, final ClientInput input) {
+            this.inputUpdates++;
+        }
+
+        @Override
+        public boolean preventEdgeFall(final Minecraft client, final Player player) {
+            return this.preventEdgeFall;
         }
 
         @Override

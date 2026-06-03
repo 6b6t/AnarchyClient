@@ -3,6 +3,8 @@ package net.blockhost.anarchyclient.module;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +48,23 @@ public final class ModuleManager {
                 module.tick(client);
             }
         }
+    }
+
+    public void updateInput(final Minecraft client, final ClientInput input) {
+        for (Module module : this.modules.values()) {
+            if (module.enabled()) {
+                module.updateInput(client, input);
+            }
+        }
+    }
+
+    public boolean preventEdgeFall(final Minecraft client, final Player player) {
+        for (Module module : this.modules.values()) {
+            if (module.enabled() && module.preventEdgeFall(client, player)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void renderWorld(final LevelRenderContext context) {
