@@ -59,41 +59,53 @@ void main() {
     float rim = 1.0 - smoothstep(0.0, 0.040, edge);
 
     float seconds = GameTime * 1200.0;
-    vec2 cellSize = vec2(4.0, 7.5);
+    vec2 cellSize = vec2(3.7, 7.1);
     vec2 gridPosition = panelPosition / cellSize;
     vec2 cell = floor(gridPosition);
     vec2 cellUv = fract(gridPosition);
 
     float columnSeed = hash(vec2(cell.x, 19.71));
-    float columnEnabled = step(0.13, columnSeed);
-    float speed = 4.8 + columnSeed * 6.4;
-    float period = 15.0 + columnSeed * 21.0;
-    float trailLength = 7.0 + columnSeed * 10.0;
-    float phase = mod(seconds * speed - cell.y + columnSeed * period, period);
-    float trail = (1.0 - smoothstep(0.0, trailLength, phase)) * step(phase, trailLength);
-    float head = 1.0 - smoothstep(0.0, 0.86, phase);
+    float laneSeed = hash(vec2(floor(cell.x * 0.37), 77.13));
+    float speed = mix(2.6, 10.8, pow(columnSeed, 1.35));
+    float period = mix(17.0, 49.0, hash(vec2(cell.x, 5.29)));
+    float rowLag = (hash(vec2(cell.x * 2.31, floor(cell.y * 0.23))) - 0.5) * 3.6;
+    float flow = seconds * speed + columnSeed * period + laneSeed * 11.0 + rowLag - cell.y;
+    float streamIndex = floor(flow / period);
+    float phase = flow - streamIndex * period;
 
-    float changeFrame = floor(seconds * (4.0 + columnSeed * 6.0));
-    float glyphSeed = hash(cell + vec2(changeFrame, columnSeed * 41.0));
-    float blinkFrame = floor(seconds * (9.0 + columnSeed * 9.0));
-    float blink = 0.55 + 0.45 * step(0.38, hash(cell + vec2(blinkFrame, 7.0)));
-    float dropouts = step(0.22, hash(cell + vec2(changeFrame * 0.37, 31.0)));
+    float streamSeed = hash(vec2(cell.x * 1.73 + 7.0, streamIndex * 11.13));
+    float streamEnabled = step(0.20, columnSeed) * step(0.26, streamSeed);
+    float trailLength = mix(4.5, 18.0, hash(vec2(streamSeed, columnSeed * 3.17)));
+    float trailFade = exp(-phase / max(1.0, trailLength * 0.43));
+    float trailCutoff = 1.0 - smoothstep(trailLength, trailLength + 5.0, phase);
+    float trail = trailFade * trailCutoff;
+    float head = pow(1.0 - smoothstep(0.0, 0.95, phase), 2.2);
+
+    float glyphFrame = floor(seconds * mix(1.8, 5.8, hash(vec2(cell.x, streamSeed))) + streamIndex * 7.0);
+    float glyphSeed = hash(cell * vec2(1.0, 1.37) + vec2(glyphFrame, streamSeed * 41.0));
+    float blinkFrame = floor(seconds * mix(6.0, 17.0, hash(vec2(streamSeed, 9.0))) + cell.y * 0.11);
+    float blink = 0.42 + 0.58 * step(0.30, hash(cell + vec2(blinkFrame, streamIndex * 2.0)));
+    float dropout = step(0.18 + streamSeed * 0.22, hash(cell + vec2(glyphFrame * 0.41, 31.0)));
     float glyph = glyphMask(cellUv, glyphSeed);
 
-    float rain = glyph * trail * blink * dropouts * columnEnabled * edgeFade;
-    float headRain = glyph * head * columnEnabled * edgeFade;
-    float columnMist = trail * columnEnabled * edgeFade * (0.035 + hash(cell + vec2(3.0, changeFrame)) * 0.045);
+    float ghostFrame = floor(seconds * 1.35 + laneSeed * 19.0);
+    float ghost = glyph * step(0.92, hash(cell + vec2(ghostFrame, 93.0))) * edgeFade;
+    float rain = glyph * trail * blink * dropout * streamEnabled * edgeFade;
+    float headRain = glyph * head * streamEnabled * edgeFade;
+    float laneCore = 1.0 - smoothstep(0.23, 0.48, abs(cellUv.x - 0.50));
+    float columnMist = (trail * streamEnabled * laneCore * 0.045 + ghost * 0.12) * edgeFade;
 
     vec3 matrixDark = vec3(0.0, 0.045, 0.018);
-    vec3 matrixGreen = vec3(0.02, 0.92, 0.27);
-    vec3 headGreen = vec3(0.74, 1.0, 0.72);
+    vec3 matrixGreen = mix(vec3(0.00, 0.62, 0.18), vec3(0.05, 1.0, 0.34), columnSeed);
+    vec3 headGreen = mix(vec3(0.55, 1.0, 0.55), vec3(0.88, 1.0, 0.78), streamSeed);
 
     vec3 shaded = color.rgb;
-    shaded = mix(shaded, matrixDark, 0.28);
+    shaded = mix(shaded, matrixDark, 0.32);
     shaded += matrixGreen * columnMist;
-    shaded += matrixGreen * rain * 0.58;
-    shaded += headGreen * headRain * 0.72;
-    shaded += matrixGreen * rim * 0.08;
+    shaded += matrixGreen * rain * (0.42 + streamSeed * 0.30);
+    shaded += matrixGreen * ghost * 0.10;
+    shaded += headGreen * headRain * 0.96;
+    shaded += matrixGreen * rim * 0.055;
     shaded *= 0.92 + edgeFade * 0.08;
 
     fragColor = vec4(shaded, color.a);
