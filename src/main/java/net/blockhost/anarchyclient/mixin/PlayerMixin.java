@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +14,8 @@ public abstract class PlayerMixin {
 
     @Inject(method = "isStayingOnGroundSurface", at = @At("HEAD"), cancellable = true)
     private void anarchyclient$preventEdgeFall(final CallbackInfoReturnable<Boolean> info) {
-        if (AnarchyClient.MODULES.preventEdgeFall(Minecraft.getInstance(), (Player) (Object) this)) {
+        PreventEdgeFallEvent event = AnarchyClient.MODULES.call(new PreventEdgeFallEvent(Minecraft.getInstance(), (Player) (Object) this));
+        if (event.isCancelled()) {
             info.setReturnValue(true);
         }
     }

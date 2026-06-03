@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.lenni0451.commons.color.Color;
+import net.lenni0451.commons.math.MathUtils;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Button;
@@ -300,7 +301,7 @@ public final class ModulePanel extends Container {
     }
 
     private static float clamp(final double value, final double min, final double max) {
-        return (float) Math.max(min, Math.min(max, value));
+        return (float) MathUtils.clamp(value, min, max);
     }
 
     private static FormattedLabel label(final String text, final Color color) {

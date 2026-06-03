@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.rivet;
 
+import net.lenni0451.commons.math.MathUtils;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.joml.Matrix3x2fc;
 
@@ -229,10 +230,10 @@ final class GuiShapeGeometry {
             maxY = Math.max(maxY, vertex.y());
         }
 
-        int left = floor(minX);
-        int top = floor(minY);
-        int right = ceil(maxX);
-        int bottom = ceil(maxY);
+        int left = MathUtils.floorInt(minX);
+        int top = MathUtils.floorInt(minY);
+        int right = MathUtils.ceilInt(maxX);
+        int bottom = MathUtils.ceilInt(maxY);
         ScreenRectangle transformedBounds = new ScreenRectangle(
                 left,
                 top,
@@ -252,8 +253,8 @@ final class GuiShapeGeometry {
 
         int angleMinimum = angleSpan >= FULL_CIRCLE - EPSILON
                 ? 32
-                : Math.max(4, ceil(angleSpan / (float) (Math.PI / 8D)));
-        int lengthMinimum = ceil(radius * angleSpan / 3F);
+                : Math.max(4, MathUtils.ceilInt(angleSpan / (float) (Math.PI / 8D)));
+        int lengthMinimum = MathUtils.ceilInt(radius * angleSpan / 3F);
         return Math.min(384, Math.max(angleMinimum, lengthMinimum));
     }
 
@@ -378,14 +379,6 @@ final class GuiShapeGeometry {
                 + (second.x() * third.y() - third.x() * second.y())
                 + (third.x() * fourth.y() - fourth.x() * third.y())
                 + (fourth.x() * first.y() - first.x() * fourth.y());
-    }
-
-    private static int floor(final float value) {
-        return (int) Math.floor(value);
-    }
-
-    private static int ceil(final float value) {
-        return (int) Math.ceil(value);
     }
 
     record Vertex(float x, float y, int color) {

@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.rivet;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.lenni0451.commons.color.Color;
+import net.lenni0451.commons.math.MathUtils;
 import net.lenni0451.rivet.backend.render.RenderCommand;
 import net.lenni0451.rivet.backend.render.RenderElement;
 import net.lenni0451.rivet.backend.render.RenderList;
@@ -133,7 +134,7 @@ public final class Blaze3DRenderer {
     }
 
     private void enableScissor(final float x, final float y, final float width, final float height) {
-        this.graphics.enableScissor(floor(x), floor(y), ceil(x + width), ceil(y + height));
+        this.graphics.enableScissor(MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height));
     }
 
     private void fillRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final Color color) {
@@ -209,7 +210,7 @@ public final class Blaze3DRenderer {
             this.submitShape(GuiShapeGeometry.solidRect(x, y, width, height, argb(color)), AnarchyClientRenderPipelines.MATRIX_PANEL, true);
             return;
         }
-        this.graphics.fill(RenderPipelines.GUI, floor(x), floor(y), ceil(x + width), ceil(y + height), argb(color));
+        this.graphics.fill(RenderPipelines.GUI, MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height), argb(color));
     }
 
     private void outlineArc(final float x, final float y, final float radius, final float outlineWidth,
@@ -270,14 +271,6 @@ public final class Blaze3DRenderer {
 
     private ScreenRectangle currentScissorArea() {
         return this.graphics.scissorStack.peek();
-    }
-
-    private static int floor(final float value) {
-        return (int) Math.floor(value);
-    }
-
-    private static int ceil(final float value) {
-        return (int) Math.ceil(value);
     }
 
     private static int argb(final Color color) {

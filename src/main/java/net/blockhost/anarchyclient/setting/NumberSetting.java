@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import net.lenni0451.commons.math.MathUtils;
 
 public final class NumberSetting extends Setting<Double> {
 
@@ -38,7 +39,7 @@ public final class NumberSetting extends Setting<Double> {
 
     @Override
     protected Double sanitize(final Double value) {
-        return Math.max(this.min, Math.min(this.max, value));
+        return MathUtils.clamp(value, this.min, this.max);
     }
 
     @Override

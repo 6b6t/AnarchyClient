@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.lenni0451.commons.math.MathUtils;
 
 import java.math.BigDecimal;
 
@@ -41,7 +42,7 @@ final class SettingControls {
     }
 
     static void setNumberFromProgress(final NumberSetting setting, final double progress) {
-        double clampedProgress = Math.max(0, Math.min(1, progress));
+        double clampedProgress = MathUtils.clamp(progress, 0, 1);
         double raw = setting.min() + (setting.max() - setting.min()) * clampedProgress;
         double step = setting.step();
         if (step > 0) {

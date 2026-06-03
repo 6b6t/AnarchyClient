@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient;
 
 import net.blockhost.anarchyclient.config.ClientConfig;
+import net.blockhost.anarchyclient.event.ClientTickEvent;
+import net.blockhost.anarchyclient.event.HudRenderEvent;
+import net.blockhost.anarchyclient.event.WorldRenderEvent;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
@@ -42,15 +45,15 @@ public final class AnarchyClient implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(MODULES::renderWorld);
+        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(context -> MODULES.call(new WorldRenderEvent(context)));
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
-                (graphics, deltaTracker) -> MODULES.renderHud(Minecraft.getInstance(), graphics));
+                (graphics, deltaTracker) -> MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics)));
     }
 
     private void onClientTick(final Minecraft client) {
         while (this.openMenuKey.consumeClick()) {
             client.setScreen(new AnarchyClientScreen(MODULES, CONFIG));
         }
-        MODULES.tick(client);
+        MODULES.call(new ClientTickEvent(client));
     }
 }

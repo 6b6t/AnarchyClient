@@ -18,6 +18,7 @@ public abstract class Module {
     private final ModuleCategory category;
     private final List<Setting<?>> settings = new ArrayList<>();
     private final List<Setting<?>> settingsView = Collections.unmodifiableList(this.settings);
+    private ActivationListener activationListener;
     private boolean enabled;
 
     protected Module(final String id, final String name, final ModuleCategory category) {
@@ -52,6 +53,9 @@ public abstract class Module {
         } else {
             this.onDisable();
         }
+        if (this.activationListener != null) {
+            this.activationListener.onActivationChanged(this, enabled);
+        }
     }
 
     public final void toggle() {
@@ -65,6 +69,10 @@ public abstract class Module {
     protected final <T extends Setting<?>> T setting(final T setting) {
         this.settings.add(setting);
         return setting;
+    }
+
+    final void activationListener(final ActivationListener activationListener) {
+        this.activationListener = activationListener;
     }
 
     public void tick(final Minecraft client) {
@@ -87,5 +95,10 @@ public abstract class Module {
     }
 
     protected void onDisable() {
+    }
+
+    interface ActivationListener {
+
+        void onActivationChanged(Module module, boolean enabled);
     }
 }

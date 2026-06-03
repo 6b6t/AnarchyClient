@@ -8,6 +8,10 @@ val minecraftVersion = "26.1.2"
 val loaderVersion = "0.19.2"
 val fabricApiVersion = "0.148.2+26.1.2"
 val immutablesVersion = "2.12.2"
+val commonsVersion = "1.9.2"
+val lambdaEventsVersion = "2.4.2"
+val reflectVersion = "1.5.0"
+val asmVersion = "9.10.1"
 val javaVersion = 25
 
 version = "0.0.4"
@@ -28,12 +32,18 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
 
     implementation("com.google.code.gson:gson:2.14.0")
-    implementation("net.lenni0451.commons:core:1.9.2")
-    implementation("net.lenni0451.commons:animation:1.9.2")
+    implementation("net.lenni0451.commons:core:$commonsVersion")
+    implementation("net.lenni0451.commons:animation:$commonsVersion")
+    implementation("net.lenni0451:LambdaEvents:$lambdaEventsVersion")
+    implementation("net.lenni0451:Reflect:$reflectVersion")
+    implementation("org.ow2.asm:asm:$asmVersion")
     implementation("com.github.Lenni0451.rivet:core:40c6f6c3a7")
     include("com.github.Lenni0451.rivet:core:40c6f6c3a7")
-    add("include", "net.lenni0451.commons:core:1.9.2")
-    add("include", "net.lenni0451.commons:animation:1.9.2")
+    add("include", "net.lenni0451.commons:core:$commonsVersion")
+    add("include", "net.lenni0451.commons:animation:$commonsVersion")
+    add("include", "net.lenni0451:LambdaEvents:$lambdaEventsVersion")
+    add("include", "net.lenni0451:Reflect:$reflectVersion")
+    add("include", "org.ow2.asm:asm:$asmVersion")
 
     compileOnly("org.immutables:value-annotations:$immutablesVersion")
     annotationProcessor("org.immutables:value:$immutablesVersion")

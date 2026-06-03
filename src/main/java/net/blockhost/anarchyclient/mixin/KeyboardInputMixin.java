@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.KeyboardInput;
@@ -14,6 +15,6 @@ public abstract class KeyboardInputMixin extends ClientInput {
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void anarchyclient$updateInput(final CallbackInfo info) {
-        AnarchyClient.MODULES.updateInput(Minecraft.getInstance(), this);
+        AnarchyClient.MODULES.call(new ClientInputEvent(Minecraft.getInstance(), this));
     }
 }
