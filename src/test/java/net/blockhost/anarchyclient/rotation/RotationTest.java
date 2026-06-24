@@ -25,4 +25,12 @@ class RotationTest {
         assertEquals(90.0F, new Rotation(0.0F, 120.0F).clampPitch().pitch());
         assertEquals(-90.0F, new Rotation(0.0F, -120.0F).clampPitch().pitch());
     }
+
+    @Test
+    void linearStepMovesAlongCombinedAngle() {
+        Rotation stepped = new Rotation(0.0F, 0.0F).linearStepToward(new Rotation(30.0F, 40.0F), 10.0F);
+
+        assertEquals(6.0F, stepped.yaw(), 0.0001F);
+        assertEquals(8.0F, stepped.pitch(), 0.0001F);
+    }
 }

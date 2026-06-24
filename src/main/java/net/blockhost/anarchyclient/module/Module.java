@@ -18,6 +18,7 @@ public abstract class Module {
     private final String name;
     private final ModuleCategory category;
     private final List<String> aliases;
+    private final ModuleKeybind keybind;
     private final List<Setting<?>> settings = new ArrayList<>();
     private final List<Setting<?>> settingsView = Collections.unmodifiableList(this.settings);
     private ActivationListener activationListener;
@@ -28,10 +29,16 @@ public abstract class Module {
     }
 
     protected Module(final String id, final String name, final ModuleCategory category, final List<String> aliases) {
+        this(id, name, category, aliases, ModuleKeybind.unbound());
+    }
+
+    protected Module(final String id, final String name, final ModuleCategory category, final List<String> aliases,
+                     final ModuleKeybind keybind) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.aliases = List.copyOf(aliases);
+        this.keybind = keybind == null ? ModuleKeybind.unbound() : keybind;
     }
 
     public final String id() {
@@ -48,6 +55,10 @@ public abstract class Module {
 
     public final List<String> aliases() {
         return this.aliases;
+    }
+
+    public final ModuleKeybind keybind() {
+        return this.keybind;
     }
 
     public final boolean enabled() {

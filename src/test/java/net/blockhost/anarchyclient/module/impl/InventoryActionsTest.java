@@ -6,6 +6,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InventoryActionsTest {
 
@@ -29,5 +30,14 @@ class InventoryActionsTest {
         assertEquals(InventoryMenu.ARMOR_SLOT_START + 2, InventoryActions.armorMenuSlot(EquipmentSlot.LEGS));
         assertEquals(InventoryMenu.ARMOR_SLOT_START + 3, InventoryActions.armorMenuSlot(EquipmentSlot.FEET));
         assertEquals(-1, InventoryActions.armorMenuSlot(EquipmentSlot.MAINHAND));
+    }
+
+    @Test
+    void resolvesTypedStorageSlots() {
+        assertEquals(InventoryMenu.USE_ROW_SLOT_START,
+                net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(0).orElseThrow().menuSlot());
+        assertEquals(InventoryMenu.INV_SLOT_START,
+                net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(Inventory.getSelectionSize()).orElseThrow().menuSlot());
+        assertTrue(net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(Inventory.INVENTORY_SIZE).isEmpty());
     }
 }

@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.config;
 
 import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -34,6 +35,8 @@ class ClientConfigTest {
         savedModule.numberSetting.value(7.5);
         savedModule.stringSetting.value("saved");
         savedModule.selectSetting.value("Second");
+        savedModule.keybind().key(75);
+        savedModule.keybind().action(ModuleBindAction.HOLD);
 
         new ClientConfig(savedModules, path).save();
 
@@ -47,6 +50,8 @@ class ClientConfigTest {
         assertEquals(7.5, loadedModule.numberSetting.value());
         assertEquals("saved", loadedModule.stringSetting.value());
         assertEquals("Second", loadedModule.selectSetting.value());
+        assertEquals(75, loadedModule.keybind().key());
+        assertEquals(ModuleBindAction.HOLD, loadedModule.keybind().action());
     }
 
     @Test
@@ -108,6 +113,10 @@ class ClientConfigTest {
                   "modules": {
                     "old_alias_module": {
                       "enabled": true,
+                      "keybind": {
+                        "key": 82,
+                        "action": "smart"
+                      },
                       "settings": {
                         "old_enabled_setting": false
                       }
@@ -123,6 +132,8 @@ class ClientConfigTest {
 
         assertTrue(loadedModule.enabled());
         assertEquals(false, loadedModule.enabledSetting.value());
+        assertEquals(82, loadedModule.keybind().key());
+        assertEquals(ModuleBindAction.SMART, loadedModule.keybind().action());
     }
 
     private static final class ConfigModule extends Module {

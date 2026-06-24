@@ -2,8 +2,10 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
+import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.inventory.InventorySlots;
+import net.blockhost.anarchyclient.inventory.InventorySlotRef;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -54,14 +56,19 @@ public final class AutoArmorModule extends Module {
             }
             int inventorySlot = bestArmorSlot(player.getInventory(), slot, player.getItemBySlot(slot));
             if (inventorySlot >= 0) {
+                InventorySlotRef source = InventorySlots.storageSlot(inventorySlot).orElse(null);
+                if (source == null) {
+                    continue;
+                }
                 InventoryAction action = InventoryAction.pickupSwap(
-                        InventorySlots.toInventoryMenuSlot(inventorySlot),
-                        InventorySlots.armorMenuSlot(slot)
+                        source,
+                        InventorySlots.armorSlot(slot)
                 );
                 InventoryActionScheduler.schedule(InventoryActionChain.single(
                         this.id(),
                         InventoryActionScheduler.PRIORITY_EQUIPMENT,
                         this.delayTicksSetting.value().intValue(),
+                        InventoryActionConstraints.cautiousPlayerInventory(),
                         action
                 ));
                 return;

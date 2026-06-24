@@ -79,6 +79,7 @@ public final class ClientConfig {
                 if (enabled != null && enabled.isJsonPrimitive()) {
                     module.enabled(enabled.getAsBoolean());
                 }
+                module.keybind().fromJson(moduleJson.getAsJsonObject("keybind"));
                 JsonObject settings = moduleJson.getAsJsonObject("settings");
                 if (settings == null) {
                     continue;
@@ -132,6 +133,7 @@ public final class ClientConfig {
             JsonObject moduleJson = new JsonObject();
             JsonObject settings = new JsonObject();
             moduleJson.addProperty("enabled", module.enabled());
+            moduleJson.add("keybind", module.keybind().toJson());
             moduleJson.add("settings", settings);
             for (Setting<?> setting : module.settings()) {
                 settings.add(setting.id(), setting.toJson());

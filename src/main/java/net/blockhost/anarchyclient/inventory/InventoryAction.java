@@ -10,12 +10,24 @@ import net.minecraft.world.item.Item;
 
 public sealed interface InventoryAction permits InventoryAction.PickupSwap, InventoryAction.SelectHotbarSlot, InventoryAction.UseHotbarItem {
 
-    boolean canExecute(Minecraft client, LocalPlayer player);
+    boolean canExecute(InventoryActionContext context);
 
-    boolean execute(Minecraft client, LocalPlayer player);
+    boolean execute(InventoryActionContext context);
+
+    default boolean canExecute(final Minecraft client, final LocalPlayer player) {
+        return this.canExecute(new InventoryActionContext(client, player));
+    }
+
+    default boolean execute(final Minecraft client, final LocalPlayer player) {
+        return this.execute(new InventoryActionContext(client, player));
+    }
 
     static InventoryAction pickupSwap(final int sourceMenuSlot, final int targetMenuSlot) {
         return new PickupSwap(sourceMenuSlot, targetMenuSlot);
+    }
+
+    static InventoryAction pickupSwap(final InventorySlotRef source, final InventorySlotRef target) {
+        return new PickupSwap(source.menuSlot(), target.menuSlot());
     }
 
     static InventoryAction selectHotbarSlot(final int inventorySlot) {
@@ -29,18 +41,18 @@ public sealed interface InventoryAction permits InventoryAction.PickupSwap, Inve
     record PickupSwap(int sourceMenuSlot, int targetMenuSlot) implements InventoryAction {
 
         @Override
-        public boolean canExecute(final Minecraft client, final LocalPlayer player) {
-            return client.gameMode != null && this.sourceMenuSlot >= 0 && this.targetMenuSlot >= 0;
+        public boolean canExecute(final InventoryActionContext context) {
+            return context.client().gameMode != null && this.sourceMenuSlot >= 0 && this.targetMenuSlot >= 0;
         }
 
         @Override
-        public boolean execute(final Minecraft client, final LocalPlayer player) {
-            if (!this.canExecute(client, player)) {
+        public boolean execute(final InventoryActionContext context) {
+            if (!this.canExecute(context)) {
                 return false;
             }
-            client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, player);
-            client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.targetMenuSlot, 0, ContainerInput.PICKUP, player);
-            client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, player);
+            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.targetMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
             return true;
         }
     }
@@ -48,16 +60,16 @@ public sealed interface InventoryAction permits InventoryAction.PickupSwap, Inve
     record SelectHotbarSlot(int inventorySlot) implements InventoryAction {
 
         @Override
-        public boolean canExecute(final Minecraft client, final LocalPlayer player) {
+        public boolean canExecute(final InventoryActionContext context) {
             return Inventory.isHotbarSlot(this.inventorySlot);
         }
 
         @Override
-        public boolean execute(final Minecraft client, final LocalPlayer player) {
-            if (!this.canExecute(client, player)) {
+        public boolean execute(final InventoryActionContext context) {
+            if (!this.canExecute(context)) {
                 return false;
             }
-            player.getInventory().setSelectedSlot(this.inventorySlot);
+            context.player().getInventory().setSelectedSlot(this.inventorySlot);
             return true;
         }
     }
@@ -65,20 +77,21 @@ public sealed interface InventoryAction permits InventoryAction.PickupSwap, Inve
     record UseHotbarItem(int inventorySlot, Item item, boolean restoreSlot) implements InventoryAction {
 
         @Override
-        public boolean canExecute(final Minecraft client, final LocalPlayer player) {
-            return client.gameMode != null
+        public boolean canExecute(final InventoryActionContext context) {
+            return context.client().gameMode != null
                     && Inventory.isHotbarSlot(this.inventorySlot)
-                    && player.getInventory().getItem(this.inventorySlot).is(this.item);
+                    && context.player().getInventory().getItem(this.inventorySlot).is(this.item);
         }
 
         @Override
-        public boolean execute(final Minecraft client, final LocalPlayer player) {
-            if (!this.canExecute(client, player)) {
+        public boolean execute(final InventoryActionContext context) {
+            if (!this.canExecute(context)) {
                 return false;
             }
+            LocalPlayer player = context.player();
             int previousSlot = player.getInventory().getSelectedSlot();
             player.getInventory().setSelectedSlot(this.inventorySlot);
-            client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+            context.client().gameMode.useItem(player, InteractionHand.MAIN_HAND);
             if (this.restoreSlot) {
                 player.getInventory().setSelectedSlot(previousSlot);
             }

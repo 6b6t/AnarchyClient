@@ -59,6 +59,7 @@ public final class AnarchyClient implements ClientModInitializer {
         }
         RenderedEntityCache.refresh(client);
         RotationManager.tick();
+        MODULES.handleKeybinds(client);
         MODULES.call(new ClientTickEvent(client));
         InventoryActionScheduler.tick(client);
     }

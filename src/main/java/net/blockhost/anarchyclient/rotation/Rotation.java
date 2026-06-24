@@ -22,6 +22,20 @@ public record Rotation(float yaw, float pitch) {
         ).clampPitch();
     }
 
+    public Rotation linearStepToward(final Rotation target, final float maxStep) {
+        double angle = this.angleTo(target);
+        if (angle <= maxStep) {
+            return target.clampPitch();
+        }
+        double factor = maxStep / angle;
+        float yawDelta = wrapDegrees(target.yaw - this.yaw);
+        float pitchDelta = wrapDegrees(target.pitch - this.pitch);
+        return new Rotation(
+                this.yaw + (float) (yawDelta * factor),
+                this.pitch + (float) (pitchDelta * factor)
+        ).clampPitch();
+    }
+
     public double angleTo(final Rotation target) {
         double yawDelta = wrapDegrees(target.yaw - this.yaw);
         double pitchDelta = wrapDegrees(target.pitch - this.pitch);

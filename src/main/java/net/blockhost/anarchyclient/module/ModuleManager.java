@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Player;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +27,7 @@ public final class ModuleManager {
     private final AnarchyEventBus events = new AnarchyEventBus();
     private final Map<String, Module> modules = new LinkedHashMap<>();
     private final Map<Module, ModuleEventListener> eventListeners = new IdentityHashMap<>();
+    private final ModuleKeybindController keybindController = new ModuleKeybindController();
 
     public void register(final Module module) {
         Module previous = this.modules.putIfAbsent(module.id(), module);
@@ -62,6 +64,18 @@ public final class ModuleManager {
 
     public void tick(final Minecraft client) {
         this.call(new ClientTickEvent(client));
+    }
+
+    public void handleKeybinds(final Minecraft client) {
+        boolean allowNewPresses = client != null && client.gui.screen() == null;
+        for (Module module : this.modules.values()) {
+            ModuleKeybind keybind = module.keybind();
+            if (!keybind.bound()) {
+                this.keybindController.clear(module);
+                continue;
+            }
+            this.keybindController.update(module, keyPressed(client, keybind.key()), allowNewPresses);
+        }
     }
 
     public void updateInput(final Minecraft client, final ClientInput input) {
@@ -101,5 +115,11 @@ public final class ModuleManager {
         if (listener != null) {
             this.events.unregister(listener);
         }
+    }
+
+    private static boolean keyPressed(final Minecraft client, final int key) {
+        return client != null
+                && client.getWindow() != null
+                && GLFW.glfwGetKey(client.getWindow().handle(), key) == GLFW.GLFW_PRESS;
     }
 }

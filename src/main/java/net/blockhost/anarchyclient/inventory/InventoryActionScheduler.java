@@ -33,8 +33,12 @@ public final class InventoryActionScheduler {
             PENDING.clear();
             return;
         }
-        LocalPlayer player = client.player;
-        if (player == null || !canUseInventoryMenu(client, player) || PENDING.isEmpty()) {
+        if (PENDING.isEmpty()) {
+            PENDING.clear();
+            return;
+        }
+        InventoryActionContext context = InventoryActionContext.of(client).orElse(null);
+        if (context == null) {
             PENDING.clear();
             return;
         }
@@ -42,13 +46,16 @@ public final class InventoryActionScheduler {
                 .max(Comparator.comparingInt(InventoryActionChain::priority))
                 .orElseThrow();
         PENDING.clear();
+        if (!chain.constraints().allows(context)) {
+            return;
+        }
         for (InventoryAction action : chain.actions()) {
-            if (!action.canExecute(client, player)) {
+            if (!action.canExecute(context)) {
                 return;
             }
         }
         for (InventoryAction action : chain.actions()) {
-            if (!action.execute(client, player)) {
+            if (!action.execute(context)) {
                 return;
             }
         }
