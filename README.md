@@ -5,6 +5,9 @@
 
 Fabric `26.2` utility mod for 6b6t.
 
+> [!NOTE]
+> This is a fun side project by the 6b6t team, not an official product. It comes with no support guarantees. Use it at your own risk.
+
 ## Demo
 
 Preview of how it looks in-game.
