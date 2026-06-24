@@ -4,9 +4,12 @@ import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
+import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
+import net.blockhost.anarchyclient.rotation.RotationManager;
+import net.blockhost.anarchyclient.target.RenderedEntityCache;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -54,6 +57,9 @@ public final class AnarchyClient implements ClientModInitializer {
         while (this.openMenuKey.consumeClick()) {
             client.gui.setScreen(new AnarchyClientScreen(MODULES, CONFIG));
         }
+        RenderedEntityCache.refresh(client);
+        RotationManager.tick();
         MODULES.call(new ClientTickEvent(client));
+        InventoryActionScheduler.tick(client);
     }
 }

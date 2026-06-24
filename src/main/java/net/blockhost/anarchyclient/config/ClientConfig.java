@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -67,9 +68,12 @@ public final class ClientConfig {
                 return;
             }
             for (Module module : this.modules.all()) {
-                JsonObject moduleJson = moduleRoot.getAsJsonObject(module.id());
+                JsonObject moduleJson = findObject(moduleRoot, module.id(), module.aliases());
                 if (moduleJson == null) {
                     continue;
+                }
+                if (module instanceof ModuleConfigMigration migration) {
+                    migration.migrateConfig(moduleJson);
                 }
                 JsonElement enabled = moduleJson.get("enabled");
                 if (enabled != null && enabled.isJsonPrimitive()) {
@@ -80,7 +84,7 @@ public final class ClientConfig {
                     continue;
                 }
                 for (Setting<?> setting : module.settings()) {
-                    setting.fromJson(settings.get(setting.id()));
+                    setting.fromJson(findElement(settings, setting.id(), setting.aliases()));
                 }
             }
         } catch (RuntimeException | IOException exception) {
@@ -136,9 +140,18 @@ public final class ClientConfig {
         }
 
         try {
-            Files.createDirectories(this.path.getParent());
-            try (Writer writer = Files.newBufferedWriter(this.path)) {
+            Path parent = this.path.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Path tempPath = this.path.resolveSibling(this.path.getFileName() + ".tmp");
+            try (Writer writer = Files.newBufferedWriter(tempPath)) {
                 GSON.toJson(root, writer);
+            }
+            try {
+                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException exception) {
+                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException exception) {
             LOGGER.warn("Failed to save AnarchyClient config to {}", this.path, exception);
@@ -231,6 +244,34 @@ public final class ClientConfig {
             }
         }
         return Optional.empty();
+    }
+
+    private static JsonObject findObject(final JsonObject json, final String key, final List<String> aliases) {
+        JsonObject object = json.getAsJsonObject(key);
+        if (object != null) {
+            return object;
+        }
+        for (String alias : aliases) {
+            object = json.getAsJsonObject(alias);
+            if (object != null) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    private static JsonElement findElement(final JsonObject json, final String key, final List<String> aliases) {
+        JsonElement element = json.get(key);
+        if (element != null) {
+            return element;
+        }
+        for (String alias : aliases) {
+            element = json.get(alias);
+            if (element != null) {
+                return element;
+            }
+        }
+        return null;
     }
 
     private static List<ModuleCategory> normalizeCategoryOrder(final List<ModuleCategory> categories) {

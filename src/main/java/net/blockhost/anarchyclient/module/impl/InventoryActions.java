@@ -1,10 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.InventoryAction;
+import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
@@ -45,48 +47,26 @@ final class InventoryActions {
     }
 
     static boolean moveToOffhand(final Minecraft client, final LocalPlayer player, final int inventorySlot) {
-        return pickupSwap(client, player, toInventoryMenuSlot(inventorySlot), InventoryMenu.SHIELD_SLOT);
+        return pickupSwap(client, player, InventorySlots.toInventoryMenuSlot(inventorySlot), InventoryMenu.SHIELD_SLOT);
     }
 
     static boolean equipArmor(final Minecraft client, final LocalPlayer player, final int inventorySlot, final EquipmentSlot armorSlot) {
-        return pickupSwap(client, player, toInventoryMenuSlot(inventorySlot), armorMenuSlot(armorSlot));
+        return pickupSwap(client, player, InventorySlots.toInventoryMenuSlot(inventorySlot), InventorySlots.armorMenuSlot(armorSlot));
     }
 
     static boolean pickupSwap(final Minecraft client, final LocalPlayer player, final int sourceMenuSlot, final int targetMenuSlot) {
-        if (client.gameMode == null || sourceMenuSlot < 0 || targetMenuSlot < 0) {
-            return false;
-        }
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, sourceMenuSlot, 0, ContainerInput.PICKUP, player);
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, targetMenuSlot, 0, ContainerInput.PICKUP, player);
-        client.gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, sourceMenuSlot, 0, ContainerInput.PICKUP, player);
-        return true;
+        return InventoryAction.pickupSwap(sourceMenuSlot, targetMenuSlot).execute(client, player);
     }
 
     static int toInventoryMenuSlot(final int inventorySlot) {
-        if (Inventory.isHotbarSlot(inventorySlot)) {
-            return InventoryMenu.USE_ROW_SLOT_START + inventorySlot;
-        }
-        if (inventorySlot >= Inventory.getSelectionSize() && inventorySlot < Inventory.INVENTORY_SIZE) {
-            return InventoryMenu.INV_SLOT_START + inventorySlot - Inventory.getSelectionSize();
-        }
-        return -1;
+        return InventorySlots.toInventoryMenuSlot(inventorySlot);
     }
 
     static int armorMenuSlot(final EquipmentSlot slot) {
-        return switch (slot) {
-            case HEAD -> InventoryMenu.ARMOR_SLOT_START;
-            case CHEST -> InventoryMenu.ARMOR_SLOT_START + 1;
-            case LEGS -> InventoryMenu.ARMOR_SLOT_START + 2;
-            case FEET -> InventoryMenu.ARMOR_SLOT_START + 3;
-            default -> -1;
-        };
+        return InventorySlots.armorMenuSlot(slot);
     }
 
     static boolean canUseInventoryMenu(final Minecraft client, final LocalPlayer player) {
-        return client.gameMode != null
-                && client.gui.screen() == null
-                && player.containerMenu != null
-                && player.inventoryMenu != null
-                && player.containerMenu.containerId == InventoryMenu.CONTAINER_ID;
+        return InventoryActionScheduler.canUseInventoryMenu(client, player);
     }
 }

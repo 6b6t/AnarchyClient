@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.InventoryAction;
+import net.blockhost.anarchyclient.inventory.InventoryActionChain;
+import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,6 +12,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -53,7 +58,6 @@ public final class AutoTotemModule extends Module {
             .name("Fire")
             .defaultValue(true)
             .build()));
-    private int cooldownTicks;
 
     public AutoTotemModule() {
         super("auto_totem", "Auto Totem", ModuleCategory.COMBAT);
@@ -61,12 +65,8 @@ public final class AutoTotemModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (this.cooldownTicks > 0) {
-            this.cooldownTicks--;
-            return;
-        }
         LocalPlayer player = client.player;
-        if (player == null || !InventoryActions.canUseInventoryMenu(client, player)) {
+        if (player == null || !InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
 
@@ -80,9 +80,16 @@ public final class AutoTotemModule extends Module {
             return;
         }
 
-        if (InventoryActions.moveToOffhand(client, player, inventorySlot)) {
-            this.cooldownTicks = 5;
-        }
+        InventoryAction action = InventoryAction.pickupSwap(
+                InventorySlots.toInventoryMenuSlot(inventorySlot),
+                InventoryMenu.SHIELD_SLOT
+        );
+        InventoryActionScheduler.schedule(InventoryActionChain.single(
+                this.id(),
+                InventoryActionScheduler.PRIORITY_LIFE,
+                5,
+                action
+        ));
     }
 
     private Item desiredItem(final LocalPlayer player) {
@@ -118,6 +125,6 @@ public final class AutoTotemModule extends Module {
     }
 
     static int toInventoryMenuSlot(final int inventorySlot) {
-        return InventoryActions.toInventoryMenuSlot(inventorySlot);
+        return InventorySlots.toInventoryMenuSlot(inventorySlot);
     }
 }

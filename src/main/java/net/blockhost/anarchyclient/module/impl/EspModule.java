@@ -7,10 +7,16 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.target.RenderedEntityCache;
+import net.blockhost.anarchyclient.target.TargetClassifier;
+import net.blockhost.anarchyclient.target.TargetKind;
+import net.blockhost.anarchyclient.target.TargetPolicy;
+import net.blockhost.anarchyclient.target.TargetQuery;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -92,6 +98,16 @@ public final class EspModule extends Module {
     }
 
     @Override
+    protected void onEnable() {
+        RenderedEntityCache.subscribe(this.id());
+    }
+
+    @Override
+    protected void onDisable() {
+        RenderedEntityCache.unsubscribe(this.id());
+    }
+
+    @Override
     public void renderWorld(final LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
         Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
@@ -102,8 +118,9 @@ public final class EspModule extends Module {
         }
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        for (Entity entity : client.level.entitiesForRendering()) {
-            if (!this.shouldRender(entity, player)) {
+        TargetPolicy policy = this.targetPolicy();
+        for (LivingEntity entity : RenderedEntityCache.entities()) {
+            if (!TargetQuery.allowed(entity, player, policy)) {
                 continue;
             }
             double distanceSqr = entity.distanceToSqr(player);
@@ -123,11 +140,11 @@ public final class EspModule extends Module {
     }
 
     boolean shouldRender(final Entity entity, final Player player) {
-        return EntityTargeting.isAllowedTarget(entity, player, this.targetOptions());
+        return TargetQuery.allowed(entity, player, this.targetPolicy());
     }
 
     private WorldLineRenderer.Color color(final Entity entity, final double distance, final int alpha) {
-        if (EntityTargeting.isFriend(entity, this.friends.value())) {
+        if (TargetClassifier.isFriend(entity, this.friends.value())) {
             return new WorldLineRenderer.Color(98, 170, 255, alpha);
         }
         return switch (this.colorMode.value()) {
@@ -138,19 +155,19 @@ public final class EspModule extends Module {
             }
             case "Aqua" -> new WorldLineRenderer.Color(0, 212, 170, alpha);
             default -> {
-                if (EntityTargeting.isPlayer(entity)) {
-                    yield new WorldLineRenderer.Color(0, 212, 170, alpha);
-                }
-                if (EntityTargeting.isHostile(entity)) {
-                    yield new WorldLineRenderer.Color(255, 86, 86, alpha);
-                }
-                yield new WorldLineRenderer.Color(245, 205, 92, alpha);
+                yield switch (TargetClassifier.kind(entity)) {
+                    case PLAYER -> new WorldLineRenderer.Color(0, 212, 170, alpha);
+                    case HOSTILE -> new WorldLineRenderer.Color(255, 86, 86, alpha);
+                    case NEUTRAL -> new WorldLineRenderer.Color(255, 162, 72, alpha);
+                    case PASSIVE, WATER_CREATURE -> new WorldLineRenderer.Color(245, 205, 92, alpha);
+                    case UNKNOWN -> new WorldLineRenderer.Color(190, 190, 190, alpha);
+                };
             }
         };
     }
 
-    private EntityTargeting.Options targetOptions() {
-        return new EntityTargeting.Options(
+    private TargetPolicy targetPolicy() {
+        return TargetPolicy.of(
                 this.players.value(),
                 this.hostileMobs.value(),
                 this.passiveMobs.value(),

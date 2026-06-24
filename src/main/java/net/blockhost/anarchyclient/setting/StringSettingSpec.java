@@ -2,6 +2,8 @@ package net.blockhost.anarchyclient.setting;
 
 import org.immutables.value.Value;
 
+import java.util.List;
+
 @SettingStyle
 @Value.Immutable
 public interface StringSettingSpec {
@@ -11,4 +13,9 @@ public interface StringSettingSpec {
     String name();
 
     String defaultValue();
+
+    @Value.Default
+    default List<String> aliases() {
+        return List.of();
+    }
 }

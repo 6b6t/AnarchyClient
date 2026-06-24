@@ -17,6 +17,16 @@ public final class AutoToolModule extends Module {
             .name("Mining Only")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting ignoreDurability = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("ignore_durability")
+            .name("Ignore Damage")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting pauseDuringCombat = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("pause_during_combat")
+            .name("Combat Pause")
+            .defaultValue(false)
+            .build()));
 
     public AutoToolModule() {
         super("auto_tool", "Auto Tool", ModuleCategory.WORLD);
@@ -31,22 +41,35 @@ public final class AutoToolModule extends Module {
         if (this.requireAttack.value() && !client.options.keyAttack.isDown()) {
             return;
         }
+        if (this.pauseDuringCombat.value() && player.getAttackStrengthScale(0.0F) < 1.0F) {
+            return;
+        }
         if (!(client.hitResult instanceof BlockHitResult hitResult) || hitResult.getType() != HitResult.Type.BLOCK) {
             return;
         }
 
         BlockState state = client.level.getBlockState(hitResult.getBlockPos());
-        int bestSlot = bestToolSlot(player.getInventory(), state);
+        int bestSlot = bestToolSlot(player.getInventory(), state, this.ignoreDurability.value());
         if (bestSlot >= 0) {
             InventoryActions.selectHotbarSlot(player, bestSlot);
         }
     }
 
     static int bestToolSlot(final Inventory inventory, final BlockState state) {
+        return bestToolSlot(inventory, state, false);
+    }
+
+    static int bestToolSlot(final Inventory inventory, final BlockState state, final boolean ignoreDurability) {
         int bestSlot = -1;
         float bestSpeed = 1.0F;
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
-            float speed = inventory.getItem(slot).getDestroySpeed(state);
+            var stack = inventory.getItem(slot);
+            if (stack.isEmpty()
+                    || !ignoreDurability && stack.isDamageableItem() && stack.nextDamageWillBreak()
+                    || state.requiresCorrectToolForDrops() && !stack.isCorrectToolForDrops(state)) {
+                continue;
+            }
+            float speed = stack.getDestroySpeed(state);
             if (speed > bestSpeed) {
                 bestSpeed = speed;
                 bestSlot = slot;

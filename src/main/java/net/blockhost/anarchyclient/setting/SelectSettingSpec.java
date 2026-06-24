@@ -15,4 +15,9 @@ public interface SelectSettingSpec {
     String defaultValue();
 
     List<String> options();
+
+    @Value.Default
+    default List<String> aliases() {
+        return List.of();
+    }
 }

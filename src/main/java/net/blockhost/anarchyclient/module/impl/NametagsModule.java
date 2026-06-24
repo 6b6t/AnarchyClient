@@ -6,10 +6,12 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.target.RenderedEntityCache;
+import net.blockhost.anarchyclient.target.TargetPolicy;
+import net.blockhost.anarchyclient.target.TargetQuery;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
@@ -56,17 +58,25 @@ public final class NametagsModule extends Module {
     }
 
     @Override
+    protected void onEnable() {
+        RenderedEntityCache.subscribe(this.id());
+    }
+
+    @Override
+    protected void onDisable() {
+        RenderedEntityCache.unsubscribe(this.id());
+    }
+
+    @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
         if (client.player == null || client.level == null || client.gui.screen() instanceof AnarchyClientScreen) {
             return;
         }
         double rangeSqr = this.range.value() * this.range.value();
-        List<String> lines = java.util.stream.StreamSupport.stream(client.level.entitiesForRendering().spliterator(), false)
-                .filter(entity -> entity instanceof Player)
-                .filter(entity -> EntityTargeting.isValidLivingTarget(entity, client.player))
-                .filter(entity -> !this.ignoreFriends.value() || !EntityTargeting.isFriend(entity, this.friends.value()))
+        TargetPolicy policy = TargetPolicy.of(true, false, false, false, this.ignoreFriends.value(), this.friends.value(), false, false);
+        List<String> lines = TargetQuery.livingTargets(RenderedEntityCache.entities(), client.player, policy)
+                .filter(Player.class::isInstance)
                 .filter(entity -> entity.distanceToSqr(client.player) <= rangeSqr)
-                .map(LivingEntity.class::cast)
                 .sorted(Comparator.comparingDouble(client.player::distanceToSqr))
                 .limit(this.maxRows.value().longValue())
                 .map(entity -> this.line(client.player, entity))

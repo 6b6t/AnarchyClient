@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -16,15 +17,21 @@ public abstract class Module {
     private final String id;
     private final String name;
     private final ModuleCategory category;
+    private final List<String> aliases;
     private final List<Setting<?>> settings = new ArrayList<>();
     private final List<Setting<?>> settingsView = Collections.unmodifiableList(this.settings);
     private ActivationListener activationListener;
     private boolean enabled;
 
     protected Module(final String id, final String name, final ModuleCategory category) {
+        this(id, name, category, List.of());
+    }
+
+    protected Module(final String id, final String name, final ModuleCategory category, final List<String> aliases) {
         this.id = id;
         this.name = name;
         this.category = category;
+        this.aliases = List.copyOf(aliases);
     }
 
     public final String id() {
@@ -37,6 +44,10 @@ public abstract class Module {
 
     public final ModuleCategory category() {
         return this.category;
+    }
+
+    public final List<String> aliases() {
+        return this.aliases;
     }
 
     public final boolean enabled() {
@@ -89,6 +100,9 @@ public abstract class Module {
     }
 
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
+    }
+
+    public void soundPacket(final Minecraft client, final ClientboundSoundPacket packet) {
     }
 
     protected void onEnable() {

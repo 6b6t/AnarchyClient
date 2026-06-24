@@ -32,7 +32,7 @@ public final class ParkourModule extends Module {
         if (player == null || player.input != input || client.gui.screen() != null || this.cooldownTicks > 0) {
             return;
         }
-        if (player.onGround() && input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, this.lookAhead.value())) {
+        if (player.onGround() && input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value())) {
             input.keyPresses = InputStates.withJump(input.keyPresses, true);
             this.cooldownTicks = 8;
         }

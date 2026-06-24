@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
 import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
+import net.blockhost.anarchyclient.event.SoundPacketEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
 import net.lenni0451.lambdaevents.EventHandler;
 
@@ -40,5 +41,10 @@ public final class ModuleEventListener {
     @EventHandler
     public void handleHudRender(final HudRenderEvent event) {
         this.module.renderHud(event.client(), event.graphics());
+    }
+
+    @EventHandler
+    public void handleSoundPacket(final SoundPacketEvent event) {
+        this.module.soundPacket(event.client(), event.packet());
     }
 }

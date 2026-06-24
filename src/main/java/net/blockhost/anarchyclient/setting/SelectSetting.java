@@ -10,7 +10,7 @@ public final class SelectSetting extends Setting<String> {
     private final List<String> options;
 
     private SelectSetting(final SelectSettingSpec spec) {
-        super(spec.id(), spec.name(), spec.defaultValue());
+        super(spec.id(), spec.name(), spec.defaultValue(), spec.aliases());
         if (spec.options().isEmpty()) {
             throw new IllegalArgumentException("Select setting requires at least one option: " + spec.id());
         }

@@ -28,7 +28,7 @@ public final class EagleModule extends Module {
         if (player == null || player.input != input || client.gui.screen() != null) {
             return;
         }
-        boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, this.lookAhead.value());
+        boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value());
         input.keyPresses = InputStates.withShift(input.keyPresses, input.keyPresses.shift() || shouldSneak);
     }
 }

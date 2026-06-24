@@ -3,6 +3,7 @@
   "package": "net.blockhost.anarchyclient.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "ClientPacketListenerMixin",
     "KeyboardInputMixin",
     "PlayerMixin"
   ],

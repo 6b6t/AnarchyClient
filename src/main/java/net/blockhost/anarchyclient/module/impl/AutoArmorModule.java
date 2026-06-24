@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.InventoryAction;
+import net.blockhost.anarchyclient.inventory.InventoryActionChain;
+import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -32,7 +36,6 @@ public final class AutoArmorModule extends Module {
             .name("Keep Elytra")
             .defaultValue(true)
             .build()));
-    private int cooldownTicks;
 
     public AutoArmorModule() {
         super("auto_armor", "Auto Armor", ModuleCategory.COMBAT);
@@ -40,12 +43,8 @@ public final class AutoArmorModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (this.cooldownTicks > 0) {
-            this.cooldownTicks--;
-            return;
-        }
         LocalPlayer player = client.player;
-        if (player == null || !InventoryActions.canUseInventoryMenu(client, player)) {
+        if (player == null || !InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
 
@@ -54,8 +53,17 @@ public final class AutoArmorModule extends Module {
                 continue;
             }
             int inventorySlot = bestArmorSlot(player.getInventory(), slot, player.getItemBySlot(slot));
-            if (inventorySlot >= 0 && InventoryActions.equipArmor(client, player, inventorySlot, slot)) {
-                this.cooldownTicks = this.delayTicksSetting.value().intValue();
+            if (inventorySlot >= 0) {
+                InventoryAction action = InventoryAction.pickupSwap(
+                        InventorySlots.toInventoryMenuSlot(inventorySlot),
+                        InventorySlots.armorMenuSlot(slot)
+                );
+                InventoryActionScheduler.schedule(InventoryActionChain.single(
+                        this.id(),
+                        InventoryActionScheduler.PRIORITY_EQUIPMENT,
+                        this.delayTicksSetting.value().intValue(),
+                        action
+                ));
                 return;
             }
         }

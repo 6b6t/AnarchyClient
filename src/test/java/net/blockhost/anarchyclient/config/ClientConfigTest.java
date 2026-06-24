@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -99,6 +100,31 @@ class ClientConfigTest {
         assertEquals(Set.of(), reloaded.expandedModules().orElseThrow());
     }
 
+    @Test
+    void loadsModuleAndSettingAliases() throws Exception {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        Files.writeString(path, """
+                {
+                  "modules": {
+                    "old_alias_module": {
+                      "enabled": true,
+                      "settings": {
+                        "old_enabled_setting": false
+                      }
+                    }
+                  }
+                }
+                """);
+
+        ModuleManager loadedModules = new ModuleManager();
+        AliasModule loadedModule = new AliasModule();
+        loadedModules.register(loadedModule);
+        new ClientConfig(loadedModules, path).load();
+
+        assertTrue(loadedModule.enabled());
+        assertEquals(false, loadedModule.enabledSetting.value());
+    }
+
     private static final class ConfigModule extends Module {
 
         private final BooleanSetting enabledSetting = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -128,6 +154,20 @@ class ClientConfigTest {
 
         private ConfigModule() {
             super("config_module", "Config Module", ModuleCategory.FUN);
+        }
+    }
+
+    private static final class AliasModule extends Module {
+
+        private final BooleanSetting enabledSetting = this.setting(BooleanSetting.from(BooleanSetting.builder()
+                .id("enabled_setting")
+                .name("Enabled Setting")
+                .defaultValue(true)
+                .aliases(List.of("old_enabled_setting"))
+                .build()));
+
+        private AliasModule() {
+            super("alias_module", "Alias Module", ModuleCategory.FUN, List.of("old_alias_module"));
         }
     }
 }

@@ -2,16 +2,24 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 
+import java.util.List;
+
 public abstract class Setting<T> {
 
     private final String id;
     private final String name;
+    private final List<String> aliases;
     private final T defaultValue;
     private T value;
 
     protected Setting(final String id, final String name, final T defaultValue) {
+        this(id, name, defaultValue, List.of());
+    }
+
+    protected Setting(final String id, final String name, final T defaultValue, final List<String> aliases) {
         this.id = id;
         this.name = name;
+        this.aliases = List.copyOf(aliases);
         this.defaultValue = defaultValue;
         this.value = defaultValue;
     }
@@ -22,6 +30,10 @@ public abstract class Setting<T> {
 
     public final String name() {
         return this.name;
+    }
+
+    public final List<String> aliases() {
+        return this.aliases;
     }
 
     public final T defaultValue() {
