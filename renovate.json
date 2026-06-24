@@ -1,5 +1,12 @@
 {
   "extends": ["config:base", "group:allNonMajor", ":semanticCommits"],
+  "baseBranches": [
+    "main"
+  ],
+  "labels": [
+    "enhancement"
+  ],
+  "reviewers": ["xymb-endcrystalme"],
   "packageRules": [
     {
       "matchUpdateTypes": [
@@ -12,7 +19,9 @@
       "automergeType": "branch"
     },
     {
-      "matchPackageNames": ["**"],
+      "matchPackageNames": [
+        "**"
+      ],
       "allowedVersions": "!/\\-SNAPSHOT$/"
     }
   ]
