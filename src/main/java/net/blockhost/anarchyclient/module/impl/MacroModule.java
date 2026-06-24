@@ -33,7 +33,7 @@ public final class MacroModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.screen != null) {
+        if (client.player == null || client.gui.screen() != null) {
             return;
         }
         this.f6Down = this.handle(client, GLFW.GLFW_KEY_F6, this.f6.value(), this.f6Down);

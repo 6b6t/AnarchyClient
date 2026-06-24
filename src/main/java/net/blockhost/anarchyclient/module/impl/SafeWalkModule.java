@@ -13,6 +13,6 @@ public final class SafeWalkModule extends Module {
 
     @Override
     public boolean preventEdgeFall(final Minecraft client, final Player player) {
-        return client.player == player && client.screen == null;
+        return client.player == player && client.gui.screen() == null;
     }
 }

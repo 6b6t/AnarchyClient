@@ -8,7 +8,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -79,14 +79,14 @@ public final class TracersModule extends Module {
     @Override
     public void renderWorld(final LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
-        Player player = client.gameRenderer.getMainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
+        Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
         PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        if (client.level == null || player == null || matrices == null || consumers == null) {
+        SubmitNodeCollector submits = context.submitNodeCollector();
+        if (client.level == null || player == null || matrices == null || submits == null) {
             return;
         }
 
-        Vec3 camera = client.gameRenderer.getMainCamera().position();
+        Vec3 camera = client.gameRenderer.mainCamera().position();
         Vec3 start = player.getEyePosition().subtract(camera);
         EntityTargeting.Options options = this.targetOptions();
         for (Entity entity : client.level.entitiesForRendering()) {
@@ -98,7 +98,7 @@ public final class TracersModule extends Module {
                 continue;
             }
             Vec3 end = entity.getBoundingBox().getCenter().subtract(camera);
-            WorldLineRenderer.line(matrices, consumers, start, end, this.color(entity));
+            WorldLineRenderer.line(matrices, submits, start, end, this.color(entity));
         }
     }
 

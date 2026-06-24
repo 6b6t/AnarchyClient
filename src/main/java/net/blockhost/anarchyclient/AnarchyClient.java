@@ -45,14 +45,14 @@ public final class AnarchyClient implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(context -> MODULES.call(new WorldRenderEvent(context)));
+        LevelRenderEvents.COLLECT_SUBMITS.register(context -> MODULES.call(new WorldRenderEvent(context)));
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
                 (graphics, deltaTracker) -> MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics)));
     }
 
     private void onClientTick(final Minecraft client) {
         while (this.openMenuKey.consumeClick()) {
-            client.setScreen(new AnarchyClientScreen(MODULES, CONFIG));
+            client.gui.setScreen(new AnarchyClientScreen(MODULES, CONFIG));
         }
         MODULES.call(new ClientTickEvent(client));
     }

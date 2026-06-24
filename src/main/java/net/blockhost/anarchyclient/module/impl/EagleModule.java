@@ -25,7 +25,7 @@ public final class EagleModule extends Module {
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
         LocalPlayer player = client.player;
-        if (player == null || player.input != input || client.screen != null) {
+        if (player == null || player.input != input || client.gui.screen() != null) {
             return;
         }
         boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, this.lookAhead.value());

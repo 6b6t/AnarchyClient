@@ -9,7 +9,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
@@ -94,14 +94,14 @@ public final class EspModule extends Module {
     @Override
     public void renderWorld(final LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
-        Player player = client.gameRenderer.getMainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
+        Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
         PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        if (client.level == null || player == null || matrices == null || consumers == null) {
+        SubmitNodeCollector submits = context.submitNodeCollector();
+        if (client.level == null || player == null || matrices == null || submits == null) {
             return;
         }
 
-        Vec3 camera = client.gameRenderer.getMainCamera().position();
+        Vec3 camera = client.gameRenderer.mainCamera().position();
         for (Entity entity : client.level.entitiesForRendering()) {
             if (!this.shouldRender(entity, player)) {
                 continue;
@@ -118,7 +118,7 @@ public final class EspModule extends Module {
             }
 
             AABB box = entity.getBoundingBox().inflate(0.04).move(camera.scale(-1));
-            WorldLineRenderer.box(matrices, consumers, box, this.color(entity, Math.sqrt(distanceSqr), alpha));
+            WorldLineRenderer.box(matrices, submits, box, this.color(entity, Math.sqrt(distanceSqr), alpha));
         }
     }
 

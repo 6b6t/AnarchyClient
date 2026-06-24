@@ -57,7 +57,7 @@ public final class NametagsModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (client.player == null || client.level == null || client.screen instanceof AnarchyClientScreen) {
+        if (client.player == null || client.level == null || client.gui.screen() instanceof AnarchyClientScreen) {
             return;
         }
         double rangeSqr = this.range.value() * this.range.value();

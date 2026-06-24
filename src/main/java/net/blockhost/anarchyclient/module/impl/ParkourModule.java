@@ -29,7 +29,7 @@ public final class ParkourModule extends Module {
             this.cooldownTicks--;
         }
         LocalPlayer player = client.player;
-        if (player == null || player.input != input || client.screen != null || this.cooldownTicks > 0) {
+        if (player == null || player.input != input || client.gui.screen() != null || this.cooldownTicks > 0) {
             return;
         }
         if (player.onGround() && input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, this.lookAhead.value())) {

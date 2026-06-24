@@ -1,6 +1,6 @@
 # AnarchyClient
 
-Fabric `26.1.2` utility mod for 6b6t.
+Fabric `26.2` utility mod for 6b6t.
 
 ## Development
 

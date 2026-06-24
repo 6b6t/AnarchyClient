@@ -98,7 +98,7 @@ public final class NyanCatGifSpammerModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (!this.enabled() || this.activeTicks <= 0 || client.screen instanceof AnarchyClientScreen) {
+        if (!this.enabled() || this.activeTicks <= 0 || client.gui.screen() instanceof AnarchyClientScreen) {
             return;
         }
         Animation loadedAnimation = this.animation;

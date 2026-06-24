@@ -37,7 +37,7 @@ public final class AntiAfkModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.screen != null) {
+        if (player == null || client.gui.screen() != null) {
             return;
         }
         if (this.cooldownTicks > 0) {

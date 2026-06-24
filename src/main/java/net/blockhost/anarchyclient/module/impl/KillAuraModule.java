@@ -147,7 +147,7 @@ public final class KillAuraModule extends Module {
         if (player == null || client.level == null || client.gameMode == null) {
             return;
         }
-        if (this.pauseInGui.value() && client.screen != null) {
+        if (this.pauseInGui.value() && client.gui.screen() != null) {
             return;
         }
         if (this.pauseUsingItem.value() && player.isUsingItem()) {

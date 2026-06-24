@@ -7,7 +7,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
@@ -76,13 +76,13 @@ public final class BlockEspModule extends Module {
     public void renderWorld(final LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
         PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        if (client.level == null || matrices == null || consumers == null) {
+        SubmitNodeCollector submits = context.submitNodeCollector();
+        if (client.level == null || matrices == null || submits == null) {
             return;
         }
-        Vec3 camera = client.gameRenderer.getMainCamera().position();
+        Vec3 camera = client.gameRenderer.mainCamera().position();
         for (BlockPos pos : this.cachedPositions) {
-            WorldLineRenderer.box(matrices, consumers, new AABB(pos).move(camera.scale(-1)), new WorldLineRenderer.Color(76, 228, 120, 190));
+            WorldLineRenderer.box(matrices, submits, new AABB(pos).move(camera.scale(-1)), new WorldLineRenderer.Color(76, 228, 120, 190));
         }
     }
 }

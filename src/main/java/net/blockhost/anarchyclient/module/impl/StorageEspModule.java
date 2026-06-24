@@ -8,7 +8,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
@@ -67,14 +67,14 @@ public final class StorageEspModule extends Module {
     public void renderWorld(final LevelRenderContext context) {
         Minecraft client = Minecraft.getInstance();
         PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        if (client.level == null || matrices == null || consumers == null) {
+        SubmitNodeCollector submits = context.submitNodeCollector();
+        if (client.level == null || matrices == null || submits == null) {
             return;
         }
-        Vec3 camera = client.gameRenderer.getMainCamera().position();
+        Vec3 camera = client.gameRenderer.mainCamera().position();
         int alpha = this.opacity.value().intValue();
         for (BlockPos pos : this.cachedPositions) {
-            WorldLineRenderer.box(matrices, consumers, new AABB(pos).move(camera.scale(-1)), color(client.level.getBlockEntity(pos), alpha));
+            WorldLineRenderer.box(matrices, submits, new AABB(pos).move(camera.scale(-1)), color(client.level.getBlockEntity(pos), alpha));
         }
     }
 
@@ -94,7 +94,7 @@ public final class StorageEspModule extends Module {
                 }
                 LevelChunk chunk = client.level.getChunk(chunkX, chunkZ);
                 for (BlockEntity blockEntity : chunk.getBlockEntities().values()) {
-                    if (isStorage(blockEntity) && blockEntity.getBlockPos().getCenter().distanceToSqr(player.position()) <= rangeSqr) {
+                    if (isStorage(blockEntity) && Vec3.atCenterOf(blockEntity.getBlockPos()).distanceToSqr(player.position()) <= rangeSqr) {
                         positions.add(blockEntity.getBlockPos().immutable());
                     }
                 }

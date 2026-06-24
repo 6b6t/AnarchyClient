@@ -25,7 +25,7 @@ public final class AutoToolModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.screen != null) {
+        if (player == null || client.level == null || client.gui.screen() != null) {
             return;
         }
         if (this.requireAttack.value() && !client.options.keyAttack.isDown()) {

@@ -7,7 +7,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -45,24 +45,24 @@ public final class TrajectoriesModule extends Module {
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         PoseStack matrices = context.poseStack();
-        MultiBufferSource consumers = context.bufferSource();
-        if (client.level == null || player == null || matrices == null || consumers == null) {
+        SubmitNodeCollector submits = context.submitNodeCollector();
+        if (client.level == null || player == null || matrices == null || submits == null) {
             return;
         }
 
-        Vec3 camera = client.gameRenderer.getMainCamera().position();
+        Vec3 camera = client.gameRenderer.mainCamera().position();
         WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 245, 145, this.opacity.value().intValue());
-        drawHeldTrajectory(client, player, matrices, consumers, camera, color);
+        drawHeldTrajectory(client, player, matrices, submits, camera, color);
         for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
             if (entity instanceof Projectile projectile && projectile.getDeltaMovement().lengthSqr() > 0.0025) {
-                drawSimulated(client, projectile.position(), projectile.getDeltaMovement(), 0.03, matrices, consumers, camera,
+                drawSimulated(client, projectile.position(), projectile.getDeltaMovement(), 0.03, matrices, submits, camera,
                         new WorldLineRenderer.Color(145, 205, 255, this.opacity.value().intValue()));
             }
         }
     }
 
     private void drawHeldTrajectory(final Minecraft client, final LocalPlayer player, final PoseStack matrices,
-                                    final MultiBufferSource consumers, final Vec3 camera, final WorldLineRenderer.Color color) {
+                                    final SubmitNodeCollector submits, final Vec3 camera, final WorldLineRenderer.Color color) {
         ItemStack stack = player.getMainHandItem();
         double velocity = initialVelocity(stack.getItem());
         if (velocity <= 0.0) {
@@ -74,11 +74,11 @@ public final class TrajectoriesModule extends Module {
         }
         Vec3 start = player.getEyePosition().add(player.getViewVector(0.0F).scale(0.2));
         Vec3 motion = player.getViewVector(0.0F).normalize().scale(velocity);
-        drawSimulated(client, start, motion, gravity(stack.getItem()), matrices, consumers, camera, color);
+        drawSimulated(client, start, motion, gravity(stack.getItem()), matrices, submits, camera, color);
     }
 
     private void drawSimulated(final Minecraft client, final Vec3 start, final Vec3 initialMotion, final double gravity,
-                               final PoseStack matrices, final MultiBufferSource consumers, final Vec3 camera,
+                               final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 camera,
                                final WorldLineRenderer.Color color) {
         Vec3 position = start;
         Vec3 motion = initialMotion;
@@ -86,7 +86,7 @@ public final class TrajectoriesModule extends Module {
             Vec3 next = position.add(motion);
             BlockHitResult hit = client.level.clip(new ClipContext(position, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));
             Vec3 end = hit.getType() == HitResult.Type.MISS ? next : hit.getLocation();
-            WorldLineRenderer.line(matrices, consumers, position.subtract(camera), end.subtract(camera), color);
+            WorldLineRenderer.line(matrices, submits, position.subtract(camera), end.subtract(camera), color);
             if (hit.getType() != HitResult.Type.MISS) {
                 return;
             }

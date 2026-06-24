@@ -33,7 +33,7 @@ public final class AutoFishModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.screen != null) {
+        if (player == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
         if (!player.getMainHandItem().is(Items.FISHING_ROD) && !player.getOffhandItem().is(Items.FISHING_ROD)) {

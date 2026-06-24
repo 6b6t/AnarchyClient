@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-AnarchyClient is a single-module Fabric client utility mod for Minecraft `26.1.2`. The Gradle build currently uses Fabric Loom `1.16.2`, Fabric Loader `0.19.2`, Fabric API `0.148.2+26.1.2`, Java `25`, and publishes jars as `anarchyclient-mc-26.1.2`.
+AnarchyClient is a single-module Fabric client utility mod for Minecraft `26.2`. The Gradle build currently uses Fabric Loom `1.17.12`, Fabric Loader `0.19.3`, Fabric API `0.153.0+26.2`, Java `25`, and publishes jars as `anarchyclient-mc-26.2`.
 
 Main Java code lives in `src/main/java`. Project-owned classes are rooted under `net.blockhost.anarchyclient`:
 
@@ -43,7 +43,7 @@ Starts the Fabric development client using the `run/` directory. The in-game cli
 ./gradlew genSources
 ```
 
-Decompiles the Minecraft `26.1.2` sources through Fabric Loom. Use this when you need to inspect Minecraft internals instead of guessing API shape.
+Decompiles the Minecraft `26.2` sources through Fabric Loom. Use this when you need to inspect Minecraft internals instead of guessing API shape.
 
 ## Fabric Loom Minecraft Sources
 
@@ -53,13 +53,13 @@ After `./gradlew genSources`, Loom writes the generated Minecraft sources jar un
 .gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-<hash>/<minecraftVersion>/minecraft-merged-<hash>-<minecraftVersion>-sources.jar
 ```
 
-For this project and version, the current local path is:
+For this project and version, the source jar path has this shape after `./gradlew genSources`:
 
 ```text
-.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-7657feb047/26.1.2/minecraft-merged-7657feb047-26.1.2-sources.jar
+.gradle/loom-cache/minecraftMaven/net/minecraft/minecraft-merged-<hash>/26.2/minecraft-merged-<hash>-26.2-sources.jar
 ```
 
-The adjacent `minecraft-merged-7657feb047-26.1.2.jar` is the compiled merged Minecraft jar. Treat everything under `.gradle/loom-cache` as generated reference material. Do not commit those cache files.
+The adjacent `minecraft-merged-<hash>-26.2.jar` is the compiled merged Minecraft jar. Treat everything under `.gradle/loom-cache` as generated reference material. Do not commit those cache files.
 
 ## Coding Style & Naming Conventions
 

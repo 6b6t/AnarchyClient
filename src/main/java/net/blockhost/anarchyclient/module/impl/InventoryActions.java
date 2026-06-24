@@ -84,7 +84,7 @@ final class InventoryActions {
 
     static boolean canUseInventoryMenu(final Minecraft client, final LocalPlayer player) {
         return client.gameMode != null
-                && client.screen == null
+                && client.gui.screen() == null
                 && player.containerMenu != null
                 && player.inventoryMenu != null
                 && player.containerMenu.containerId == InventoryMenu.CONTAINER_ID;

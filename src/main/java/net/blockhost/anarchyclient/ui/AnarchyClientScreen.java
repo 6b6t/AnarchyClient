@@ -60,7 +60,6 @@ public final class AnarchyClientScreen extends Screen {
     public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         graphics.blurBeforeThisStratum();
         graphics.fillGradient(0, 0, this.width, this.height, MATRIX_BACKDROP_TOP, MATRIX_BACKDROP_BOTTOM);
-        this.minecraft.gui.extractDeferredSubtitles();
     }
 
     @Override

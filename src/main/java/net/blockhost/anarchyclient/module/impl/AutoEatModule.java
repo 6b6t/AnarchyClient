@@ -57,7 +57,7 @@ public final class AutoEatModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.screen != null || client.gameMode == null) {
+        if (player == null || client.gui.screen() != null || client.gameMode == null) {
             return;
         }
         if (this.previousSlot >= 0 && !player.isUsingItem()) {

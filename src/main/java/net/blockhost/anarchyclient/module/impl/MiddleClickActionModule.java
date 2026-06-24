@@ -38,7 +38,7 @@ public final class MiddleClickActionModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.screen != null) {
+        if (player == null || client.gameMode == null || client.gui.screen() != null) {
             this.wasPressed = false;
             return;
         }

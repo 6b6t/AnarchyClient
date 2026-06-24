@@ -51,7 +51,7 @@ public final class CoordinatesHudModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (client.player == null || client.screen instanceof AnarchyClientScreen) {
+        if (client.player == null || client.gui.screen() instanceof AnarchyClientScreen) {
             return;
         }
         HudText.panel(client, graphics, this.lines(client), this.corner.value(), 0xFFECE8E0);

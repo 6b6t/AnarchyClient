@@ -28,7 +28,7 @@ public final class ActiveModulesHudModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (client.player == null || client.screen instanceof AnarchyClientScreen) {
+        if (client.player == null || client.gui.screen() instanceof AnarchyClientScreen) {
             return;
         }
         List<String> lines = this.modules.all().stream()

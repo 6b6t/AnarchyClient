@@ -1,12 +1,12 @@
 plugins {
-    id("net.fabricmc.fabric-loom") version "1.16.2"
+    id("net.fabricmc.fabric-loom") version "1.17.12"
     id("io.freefair.lombok") version "9.5.0"
     id("maven-publish")
 }
 
-val minecraftVersion = "26.1.2"
-val loaderVersion = "0.19.2"
-val fabricApiVersion = "0.148.2+26.1.2"
+val minecraftVersion = "26.2"
+val loaderVersion = "0.19.3"
+val fabricApiVersion = "0.153.0+26.2"
 val immutablesVersion = "2.12.2"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
