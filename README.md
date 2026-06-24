@@ -8,6 +8,12 @@ Preview of how it looks in-game.
 
 ![Demo Preview](assets/demo.png)
 
+## Features
+
+- Custom, unique in-game GUI built on a tailored Rivet interface for fast, consistent module control.
+- Vulkan and OpenGL renderer support through Blaze3D.
+- Gameplay focus modules: `KillAura`, `AutoTotem`, `AutoArmor`, and `AutoSprint` for combat/survival flow; `Parkour`, `NoFall`, `SafeWalk`, and `AutoEat` for movement and player consistency; `Tracers`, `ESP`/`StorageEsp`/`ItemEsp`, `CoordinatesHud`, `ActiveModulesHud`, and `HudText` for awareness and visual feedback.
+
 ## How to use 
 
 1. Grab the latest Fabric .jar from https://github.com/6b6t/AnarchyClient/releases/latest
