@@ -41,9 +41,9 @@ public final class AutoFishModule extends Module {
         }
         InteractionHand hand = player.getMainHandItem().is(Items.FISHING_ROD) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (player.fishing == null) {
-            if (this.autoCast.value() && this.recastCooldownTicks-- <= 0) {
+            if (this.autoCast.value() && this.isRecastReady()) {
                 client.gameMode.useItem(player, hand);
-                this.recastCooldownTicks = 10;
+                this.resetRecastCooldown();
             }
             return;
         }
@@ -52,7 +52,19 @@ public final class AutoFishModule extends Module {
                 && player.fishing.getDeltaMovement().y < -0.08
                 && player.fishing.isInWater()) {
             client.gameMode.useItem(player, hand);
-            this.recastCooldownTicks = 10;
+            this.resetRecastCooldown();
         }
+    }
+
+    boolean isRecastReady() {
+        if (this.recastCooldownTicks > 0) {
+            this.recastCooldownTicks--;
+            return false;
+        }
+        return true;
+    }
+
+    void resetRecastCooldown() {
+        this.recastCooldownTicks = 10;
     }
 }

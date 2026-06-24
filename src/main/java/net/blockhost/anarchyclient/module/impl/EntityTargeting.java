@@ -4,9 +4,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Arrays;
@@ -24,13 +23,12 @@ final class EntityTargeting {
     }
 
     static boolean isHostile(final Entity entity) {
-        return entity instanceof Monster
+        return entity instanceof Enemy
                 || entity instanceof Mob mob && mob.getType().getCategory() == MobCategory.MONSTER;
     }
 
     static boolean isPassive(final Entity entity) {
-        return entity instanceof Animal
-                || entity instanceof Mob mob && mob.getType().getCategory() == MobCategory.CREATURE;
+        return entity instanceof Mob mob && mob.getType().getCategory().isFriendly();
     }
 
     static boolean isValidLivingTarget(final Entity entity, final Player player) {
@@ -55,7 +53,7 @@ final class EntityTargeting {
         if (options.ignoreTeams() && entity.getTeam() != null && player.getTeam() != null && entity.getTeam().isAlliedTo(player.getTeam())) {
             return false;
         }
-        if (options.antiBot() && looksLikeBot(entity)) {
+        if (options.antiBot() && isPlayer(entity) && looksLikeBot(entity.getScoreboardName(), entity.tickCount)) {
             return false;
         }
         return options.players() && isPlayer(entity)
@@ -81,13 +79,12 @@ final class EntityTargeting {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    private static boolean looksLikeBot(final Entity entity) {
-        String name = entity.getScoreboardName();
+    static boolean looksLikeBot(final String name, final int tickCount) {
         return name.isBlank()
                 || name.length() > 32
                 || name.startsWith("CIT-")
                 || name.startsWith("NPC")
-                || entity.tickCount < 5;
+                || tickCount < 5;
     }
 
     record Options(boolean players, boolean hostiles, boolean passives, boolean invisibles,
