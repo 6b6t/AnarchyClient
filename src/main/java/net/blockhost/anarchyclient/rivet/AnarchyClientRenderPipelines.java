@@ -11,19 +11,26 @@ import net.minecraft.resources.Identifier;
 
 public final class AnarchyClientRenderPipelines {
 
-    public static final RenderPipeline MATRIX_PANEL = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-            .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/matrix_panel"))
-            .withVertexShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/matrix_panel"))
-            .withFragmentShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/matrix_panel"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
-            .withPrimitiveTopology(PrimitiveTopology.QUADS)
-            .build());
+    public static final RenderPipeline MATRIX_PANEL = panelPipeline("matrix_panel");
+    public static final RenderPipeline AURORA_PANEL = panelPipeline("aurora_panel");
+    public static final RenderPipeline GRID_PANEL = panelPipeline("grid_panel");
+    public static final RenderPipeline EMBER_PANEL = panelPipeline("ember_panel");
 
     private AnarchyClientRenderPipelines() {
     }
 
+    private static RenderPipeline panelPipeline(final String name) {
+        return RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+                .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/" + name))
+                .withVertexShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/panel"))
+                .withFragmentShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/" + name))
+                .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+                .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX_COLOR)
+                .withPrimitiveTopology(PrimitiveTopology.QUADS)
+                .build());
+    }
+
     public static void initialize() {
-        // Loads the static pipeline during client initialization.
+        // Loads the static pipelines during client initialization.
     }
 }

@@ -2,6 +2,8 @@ package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.module.impl.BackgroundModule;
+import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.Blaze3DBackend;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.RivetInputMapper;
@@ -52,7 +54,7 @@ public final class AnarchyClientScreen extends Screen {
         if (this.rivet != null) {
             this.rivet.size(new Size(this.width, this.height));
             this.rivet.onMouseMove(new MouseMoveEvent(mouseX, mouseY));
-            new Blaze3DRenderer(Minecraft.getInstance(), graphics).render(this.rivet.render());
+            new Blaze3DRenderer(Minecraft.getInstance(), graphics, this.backgroundDesign()).render(this.rivet.render());
         }
     }
 
@@ -60,6 +62,14 @@ public final class AnarchyClientScreen extends Screen {
     public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         graphics.blurBeforeThisStratum();
         graphics.fillGradient(0, 0, this.width, this.height, MATRIX_BACKDROP_TOP, MATRIX_BACKDROP_BOTTOM);
+    }
+
+    private BackgroundDesign backgroundDesign() {
+        return this.modules.find("background")
+                .filter(BackgroundModule.class::isInstance)
+                .map(BackgroundModule.class::cast)
+                .map(BackgroundModule::selectedDesign)
+                .orElse(BackgroundDesign.NONE);
     }
 
     @Override

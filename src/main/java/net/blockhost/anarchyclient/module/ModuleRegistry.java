@@ -11,6 +11,7 @@ import net.blockhost.anarchyclient.module.impl.AutoRespawnModule;
 import net.blockhost.anarchyclient.module.impl.AutoSprintModule;
 import net.blockhost.anarchyclient.module.impl.AutoToolModule;
 import net.blockhost.anarchyclient.module.impl.AutoWeaponModule;
+import net.blockhost.anarchyclient.module.impl.BackgroundModule;
 import net.blockhost.anarchyclient.module.impl.BlockEspModule;
 import net.blockhost.anarchyclient.module.impl.ChatSpammerModule;
 import net.blockhost.anarchyclient.module.impl.CoordinatesHudModule;
@@ -65,5 +66,6 @@ public final class ModuleRegistry {
         modules.register(new AutoGgModule());
         modules.register(new ChatSpammerModule());
         modules.register(new NyanCatGifSpammerModule());
+        modules.register(new BackgroundModule());
     }
 }

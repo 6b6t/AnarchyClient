@@ -21,10 +21,12 @@ public final class Blaze3DRenderer {
 
     private final Minecraft client;
     private final GuiGraphicsExtractor graphics;
+    private final RenderPipeline backgroundPipeline;
 
-    public Blaze3DRenderer(final Minecraft client, final GuiGraphicsExtractor graphics) {
+    public Blaze3DRenderer(final Minecraft client, final GuiGraphicsExtractor graphics, final BackgroundDesign background) {
         this.client = client;
         this.graphics = graphics;
+        this.backgroundPipeline = background.pipeline();
     }
 
     public void render(final RenderList renderList) {
@@ -206,8 +208,8 @@ public final class Blaze3DRenderer {
         if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        if (this.usesMatrixPanel(width, height, color)) {
-            this.submitShape(GuiShapeGeometry.solidRect(x, y, width, height, argb(color)), AnarchyClientRenderPipelines.MATRIX_PANEL, true);
+        if (this.backgroundPipeline != null && this.isPanelSurface(width, height, color)) {
+            this.submitShape(GuiShapeGeometry.solidRect(x, y, width, height, argb(color)), this.backgroundPipeline, true);
             return;
         }
         this.graphics.fill(RenderPipelines.GUI, MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height), argb(color));
@@ -226,8 +228,8 @@ public final class Blaze3DRenderer {
     }
 
     private void submitSurfaceShape(final List<GuiShapeGeometry.Vertex> vertices, final float width, final float height, final Color color) {
-        if (this.usesMatrixPanel(width, height, color)) {
-            this.submitShape(vertices, AnarchyClientRenderPipelines.MATRIX_PANEL, true);
+        if (this.backgroundPipeline != null && this.isPanelSurface(width, height, color)) {
+            this.submitShape(vertices, this.backgroundPipeline, true);
             return;
         }
         this.submitShape(vertices);
@@ -256,7 +258,7 @@ public final class Blaze3DRenderer {
         ));
     }
 
-    private boolean usesMatrixPanel(final float width, final float height, final Color color) {
+    private boolean isPanelSurface(final float width, final float height, final Color color) {
         if (width < 8 || height < 8) {
             return false;
         }
