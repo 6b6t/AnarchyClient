@@ -1,5 +1,8 @@
 # AnarchyClient
 
+[![Build](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml/badge.svg)](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Fabric `26.2` utility mod for 6b6t.
 
 ## Demo
@@ -29,3 +32,7 @@ Preview of how it looks in-game.
 ```
 
 The client menu opens with `Right Shift`. Rivet is pulled from `com.github.Lenni0451.rivet:core:40c6f6c3a7`; upstream source is available at `https://github.com/Lenni0451/rivet`.
+
+## License
+
+[MIT](LICENSE)
