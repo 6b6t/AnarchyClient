@@ -26,6 +26,11 @@ import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayoutOptions;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.layout.grid.GridLayout;
+import net.lenni0451.rivet.layout.grid.GridLayoutOptions;
+import net.lenni0451.rivet.layout.list.HorizontalListLayout;
 import net.lenni0451.rivet.layout.list.VerticalListLayout;
 import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.math.Rectangle;
@@ -66,17 +71,13 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private static final float TOP_TAB_START_X = 144F;
     private static final float TOP_TAB_PADDING_X = 8F;
     private static final float TOP_TAB_GAP = 18F;
-    private static final float TOP_TAB_UNDERLINE_Y = 34F;
     private static final float CATEGORY_ROW_X = 10F;
     private static final float CATEGORY_ROW_HEIGHT = 34F;
     private static final float CATEGORY_ROW_GAP = 6F;
-    private static final float CATEGORY_ICON_CENTER_X = 28F;
-    private static final float CATEGORY_TEXT_X = 48F;
-    private static final float CATEGORY_COUNT_X_FROM_RIGHT = 24F;
-    private static final float SEARCH_ICON_CENTER_X = 13F;
     private static final float SWITCH_WIDTH = 24F;
     private static final float SWITCH_HEIGHT = 12F;
     private static final float ICON_BOX = 20F;
+    private static final float ICON_BUTTON_SIZE = 28F;
     // The Lucide TTF rasterizes as a 20px icon font in Minecraft. Keep the
     // component box at that size so Rivet's component scissor does not crop it,
     // and calibrate the font's y anchor once inside IconNode.
@@ -520,6 +521,54 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return (float) MathUtils.clamp(value, min, max);
     }
 
+    private static GridLayoutOptions fillCell(final int column, final int row) {
+        return cell(column, row, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+    }
+
+    private static GridLayoutOptions fillCell(final int column, final int row, final int columnSpan, final int rowSpan) {
+        return cell(column, row, columnSpan, rowSpan, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+    }
+
+    private static GridLayoutOptions weightedCell(final int column, final int row, final float weightX, final float weightY) {
+        return cell(column, row, 1, 1, weightX, weightY, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+    }
+
+    private static GridLayoutOptions weightedCell(final int column, final int row, final int columnSpan, final int rowSpan,
+                                                  final float weightX, final float weightY) {
+        return cell(column, row, columnSpan, rowSpan, weightX, weightY, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+    }
+
+    private static GridLayoutOptions fixedCell(final int column, final int row, final float width, final float height,
+                                               final GridAnchor anchor) {
+        return cell(column, row, 1, 1, 0F, 0F, anchor, GridFill.NONE, Padding.EMPTY, width, height);
+    }
+
+    private static GridLayoutOptions fixedCell(final int column, final int row, final int columnSpan, final int rowSpan,
+                                               final float width, final float height, final GridAnchor anchor) {
+        return cell(column, row, columnSpan, rowSpan, 0F, 0F, anchor, GridFill.NONE, Padding.EMPTY, width, height);
+    }
+
+    private static GridLayoutOptions cell(final int column, final int row, final int columnSpan, final int rowSpan,
+                                          final float weightX, final float weightY, final GridAnchor anchor,
+                                          final GridFill fill, final Padding padding,
+                                          final Float width, final Float height) {
+        // Rivet's GridLayout uses child ideal sizes as row/column minimums. Flexible cells
+        // need explicit zero bases so text and scroll content cannot push fixed UI outside.
+        Float effectiveWidth = width;
+        if (effectiveWidth == null && weightX > 0F) {
+            effectiveWidth = 0F;
+        }
+        Float effectiveHeight = height;
+        if (effectiveHeight == null && weightY > 0F) {
+            effectiveHeight = 0F;
+        }
+        return new GridLayoutOptions(column, row, columnSpan, rowSpan, weightX, weightY, anchor, fill, padding, effectiveWidth, effectiveHeight);
+    }
+
+    private static Padding padding(final float left, final float top, final float right, final float bottom) {
+        return new Padding(left, top, right, bottom);
+    }
+
     private static FormattedLabel label(final String text, final Color color) {
         FormattedLabel label = new FormattedLabel(new TextLine(new TextSection(text, TextFormat.DEFAULT.withColor(color))));
         label.horizontalOrigin(TextOrigin.Horizontal.LOGICAL_LEFT);
@@ -642,6 +691,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return new IconNode(icon, color);
     }
 
+    private static IconButton iconButton(final String icon, final Supplier<Color> color, final Runnable action) {
+        return new IconButton(() -> icon, color, action);
+    }
+
+    private static TextAction textAction(final String text, final Color color, final Runnable action) {
+        return new TextAction(() -> text, () -> color, action);
+    }
+
     private static Surface surface(final Color color) {
         return new Surface(() -> color);
     }
@@ -721,7 +778,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void render(final Renderer renderer, final Rectangle bounds) {
-            drawIcon(renderer, this.icon.get(), bounds.width() / 2F, bounds.height() / 2F, this.color.get());
+            float iconX = (bounds.width() - ICON_BOX) / 2F;
+            float iconY = (bounds.height() - ICON_BOX) / 2F;
+            renderer.translate(iconX, iconY, () -> drawIcon(renderer, this.icon.get(), ICON_BOX / 2F, ICON_BOX / 2F, this.color.get()));
         }
 
         @Override
@@ -732,6 +791,114 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         public String layoutDebugLabel() {
             return this.icon.get();
+        }
+    }
+
+    private static final class IconButton extends Component implements LayoutDebugLabel {
+
+        private final Supplier<String> icon;
+        private final Supplier<Color> color;
+        private final Runnable action;
+
+        private IconButton(final Supplier<String> icon, final Supplier<Color> color, final Runnable action) {
+            this.icon = icon;
+            this.color = color;
+            this.action = action;
+            this.fixedSize(new Size(ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            drawIcon(renderer, this.icon.get(), bounds.width() / 2F, bounds.height() / 2F, this.color.get());
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (event.button() != MouseButton.LEFT) {
+                return false;
+            }
+            this.action.run();
+            return true;
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(ICON_BUTTON_SIZE, ICON_BUTTON_SIZE);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.icon.get();
+        }
+    }
+
+    private static final class TextAction extends Component implements LayoutDebugLabel {
+
+        private final Supplier<String> text;
+        private final Supplier<Color> color;
+        private final Runnable action;
+
+        private TextAction(final Supplier<String> text, final Supplier<Color> color, final Runnable action) {
+            this.text = text;
+            this.color = color;
+            this.action = action;
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            String value = this.text.get();
+            if (value.isBlank()) {
+                return;
+            }
+            drawFittedText(this, renderer, value, this.color.get(), bounds.width(), bounds.height() / 2F,
+                    bounds.width(), TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (event.button() != MouseButton.LEFT) {
+                return false;
+            }
+            this.action.run();
+            return true;
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            if (this.rivet() == null) {
+                return Size.EMPTY;
+            }
+            String value = this.text.get();
+            if (value.isBlank()) {
+                return Size.EMPTY;
+            }
+            return new Size(Math.min(textWidth(this, value, this.color.get()), constraints.width()), this.rivet().backend().getTextHeight());
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.text.get();
+        }
+    }
+
+    private static final class BrandBlock extends Component {
+
+        private BrandBlock() {
+            this.interactive(false);
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            float brandWidth = textWidth(this, "ANARCHY", TEXT);
+            drawFittedText(this, renderer, "ANARCHY", TEXT, 14F, bounds.height() / 2F,
+                    Math.max(0F, bounds.width() - 44F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+            drawFittedText(this, renderer, "client", ACTIVE, 14F + brandWidth + 6F, bounds.height() / 2F,
+                    Math.max(0F, bounds.width() - brandWidth - 20F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(TOP_TAB_START_X, TOP_BAR_HEIGHT);
         }
     }
 
@@ -782,10 +949,16 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
      */
     private static final class ToggleSwitch extends Component {
 
+        private final BooleanSupplier visible;
         private final BooleanSupplier state;
         private final Runnable onToggle;
 
         private ToggleSwitch(final BooleanSupplier state, final Runnable onToggle) {
+            this(() -> true, state, onToggle);
+        }
+
+        private ToggleSwitch(final BooleanSupplier visible, final BooleanSupplier state, final Runnable onToggle) {
+            this.visible = visible;
             this.state = state;
             this.onToggle = onToggle;
             this.fixedSize(new Size(SWITCH_WIDTH, SWITCH_HEIGHT));
@@ -793,12 +966,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void render(final Renderer renderer, final Rectangle bounds) {
+            if (!this.visible.getAsBoolean()) {
+                return;
+            }
             drawSwitch(renderer, 0, 0, this.state.getAsBoolean());
         }
 
         @Override
         protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() == MouseButton.LEFT) {
+            if (this.visible.getAsBoolean() && event.button() == MouseButton.LEFT) {
                 this.onToggle.run();
                 return true;
             }
@@ -852,89 +1028,42 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class TopBar extends Container {
 
-        private static final float REFRESH_ICON_X_FROM_RIGHT = 50F;
-        private static final float SETTINGS_ICON_X_FROM_RIGHT = 24F;
-
         private final Surface background = surface(SHELL);
-        private final TextNode brand = textNode("ANARCHY", TEXT);
-        private final TextNode client = textNode("client", ACTIVE);
+        private final BrandBlock brand = new BrandBlock();
+        private final Container tabStrip = new Container(new HorizontalListLayout((int) TOP_TAB_GAP, true));
         private final List<TopTab> tabs = List.of(
                 new TopTab(Tab.MODULES),
                 new TopTab(Tab.FRIENDS),
                 new TopTab(Tab.PROFILES)
         );
-        private final IconNode refreshIcon = iconNode("refresh-cw", () -> ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED);
-        private final IconNode settingsIcon = iconNode("settings", () -> ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE);
+        private final IconButton refreshIcon = iconButton("refresh-cw", () -> ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED, () -> {
+            ModulePanel.this.refreshModuleList();
+            ModulePanel.this.inspector.refresh();
+        });
+        private final IconButton settingsIcon = iconButton("settings", () -> ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE,
+                () -> ModulePanel.this.openDrawer(Drawer.ROOT));
 
         private TopBar() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
+            this.background.layoutOptions(fillCell(0, 0, 4, 1));
+            this.brand.layoutOptions(fixedCell(0, 0, TOP_TAB_START_X, TOP_BAR_HEIGHT, GridAnchor.CENTER));
+            this.tabStrip.layoutOptions(weightedCell(1, 0, 1F, 0F));
+            this.refreshIcon.layoutOptions(fixedCell(2, 0, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
+            this.settingsIcon.layoutOptions(cell(3, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 10F, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
             this.addChild(this.background);
             this.addChild(this.brand);
-            this.addChild(this.client);
             for (TopTab tab : this.tabs) {
-                this.addChild(tab);
+                this.tabStrip.addChild(tab);
             }
+            this.addChild(this.tabStrip);
             this.addChild(this.refreshIcon);
             this.addChild(this.settingsIcon);
         }
 
         @Override
-        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() != MouseButton.LEFT) {
-                return false;
-            }
-            float x = event.x();
-            if (super.onComponentMouseDown(event, bounds)) {
-                return true;
-            }
-            if (this.iconHit(event, x, this.iconCenterX(bounds.width(), SETTINGS_ICON_X_FROM_RIGHT), bounds.height())) {
-                ModulePanel.this.openDrawer(Drawer.ROOT);
-                return true;
-            }
-            if (this.iconHit(event, x, this.iconCenterX(bounds.width(), REFRESH_ICON_X_FROM_RIGHT), bounds.height())) {
-                ModulePanel.this.refreshModuleList();
-                ModulePanel.this.inspector.refresh();
-                return true;
-            }
-            return false;
-        }
-
-        private boolean iconHit(final MouseButtonEvent event, final float x, final float centerX, final float barHeight) {
-            return Math.abs(x - centerX) <= ICON_BOX / 2F + 3F
-                    && Math.abs(event.y() - barHeight / 2F) <= ICON_BOX / 2F + 4F;
-        }
-
-        @Override
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), TOP_BAR_HEIGHT);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.brand.layoutOptions(new AbsoluteLayoutOptions(14F, 0F, textWidth(this, "ANARCHY", TEXT), size.height()));
-            float clientX = 14F + textWidth(this, "ANARCHY", TEXT) + 6F;
-            this.client.layoutOptions(new AbsoluteLayoutOptions(clientX, 0F, textWidth(this, "client", ACTIVE), size.height()));
-
-            float tabX = TOP_TAB_START_X;
-            for (TopTab tab : this.tabs) {
-                float width = tab.tabWidth();
-                tab.layoutOptions(new AbsoluteLayoutOptions(tabX, 0F, width, size.height()));
-                tabX += width + TOP_TAB_GAP;
-            }
-
-            this.refreshIcon.layoutOptions(this.iconOptions(size, REFRESH_ICON_X_FROM_RIGHT));
-            this.settingsIcon.layoutOptions(this.iconOptions(size, SETTINGS_ICON_X_FROM_RIGHT));
-            super.computeLayout(size);
-        }
-
-        private AbsoluteLayoutOptions iconOptions(final Size size, final float xFromRight) {
-            float centerX = this.iconCenterX(size.width(), xFromRight);
-            return new AbsoluteLayoutOptions(centerX - ICON_BOX / 2F, size.height() / 2F - ICON_BOX / 2F, ICON_BOX, ICON_BOX);
-        }
-
-        private float iconCenterX(final float width, final float xFromRight) {
-            return width - xFromRight;
         }
     }
 
@@ -945,10 +1074,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface underline;
 
         private TopTab(final Tab tab) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.tab = tab;
             this.label = textNode(tab.label, () -> ModulePanel.this.selectedTab == tab ? TEXT : FAINT);
             this.underline = surface(() -> ModulePanel.this.selectedTab == this.tab ? ACTIVE : Color.TRANSPARENT);
+            this.label.layoutOptions(cell(0, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(TOP_TAB_PADDING_X, 0F, TOP_TAB_PADDING_X, 0F), null, null));
+            this.underline.layoutOptions(cell(0, 1, 1, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    padding(TOP_TAB_PADDING_X, 0F, TOP_TAB_PADDING_X, 0F), null, 2F));
             this.addChild(this.label);
             this.addChild(this.underline);
         }
@@ -960,14 +1093,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 return true;
             }
             return false;
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            float labelWidth = this.labelWidth();
-            this.label.layoutOptions(new AbsoluteLayoutOptions(TOP_TAB_PADDING_X, 0F, labelWidth, size.height()));
-            this.underline.layoutOptions(new AbsoluteLayoutOptions(TOP_TAB_PADDING_X, TOP_TAB_UNDERLINE_Y, labelWidth, 2F));
-            super.computeLayout(size);
         }
 
         @Override
@@ -996,27 +1121,22 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final List<CategoryButton> buttons = new ArrayList<>();
 
         private CategoryRail() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, (int) CATEGORY_ROW_GAP));
+            int rows = ModuleCategory.values().length + 1;
+            this.background.layoutOptions(fillCell(0, 0, 1, rows));
+            this.title.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(22F, 0F, 22F, 0F), null, 56F));
             this.addChild(this.background);
             this.addChild(this.title);
+            int row = 1;
             for (ModuleCategory category : ModuleCategory.values()) {
                 CategoryButton button = new CategoryButton(category);
+                button.layoutOptions(cell(0, row, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(CATEGORY_ROW_X, 0F, CATEGORY_ROW_X, 0F), null, CATEGORY_ROW_HEIGHT));
                 this.buttons.add(button);
                 this.addChild(button);
+                row++;
             }
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.title.layoutOptions(new AbsoluteLayoutOptions(22F, 0F, Math.max(0F, size.width() - 44F), 56F));
-            float y = 56F;
-            for (CategoryButton button : this.buttons) {
-                button.layoutOptions(new AbsoluteLayoutOptions(CATEGORY_ROW_X, y,
-                        Math.max(0F, size.width() - CATEGORY_ROW_X * 2F), CATEGORY_ROW_HEIGHT));
-                y += CATEGORY_ROW_HEIGHT + CATEGORY_ROW_GAP;
-            }
-            super.computeLayout(size);
         }
 
         @Override
@@ -1036,7 +1156,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode count;
 
         private CategoryButton(final ModuleCategory category) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.category = category;
             this.background = surface(() -> this.selected() ? SURFACE_ACTIVE : Color.TRANSPARENT);
             this.stripe = surface(() -> this.selected() ? ACTIVE : Color.TRANSPARENT);
@@ -1045,29 +1165,19 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.count = textNode(this::enabledText, () -> this.selected() ? ACTIVE : FAINT)
                     .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
             this.fixedSize(new Size(-1, CATEGORY_ROW_HEIGHT));
+            this.background.layoutOptions(fillCell(0, 0, 4, 1));
+            this.stripe.layoutOptions(fixedCell(0, 0, 3F, CATEGORY_ROW_HEIGHT, GridAnchor.LEFT));
+            this.icon.layoutOptions(cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(5F, 0F, 5F, 0F), ICON_BOX, ICON_BOX));
+            this.label.layoutOptions(cell(2, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(4F, 0F, 8F, 0F), null, null));
+            this.count.layoutOptions(cell(3, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 8F, 0F), 36F, null));
             this.addChild(this.background);
             this.addChild(this.stripe);
             this.addChild(this.icon);
             this.addChild(this.label);
             this.addChild(this.count);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.stripe.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, 3F, size.height()));
-            this.icon.layoutOptions(new AbsoluteLayoutOptions(
-                    CATEGORY_ICON_CENTER_X - CATEGORY_ROW_X - ICON_BOX / 2F,
-                    (size.height() - ICON_BOX) / 2F,
-                    ICON_BOX,
-                    ICON_BOX
-            ));
-            float labelX = CATEGORY_TEXT_X - CATEGORY_ROW_X;
-            this.label.layoutOptions(new AbsoluteLayoutOptions(labelX, 0F,
-                    Math.max(0F, size.width() - labelX - 36F), size.height()));
-            this.count.layoutOptions(new AbsoluteLayoutOptions(0F, 0F,
-                    Math.max(0F, size.width() - CATEGORY_COUNT_X_FROM_RIGHT + CATEGORY_ROW_X), size.height()));
-            super.computeLayout(size);
         }
 
         @Override
@@ -1111,8 +1221,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class SearchInput extends Container implements LayoutDebugLabel {
 
-        private static final float FIELD_X = 22F;
-        private static final float FIELD_Y = 2F;
         private static final float FIELD_RIGHT_PADDING = 4F;
         private static final float FIELD_VERTICAL_PADDING = 4F;
 
@@ -1125,13 +1233,19 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         };
 
         private SearchInput(final String placeholder) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.placeholder = placeholder;
             this.placeholderLabel = textNode(() -> this.field.text().isEmpty() && !this.fieldFocused() ? this.placeholder : "", () -> FAINT);
             this.field.backgroundColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.outlineColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.focusedOutlineColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.valueChangeListener().add(value -> this.changeListener.accept(value));
+            this.background.layoutOptions(fillCell(0, 0, 2, 1));
+            this.icon.layoutOptions(fixedCell(0, 0, ICON_BOX, ICON_BOX, GridAnchor.CENTER));
+            this.placeholderLabel.layoutOptions(cell(1, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, FIELD_RIGHT_PADDING, 0F), null, null));
+            this.field.layoutOptions(cell(1, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, FIELD_VERTICAL_PADDING / 2F, FIELD_RIGHT_PADDING, FIELD_VERTICAL_PADDING / 2F), null, null));
             this.addChild(this.background);
             this.addChild(this.icon);
             this.addChild(this.placeholderLabel);
@@ -1140,27 +1254,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private void onChange(final Consumer<String> listener) {
             this.changeListener = listener;
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.icon.layoutOptions(new AbsoluteLayoutOptions(
-                    SEARCH_ICON_CENTER_X - ICON_BOX / 2F,
-                    (size.height() - ICON_BOX) / 2F,
-                    ICON_BOX,
-                    ICON_BOX
-            ));
-            float textX = FIELD_X + this.field.innerPadding().value().left();
-            this.placeholderLabel.layoutOptions(new AbsoluteLayoutOptions(textX, 0F,
-                    Math.max(0F, size.width() - textX - FIELD_RIGHT_PADDING), size.height()));
-            this.field.layoutOptions(new AbsoluteLayoutOptions(
-                    FIELD_X,
-                    FIELD_Y,
-                    Math.max(0F, size.width() - FIELD_X - FIELD_RIGHT_PADDING),
-                    Math.max(0F, size.height() - FIELD_VERTICAL_PADDING)
-            ));
-            super.computeLayout(size);
         }
 
         @Override
@@ -1180,8 +1273,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class ModuleRow extends Container implements LayoutDebugLabel {
 
-        private static final float SWITCH_X_FROM_RIGHT = 58F;
-        private static final float KEBAB_X_FROM_RIGHT = 22F;
         private static final float TEXT_SLOT_HEIGHT = 18F;
 
         private final Module module;
@@ -1194,7 +1285,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private boolean hovered;
 
         private ModuleRow(final Module module) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.module = module;
             this.background = surface(this::backgroundColor);
             this.stripe = surface(this::stripeColor);
@@ -1223,25 +1314,25 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void computeLayout(final Size size) {
-            float controlsX = size.width() - 66F;
-            float summaryX = 152F;
             boolean twoLine = this.showSummary();
-            float nameMaxWidth = twoLine ? summaryX - 28F : controlsX - 28F;
-            float nameCenterY = twoLine ? size.height() / 2F - 7F : size.height() / 2F;
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.stripe.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, 3F, size.height()));
-            this.name.layoutOptions(new AbsoluteLayoutOptions(18F, nameCenterY - TEXT_SLOT_HEIGHT / 2F,
-                    Math.max(0F, nameMaxWidth), TEXT_SLOT_HEIGHT));
-            this.summary.layoutOptions(new AbsoluteLayoutOptions(summaryX, size.height() / 2F + 7F - TEXT_SLOT_HEIGHT / 2F,
-                    Math.max(0F, controlsX - summaryX - 16F), TEXT_SLOT_HEIGHT));
-            this.toggle.layoutOptions(new AbsoluteLayoutOptions(
-                    size.width() - SWITCH_X_FROM_RIGHT, (size.height() - SWITCH_HEIGHT) / 2F, SWITCH_WIDTH, SWITCH_HEIGHT));
-            this.menuIcon.layoutOptions(new AbsoluteLayoutOptions(
-                    size.width() - KEBAB_X_FROM_RIGHT - ICON_BOX / 2F,
-                    (size.height() - ICON_BOX) / 2F,
-                    ICON_BOX,
-                    ICON_BOX
-            ));
+            int rows = twoLine ? 2 : 1;
+            this.background.layoutOptions(fillCell(0, 0, 5, rows));
+            this.stripe.layoutOptions(fixedCell(0, 0, 1, rows, 3F, size.height(), GridAnchor.LEFT));
+            this.toggle.layoutOptions(cell(3, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 2F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
+            this.menuIcon.layoutOptions(cell(4, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 12F, 0F), ICON_BOX, ICON_BOX));
+            if (twoLine) {
+                this.name.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(15F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
+                this.summary.layoutOptions(cell(1, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(15F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
+            } else {
+                this.name.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(15F, 0F, 12F, 0F), null, null));
+                this.summary.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(15F, 0F, 12F, 0F), null, null));
+            }
             super.computeLayout(size);
         }
 
@@ -1298,8 +1389,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.settings);
 
         private ModuleInspector() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             ModulePanel.this.configureScroll(this.scroll);
+            this.background.layoutOptions(fillCell(0, 0, 1, 2));
+            this.header.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, 86F));
+            this.scroll.layoutOptions(weightedCell(0, 1, 1F, 1F));
             this.addChild(this.background);
             this.addChild(this.header);
             this.addChild(this.scroll);
@@ -1337,15 +1431,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void computeLayout(final Size size) {
-            float headerHeight = 86F;
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.header.layoutOptions(new AbsoluteLayoutOptions(0, 0, size.width(), headerHeight));
-            this.scroll.layoutOptions(new AbsoluteLayoutOptions(0, headerHeight, size.width(), Math.max(0, size.height() - headerHeight)));
-            super.computeLayout(size);
-        }
-
-        @Override
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
@@ -1358,14 +1443,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class InspectorHeader extends Container implements LayoutDebugLabel {
 
-        private static final float TITLE_CENTER_Y = 30F;
-        private static final float TOGGLE_X_FROM_RIGHT = 40F;
-        private static final float ON_LABEL_X_FROM_RIGHT = 48F;
-
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
-        private final TextNode emptyLabel = textNode(() -> ModulePanel.this.selectedModule == null ? "No module" : "", () -> MUTED);
-        private final TextNode title = textNode(() -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.name(), () -> TEXT);
+        private final TextNode title = textNode(() -> ModulePanel.this.selectedModule == null ? "No module" : ModulePanel.this.selectedModule.name(),
+                () -> ModulePanel.this.selectedModule == null ? MUTED : TEXT);
         private final TextNode category = textNode(
                 () -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.category().displayName(),
                 () -> FAINT
@@ -1376,47 +1457,34 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final ToggleSwitch toggle;
 
         private InspectorHeader() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.toggle = new ToggleSwitch(
+                    () -> ModulePanel.this.selectedModule != null,
                     () -> ModulePanel.this.selectedModule != null && ModulePanel.this.selectedModule.enabled(),
                     () -> {
                         if (ModulePanel.this.selectedModule != null) {
                             ModulePanel.this.toggleModule(ModulePanel.this.selectedModule);
                         }
                     });
+            this.background.layoutOptions(fillCell(0, 0, 4, 3));
+            this.divider.layoutOptions(cell(0, 2, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.title.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(16F, 0F, 12F, 0F), null, 18F));
+            this.category.layoutOptions(cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(16F, 0F, 12F, 0F), null, 18F));
+            this.star.layoutOptions(fixedCell(1, 0, 1, 2, ICON_BOX, ICON_BOX, GridAnchor.CENTER));
+            this.enabledLabel.layoutOptions(cell(2, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 4F, 0F), 30F, null));
+            this.toggle.layoutOptions(cell(3, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 16F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
             this.addChild(this.background);
             this.addChild(this.divider);
-            this.addChild(this.emptyLabel);
             this.addChild(this.title);
             this.addChild(this.category);
             this.addChild(this.enabledLabel);
             this.addChild(this.star);
             this.addChild(this.toggle);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.emptyLabel.layoutOptions(new AbsoluteLayoutOptions(16F, 0F, Math.max(0F, size.width() - 32F), size.height()));
-            this.title.layoutOptions(new AbsoluteLayoutOptions(16F, TITLE_CENTER_Y - 9F,
-                    Math.max(0F, size.width() - 112F), 18F));
-            this.category.layoutOptions(new AbsoluteLayoutOptions(16F, 52F - 9F,
-                    Math.max(0F, size.width() - 82F), 18F));
-            String onText = this.enabledLabel();
-            Color onColor = this.enabledLabelColor();
-            float onX = size.width() - ON_LABEL_X_FROM_RIGHT;
-            float onWidth = Math.max(26F, textWidth(this, onText, onColor));
-            this.enabledLabel.layoutOptions(new AbsoluteLayoutOptions(onX - onWidth, TITLE_CENTER_Y - 9F, onWidth, 18F));
-            float starX = onX - onWidth - 14F;
-            this.star.layoutOptions(new AbsoluteLayoutOptions(starX - ICON_BOX / 2F, TITLE_CENTER_Y - ICON_BOX / 2F, ICON_BOX, ICON_BOX));
-            if (ModulePanel.this.selectedModule != null) {
-                this.toggle.layoutOptions(new AbsoluteLayoutOptions(
-                        size.width() - TOGGLE_X_FROM_RIGHT, TITLE_CENTER_Y - SWITCH_HEIGHT / 2F, SWITCH_WIDTH, SWITCH_HEIGHT));
-            } else {
-                this.toggle.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, 0F, 0F));
-            }
-            super.computeLayout(size);
         }
 
         @Override
@@ -1458,19 +1526,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode label;
 
         private GroupHeader(final String name) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.name = name;
             this.fixedSize(new Size(-1, 24));
             this.label = textNode(name, MUTED);
+            this.background.layoutOptions(fillCell(0, 0));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 12F, 0F), null, null));
             this.addChild(this.background);
             this.addChild(this.label);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 24F), size.height()));
-            super.computeLayout(size);
         }
 
         @Override
@@ -1493,7 +1557,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode label;
 
         private SettingLine(final Setting<?> setting, final float height) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.setting = setting;
             this.height = height;
             this.fixedSize(new Size(-1, height));
@@ -1505,10 +1569,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F,
-                    Math.max(0F, this.labelMaxWidth(size.width())), size.height()));
+            this.background.layoutOptions(fillCell(0, 0, 4, 2));
+            this.divider.layoutOptions(cell(0, 1, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, null));
             this.layoutControls(size);
             super.computeLayout(size);
         }
@@ -1519,10 +1584,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         protected void layoutControls(final Size size) {
-        }
-
-        protected float labelMaxWidth(final float width) {
-            return width - 64F;
         }
 
         @Override
@@ -1559,12 +1620,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         protected void layoutControls(final Size size) {
-            this.toggle.layoutOptions(new AbsoluteLayoutOptions(
-                    size.width() - 38F,
-                    (size.height() - SWITCH_HEIGHT) / 2F,
-                    SWITCH_WIDTH,
-                    SWITCH_HEIGHT
-            ));
+            this.toggle.layoutOptions(cell(3, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 14F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
         }
 
         private void toggle() {
@@ -1591,20 +1648,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        protected float labelMaxWidth(final float width) {
-            return width - Math.min(130F, Math.max(80F, width * 0.46F));
-        }
-
-        @Override
         protected void layoutControls(final Size size) {
             float valueWidth = Math.min(100F, Math.max(0F, size.width() * 0.42F));
-            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 28F - valueWidth, 0F, valueWidth, size.height()));
-            this.icon.layoutOptions(new AbsoluteLayoutOptions(
-                    size.width() - 20F - ICON_BOX / 2F,
-                    (size.height() - ICON_BOX) / 2F,
-                    ICON_BOX,
-                    ICON_BOX
-            ));
+            this.value.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 2F, 0F), valueWidth, null));
+            this.icon.layoutOptions(cell(3, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
         }
 
         @Override
@@ -1634,12 +1683,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         protected void layoutControls(final Size size) {
             float valueWidth = Math.min(112F, Math.max(0F, size.width() * 0.44F));
-            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 12F - valueWidth, 0F, valueWidth, size.height()));
-        }
-
-        @Override
-        protected float labelMaxWidth(final float width) {
-            return width - Math.min(136F, Math.max(84F, width * 0.48F));
+            this.value.layoutOptions(cell(2, 0, 2, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 12F, 0F), valueWidth, null));
         }
     }
 
@@ -1654,7 +1699,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Runnable save;
 
         private NumberSettingRow(final NumberSetting setting, final Runnable save) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.setting = setting;
             this.save = save;
             this.label = textNode(setting.name(), MUTED);
@@ -1675,12 +1720,16 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
             float valueWidth = Math.min(58F, Math.max(0F, size.width() * 0.25F));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 6F, Math.max(0F, size.width() - 74F), 18F));
-            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 12F - valueWidth, 6F, valueWidth, 18F));
-            this.slider.layoutOptions(new AbsoluteLayoutOptions(12F, 28F, Math.max(0F, size.width() - 24F), 16F));
+            this.background.layoutOptions(fillCell(0, 0, 2, 3));
+            this.divider.layoutOptions(cell(0, 2, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 4F, 8F, 0F), null, 18F));
+            this.value.layoutOptions(cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 4F, 12F, 0F), valueWidth, 18F));
+            this.slider.layoutOptions(cell(0, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.HORIZONTAL,
+                    padding(12F, 0F, 12F, 0F), null, 16F));
             super.computeLayout(size);
         }
 
@@ -1706,7 +1755,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Runnable save;
 
         private TextSettingRow(final Setting<?> setting, final TextValueSetting textSetting, final Runnable save) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.setting = setting;
             this.textSetting = textSetting;
             this.save = save;
@@ -1729,22 +1778,19 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public void computeLayout(final Size size) {
-            float fieldWidth = this.fieldWidth(size.width());
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F,
-                    Math.max(0F, size.width() - fieldWidth - 30F), size.height()));
-            this.field.layoutOptions(new AbsoluteLayoutOptions(size.width() - fieldWidth - 10F, 7F, fieldWidth, 24F));
+            this.background.layoutOptions(fillCell(0, 0, 2, 2));
+            this.divider.layoutOptions(cell(0, 1, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, null));
+            this.field.layoutOptions(cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 7F, 10F, 7F), null, 24F));
             super.computeLayout(size);
         }
 
         @Override
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), TEXT_ROW_HEIGHT);
-        }
-
-        private float fieldWidth(final float rowWidth) {
-            return Math.max(0F, Math.min(rowWidth - 28F, Math.max(86F, rowWidth * 0.48F)));
         }
 
         @Override
@@ -1763,8 +1809,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
 
         private FriendsPanel() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(8, 4));
             ModulePanel.this.configureScroll(this.scroll);
+            this.background.layoutOptions(fillCell(0, 0, 2, 3));
+            this.title.layoutOptions(cell(0, 0, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    Padding.EMPTY, null, 24F));
+            this.addField.layoutOptions(weightedCell(0, 1, 1F, 0F));
+            this.addButton.layoutOptions(cell(1, 1, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    Padding.EMPTY, 62F, 28F));
+            this.scroll.layoutOptions(weightedCell(0, 2, 2, 1, 1F, 1F));
             this.addChild(this.background);
             this.addChild(this.title);
             this.addChild(this.addField);
@@ -1793,16 +1846,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.title.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), 24F));
-            this.addField.layoutOptions(new AbsoluteLayoutOptions(0F, 28F, Math.max(0F, size.width() - 70F), 28F));
-            this.addButton.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 62F), 28F, 62F, 28F));
-            this.scroll.layoutOptions(new AbsoluteLayoutOptions(0F, 66F, size.width(), Math.max(0F, size.height() - 66F)));
-            super.computeLayout(size);
-        }
-
-        @Override
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
@@ -1819,38 +1862,29 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface background = surface(SURFACE_SOFT);
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode name;
-        private final TextNode remove = textNode("Remove", MUTED)
-                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        private final TextAction remove;
 
         private FriendRow(final String friend) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.friend = friend;
             this.fixedSize(new Size(-1, 34));
             this.name = textNode(friend, TEXT);
+            this.remove = textAction("Remove", MUTED, () -> {
+                if (AnarchyClient.FRIENDS.remove(this.friend)) {
+                    ModulePanel.this.friendsPanel.refresh();
+                }
+            });
+            this.background.layoutOptions(fillCell(0, 0, 2, 2));
+            this.divider.layoutOptions(cell(0, 1, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.name.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, null));
+            this.remove.layoutOptions(cell(1, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 12F, 0F), 76F, null));
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.name);
             this.addChild(this.remove);
-        }
-
-        @Override
-        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() == MouseButton.LEFT && event.x() > bounds.width() - 76F) {
-                if (AnarchyClient.FRIENDS.remove(this.friend)) {
-                    ModulePanel.this.friendsPanel.refresh();
-                }
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.name.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 96F), size.height()));
-            this.remove.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 88F), 0F, 76F, size.height()));
-            super.computeLayout(size);
         }
 
         @Override
@@ -1874,8 +1908,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
 
         private ProfilesPanel() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(8, 4));
             ModulePanel.this.configureScroll(this.scroll);
+            this.background.layoutOptions(fillCell(0, 0, 2, 3));
+            this.title.layoutOptions(cell(0, 0, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    Padding.EMPTY, null, 24F));
+            this.nameField.layoutOptions(weightedCell(0, 1, 1F, 0F));
+            this.saveButton.layoutOptions(cell(1, 1, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    Padding.EMPTY, 84F, 28F));
+            this.scroll.layoutOptions(weightedCell(0, 2, 2, 1, 1F, 1F));
             this.addChild(this.background);
             this.addChild(this.title);
             this.addChild(this.nameField);
@@ -1907,16 +1948,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.title.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), 24F));
-            this.nameField.layoutOptions(new AbsoluteLayoutOptions(0F, 28F, Math.max(0F, size.width() - 92F), 28F));
-            this.saveButton.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 84F), 28F, 84F, 28F));
-            this.scroll.layoutOptions(new AbsoluteLayoutOptions(0F, 66F, size.width(), Math.max(0F, size.height() - 66F)));
-            super.computeLayout(size);
-        }
-
-        @Override
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
@@ -1934,55 +1965,43 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode name;
         private final TextNode modules;
-        private final TextNode apply = textNode("Apply", ACTIVE)
-                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        private final TextNode delete = textNode("Delete", MUTED)
-                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        private final TextAction apply;
+        private final TextAction delete;
 
         private ProfileRow(final ProfileManager.ProfileSummary profile) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.profile = profile;
             this.fixedSize(new Size(-1, 44));
             this.name = textNode(profile.name(), TEXT);
             this.modules = textNode(profile.modules() + " modules", FAINT);
+            this.apply = textAction("Apply", ACTIVE, () -> {
+                AnarchyClient.PROFILES.apply(this.profile.name(), ModulePanel.this.modules);
+                ModulePanel.this.config.save();
+                ModulePanel.this.refreshModuleList();
+                ModulePanel.this.inspector.refresh();
+            });
+            this.delete = textAction("Delete", MUTED, () -> {
+                if (AnarchyClient.PROFILES.delete(this.profile.name())) {
+                    ModulePanel.this.profilesPanel.refresh();
+                }
+            });
+            this.background.layoutOptions(fillCell(0, 0, 3, 3));
+            this.divider.layoutOptions(cell(0, 2, 3, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.name.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, 18F));
+            this.modules.layoutOptions(cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, 18F));
+            this.apply.layoutOptions(cell(1, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 10F, 0F), 52F, null));
+            this.delete.layoutOptions(cell(2, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 12F, 0F), 50F, null));
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.name);
             this.addChild(this.modules);
             this.addChild(this.apply);
             this.addChild(this.delete);
-        }
-
-        @Override
-        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() != MouseButton.LEFT) {
-                return false;
-            }
-            if (event.x() > bounds.width() - 62F) {
-                if (AnarchyClient.PROFILES.delete(this.profile.name())) {
-                    ModulePanel.this.profilesPanel.refresh();
-                }
-                return true;
-            }
-            if (event.x() > bounds.width() - 124F) {
-                AnarchyClient.PROFILES.apply(this.profile.name(), ModulePanel.this.modules);
-                ModulePanel.this.config.save();
-                ModulePanel.this.refreshModuleList();
-                ModulePanel.this.inspector.refresh();
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.name.layoutOptions(new AbsoluteLayoutOptions(12F, size.height() / 2F - 16F, Math.max(0F, size.width() - 142F), 18F));
-            this.modules.layoutOptions(new AbsoluteLayoutOptions(12F, size.height() / 2F - 2F, Math.max(0F, size.width() - 142F), 18F));
-            this.apply.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 124F), 0F, 52F, size.height()));
-            this.delete.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 62F), 0F, 50F, size.height()));
-            super.computeLayout(size);
         }
 
         @Override
@@ -1999,30 +2018,40 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private final class SettingsDrawer extends Container implements LayoutDebugLabel {
 
         private static final float HEADER_HEIGHT = 38F;
-        private static final float ROW_START_Y = 42F;
         private static final float ROW_HEIGHT = 36F;
 
         private final Surface background = surface(Color.fromRGBA(13, 13, 15, 246)).outline(BORDER_SOFT, 1F);
         private final Surface headerDivider = horizontalRule(BORDER_SOFT);
         private final IconNode titleIcon = iconNode(this::titleIcon, () -> MUTED);
         private final TextNode title = textNode(this::title, () -> TEXT);
-        private final IconNode closeIcon = iconNode("x", FAINT);
-        private final List<DrawerChild> bodyChildren = new ArrayList<>();
+        private final IconButton closeIcon = iconButton("x", () -> FAINT, () -> {
+            ModulePanel.this.drawer = Drawer.NONE;
+            ModulePanel.this.requestFrame();
+        });
+        private final Container body = new Container(new VerticalListLayout(0, true));
 
         private SettingsDrawer() {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 4));
+            this.background.layoutOptions(fillCell(0, 0, 1, 2));
+            this.headerDivider.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.titleIcon.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.LEFT, GridFill.NONE,
+                    padding(10F, 0F, 0F, 0F), ICON_BOX, ICON_BOX));
+            this.title.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(34F, 0F, 38F, 0F), null, HEADER_HEIGHT));
+            this.closeIcon.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.RIGHT, GridFill.NONE,
+                    padding(0F, 0F, 6F, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
+            this.body.layoutOptions(weightedCell(0, 1, 1F, 1F));
             this.addChild(this.background);
             this.addChild(this.headerDivider);
             this.addChild(this.titleIcon);
             this.addChild(this.title);
             this.addChild(this.closeIcon);
+            this.addChild(this.body);
         }
 
         private void refresh() {
-            for (DrawerChild child : this.bodyChildren) {
-                this.removeChild(child.component());
-            }
-            this.bodyChildren.clear();
+            this.body.clearChildren();
             switch (ModulePanel.this.drawer) {
                 case ROOT -> this.buildRoot();
                 case MODULES -> this.buildModules();
@@ -2031,34 +2060,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 }
             }
             ModulePanel.this.requestFrame();
-        }
-
-        @Override
-        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() != MouseButton.LEFT) {
-                return false;
-            }
-            if (event.x() >= bounds.width() - 28F && event.y() <= 38F) {
-                ModulePanel.this.drawer = Drawer.NONE;
-                ModulePanel.this.requestFrame();
-                return true;
-            }
-            return super.onComponentMouseDown(event, bounds);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.headerDivider.layoutOptions(new AbsoluteLayoutOptions(0F, HEADER_HEIGHT, size.width(), 1F));
-            float iconY = (HEADER_HEIGHT - ICON_BOX) / 2F;
-            float titleX = 10F + ICON_BOX + 4F;
-            this.titleIcon.layoutOptions(new AbsoluteLayoutOptions(10F, iconY, ICON_BOX, ICON_BOX));
-            this.title.layoutOptions(new AbsoluteLayoutOptions(titleX, 0F, Math.max(0F, size.width() - titleX - 38F), HEADER_HEIGHT));
-            this.closeIcon.layoutOptions(new AbsoluteLayoutOptions(size.width() - 10F - ICON_BOX, iconY, ICON_BOX, ICON_BOX));
-            for (DrawerChild child : this.bodyChildren) {
-                child.component().layoutOptions(new AbsoluteLayoutOptions(0F, child.y(), size.width(), child.height()));
-            }
-            super.computeLayout(size);
         }
 
         @Override
@@ -2090,33 +2091,33 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private void buildRoot() {
-            this.addRow(0, new DrawerRow("General", false, null, () -> {
+            this.addRow(new DrawerRow("General", false, null, () -> {
             }));
-            this.addRow(1, new DrawerRow("Modules", true, null, () -> this.openNestedDrawer(Drawer.MODULES)));
-            this.addRow(2, new DrawerRow("GUI", true, null, () -> this.openNestedDrawer(Drawer.GUI)));
-            this.addRow(3, new DrawerRow("Sound", false, null, () -> {
+            this.addRow(new DrawerRow("Modules", true, null, () -> this.openNestedDrawer(Drawer.MODULES)));
+            this.addRow(new DrawerRow("GUI", true, null, () -> this.openNestedDrawer(Drawer.GUI)));
+            this.addRow(new DrawerRow("Sound", false, null, () -> {
             }));
-            this.addRow(4, new DrawerRow("Notifications", false, null, () -> {
+            this.addRow(new DrawerRow("Notifications", false, null, () -> {
             }));
-            this.addRow(5, new DrawerRow("GUI Theme", false, () -> true, () -> {
+            this.addRow(new DrawerRow("GUI Theme", false, () -> true, () -> {
             }));
-            this.addBody(new ColorStrip(), ROW_START_Y + 5F * ROW_HEIGHT + 29F, 2F);
+            this.addBody(new ColorStrip());
         }
 
         private void buildModules() {
-            this.addRow(0, new DrawerRow("Show disabled modules", false,
+            this.addRow(new DrawerRow("Show disabled modules", false,
                     () -> ModulePanel.this.showDisabledModules,
                     () -> {
                         ModulePanel.this.showDisabledModules = !ModulePanel.this.showDisabledModules;
                         ModulePanel.this.refreshModuleList();
                     }));
-            this.addRow(1, new DrawerRow("Enabled modules first", false,
+            this.addRow(new DrawerRow("Enabled modules first", false,
                     () -> ModulePanel.this.enabledFirst,
                     () -> {
                         ModulePanel.this.enabledFirst = !ModulePanel.this.enabledFirst;
                         ModulePanel.this.refreshModuleList();
                     }));
-            this.addRow(2, new DrawerRow("Show module summaries", false,
+            this.addRow(new DrawerRow("Show module summaries", false,
                     () -> ModulePanel.this.showSummaries,
                     () -> {
                         ModulePanel.this.showSummaries = !ModulePanel.this.showSummaries;
@@ -2125,26 +2126,25 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private void buildGui() {
-            this.addRow(0, new DrawerRow("Compact rows", false,
+            this.addRow(new DrawerRow("Compact rows", false,
                     () -> ModulePanel.this.compactRows,
                     () -> {
                         ModulePanel.this.compactRows = !ModulePanel.this.compactRows;
                         ModulePanel.this.refreshModuleList();
                     }));
-            this.addRow(1, new DrawerRow("Wide inspector", false,
+            this.addRow(new DrawerRow("Wide inspector", false,
                     () -> ModulePanel.this.wideInspector,
                     () -> ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector));
-            this.addRow(2, new DrawerRow("GUI style - Central", false, null, () -> {
+            this.addRow(new DrawerRow("GUI style - Central", false, null, () -> {
             }));
         }
 
-        private void addRow(final int index, final DrawerRow row) {
-            this.addBody(row, ROW_START_Y + index * ROW_HEIGHT, ROW_HEIGHT);
+        private void addRow(final DrawerRow row) {
+            this.addBody(row);
         }
 
-        private void addBody(final Component component, final float y, final float height) {
-            this.bodyChildren.add(new DrawerChild(component, y, height));
-            this.addChild(component);
+        private void addBody(final Component component) {
+            this.body.addChild(component);
         }
 
         private void openNestedDrawer(final Drawer drawer) {
@@ -2152,8 +2152,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.refresh();
         }
 
-        private record DrawerChild(Component component, float y, float height) {
-        }
     }
 
     private final class DrawerRow extends Container implements LayoutDebugLabel {
@@ -2168,7 +2166,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final ToggleSwitch toggle;
 
         private DrawerRow(final String text, final boolean arrow, final BooleanSupplier checked, final Runnable action) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.text = text;
             this.checked = checked;
             this.action = action;
@@ -2176,13 +2174,22 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.arrow = arrow ? iconNode("chevron-right", FAINT) : null;
             this.toggle = checked == null ? null : new ToggleSwitch(this::checked, this::runAction);
             this.fixedSize(new Size(-1, SettingsDrawer.ROW_HEIGHT));
+            this.background.layoutOptions(fillCell(0, 0, 3, 2));
+            this.divider.layoutOptions(cell(0, 1, 3, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, null));
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.label);
             if (this.arrow != null) {
+                this.arrow.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                        padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
                 this.addChild(this.arrow);
             }
             if (this.toggle != null) {
+                this.toggle.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                        padding(0F, 0F, 14F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
                 this.addChild(this.toggle);
             }
         }
@@ -2197,30 +2204,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 return true;
             }
             return false;
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 58F), size.height()));
-            if (this.toggle != null) {
-                this.toggle.layoutOptions(new AbsoluteLayoutOptions(
-                        size.width() - 38F,
-                        (size.height() - SWITCH_HEIGHT) / 2F,
-                        SWITCH_WIDTH,
-                        SWITCH_HEIGHT
-                ));
-            }
-            if (this.arrow != null) {
-                this.arrow.layoutOptions(new AbsoluteLayoutOptions(
-                        size.width() - 20F - ICON_BOX / 2F,
-                        (size.height() - ICON_BOX) / 2F,
-                        ICON_BOX,
-                        ICON_BOX
-                ));
-            }
-            super.computeLayout(size);
         }
 
         @Override
@@ -2287,19 +2270,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode label;
 
         private EmptyState(final String message) {
-            super(AbsoluteLayout.INSTANCE);
+            super(new GridLayout(0, 0));
             this.message = message;
             this.fixedSize(new Size(-1, 72));
             this.label = textNode(message, FAINT);
+            this.background.layoutOptions(fillCell(0, 0));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 12F, 0F), null, null));
             this.addChild(this.background);
             this.addChild(this.label);
-        }
-
-        @Override
-        public void computeLayout(final Size size) {
-            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
-            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 24F), size.height()));
-            super.computeLayout(size);
         }
 
         @Override
