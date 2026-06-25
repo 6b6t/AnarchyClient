@@ -37,5 +37,12 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("no_jump_delay").orElseThrow());
         assertNotNull(modules.find("vehicle_one_hit").orElseThrow());
         assertNotNull(modules.find("block_in").orElseThrow());
+        assertNotNull(modules.find("boost").orElseThrow());
+        assertNotNull(modules.find("glide").orElseThrow());
+        assertNotNull(modules.find("extra_elytra").orElseThrow());
+        assertNotNull(modules.find("anti_vanish").orElseThrow());
+        assertNotNull(modules.find("silent_disconnect").orElseThrow());
+        assertNotNull(modules.find("skeleton_esp").orElseThrow());
+        assertNotNull(modules.find("auto_pot").orElseThrow());
     }
 }

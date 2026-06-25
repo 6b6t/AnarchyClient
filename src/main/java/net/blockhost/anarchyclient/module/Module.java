@@ -84,7 +84,7 @@ public abstract class Module {
             this.onDisable();
         }
         if (this.activationListener != null) {
-            this.activationListener.onActivationChanged(this, enabled);
+            this.activationListener.onActivationChanged(this, this.enabled);
         }
     }
 

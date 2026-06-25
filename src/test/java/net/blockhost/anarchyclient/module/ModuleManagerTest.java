@@ -86,6 +86,19 @@ class ModuleManagerTest {
     }
 
     @Test
+    void immediateSelfDisableDoesNotRegisterEventListener() {
+        ModuleManager manager = new ModuleManager();
+        SelfDisablingModule module = new SelfDisablingModule();
+        manager.register(module);
+
+        module.enabled(true);
+        manager.tick(null);
+
+        assertFalse(module.enabled());
+        assertEquals(0, module.ticks);
+    }
+
+    @Test
     void returnsTrueWhenEnabledModulePreventsEdgeFall() {
         ModuleManager manager = new ModuleManager();
         TestModule enabled = new TestModule("enabled", ModuleCategory.MOVEMENT);
@@ -229,6 +242,25 @@ class ModuleManagerTest {
 
         private GroupedModule() {
             super("grouped", "Grouped", ModuleCategory.COMBAT);
+        }
+    }
+
+    private static final class SelfDisablingModule extends Module {
+
+        private int ticks;
+
+        private SelfDisablingModule() {
+            super("self_disabling", "Self Disabling", ModuleCategory.MISC);
+        }
+
+        @Override
+        protected void onEnable() {
+            this.enabled(false);
+        }
+
+        @Override
+        public void tick(final Minecraft client) {
+            this.ticks++;
         }
     }
 }

@@ -5,8 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -100,5 +102,34 @@ class AdditionalModulesTest {
                 new BlockPos(10, 65, -6),
                 new BlockPos(10, 66, -5)
         ), BlockInModule.targetPositions(base));
+    }
+
+    @Test
+    void boostUsesHorizontalLookDirectionOnly() {
+        assertEquals(new Vec3(0.0, 0.0, 2.0), BoostModule.boostVector(new Vec3(0.0, -0.8, 1.0), 2.0));
+        assertEquals(Vec3.ZERO, BoostModule.boostVector(new Vec3(0.0, 1.0, 0.0), 2.0));
+    }
+
+    @Test
+    void glideCapsOnlyExcessiveDownwardVelocity() {
+        assertEquals(-0.125, GlideModule.cappedFallVelocity(-0.5, 0.125));
+        assertEquals(-0.05, GlideModule.cappedFallVelocity(-0.05, 0.125));
+    }
+
+    @Test
+    void antiVanishIgnoresNormalLeaveMessages() {
+        UUID vanished = UUID.randomUUID();
+        Map<UUID, String> previous = new HashMap<>();
+        previous.put(vanished, "AdminName");
+
+        assertTrue(AntiVanishModule.vanishedPlayers(previous, Map.of(), List.of("AdminName left the game"), true).isEmpty());
+        assertEquals(List.of("AdminName"), AntiVanishModule.vanishedPlayers(previous, Map.of(), List.of(), true));
+    }
+
+    @Test
+    void autoPotUsesHealingOnlyAtOrBelowThreshold() {
+        assertTrue(AutoPotModule.shouldUseHealing(10.0F, 10.0));
+        assertTrue(AutoPotModule.shouldUseHealing(9.5F, 10.0));
+        assertFalse(AutoPotModule.shouldUseHealing(10.5F, 10.0));
     }
 }
