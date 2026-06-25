@@ -71,4 +71,12 @@ class AnarchyClientCommandsTest {
 
         assertEquals("two words", setting.value());
     }
+
+    @Test
+    void centerModesSnapCoordinatesPredictably() {
+        assertEquals(12.5, AnarchyClientCommands.CenterMode.MIDDLE.coordinate(12.2));
+        assertEquals(-4.5, AnarchyClientCommands.CenterMode.MIDDLE.coordinate(-4.8));
+        assertEquals(12.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(12.2));
+        assertEquals(-5.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(-4.8));
+    }
 }

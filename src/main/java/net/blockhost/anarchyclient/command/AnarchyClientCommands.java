@@ -17,8 +17,14 @@ import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Locale;
@@ -52,6 +58,17 @@ public final class AnarchyClientCommands {
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestModules)
                                 .executes(AnarchyClientCommands::toggleModule)))
+                .then(literal("panic")
+                        .executes(AnarchyClientCommands::panic))
+                .then(literal("center")
+                        .then(literal("middle")
+                                .executes(context -> centerPlayer(context, CenterMode.MIDDLE)))
+                        .then(literal("corner")
+                                .executes(context -> centerPlayer(context, CenterMode.CORNER))))
+                .then(literal("clear-chat")
+                        .executes(AnarchyClientCommands::clearChat))
+                .then(literal("reconnect")
+                        .executes(AnarchyClientCommands::reconnect))
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestModules)
@@ -93,6 +110,55 @@ public final class AnarchyClientCommands {
         module.toggle();
         AnarchyClient.CONFIG.save();
         context.getSource().sendFeedback(Component.literal(module.name() + " is now " + (module.enabled() ? "on" : "off") + "."));
+        return SUCCESS;
+    }
+
+    private static int panic(final CommandContext<FabricClientCommandSource> context) {
+        long disabled = AnarchyClient.MODULES.all().stream()
+                .filter(Module::enabled)
+                .peek(module -> module.enabled(false))
+                .count();
+        AnarchyClient.CONFIG.save();
+        context.getSource().sendFeedback(Component.literal("Disabled " + disabled + " module" + (disabled == 1 ? "" : "s") + "."));
+        return SUCCESS;
+    }
+
+    private static int centerPlayer(final CommandContext<FabricClientCommandSource> context, final CenterMode mode) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.player.connection == null) {
+            context.getSource().sendError(Component.literal("You must be in-game to center yourself."));
+            return 0;
+        }
+        double x = mode.coordinate(client.player.getX());
+        double z = mode.coordinate(client.player.getZ());
+        client.player.setPos(x, client.player.getY(), z);
+        client.player.connection.send(new ServerboundMovePlayerPacket.Pos(
+                x,
+                client.player.getY(),
+                z,
+                client.player.onGround(),
+                client.player.horizontalCollision
+        ));
+        context.getSource().sendFeedback(Component.literal("Centered player."));
+        return SUCCESS;
+    }
+
+    private static int clearChat(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        client.gui.hud.getChat().clearMessages(false);
+        context.getSource().sendFeedback(Component.literal("Cleared chat."));
+        return SUCCESS;
+    }
+
+    private static int reconnect(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        ServerData server = client.getCurrentServer();
+        if (server == null) {
+            context.getSource().sendError(Component.literal("No multiplayer server is available to reconnect to."));
+            return 0;
+        }
+        ServerAddress address = ServerAddress.parseString(server.ip);
+        ConnectScreen.startConnecting(new TitleScreen(), client, address, server, false, null);
         return SUCCESS;
     }
 
@@ -240,5 +306,22 @@ public final class AnarchyClientCommands {
             return SharedSuggestionProvider.suggest(select.options(), builder);
         }
         return builder.buildFuture();
+    }
+
+    enum CenterMode {
+        MIDDLE {
+            @Override
+            double coordinate(final double value) {
+                return Math.floor(value) + 0.5;
+            }
+        },
+        CORNER {
+            @Override
+            double coordinate(final double value) {
+                return Math.floor(value);
+            }
+        };
+
+        abstract double coordinate(double value);
     }
 }

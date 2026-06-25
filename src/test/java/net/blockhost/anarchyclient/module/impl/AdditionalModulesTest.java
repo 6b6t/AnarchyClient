@@ -1,13 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AdditionalModulesTest {
@@ -56,5 +59,46 @@ class AdditionalModulesTest {
     @Test
     void hitChanceCanForceAttacks() {
         assertTrue(KillAuraModule.shouldAttack(new java.util.Random(0), 100));
+    }
+
+    @Test
+    void antiSpawnpointCancelsOnlySpawnChangingUses() {
+        assertTrue(AntiSpawnpointModule.shouldCancelUse(true, false, true, false));
+        assertTrue(AntiSpawnpointModule.shouldCancelUse(false, true, false, true));
+        assertFalse(AntiSpawnpointModule.shouldCancelUse(false, true, true, false));
+        assertFalse(AntiSpawnpointModule.shouldCancelUse(true, false, false, true));
+    }
+
+    @Test
+    void coordLoggerFormatsKnownEventsAndPositions() {
+        assertEquals("Wither spawned", CoordLoggerModule.worldEventName(1023));
+        assertEquals("End portal opened", CoordLoggerModule.worldEventName(1038));
+        assertEquals("Global event 9", CoordLoggerModule.worldEventName(9));
+        assertEquals("1.0, 65.0, -3.0", CoordLoggerModule.formatPosition(new BlockPos(1, 65, -3)));
+    }
+
+    @Test
+    void autoSoupRecognizesSoupStacksAndHands() {
+        assertTrue(AutoSoupModule.isSoupItemId("mushroom_stew"));
+        assertTrue(AutoSoupModule.isSoupItemId("rabbit_stew"));
+        assertTrue(AutoSoupModule.isSoupItemId("beetroot_soup"));
+        assertFalse(AutoSoupModule.isSoupItemId("bowl"));
+    }
+
+    @Test
+    void blockInTargetsExpectedShellAroundPlayer() {
+        BlockPos base = new BlockPos(10, 64, -5);
+        assertIterableEquals(List.of(
+                new BlockPos(10, 63, -5),
+                new BlockPos(11, 64, -5),
+                new BlockPos(9, 64, -5),
+                new BlockPos(10, 64, -4),
+                new BlockPos(10, 64, -6),
+                new BlockPos(11, 65, -5),
+                new BlockPos(9, 65, -5),
+                new BlockPos(10, 65, -4),
+                new BlockPos(10, 65, -6),
+                new BlockPos(10, 66, -5)
+        ), BlockInModule.targetPositions(base));
     }
 }

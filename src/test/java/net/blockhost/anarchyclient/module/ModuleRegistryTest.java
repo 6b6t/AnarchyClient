@@ -29,5 +29,13 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("auto_extinguish").orElseThrow());
         assertNotNull(modules.find("new_chunks").orElseThrow());
         assertNotNull(modules.find("chest_aura").orElseThrow());
+        assertNotNull(modules.find("aim_assist").orElseThrow());
+        assertNotNull(modules.find("anti_spawnpoint").orElseThrow());
+        assertNotNull(modules.find("coord_logger").orElseThrow());
+        assertNotNull(modules.find("gamemode_notifier").orElseThrow());
+        assertNotNull(modules.find("auto_soup").orElseThrow());
+        assertNotNull(modules.find("no_jump_delay").orElseThrow());
+        assertNotNull(modules.find("vehicle_one_hit").orElseThrow());
+        assertNotNull(modules.find("block_in").orElseThrow());
     }
 }

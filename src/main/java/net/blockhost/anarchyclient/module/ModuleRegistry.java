@@ -1,8 +1,10 @@
 package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.module.impl.ActiveModulesHudModule;
+import net.blockhost.anarchyclient.module.impl.AimAssistModule;
 import net.blockhost.anarchyclient.module.impl.AntiAfkModule;
 import net.blockhost.anarchyclient.module.impl.AntiCrashModule;
+import net.blockhost.anarchyclient.module.impl.AntiSpawnpointModule;
 import net.blockhost.anarchyclient.module.impl.AutoArmorModule;
 import net.blockhost.anarchyclient.module.impl.AutoDropModule;
 import net.blockhost.anarchyclient.module.impl.AutoEatModule;
@@ -16,19 +18,23 @@ import net.blockhost.anarchyclient.module.impl.AutoToolModule;
 import net.blockhost.anarchyclient.module.impl.AutoTotemModule;
 import net.blockhost.anarchyclient.module.impl.AutoWeaponModule;
 import net.blockhost.anarchyclient.module.impl.BackgroundModule;
+import net.blockhost.anarchyclient.module.impl.BlockInModule;
 import net.blockhost.anarchyclient.module.impl.BlockEspModule;
 import net.blockhost.anarchyclient.module.impl.ChatSpammerModule;
 import net.blockhost.anarchyclient.module.impl.ChestAuraModule;
 import net.blockhost.anarchyclient.module.impl.CoordinatesHudModule;
+import net.blockhost.anarchyclient.module.impl.CoordLoggerModule;
 import net.blockhost.anarchyclient.module.impl.EagleModule;
 import net.blockhost.anarchyclient.module.impl.EspModule;
 import net.blockhost.anarchyclient.module.impl.FullbrightModule;
+import net.blockhost.anarchyclient.module.impl.GamemodeNotifierModule;
 import net.blockhost.anarchyclient.module.impl.ItemEspModule;
 import net.blockhost.anarchyclient.module.impl.KillAuraModule;
 import net.blockhost.anarchyclient.module.impl.MacroModule;
 import net.blockhost.anarchyclient.module.impl.MiddleClickActionModule;
 import net.blockhost.anarchyclient.module.impl.NametagsModule;
 import net.blockhost.anarchyclient.module.impl.NewChunksModule;
+import net.blockhost.anarchyclient.module.impl.NoJumpDelayModule;
 import net.blockhost.anarchyclient.module.impl.NoFallModule;
 import net.blockhost.anarchyclient.module.impl.NyanCatGifSpammerModule;
 import net.blockhost.anarchyclient.module.impl.ParkourModule;
@@ -38,6 +44,8 @@ import net.blockhost.anarchyclient.module.impl.SoundLocatorModule;
 import net.blockhost.anarchyclient.module.impl.StorageEspModule;
 import net.blockhost.anarchyclient.module.impl.TrajectoriesModule;
 import net.blockhost.anarchyclient.module.impl.TracersModule;
+import net.blockhost.anarchyclient.module.impl.AutoSoupModule;
+import net.blockhost.anarchyclient.module.impl.VehicleOneHitModule;
 
 public final class ModuleRegistry {
 
@@ -47,8 +55,12 @@ public final class ModuleRegistry {
     public static void registerDefaults(final ModuleManager modules) {
         modules.register(new AutoTotemModule());
         modules.register(new KillAuraModule());
+        modules.register(new AimAssistModule());
         modules.register(new AutoWeaponModule());
         modules.register(new AutoArmorModule());
+        modules.register(new BlockInModule());
+        modules.register(new VehicleOneHitModule());
+        modules.register(new AntiSpawnpointModule());
         modules.register(new AntiCrashModule());
         modules.register(new EspModule());
         modules.register(new TracersModule());
@@ -66,16 +78,20 @@ public final class ModuleRegistry {
         modules.register(new SafeWalkModule());
         modules.register(new ParkourModule());
         modules.register(new AutoEatModule());
+        modules.register(new AutoSoupModule());
         modules.register(new AutoRespawnModule());
         modules.register(new AutoFishModule());
         modules.register(new AutoExtinguishModule());
         modules.register(new AntiAfkModule());
+        modules.register(new NoJumpDelayModule());
         modules.register(new AutoToolModule());
         modules.register(new AutoDropModule());
         modules.register(new ChestAuraModule());
         modules.register(new CoordinatesHudModule());
         modules.register(new RadarHudModule());
         modules.register(new ActiveModulesHudModule(modules));
+        modules.register(new CoordLoggerModule());
+        modules.register(new GamemodeNotifierModule());
         modules.register(new MacroModule());
         modules.register(new MiddleClickActionModule());
         modules.register(new AutoLoginModule());
