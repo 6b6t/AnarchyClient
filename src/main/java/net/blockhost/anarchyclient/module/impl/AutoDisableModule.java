@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
@@ -31,7 +32,13 @@ public final class AutoDisableModule extends Module {
             .name("Disconnect")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting onFlag = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("on_flag")
+            .name("Flag")
+            .defaultValue(true)
+            .build()));
     private boolean wasDead;
+    private int observedFlagSequence;
 
     public AutoDisableModule(final ModuleManager modules) {
         super("auto_disable", "Auto Disable", ModuleCategory.MISC);
@@ -50,6 +57,11 @@ public final class AutoDisableModule extends Module {
             this.disableConfigured();
         }
         this.wasDead = dead;
+        int flagSequence = ServerObserver.flagSequence();
+        if (this.onFlag.value() && flagSequence != this.observedFlagSequence) {
+            this.observedFlagSequence = flagSequence;
+            this.disableConfigured();
+        }
     }
 
     @Override
@@ -58,6 +70,11 @@ public final class AutoDisableModule extends Module {
         if (this.onDisconnect.value()) {
             this.disableConfigured();
         }
+    }
+
+    @Override
+    protected void onEnable() {
+        this.observedFlagSequence = ServerObserver.flagSequence();
     }
 
     private void disableConfigured() {

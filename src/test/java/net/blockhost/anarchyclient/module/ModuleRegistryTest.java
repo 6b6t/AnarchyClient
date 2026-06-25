@@ -82,5 +82,20 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("light_overlay").orElseThrow());
         assertNotNull(modules.find("logout_spots").orElseThrow());
         assertNotNull(modules.find("color_signs").orElseThrow());
+        assertNotNull(modules.find("server_observer").orElseThrow());
+        assertNotNull(modules.find("auto_config").orElseThrow());
+        assertNotNull(modules.find("anti_cheat_detect").orElseThrow());
+        assertNotNull(modules.find("plugin_scanner").orElseThrow());
+        assertNotNull(modules.find("flag_check").orElseThrow());
+        assertNotNull(modules.find("staff_alert").orElseThrow());
+        assertNotNull(modules.find("debug_recorder").orElseThrow());
+        assertNotNull(modules.find("more_carry").orElseThrow());
+        assertNotNull(modules.find("anti_hunger").orElseThrow());
+        assertNotNull(modules.find("anti_reduced_debug_info").orElseThrow());
+        assertNotNull(modules.find("ping_spoof").orElseThrow());
+        assertNotNull(modules.find("fake_lag").orElseThrow());
+        assertNotNull(modules.find("portal_menu").orElseThrow());
+        assertNotNull(modules.find("multi_actions").orElseThrow());
+        assertNotNull(modules.find("name_collector").orElseThrow());
     }
 }

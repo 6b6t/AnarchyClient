@@ -278,6 +278,18 @@ class AdditionalModulesTest {
     }
 
     @Test
+    void flagCheckComputesWrappedAngleDeltas() {
+        assertEquals(20.0F, FlagCheckModule.angleDelta(-170.0F, 170.0F), 1.0E-6F);
+        assertEquals(45.0F, FlagCheckModule.angleDelta(45.0F, 90.0F), 1.0E-6F);
+    }
+
+    @Test
+    void staffAlertParsesNamesCaseInsensitively() {
+        assertEquals(Set.of("admin", "moderator", "helper"),
+                StaffAlertModule.parseNames("Admin, Moderator; HELPER"));
+    }
+
+    @Test
     void holeEspRequiresTwoAirBlocksAndSafeShell() {
         assertTrue(HoleEspModule.isHole(true, true, true, true, true, true, true));
         assertFalse(HoleEspModule.isHole(false, true, true, true, true, true, true));

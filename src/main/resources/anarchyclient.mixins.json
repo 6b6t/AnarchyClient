@@ -10,7 +10,9 @@
     "EntityRendererMixin",
     "KeyboardInputMixin",
     "LivingEntityAccessor",
+    "LocalPlayerPortalMixin",
     "MinecraftAccessor",
+    "MinecraftActionsMixin",
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
     "PlayerMixin"
