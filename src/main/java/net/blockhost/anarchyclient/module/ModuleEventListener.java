@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.event.ChatMessageEvent;
 import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.EntityAddedEvent;
+import net.blockhost.anarchyclient.event.EntityInteractEvent;
 import net.blockhost.anarchyclient.event.EntityRemovedEvent;
 import net.blockhost.anarchyclient.event.FovEvent;
 import net.blockhost.anarchyclient.event.GameJoinedEvent;
@@ -116,6 +117,13 @@ public final class ModuleEventListener {
     @EventHandler
     public void handleBlockInteract(final BlockInteractEvent event) {
         if (this.module.blockInteract(event.client(), event.hand(), event.hitResult())) {
+            event.cancel();
+        }
+    }
+
+    @EventHandler
+    public void handleEntityInteract(final EntityInteractEvent event) {
+        if (this.module.entityInteract(event.client(), event.player(), event.entity(), event.hitResult(), event.hand())) {
             event.cancel();
         }
     }

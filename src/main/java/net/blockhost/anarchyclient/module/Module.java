@@ -21,6 +21,7 @@ import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -183,6 +184,11 @@ public abstract class Module {
     }
 
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
+        return false;
+    }
+
+    public boolean entityInteract(final Minecraft client, final Player player, final Entity entity,
+                                  final EntityHitResult hitResult, final InteractionHand hand) {
         return false;
     }
 

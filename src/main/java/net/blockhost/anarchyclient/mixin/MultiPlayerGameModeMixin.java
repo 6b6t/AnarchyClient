@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.mixin;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.AttackEntityEvent;
 import net.blockhost.anarchyclient.event.BlockInteractEvent;
+import net.blockhost.anarchyclient.event.EntityInteractEvent;
 import net.blockhost.anarchyclient.event.ItemUseEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
@@ -12,6 +13,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +36,18 @@ public abstract class MultiPlayerGameModeMixin {
                                          final BlockHitResult blockHit,
                                          final CallbackInfoReturnable<InteractionResult> info) {
         BlockInteractEvent event = AnarchyClient.MODULES.call(new BlockInteractEvent(Minecraft.getInstance(), hand, blockHit));
+        if (event.isCancelled()) {
+            info.setReturnValue(InteractionResult.FAIL);
+        }
+    }
+
+    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
+    private void anarchyclient$entityInteract(final Player player, final Entity entity,
+                                              final EntityHitResult hitResult, final InteractionHand hand,
+                                              final CallbackInfoReturnable<InteractionResult> info) {
+        EntityInteractEvent event = AnarchyClient.MODULES.call(
+                new EntityInteractEvent(Minecraft.getInstance(), player, entity, hitResult, hand)
+        );
         if (event.isCancelled()) {
             info.setReturnValue(InteractionResult.FAIL);
         }

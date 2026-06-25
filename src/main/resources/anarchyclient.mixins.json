@@ -13,6 +13,8 @@
     "DeltaTrackerTimerMixin",
     "EditBoxMixin",
     "EntityRendererMixin",
+    "EntityMixin",
+    "GameRendererMixin",
     "ItemStackMixin",
     "KeyboardInputMixin",
     "LivingEntityAccessor",

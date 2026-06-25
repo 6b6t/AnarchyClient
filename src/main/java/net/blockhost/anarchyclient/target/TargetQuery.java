@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.target;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.module.impl.HitboxModule;
+import net.blockhost.anarchyclient.module.impl.TargetLockModule;
+import net.blockhost.anarchyclient.module.impl.TeamsModule;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -34,6 +37,9 @@ public final class TargetQuery {
                 && TargetClassifier.looksLikeBot(entity.getScoreboardName(), entity.tickCount)) {
             return false;
         }
+        if (!TeamsModule.allows(entity, player)) {
+            return false;
+        }
         return policy.allows(TargetClassifier.kind(entity));
     }
 
@@ -46,7 +52,12 @@ public final class TargetQuery {
     public static Optional<LivingEntity> closest(final Iterable<? extends Entity> entities, final Player player,
                                                 final TargetPolicy policy, final double range,
                                                 final Comparator<LivingEntity> comparator) {
-        double rangeSqr = range * range;
+        double effectiveRange = range + HitboxModule.rangeBonus();
+        Optional<LivingEntity> locked = TargetLockModule.preferred(entities, player, policy, effectiveRange);
+        if (locked.isPresent()) {
+            return locked;
+        }
+        double rangeSqr = effectiveRange * effectiveRange;
         return livingTargets(entities, player, policy)
                 .filter(entity -> player.distanceToSqr(entity) <= rangeSqr)
                 .min(comparator);
