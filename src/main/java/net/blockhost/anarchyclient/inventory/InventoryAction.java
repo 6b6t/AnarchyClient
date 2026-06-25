@@ -8,7 +8,7 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 
-public sealed interface InventoryAction permits InventoryAction.PickupSwap, InventoryAction.SelectHotbarSlot, InventoryAction.UseHotbarItem {
+public sealed interface InventoryAction permits InventoryAction.DropSlot, InventoryAction.PickupSwap, InventoryAction.SelectHotbarSlot, InventoryAction.UseHotbarItem {
 
     boolean canExecute(InventoryActionContext context);
 
@@ -28,6 +28,14 @@ public sealed interface InventoryAction permits InventoryAction.PickupSwap, Inve
 
     static InventoryAction pickupSwap(final InventorySlotRef source, final InventorySlotRef target) {
         return new PickupSwap(source.menuSlot(), target.menuSlot());
+    }
+
+    static InventoryAction dropSlot(final int sourceMenuSlot, final boolean fullStack) {
+        return new DropSlot(sourceMenuSlot, fullStack);
+    }
+
+    static InventoryAction dropSlot(final InventorySlotRef source, final boolean fullStack) {
+        return new DropSlot(source.menuSlot(), fullStack);
     }
 
     static InventoryAction selectHotbarSlot(final int inventorySlot) {
@@ -53,6 +61,29 @@ public sealed interface InventoryAction permits InventoryAction.PickupSwap, Inve
             context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
             context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.targetMenuSlot, 0, ContainerInput.PICKUP, context.player());
             context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            return true;
+        }
+    }
+
+    record DropSlot(int sourceMenuSlot, boolean fullStack) implements InventoryAction {
+
+        @Override
+        public boolean canExecute(final InventoryActionContext context) {
+            return context.client().gameMode != null && this.sourceMenuSlot >= 0;
+        }
+
+        @Override
+        public boolean execute(final InventoryActionContext context) {
+            if (!this.canExecute(context)) {
+                return false;
+            }
+            context.client().gameMode.handleContainerInput(
+                    InventoryMenu.CONTAINER_ID,
+                    this.sourceMenuSlot,
+                    this.fullStack ? 1 : 0,
+                    ContainerInput.THROW,
+                    context.player()
+            );
             return true;
         }
     }

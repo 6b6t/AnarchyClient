@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 public final class KillAuraModule extends Module {
 
@@ -62,6 +63,14 @@ public final class KillAuraModule extends Module {
             .min(0.0)
             .max(1.0)
             .step(0.05)
+            .build()));
+    private final NumberSetting hitChance = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("hit_chance")
+            .name("Chance")
+            .defaultValue(100.0)
+            .min(1.0)
+            .max(100.0)
+            .step(1.0)
             .build()));
     private final BooleanSetting players = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("players")
@@ -148,6 +157,7 @@ public final class KillAuraModule extends Module {
     private final KillAuraTargetSelector targetSelector = new KillAuraTargetSelector();
     private final KillAuraRotationPlanner rotationPlanner = new KillAuraRotationPlanner();
     private final KillAuraTiming timing = new KillAuraTiming();
+    private final Random random = new Random();
 
     public KillAuraModule() {
         super("kill_aura", "Kill Aura", ModuleCategory.COMBAT);
@@ -188,6 +198,10 @@ public final class KillAuraModule extends Module {
             return;
         }
 
+        if (!shouldAttack(this.random, this.hitChance.value())) {
+            this.timing.markAttack(this.minCps.value(), this.maxCps.value());
+            return;
+        }
         client.gameMode.attack(player, entity);
         player.swing(InteractionHand.MAIN_HAND);
         this.timing.markAttack(this.minCps.value(), this.maxCps.value());
@@ -219,6 +233,10 @@ public final class KillAuraModule extends Module {
 
     static boolean isInsideFov(final LocalPlayer player, final LivingEntity target, final double fov) {
         return KillAuraTargetSelector.isInsideFov(player, target, fov);
+    }
+
+    static boolean shouldAttack(final Random random, final double hitChance) {
+        return hitChance >= 100.0 || random.nextDouble(100.0) < hitChance;
     }
 
     @Override

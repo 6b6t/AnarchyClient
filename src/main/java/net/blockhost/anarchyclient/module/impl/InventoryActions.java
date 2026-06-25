@@ -58,6 +58,10 @@ final class InventoryActions {
         return InventoryAction.pickupSwap(sourceMenuSlot, targetMenuSlot).execute(client, player);
     }
 
+    static InventoryAction dropSlot(final int inventorySlot, final boolean fullStack) {
+        return InventoryAction.dropSlot(InventorySlots.toInventoryMenuSlot(inventorySlot), fullStack);
+    }
+
     static int toInventoryMenuSlot(final int inventorySlot) {
         return InventorySlots.toInventoryMenuSlot(inventorySlot);
     }
