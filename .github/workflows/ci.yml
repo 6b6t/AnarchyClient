@@ -6,8 +6,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-  attestations: write
 
 jobs:
   build:
@@ -28,11 +26,6 @@ jobs:
 
       - name: Build
         run: ./gradlew build --stacktrace
-
-      - name: Attest build provenance
-        uses: actions/attest-build-provenance@v4
-        with:
-          subject-path: build/libs/*.jar
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5

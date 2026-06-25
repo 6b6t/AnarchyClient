@@ -43,14 +43,35 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home
+        with:
+          cache-disabled: true
 
       - name: Build
-        run: ./gradlew build --stacktrace
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home
+        run: ./gradlew --no-build-cache --refresh-dependencies clean build --stacktrace
+
+      - name: Drop sources jar from release assets
+        run: rm -f build/libs/*-sources.jar
+
+      - name: Collect release file name
+        id: release_file
+        shell: bash
+        run: |
+          mapfile -t release_files < <(find build/libs -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort)
+          if [ "${#release_files[@]}" -ne 1 ]; then
+            echo "Expected exactly one release jar in build/libs, found ${#release_files[@]}" >&2
+            printf '%s\n' "${release_files[@]}" >&2
+            exit 1
+          fi
+          echo "name=${release_files[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: build/libs/*.jar
+          subject-path: build/libs/${{ steps.release_file.outputs.name }}
 
       - name: Build Changelog
         id: github_release
@@ -126,9 +147,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Drop sources jar from release assets
-        run: rm -f build/libs/*-sources.jar
-
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
@@ -136,7 +154,29 @@ jobs:
           name: AnarchyClient ${{ inputs.version }}
           target_commitish: ${{ github.ref_name }}
           prerelease: ${{ inputs.prerelease }}
-          body: ${{ steps.github_release.outputs.changelog }}
-          files: build/libs/*.jar
+          body: |
+            ## Download Links
+
+            | Platform | Download Link |
+            |----------|---------------|
+            | Minecraft 26.2 | [Download](https://github.com/6b6t/AnarchyClient/releases/download/${{ inputs.version }}/${{ steps.release_file.outputs.name }}) |
+
+            ## Verify Provenance
+
+            ```bash
+            gh release download "${{ inputs.version }}" \
+              --repo 6b6t/AnarchyClient \
+              --pattern "${{ steps.release_file.outputs.name }}" \
+              --clobber
+
+            gh attestation verify "${{ steps.release_file.outputs.name }}" \
+              --repo 6b6t/AnarchyClient \
+              --cert-identity "https://github.com/6b6t/AnarchyClient/.github/workflows/release.yml@${{ github.ref }}" \
+              --source-ref "${{ github.ref }}" \
+              --deny-self-hosted-runners
+            ```
+
+            ${{ steps.github_release.outputs.changelog }}
+          files: build/libs/${{ steps.release_file.outputs.name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
