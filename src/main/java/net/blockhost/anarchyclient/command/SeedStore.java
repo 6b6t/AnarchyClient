@@ -39,14 +39,29 @@ final class SeedStore {
     }
 
     static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt) throws IOException {
+        return put(path, world, seed, savedAt, "", "", "manual");
+    }
+
+    static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt,
+                          final String version, final String dimension, final String source) throws IOException {
         String normalized = normalizeSeed(seed);
         JsonObject root = read(path);
         JsonObject entry = new JsonObject();
         entry.addProperty("seed", normalized);
         entry.addProperty("saved_at", savedAt.toString());
+        entry.addProperty("version", normalizeMetadata(version));
+        entry.addProperty("dimension", normalizeMetadata(dimension));
+        entry.addProperty("source", normalizeMetadata(source).isBlank() ? "manual" : normalizeMetadata(source));
         root.add(world, entry);
         write(path, root);
-        return new SeedRecord(world, normalized, savedAt.toString());
+        return new SeedRecord(
+                world,
+                normalized,
+                savedAt.toString(),
+                normalizeMetadata(version),
+                normalizeMetadata(dimension),
+                normalizeMetadata(source).isBlank() ? "manual" : normalizeMetadata(source)
+        );
     }
 
     static boolean delete(final Path path, final String world) throws IOException {
@@ -63,6 +78,10 @@ final class SeedStore {
             throw new IllegalArgumentException("Seed cannot be blank.");
         }
         return seed.trim();
+    }
+
+    static String normalizeMetadata(final String value) {
+        return value == null ? "" : value.trim();
     }
 
     static String worldKey(final Minecraft client) {
@@ -104,9 +123,12 @@ final class SeedStore {
     private static SeedRecord record(final String world, final JsonObject entry) {
         String seed = entry.has("seed") ? entry.get("seed").getAsString() : "";
         String savedAt = entry.has("saved_at") ? entry.get("saved_at").getAsString() : "";
-        return new SeedRecord(world, seed, savedAt);
+        String version = entry.has("version") ? entry.get("version").getAsString() : "";
+        String dimension = entry.has("dimension") ? entry.get("dimension").getAsString() : "";
+        String source = entry.has("source") ? entry.get("source").getAsString() : "";
+        return new SeedRecord(world, seed, savedAt, version, dimension, source);
     }
 
-    record SeedRecord(String world, String seed, String savedAt) {
+    record SeedRecord(String world, String seed, String savedAt, String version, String dimension, String source) {
     }
 }

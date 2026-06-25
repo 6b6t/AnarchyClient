@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -193,6 +194,14 @@ public abstract class Module {
     }
 
     public boolean itemUse(final Minecraft client, final InteractionHand hand) {
+        return false;
+    }
+
+    public void itemStopUse(final Minecraft client, final InteractionHand hand, final ItemStack stack,
+                            final int remainingTicks) {
+    }
+
+    public boolean openScreen(final Minecraft client, final Screen screen) {
         return false;
     }
 

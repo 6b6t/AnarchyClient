@@ -253,5 +253,22 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("hit_fx").orElseThrow());
         assertNotNull(modules.find("damage_particles").orElseThrow());
         assertNotNull(modules.find("protection_zones").orElseThrow());
+        assertNotNull(modules.find("chat_bot").orElseThrow());
+        assertNotNull(modules.find("custom_packets").orElseThrow());
+        assertNotNull(modules.find("interaction_menu").orElseThrow());
+        assertNotNull(modules.find("ghost_mode").orElseThrow());
+        assertNotNull(modules.find("robo_walk").orElseThrow());
+        assertNotNull(modules.find("arrow_damage").orElseThrow());
+        assertNotNull(modules.find("bungeecord_spoof").orElseThrow());
+        assertNotNull(modules.find("chorus_exploit").orElseThrow());
+        assertNotNull(modules.find("debug_render").orElseThrow());
+        assertNotNull(modules.find("rendering").orElseThrow());
+        assertNotNull(modules.find("item_generator").orElseThrow());
+        assertNotNull(modules.find("full_flight").orElseThrow());
+        assertNotNull(modules.find("packet_fly").orElseThrow());
+        assertNotNull(modules.find("boat_phase").orElseThrow());
+        assertNotNull(modules.find("boat_glitch").orElseThrow());
+        assertNotNull(modules.find("lavacast").orElseThrow());
+        assertNotNull(modules.find("ore_sim").orElseThrow());
     }
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Base64;
@@ -160,6 +161,11 @@ class AnarchyClientCommandsTest {
                 new ServerPortScanner.PortResult(22, "SSH", false),
                 new ServerPortScanner.PortResult(8123, "Dynmap", true)
         )));
+        assertEquals("25565,8123", ServerPortScanner.openPortList(List.of(
+                new ServerPortScanner.PortResult(25565, "Minecraft", true),
+                new ServerPortScanner.PortResult(22, "SSH", false),
+                new ServerPortScanner.PortResult(8123, "Dynmap", true)
+        )));
     }
 
     @Test
@@ -172,13 +178,47 @@ class AnarchyClientCommandsTest {
         assertThrows(IllegalArgumentException.class, () -> SeedStore.normalizeSeed("   "));
         assertNull(SeedStore.get(path, world));
 
-        SeedStore.SeedRecord saved = SeedStore.put(path, world, " 12345 ", Instant.parse("2026-06-25T00:00:00Z"));
+        SeedStore.SeedRecord saved = SeedStore.put(path, world, " 12345 ",
+                Instant.parse("2026-06-25T00:00:00Z"), "26.2", "minecraft:overworld", "manual");
         assertEquals(world, saved.world());
         assertEquals("12345", saved.seed());
         assertEquals("2026-06-25T00:00:00Z", saved.savedAt());
+        assertEquals("26.2", saved.version());
+        assertEquals("minecraft:overworld", saved.dimension());
+        assertEquals("manual", saved.source());
         assertEquals(1, SeedStore.list(path).size());
         assertEquals("12345", SeedStore.get(path, world).seed());
         assertTrue(SeedStore.delete(path, world));
         assertFalse(SeedStore.delete(path, world));
+    }
+
+    @Test
+    void parsesServerListExportsConservatively() throws Exception {
+        Path path = this.tempDir.resolve("servers.json");
+        Files.writeString(path, """
+                [
+                  {"name":"Main","address":"Example.ORG:25565"},
+                  {"name":"","address":" "}
+                ]
+                """, StandardCharsets.UTF_8);
+
+        List<ServerListTools.ServerEntry> entries = ServerListTools.readJson(path);
+
+        assertEquals(1, entries.size());
+        assertEquals("Main", entries.getFirst().name());
+        assertEquals("example.org:25565", entries.getFirst().address());
+        assertEquals("", ServerListTools.normalizeAddress(null));
+    }
+
+    @Test
+    void locateHelpersFindDeterministicSlimeChunks() {
+        assertEquals(12345L, AnarchyClientCommands.numericSeed("12345"));
+        assertEquals("abc".hashCode(), AnarchyClientCommands.numericSeed("abc"));
+
+        BlockPos slimeChunk = AnarchyClientCommands.closestSlimeChunk(12345L, 0, 0, 64);
+
+        assertTrue(AnarchyClientCommands.isSlimeChunk(12345L,
+                Math.floorDiv(slimeChunk.getX(), 16),
+                Math.floorDiv(slimeChunk.getZ(), 16)));
     }
 }

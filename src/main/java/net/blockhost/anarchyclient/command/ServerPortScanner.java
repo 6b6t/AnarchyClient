@@ -85,6 +85,14 @@ final class ServerPortScanner {
         return "Open ports: " + String.join(", ", open);
     }
 
+    static String openPortList(final List<PortResult> results) {
+        return results.stream()
+                .filter(PortResult::open)
+                .map(result -> Integer.toString(result.port()))
+                .reduce((left, right) -> left + "," + right)
+                .orElse("");
+    }
+
     private static boolean open(final String host, final int port, final Duration timeout) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), Math.toIntExact(timeout.toMillis()));

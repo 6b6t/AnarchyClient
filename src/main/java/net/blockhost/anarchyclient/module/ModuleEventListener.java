@@ -15,9 +15,11 @@ import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
 import net.blockhost.anarchyclient.event.ItemTooltipEvent;
+import net.blockhost.anarchyclient.event.ItemStopUseEvent;
 import net.blockhost.anarchyclient.event.ItemUseEvent;
 import net.blockhost.anarchyclient.event.MouseClickEvent;
 import net.blockhost.anarchyclient.event.MouseScrollInputEvent;
+import net.blockhost.anarchyclient.event.OpenScreenEvent;
 import net.blockhost.anarchyclient.event.PacketReceiveEvent;
 import net.blockhost.anarchyclient.event.PacketSendEvent;
 import net.blockhost.anarchyclient.event.PacketSentEvent;
@@ -131,6 +133,18 @@ public final class ModuleEventListener {
     @EventHandler
     public void handleItemUse(final ItemUseEvent event) {
         if (this.module.itemUse(event.client(), event.hand())) {
+            event.cancel();
+        }
+    }
+
+    @EventHandler
+    public void handleItemStopUse(final ItemStopUseEvent event) {
+        this.module.itemStopUse(event.client(), event.hand(), event.stack(), event.remainingTicks());
+    }
+
+    @EventHandler
+    public void handleOpenScreen(final OpenScreenEvent event) {
+        if (this.module.openScreen(event.client(), event.screen())) {
             event.cancel();
         }
     }

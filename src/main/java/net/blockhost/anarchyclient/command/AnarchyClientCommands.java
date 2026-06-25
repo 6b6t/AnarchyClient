@@ -28,12 +28,14 @@ import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
@@ -43,9 +45,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
@@ -62,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
@@ -137,11 +143,45 @@ public final class AnarchyClientCommands {
                                 .then(argument("from", IntegerArgumentType.integer(1, 65535))
                                         .then(argument("to", IntegerArgumentType.integer(1, 65535))
                                                 .executes(AnarchyClientCommands::serverPortsRange)))))
+                .then(literal("server-list")
+                        .then(literal("list")
+                                .executes(AnarchyClientCommands::serverListList))
+                        .then(literal("add")
+                                .then(argument("address", StringArgumentType.word())
+                                        .executes(context -> serverListAdd(context, null))
+                                        .then(argument("name", StringArgumentType.greedyString())
+                                                .executes(context -> serverListAdd(context, StringArgumentType.getString(context, "name"))))))
+                        .then(literal("cleanup")
+                                .executes(AnarchyClientCommands::serverListCleanup))
+                        .then(literal("export")
+                                .executes(AnarchyClientCommands::serverListExport))
+                        .then(literal("import")
+                                .then(argument("path", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::serverListImport))))
                 .then(literal("kick")
                         .then(literal("disconnect")
                                 .executes(AnarchyClientCommands::kickDisconnect))
                         .then(literal("position")
                                 .executes(AnarchyClientCommands::kickPosition)))
+                .then(literal("give")
+                        .then(literal("head")
+                                .then(argument("player", StringArgumentType.word())
+                                        .suggests(AnarchyClientCommands::suggestOnlinePlayers)
+                                        .executes(AnarchyClientCommands::giveHead)))
+                        .then(literal("hologram")
+                                .then(argument("text", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::giveHologram)))
+                        .then(literal("bossbar")
+                                .then(argument("text", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::giveBossbar)))
+                        .then(literal("random")
+                                .executes(context -> giveRandom(context, 1))
+                                .then(argument("count", IntegerArgumentType.integer(1, 64))
+                                        .executes(context -> giveRandom(context, IntegerArgumentType.getInteger(context, "count"))))))
+                .then(literal("heads")
+                        .then(argument("player", StringArgumentType.word())
+                                .suggests(AnarchyClientCommands::suggestOnlinePlayers)
+                                .executes(AnarchyClientCommands::giveHead)))
                 .then(literal("seed")
                         .executes(AnarchyClientCommands::showSeed)
                         .then(literal("set")
@@ -151,6 +191,9 @@ public final class AnarchyClientCommands {
                                 .executes(AnarchyClientCommands::listSeeds))
                         .then(literal("delete")
                                 .executes(AnarchyClientCommands::deleteSeed)))
+                .then(literal("locate")
+                        .then(literal("slime-chunk")
+                                .executes(AnarchyClientCommands::locateSlimeChunk)))
                 .then(literal("terrain-export")
                         .then(argument("distance", IntegerArgumentType.integer(1, 64))
                                 .executes(AnarchyClientCommands::terrainExport)))
@@ -390,6 +433,72 @@ public final class AnarchyClientCommands {
         return SUCCESS;
     }
 
+    private static int serverListList(final CommandContext<FabricClientCommandSource> context) {
+        ServerList list = ServerListTools.load(Minecraft.getInstance());
+        List<ServerListTools.ServerEntry> entries = ServerListTools.entries(list);
+        if (entries.isEmpty()) {
+            context.getSource().sendFeedback(Component.literal("No saved multiplayer servers."));
+            return SUCCESS;
+        }
+        for (ServerListTools.ServerEntry entry : entries) {
+            context.getSource().sendFeedback(Component.literal(entry.name() + " = ")
+                    .append(CommandFeedback.copyable(entry.address(), entry.address())));
+        }
+        return SUCCESS;
+    }
+
+    private static int serverListAdd(final CommandContext<FabricClientCommandSource> context, final String name) {
+        Minecraft client = Minecraft.getInstance();
+        ServerList list = ServerListTools.load(client);
+        String address = StringArgumentType.getString(context, "address");
+        int added = ServerListTools.addOrUpdate(list, address, name);
+        list.save();
+        context.getSource().sendFeedback(Component.literal((added == 0 ? "Updated " : "Added ")
+                + ServerListTools.normalizeAddress(address) + "."));
+        return SUCCESS;
+    }
+
+    private static int serverListCleanup(final CommandContext<FabricClientCommandSource> context) {
+        ServerList list = ServerListTools.load(Minecraft.getInstance());
+        int removed = ServerListTools.cleanup(list);
+        list.save();
+        context.getSource().sendFeedback(Component.literal("Removed " + removed + " duplicate server"
+                + (removed == 1 ? "" : "s") + "."));
+        return SUCCESS;
+    }
+
+    private static int serverListExport(final CommandContext<FabricClientCommandSource> context) {
+        ServerList list = ServerListTools.load(Minecraft.getInstance());
+        Path path = serverExportPath();
+        try {
+            ServerListTools.exportJson(list, path);
+            context.getSource().sendFeedback(Component.literal("Exported " + list.size() + " server"
+                    + (list.size() == 1 ? "" : "s") + " to ")
+                    .append(CommandFeedback.copyable(path.toString(), path.toString())));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to export servers: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int serverListImport(final CommandContext<FabricClientCommandSource> context) {
+        ServerList list = ServerListTools.load(Minecraft.getInstance());
+        Path path = Path.of(StringArgumentType.getString(context, "path"));
+        try {
+            int added = ServerListTools.importJson(list, path);
+            int duplicates = ServerListTools.cleanup(list);
+            list.save();
+            context.getSource().sendFeedback(Component.literal("Imported " + added + " new server"
+                    + (added == 1 ? "" : "s") + " and removed " + duplicates + " duplicate"
+                    + (duplicates == 1 ? "" : "s") + "."));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to import servers: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
     private static int serverPortsKnown(final CommandContext<FabricClientCommandSource> context) {
         return scanServerPorts(context, ServerPortScanner.knownPorts(), "known ports");
     }
@@ -423,9 +532,19 @@ public final class AnarchyClientCommands {
         context.getSource().sendFeedback(Component.literal("Scanning " + label + " on " + host + "..."));
         CompletableFuture
                 .supplyAsync(() -> ServerPortScanner.scan(host, ports))
-                .thenAccept(results -> client.execute(() -> context.getSource()
-                        .sendFeedback(Component.literal(ServerPortScanner.format(results)))));
+                .thenAccept(results -> client.execute(() -> sendPortResults(context, results)));
         return SUCCESS;
+    }
+
+    private static void sendPortResults(final CommandContext<FabricClientCommandSource> context,
+                                        final List<ServerPortScanner.PortResult> results) {
+        Component message = Component.literal(ServerPortScanner.format(results));
+        String openPorts = ServerPortScanner.openPortList(results);
+        if (!openPorts.isBlank()) {
+            message = Component.empty().append(message).append(Component.literal(" "))
+                    .append(CommandFeedback.copyable("[copy ports]", openPorts));
+        }
+        context.getSource().sendFeedback(message);
     }
 
     private static int kickDisconnect(final CommandContext<FabricClientCommandSource> context) {
@@ -453,6 +572,43 @@ public final class AnarchyClientCommands {
         return SUCCESS;
     }
 
+    private static int giveHead(final CommandContext<FabricClientCommandSource> context) {
+        return giveCreativeStack(context, CreativeItemFactory.playerHead(StringArgumentType.getString(context, "player")));
+    }
+
+    private static int giveHologram(final CommandContext<FabricClientCommandSource> context) {
+        return giveCreativeStack(context, CreativeItemFactory.hologramArmorStand(StringArgumentType.getString(context, "text")));
+    }
+
+    private static int giveBossbar(final CommandContext<FabricClientCommandSource> context) {
+        return giveCreativeStack(context, CreativeItemFactory.bossbarEgg(StringArgumentType.getString(context, "text")));
+    }
+
+    private static int giveRandom(final CommandContext<FabricClientCommandSource> context, final int count) {
+        Minecraft client = requireCreative(context);
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        int slot = selectedCreativeSlot(client.player);
+        for (int index = 0; index < count; index++) {
+            client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(slot, CreativeItemFactory.randomItem(index)));
+        }
+        context.getSource().sendFeedback(Component.literal("Sent " + count + " creative item packet"
+                + (count == 1 ? "" : "s") + "."));
+        return SUCCESS;
+    }
+
+    private static int giveCreativeStack(final CommandContext<FabricClientCommandSource> context, final ItemStack stack) {
+        Minecraft client = requireCreative(context);
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(selectedCreativeSlot(client.player), stack));
+        context.getSource().sendFeedback(Component.literal("Sent creative item: ")
+                .append(stack.getHoverName()));
+        return SUCCESS;
+    }
+
     private static int showSeed(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         String world = SeedStore.worldKey(client);
@@ -461,7 +617,9 @@ public final class AnarchyClientCommands {
             if (record == null) {
                 context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
             } else {
-                context.getSource().sendFeedback(Component.literal(world + " seed: " + record.seed()));
+                context.getSource().sendFeedback(Component.literal(world + " seed: ")
+                        .append(CommandFeedback.copyable(record.seed(), record.seed()))
+                        .append(Component.literal(seedMetadata(record))));
             }
             return SUCCESS;
         } catch (IOException exception) {
@@ -475,7 +633,11 @@ public final class AnarchyClientCommands {
         String world = SeedStore.worldKey(client);
         try {
             SeedStore.SeedRecord record = SeedStore.put(seedPath(), world,
-                    StringArgumentType.getString(context, "seed"), Instant.now());
+                    StringArgumentType.getString(context, "seed"),
+                    Instant.now(),
+                    SharedConstants.getCurrentVersion().name(),
+                    currentDimension(client),
+                    "manual");
             context.getSource().sendFeedback(Component.literal("Saved seed for " + record.world() + ": " + record.seed()));
             return SUCCESS;
         } catch (IllegalArgumentException | IOException exception) {
@@ -492,7 +654,8 @@ public final class AnarchyClientCommands {
                 return SUCCESS;
             }
             for (SeedStore.SeedRecord record : records) {
-                context.getSource().sendFeedback(Component.literal(record.world() + " = " + record.seed()));
+                context.getSource().sendFeedback(Component.literal(record.world() + " = " + record.seed()
+                        + seedMetadata(record)));
             }
             return SUCCESS;
         } catch (IOException exception) {
@@ -513,6 +676,31 @@ public final class AnarchyClientCommands {
             return SUCCESS;
         } catch (IOException exception) {
             context.getSource().sendError(Component.literal("Failed to delete seed: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int locateSlimeChunk(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "locate a slime chunk");
+        if (client == null) {
+            return 0;
+        }
+        try {
+            SeedStore.SeedRecord record = SeedStore.get(seedPath(), SeedStore.worldKey(client));
+            if (record == null) {
+                context.getSource().sendError(Component.literal("Save a seed first with /ac seed set <seed>."));
+                return 0;
+            }
+            long seed = numericSeed(record.seed());
+            BlockPos playerPos = client.player.blockPosition();
+            BlockPos result = closestSlimeChunk(seed, Math.floorDiv(playerPos.getX(), 16),
+                    Math.floorDiv(playerPos.getZ(), 16), 128);
+            String coords = result.getX() + ", " + result.getZ();
+            context.getSource().sendFeedback(Component.literal("Nearest slime chunk starts at ")
+                    .append(CommandFeedback.copyable(coords, coords)));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
             return 0;
         }
     }
@@ -998,6 +1186,78 @@ public final class AnarchyClientCommands {
                 .resolve("seeds.json");
     }
 
+    private static Path serverExportPath() {
+        return FabricLoader.getInstance().getConfigDir()
+                .resolve("anarchyclient")
+                .resolve("exports")
+                .resolve("servers.json");
+    }
+
+    private static String currentDimension(final Minecraft client) {
+        return client.level == null ? "" : client.level.dimension().identifier().toString();
+    }
+
+    private static String seedMetadata(final SeedStore.SeedRecord record) {
+        List<String> parts = new ArrayList<>();
+        if (!record.version().isBlank()) {
+            parts.add("version " + record.version());
+        }
+        if (!record.dimension().isBlank()) {
+            parts.add(record.dimension());
+        }
+        if (!record.source().isBlank()) {
+            parts.add("source " + record.source());
+        }
+        return parts.isEmpty() ? "" : " (" + String.join(", ", parts) + ")";
+    }
+
+    static long numericSeed(final String seed) {
+        try {
+            return Long.parseLong(seed.trim());
+        } catch (NumberFormatException exception) {
+            return seed.hashCode();
+        }
+    }
+
+    static boolean isSlimeChunk(final long seed, final int chunkX, final int chunkZ) {
+        long randomSeed = seed
+                + (long) (chunkX * chunkX) * 4987142L
+                + (long) chunkX * 5947611L
+                + (long) (chunkZ * chunkZ) * 4392871L
+                + (long) chunkZ * 389711L
+                ^ 987234911L;
+        return new Random(randomSeed).nextInt(10) == 0;
+    }
+
+    static BlockPos closestSlimeChunk(final long seed, final int centerChunkX, final int centerChunkZ,
+                                      final int radiusChunks) {
+        BlockPos best = null;
+        int bestDistance = Integer.MAX_VALUE;
+        for (int radius = 0; radius <= radiusChunks; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) {
+                        continue;
+                    }
+                    int chunkX = centerChunkX + dx;
+                    int chunkZ = centerChunkZ + dz;
+                    if (!isSlimeChunk(seed, chunkX, chunkZ)) {
+                        continue;
+                    }
+                    int distance = dx * dx + dz * dz;
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = new BlockPos(chunkX * 16, 0, chunkZ * 16);
+                    }
+                }
+            }
+            if (best != null) {
+                return best;
+            }
+        }
+        return new BlockPos(centerChunkX * 16, 0, centerChunkZ * 16);
+    }
+
     static String sanitizeFileName(final String value) {
         if (value == null || value.isBlank()) {
             return "skin";
@@ -1014,6 +1274,19 @@ public final class AnarchyClientCommands {
             return null;
         }
         return client;
+    }
+
+    private static Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "send creative item packets");
+        if (client == null || client.player == null || !client.player.getAbilities().instabuild) {
+            context.getSource().sendError(Component.literal("You must be in creative mode to use this command."));
+            return null;
+        }
+        return client;
+    }
+
+    private static int selectedCreativeSlot(final Player player) {
+        return 36 + player.getInventory().getSelectedSlot();
     }
 
     static double parseCoordinate(final String token, final double origin) {
