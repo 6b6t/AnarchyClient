@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.impl.BackgroundModule;
@@ -7,8 +8,12 @@ import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.Blaze3DBackend;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.RivetInputMapper;
+import net.fabricmc.loader.api.FabricLoader;
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.input.keyboard.CharEvent;
+import net.lenni0451.rivet.input.keyboard.Key;
+import net.lenni0451.rivet.input.keyboard.KeyEvent;
+import net.lenni0451.rivet.input.keyboard.ModifierKey;
 import net.lenni0451.rivet.input.mouse.MouseMoveEvent;
 import net.lenni0451.rivet.input.mouse.MouseScrollEvent;
 import net.lenni0451.rivet.layout.fullsize.FullSizeLayout;
@@ -17,6 +22,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
 
 public final class AnarchyClientScreen extends Screen {
 
@@ -100,7 +109,12 @@ public final class AnarchyClientScreen extends Screen {
             this.onClose();
             return true;
         }
-        return this.rivet != null && RivetInputMapper.key(event).map(this.rivet::onKeyDown).orElse(false);
+        Optional<KeyEvent> key = RivetInputMapper.key(event);
+        if (this.rivet != null && key.filter(AnarchyClientScreen::isLayoutDumpKey).isPresent()) {
+            this.dumpLayoutTree();
+            return true;
+        }
+        return this.rivet != null && key.map(this.rivet::onKeyDown).orElse(false);
     }
 
     @Override
@@ -133,5 +147,31 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    private static boolean isLayoutDumpKey(final KeyEvent event) {
+        return event.key().isEquivalent(Key.L)
+                && event.modifiers().contains(ModifierKey.CONTROL)
+                && event.modifiers().contains(ModifierKey.SHIFT);
+    }
+
+    private void dumpLayoutTree() {
+        if (this.rivet == null) {
+            return;
+        }
+        Minecraft client = Minecraft.getInstance();
+        Path directory = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-debug");
+        try {
+            Path file = LayoutTreeDumper.writeSnapshot(this.rivet, directory);
+            AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
+            if (client.player != null) {
+                client.player.sendSystemMessage(Component.literal("Layout tree saved to " + file + "."));
+            }
+        } catch (IOException exception) {
+            AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
+            if (client.player != null) {
+                client.player.sendSystemMessage(Component.literal("Failed to save layout tree snapshot."));
+            }
+        }
     }
 }

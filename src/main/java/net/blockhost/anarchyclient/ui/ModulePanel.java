@@ -47,7 +47,7 @@ import java.util.Locale;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
-public final class ModulePanel extends Container {
+public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private static final float TOP_BAR_HEIGHT = 40F;
     private static final float CATEGORY_WIDTH = 166F;
@@ -202,6 +202,16 @@ public final class ModulePanel extends Container {
     @Override
     public Size computeIdealSize(final Size constraints) {
         return constraints;
+    }
+
+    @Override
+    public String layoutDebugLabel() {
+        String category = this.selectedCategory == null ? "none" : this.selectedCategory.name().toLowerCase(Locale.ROOT);
+        String module = this.selectedModule == null ? "none" : this.selectedModule.id();
+        return "tab=" + this.selectedTab.name().toLowerCase(Locale.ROOT)
+                + " category=" + category
+                + " module=" + module
+                + " drawer=" + this.drawer.name().toLowerCase(Locale.ROOT);
     }
 
     private void layoutModules() {
@@ -804,7 +814,7 @@ public final class ModulePanel extends Container {
         return count;
     }
 
-    private final class SearchInput extends Container {
+    private final class SearchInput extends Container implements LayoutDebugLabel {
 
         private final String placeholder;
         private final TextField field = textField("");
@@ -847,9 +857,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), SEARCH_HEIGHT);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.field.text().isBlank() ? "empty" : this.field.text();
+        }
     }
 
-    private final class ModuleRow extends Container {
+    private final class ModuleRow extends Container implements LayoutDebugLabel {
 
         private static final float SWITCH_X_FROM_RIGHT = 58F;
         private static final float KEBAB_X_FROM_RIGHT = 22F;
@@ -925,9 +940,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), ModulePanel.this.compactRows ? COMPACT_MODULE_ROW_HEIGHT : MODULE_ROW_HEIGHT);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.module.id();
+        }
     }
 
-    private final class ModuleInspector extends Container {
+    private final class ModuleInspector extends Container implements LayoutDebugLabel {
 
         private final InspectorHeader header = new InspectorHeader();
         private final Container settings = new Container(new VerticalListLayout(0, true));
@@ -989,9 +1009,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return ModulePanel.this.selectedModule == null ? "empty" : ModulePanel.this.selectedModule.id();
+        }
     }
 
-    private final class InspectorHeader extends Container {
+    private final class InspectorHeader extends Container implements LayoutDebugLabel {
 
         private static final float TITLE_CENTER_Y = 30F;
         private static final float TOGGLE_X_FROM_RIGHT = 40F;
@@ -1050,9 +1075,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 86F);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return ModulePanel.this.selectedModule == null ? "empty" : ModulePanel.this.selectedModule.id();
+        }
     }
 
-    private static final class GroupHeader extends Component {
+    private static final class GroupHeader extends Component implements LayoutDebugLabel {
 
         private final String name;
 
@@ -1071,9 +1101,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 24);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.name;
+        }
     }
 
-    private abstract static class SettingLine extends Component {
+    private abstract static class SettingLine extends Component implements LayoutDebugLabel {
 
         private final Setting<?> setting;
         private final float height;
@@ -1099,6 +1134,11 @@ public final class ModulePanel extends Container {
 
         protected float labelMaxWidth(final Rectangle bounds) {
             return bounds.width() - 64F;
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.setting.id();
         }
     }
 
@@ -1189,7 +1229,7 @@ public final class ModulePanel extends Container {
         }
     }
 
-    private static final class NumberSettingRow extends Container {
+    private static final class NumberSettingRow extends Container implements LayoutDebugLabel {
 
         private final NumberSetting setting;
         private final Slider slider;
@@ -1230,9 +1270,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), NUMBER_ROW_HEIGHT);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.setting.id();
+        }
     }
 
-    private static final class TextSettingRow extends Container {
+    private static final class TextSettingRow extends Container implements LayoutDebugLabel {
 
         private final Setting<?> setting;
         private final TextValueSetting textSetting;
@@ -1283,9 +1328,14 @@ public final class ModulePanel extends Container {
         private float fieldWidth(final float rowWidth) {
             return Math.max(0F, Math.min(rowWidth - 28F, Math.max(86F, rowWidth * 0.48F)));
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.setting.id();
+        }
     }
 
-    private final class FriendsPanel extends Container {
+    private final class FriendsPanel extends Container implements LayoutDebugLabel {
 
         private final TextField addField = textField("");
         private final Button addButton = button("Add", TEXT, ignored -> this.addFriend());
@@ -1339,9 +1389,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return "friends=" + AnarchyClient.FRIENDS.friends().size();
+        }
     }
 
-    private final class FriendRow extends Component {
+    private final class FriendRow extends Component implements LayoutDebugLabel {
 
         private final String friend;
 
@@ -1373,9 +1428,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 34);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.friend;
+        }
     }
 
-    private final class ProfilesPanel extends Container {
+    private final class ProfilesPanel extends Container implements LayoutDebugLabel {
 
         private final TextField nameField = textField("");
         private final Button saveButton = button("Capture", TEXT, ignored -> this.capture());
@@ -1432,9 +1492,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return constraints;
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return "profiles=" + AnarchyClient.PROFILES.summaries().size();
+        }
     }
 
-    private final class ProfileRow extends Component {
+    private final class ProfileRow extends Component implements LayoutDebugLabel {
 
         private final ProfileManager.ProfileSummary profile;
 
@@ -1478,9 +1543,14 @@ public final class ModulePanel extends Container {
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 44);
         }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.profile.name();
+        }
     }
 
-    private final class SettingsDrawer extends Component {
+    private final class SettingsDrawer extends Component implements LayoutDebugLabel {
 
         private void refresh() {
             ModulePanel.this.requestFrame();
@@ -1528,6 +1598,11 @@ public final class ModulePanel extends Container {
         @Override
         public Size computeIdealSize(final Size constraints) {
             return constraints;
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return ModulePanel.this.drawer.name().toLowerCase(Locale.ROOT);
         }
 
         private String title() {
@@ -1638,7 +1713,7 @@ public final class ModulePanel extends Container {
         }
     }
 
-    private static final class EmptyState extends Component {
+    private static final class EmptyState extends Component implements LayoutDebugLabel {
 
         private final String message;
 
@@ -1657,6 +1732,11 @@ public final class ModulePanel extends Container {
         @Override
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 72);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.message;
         }
     }
 }
