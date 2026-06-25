@@ -546,10 +546,14 @@ public final class ModulePanel extends Container {
         renderer.text(component.rivet().backend().shapeText(text, color), x, y, horizontal, vertical);
     }
 
-    private static void drawIcon(final Renderer renderer, final LucideIcon icon, final float x, final float y, final Color color) {
+    private static void drawIcon(final Renderer renderer, final String icon, final float x, final float y, final Color color) {
+        String glyph = LucideIcons.glyph(icon);
+        if (glyph.isEmpty()) {
+            return;
+        }
         renderer.custom((GuiGraphicsExtractor graphics) -> graphics.text(
                 Minecraft.getInstance().font,
-                net.minecraft.network.chat.Component.literal(icon.glyph())
+                net.minecraft.network.chat.Component.literal(glyph)
                         .withStyle(style -> style.withFont(LUCIDE_FONT)),
                 Math.round(x),
                 Math.round(y),
@@ -573,16 +577,16 @@ public final class ModulePanel extends Container {
         renderer.fillCircle(x + (checked ? 18 : 6), y + 6, 4, checked ? SHELL : MUTED);
     }
 
-    private static LucideIcon categoryIcon(final ModuleCategory category) {
+    private static String categoryIcon(final ModuleCategory category) {
         return switch (category) {
-            case COMBAT -> LucideIcon.CROSSHAIR;
-            case RENDER -> LucideIcon.EYE;
-            case MOVEMENT -> LucideIcon.MOVE;
-            case WORLD -> LucideIcon.GLOBE;
-            case PLAYER -> LucideIcon.USER;
-            case HUD -> LucideIcon.LAYOUT;
-            case MISC -> LucideIcon.PACKAGE;
-            case FUN -> LucideIcon.ZAP;
+            case COMBAT -> "crosshair";
+            case RENDER -> "eye";
+            case MOVEMENT -> "move";
+            case WORLD -> "globe";
+            case PLAYER -> "user";
+            case HUD -> "layout";
+            case MISC -> "package";
+            case FUN -> "zap";
         };
     }
 
@@ -632,8 +636,8 @@ public final class ModulePanel extends Container {
                 tabX += width;
             }
 
-            drawIcon(renderer, LucideIcon.REFRESH_CW, bounds.width() - 57F, 13F, ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED);
-            drawIcon(renderer, LucideIcon.SETTINGS, bounds.width() - 31F, 13F, ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE);
+            drawIcon(renderer, "refresh-cw", bounds.width() - 57F, 13F, ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED);
+            drawIcon(renderer, "settings", bounds.width() - 31F, 13F, ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE);
         }
 
         @Override
@@ -761,7 +765,7 @@ public final class ModulePanel extends Container {
         public void render(final Renderer renderer, final Rectangle bounds) {
             renderer.optimizedFillRoundedRect(0, 0, bounds.width(), bounds.height(), CORNER_RADIUS, FIELD);
             renderer.optimizedOutlineRoundedRect(0, 0, bounds.width(), bounds.height(), CORNER_RADIUS, 1, BORDER);
-            drawIcon(renderer, LucideIcon.SEARCH, 6F, bounds.height() / 2F - 7F, FAINT);
+            drawIcon(renderer, "search", 6F, bounds.height() / 2F - 7F, FAINT);
             if (this.field.text().isEmpty()) {
                 drawText(this, renderer, this.placeholder, FAINT, 26, bounds.height() / 2F,
                         TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
@@ -825,7 +829,7 @@ public final class ModulePanel extends Container {
             }
             float switchX = bounds.width() - 54F;
             drawSwitch(renderer, switchX, bounds.height() / 2F - 6F, this.module.enabled());
-            drawIcon(renderer, LucideIcon.MORE_VERTICAL, bounds.width() - 24F, bounds.height() / 2F - 7F, FAINT);
+            drawIcon(renderer, "more-vertical", bounds.width() - 24F, bounds.height() / 2F - 7F, FAINT);
         }
 
         @Override
@@ -930,7 +934,7 @@ public final class ModulePanel extends Container {
             drawText(this, renderer, module.enabled() ? "ON" : "OFF", module.enabled() ? ACTIVE : FAINT,
                     bounds.width() - 16, 25, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.BASELINE);
             drawSwitch(renderer, bounds.width() - 48, 40, module.enabled());
-            drawIcon(renderer, LucideIcon.STAR, bounds.width() - 84F, 16F, module.enabled() ? WARNING : FAINT);
+            drawIcon(renderer, "star", bounds.width() - 84F, 16F, module.enabled() ? WARNING : FAINT);
         }
 
         @Override
@@ -1044,7 +1048,7 @@ public final class ModulePanel extends Container {
             String value = fitText(this, this.setting.value(), TEXT, Math.min(100F, Math.max(0F, bounds.width() * 0.42F)));
             drawText(this, renderer, value, TEXT, bounds.width() - 28, bounds.height() / 2F + 5F,
                     TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.BASELINE);
-            drawIcon(renderer, LucideIcon.CHEVRON_DOWN, bounds.width() - 22F, bounds.height() / 2F - 7F, FAINT);
+            drawIcon(renderer, "chevron-down", bounds.width() - 22F, bounds.height() / 2F - 7F, FAINT);
         }
 
         @Override
@@ -1390,7 +1394,7 @@ public final class ModulePanel extends Container {
             renderer.line(0, 38, bounds.width(), 38, 1, BORDER_SOFT);
             drawText(this, renderer, this.title(), TEXT, 30, 24, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.BASELINE);
             drawIcon(renderer, this.titleIcon(), 11F, 12F, MUTED);
-            drawIcon(renderer, LucideIcon.X, bounds.width() - 24F, 12F, FAINT);
+            drawIcon(renderer, "x", bounds.width() - 24F, 12F, FAINT);
             switch (ModulePanel.this.drawer) {
                 case ROOT -> this.renderRoot(renderer, bounds);
                 case MODULES -> this.renderModules(renderer, bounds);
@@ -1436,12 +1440,12 @@ public final class ModulePanel extends Container {
             };
         }
 
-        private LucideIcon titleIcon() {
+        private String titleIcon() {
             return switch (ModulePanel.this.drawer) {
-                case ROOT -> LucideIcon.SETTINGS;
-                case MODULES -> LucideIcon.PACKAGE;
-                case GUI -> LucideIcon.LAYOUT;
-                case NONE -> LucideIcon.CIRCLE;
+                case ROOT -> "settings";
+                case MODULES -> "package";
+                case GUI -> "layout";
+                case NONE -> "circle";
             };
         }
 
@@ -1476,7 +1480,7 @@ public final class ModulePanel extends Container {
             if (toggle) {
                 drawSwitch(renderer, DRAWER_WIDTH - 38F, y + 12F, checked);
             } else if (arrow) {
-                drawIcon(renderer, LucideIcon.CHEVRON_RIGHT, DRAWER_WIDTH - 24F, y + 11F, FAINT);
+                drawIcon(renderer, "chevron-right", DRAWER_WIDTH - 24F, y + 11F, FAINT);
             }
         }
 
