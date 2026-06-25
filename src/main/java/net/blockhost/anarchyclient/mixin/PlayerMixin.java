@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
+import net.blockhost.anarchyclient.module.impl.ReachModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,5 +19,15 @@ public abstract class PlayerMixin {
         if (event.isCancelled()) {
             info.setReturnValue(true);
         }
+    }
+
+    @Inject(method = "blockInteractionRange", at = @At("RETURN"), cancellable = true)
+    private void anarchyclient$extendBlockReach(final CallbackInfoReturnable<Double> info) {
+        info.setReturnValue(info.getReturnValue() + ReachModule.blockBonus());
+    }
+
+    @Inject(method = "entityInteractionRange", at = @At("RETURN"), cancellable = true)
+    private void anarchyclient$extendEntityReach(final CallbackInfoReturnable<Double> info) {
+        info.setReturnValue(info.getReturnValue() + ReachModule.entityBonus());
     }
 }

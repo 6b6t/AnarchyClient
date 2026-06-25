@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class RegistryListSetting<T> extends Setting<List<T>> {
+public abstract class RegistryListSetting<T> extends Setting<List<T>> implements TextValueSetting {
 
     private final Function<Identifier, Optional<T>> resolver;
     private final Function<T, Identifier> keyGetter;

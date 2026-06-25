@@ -9,12 +9,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-final class WorldLineRenderer {
+public final class WorldLineRenderer {
 
     private WorldLineRenderer() {
     }
 
-    static void boxNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
+    public static void boxNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
         box(matrices, submits, box, color, AnarchyClientRenderPipelines.LINES_NO_DEPTH);
     }
 
@@ -25,7 +25,7 @@ final class WorldLineRenderer {
         });
     }
 
-    static void fillNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
+    public static void fillNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
         submits.submitCustomGeometry(matrices, AnarchyClientRenderPipelines.QUADS_NO_DEPTH, (pose, vertices) -> {
             quad(pose, vertices, box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ, box.maxX, box.maxY, box.minZ, box.minX, box.maxY, box.minZ, color);
             quad(pose, vertices, box.maxX, box.minY, box.maxZ, box.minX, box.minY, box.maxZ, box.minX, box.maxY, box.maxZ, box.maxX, box.maxY, box.maxZ, color);
@@ -65,15 +65,15 @@ final class WorldLineRenderer {
         vertices.addVertex(pose, (float) x4, (float) y4, (float) z4).setColor(color.red(), color.green(), color.blue(), color.alpha());
     }
 
-    static AABB interpolatedBox(final Entity entity, final float partialTick, final double inflate, final Vec3 camera) {
+    public static AABB interpolatedBox(final Entity entity, final float partialTick, final double inflate, final Vec3 camera) {
         double dx = Mth.lerp(partialTick, entity.xo, entity.getX()) - entity.getX();
         double dy = Mth.lerp(partialTick, entity.yo, entity.getY()) - entity.getY();
         double dz = Mth.lerp(partialTick, entity.zo, entity.getZ()) - entity.getZ();
         return entity.getBoundingBox().move(dx, dy, dz).inflate(inflate).move(camera.scale(-1));
     }
 
-    static void lineNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 start, final Vec3 end,
-                            final Color color) {
+    public static void lineNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 start, final Vec3 end,
+                                   final Color color) {
         submits.submitCustomGeometry(matrices, AnarchyClientRenderPipelines.LINES_NO_DEPTH,
                 (pose, vertices) -> line(pose, vertices, start.x, start.y, start.z, end.x, end.y, end.z, color));
     }
@@ -100,6 +100,6 @@ final class WorldLineRenderer {
                 .setNormal(pose, normalX, normalY, normalZ);
     }
 
-    record Color(int red, int green, int blue, int alpha) {
+    public record Color(int red, int green, int blue, int alpha) {
     }
 }

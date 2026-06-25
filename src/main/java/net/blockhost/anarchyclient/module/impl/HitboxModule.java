@@ -18,7 +18,7 @@ public final class HitboxModule extends Module {
             .build()));
 
     public HitboxModule() {
-        super("hitbox", "Hitbox", ModuleCategory.COMBAT);
+        super("hitbox", "Hitbox", ModuleCategory.COMBAT, java.util.List.of("hitboxes"));
     }
 
     @Override

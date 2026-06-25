@@ -49,7 +49,16 @@ public final class ModuleManager {
     }
 
     public Optional<Module> find(final String id) {
-        return Optional.ofNullable(this.modules.get(id));
+        Module direct = this.modules.get(id);
+        if (direct != null) {
+            return Optional.of(direct);
+        }
+        for (Module module : this.modules.values()) {
+            if (module.aliases().contains(id)) {
+                return Optional.of(module);
+            }
+        }
+        return Optional.empty();
     }
 
     public Collection<Module> all() {

@@ -12,6 +12,7 @@ import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
 import net.blockhost.anarchyclient.profile.ProfileManager;
+import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
@@ -68,6 +69,7 @@ public final class AnarchyClient implements ClientModInitializer {
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             EspOutlineRegistry.clear();
             MODULES.call(new WorldRenderEvent(context));
+            MarkerManager.render(context);
         });
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
                 (graphics, deltaTracker) -> MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics)));
@@ -80,6 +82,7 @@ public final class AnarchyClient implements ClientModInitializer {
         RenderedEntityCache.refresh(client);
         RotationManager.tick();
         TimerManager.tick();
+        MarkerManager.tick();
         SilentHotbar.tick(client);
         MODULES.handleKeybinds(client);
         MODULES.call(new ClientTickEvent(client));

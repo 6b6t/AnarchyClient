@@ -33,7 +33,7 @@ public final class MiddleClickActionModule extends Module {
     private boolean wasPressed;
 
     public MiddleClickActionModule() {
-        super("middle_click_action", "Middle Click", ModuleCategory.MISC);
+        super("middle_click_action", "Middle Click", ModuleCategory.MISC, List.of("middle_click_extra"));
     }
 
     @Override

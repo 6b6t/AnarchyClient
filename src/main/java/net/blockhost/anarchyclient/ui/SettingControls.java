@@ -2,9 +2,9 @@ package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.setting.RegistryListSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.TextValueSetting;
 import net.lenni0451.commons.math.MathUtils;
 
 import java.math.BigDecimal;
@@ -19,8 +19,8 @@ final class SettingControls {
         if (value instanceof Double number) {
             return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
         }
-        if (setting instanceof RegistryListSetting<?> list) {
-            return list.valueString();
+        if (setting instanceof TextValueSetting text) {
+            return text.valueString();
         }
         return String.valueOf(value);
     }

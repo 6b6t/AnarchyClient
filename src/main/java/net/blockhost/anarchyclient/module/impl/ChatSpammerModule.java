@@ -44,7 +44,7 @@ public final class ChatSpammerModule extends Module {
     private int messageIndex;
 
     public ChatSpammerModule() {
-        super("chat_spammer", "Chat Spammer", ModuleCategory.FUN);
+        super("chat_spammer", "Chat Spammer", ModuleCategory.FUN, List.of("spam"));
     }
 
     @Override

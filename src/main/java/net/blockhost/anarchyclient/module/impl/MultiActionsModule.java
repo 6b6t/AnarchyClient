@@ -19,7 +19,7 @@ public final class MultiActionsModule extends Module {
             .build()));
 
     public MultiActionsModule() {
-        super("multi_actions", "Multi Actions", ModuleCategory.MISC);
+        super("multi_actions", "Multi Actions", ModuleCategory.MISC, java.util.List.of("multitask"));
         instance = this;
     }
 

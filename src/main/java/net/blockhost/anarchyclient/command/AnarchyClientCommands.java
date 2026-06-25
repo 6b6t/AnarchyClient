@@ -19,10 +19,10 @@ import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.setting.RegistryListSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.setting.TextValueSetting;
 import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -47,8 +47,10 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -212,6 +214,50 @@ public final class AnarchyClientCommands {
                                         .executes(AnarchyClientCommands::setVelocityXZ)
                                         .then(argument("third", DoubleArgumentType.doubleArg())
                                                 .executes(AnarchyClientCommands::setVelocityXYZ)))))
+                .then(literal("hclip")
+                        .then(argument("distance", DoubleArgumentType.doubleArg())
+                                .executes(AnarchyClientCommands::hclip)))
+                .then(literal("vclip")
+                        .then(argument("distance", DoubleArgumentType.doubleArg())
+                                .executes(AnarchyClientCommands::vclip)))
+                .then(literal("damage")
+                        .executes(context -> damage(context, 1.0))
+                        .then(argument("amount", DoubleArgumentType.doubleArg(0.5, 20.0))
+                                .executes(context -> damage(context, DoubleArgumentType.getDouble(context, "amount")))))
+                .then(literal("dismount")
+                        .executes(AnarchyClientCommands::dismount))
+                .then(literal("drop")
+                        .executes(context -> dropSelected(context, true))
+                        .then(literal("hand")
+                                .executes(context -> dropSelected(context, true)))
+                        .then(literal("one")
+                                .executes(context -> dropSelected(context, false))))
+                .then(literal("inventory")
+                        .executes(AnarchyClientCommands::inventorySummary)
+                        .then(literal("hotbar")
+                                .executes(context -> inventorySummary(context, InventoryView.HOTBAR)))
+                        .then(literal("armor")
+                                .executes(context -> inventorySummary(context, InventoryView.ARMOR))))
+                .then(literal("peek")
+                        .executes(AnarchyClientCommands::peekHeldItem))
+                .then(literal("nbt")
+                        .executes(AnarchyClientCommands::heldItemNbt))
+                .then(literal("save-map")
+                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                                .executes(AnarchyClientCommands::terrainExport)))
+                .then(literal("macro")
+                        .then(literal("run")
+                                .then(argument("message", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::runMacro))))
+                .then(literal("notebot")
+                        .then(literal("status")
+                                .executes(AnarchyClientCommands::notebotStatus))
+                        .then(literal("play")
+                                .then(argument("note", IntegerArgumentType.integer(0, 24))
+                                        .executes(AnarchyClientCommands::notebotPlayNote))))
+                .then(literal("swarm")
+                        .then(literal("status")
+                                .executes(AnarchyClientCommands::swarmStatus)))
                 .then(literal("teleport")
                         .then(argument("x", StringArgumentType.word())
                                 .then(argument("y", StringArgumentType.word())
@@ -804,6 +850,218 @@ public final class AnarchyClientCommands {
         return SUCCESS;
     }
 
+    private static int hclip(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "clip horizontally");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        double distance = DoubleArgumentType.getDouble(context, "distance");
+        double yaw = Math.toRadians(client.player.getYRot());
+        Vec3 offset = new Vec3(-Math.sin(yaw) * distance, 0.0, Math.cos(yaw) * distance);
+        return movePlayer(context, client.player.position().add(offset));
+    }
+
+    private static int vclip(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "clip vertically");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        return movePlayer(context, client.player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
+    }
+
+    private static int damage(final CommandContext<FabricClientCommandSource> context, final double amount) {
+        Minecraft client = requireInGame(context, "send damage packets");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        Vec3 pos = client.player.position();
+        int packets = Math.max(4, Math.min(80, (int) Math.ceil(amount * 8.0)));
+        for (int index = 0; index < packets; index++) {
+            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
+                    pos.x,
+                    pos.y + 0.0625,
+                    pos.z,
+                    false,
+                    client.player.horizontalCollision
+            ));
+            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
+                    pos.x,
+                    pos.y,
+                    pos.z,
+                    false,
+                    client.player.horizontalCollision
+            ));
+        }
+        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(pos, true, client.player.horizontalCollision));
+        context.getSource().sendFeedback(Component.literal("Sent " + packets + " damage packet pairs."));
+        return SUCCESS;
+    }
+
+    private static int dismount(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "dismount");
+        if (client == null) {
+            return 0;
+        }
+        if (client.player.isPassenger()) {
+            client.player.stopRiding();
+            context.getSource().sendFeedback(Component.literal("Dismounted."));
+        } else {
+            context.getSource().sendFeedback(Component.literal("You are not riding anything."));
+        }
+        return SUCCESS;
+    }
+
+    private static int dropSelected(final CommandContext<FabricClientCommandSource> context, final boolean all) {
+        Minecraft client = requireInGame(context, "drop the selected item");
+        if (client == null) {
+            return 0;
+        }
+        if (client.player.drop(all)) {
+            context.getSource().sendFeedback(Component.literal("Dropped selected " + (all ? "stack" : "item") + "."));
+            return SUCCESS;
+        }
+        context.getSource().sendError(Component.literal("No selected item to drop."));
+        return 0;
+    }
+
+    private static int inventorySummary(final CommandContext<FabricClientCommandSource> context) {
+        return inventorySummary(context, InventoryView.SELECTED);
+    }
+
+    private static int inventorySummary(final CommandContext<FabricClientCommandSource> context, final InventoryView view) {
+        Minecraft client = requireInGame(context, "inspect inventory");
+        if (client == null) {
+            return 0;
+        }
+        List<String> lines = switch (view) {
+            case SELECTED -> List.of("Selected: " + stackSummary(client.player.getInventory().getSelectedItem()));
+            case HOTBAR -> hotbarSummary(client.player);
+            case ARMOR -> armorSummary(client.player);
+        };
+        for (String line : lines) {
+            context.getSource().sendFeedback(Component.literal(line));
+        }
+        return SUCCESS;
+    }
+
+    private static int peekHeldItem(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "peek at the held item");
+        if (client == null) {
+            return 0;
+        }
+        ItemStack stack = client.player.getMainHandItem();
+        if (stack.isEmpty()) {
+            context.getSource().sendError(Component.literal("You are not holding an item."));
+            return 0;
+        }
+        context.getSource().sendFeedback(Component.literal(stackSummary(stack)
+                + " | components: " + stack.getComponents().size()));
+        return SUCCESS;
+    }
+
+    private static int heldItemNbt(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "inspect held item data");
+        if (client == null) {
+            return 0;
+        }
+        ItemStack stack = client.player.getMainHandItem();
+        if (stack.isEmpty()) {
+            context.getSource().sendError(Component.literal("You are not holding an item."));
+            return 0;
+        }
+        String data = stack.getComponents().toString();
+        context.getSource().sendFeedback(Component.literal("Held item components: ")
+                .append(CommandFeedback.copyable("[copy]", data)));
+        return SUCCESS;
+    }
+
+    private static int runMacro(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "run a macro");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        sendChatAction(client, StringArgumentType.getString(context, "message"));
+        return SUCCESS;
+    }
+
+    private static int notebotStatus(final CommandContext<FabricClientCommandSource> context) {
+        context.getSource().sendFeedback(Component.literal("Notebot command bridge is ready. Use /ac notebot play <note> for local preview."));
+        return SUCCESS;
+    }
+
+    private static int notebotPlayNote(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "preview a note");
+        if (client == null) {
+            return 0;
+        }
+        int note = IntegerArgumentType.getInteger(context, "note");
+        client.player.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 2.0F, notePitch(note));
+        context.getSource().sendFeedback(Component.literal("Played note " + note + "."));
+        return SUCCESS;
+    }
+
+    private static int swarmStatus(final CommandContext<FabricClientCommandSource> context) {
+        context.getSource().sendFeedback(Component.literal("Swarm networking is not connected. Local command stub is registered for module compatibility."));
+        return SUCCESS;
+    }
+
+    private static int movePlayer(final CommandContext<FabricClientCommandSource> context, final Vec3 target) {
+        Minecraft client = requireInGame(context, "move");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        client.player.absSnapTo(target.x, target.y, target.z);
+        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, client.player.onGround(), client.player.horizontalCollision));
+        context.getSource().sendFeedback(Component.literal("Moved to "
+                + formatCoordinate(target.x) + ", " + formatCoordinate(target.y) + ", " + formatCoordinate(target.z) + "."));
+        return SUCCESS;
+    }
+
+    private static List<String> hotbarSummary(final Player player) {
+        List<String> lines = new ArrayList<>();
+        for (int slot = 0; slot < 9; slot++) {
+            lines.add((slot + 1) + ": " + stackSummary(player.getInventory().getItem(slot)));
+        }
+        return List.copyOf(lines);
+    }
+
+    private static List<String> armorSummary(final Player player) {
+        return List.of(
+                "Head: " + stackSummary(player.getItemBySlot(EquipmentSlot.HEAD)),
+                "Chest: " + stackSummary(player.getItemBySlot(EquipmentSlot.CHEST)),
+                "Legs: " + stackSummary(player.getItemBySlot(EquipmentSlot.LEGS)),
+                "Feet: " + stackSummary(player.getItemBySlot(EquipmentSlot.FEET)),
+                "Offhand: " + stackSummary(player.getItemBySlot(EquipmentSlot.OFFHAND))
+        );
+    }
+
+    private static String stackSummary(final ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return "empty";
+        }
+        return stack.getCount() + "x " + stack.getHoverName().getString();
+    }
+
+    private static void sendChatAction(final Minecraft client, final String message) {
+        if (client.getConnection() == null || message == null || message.isBlank()) {
+            return;
+        }
+        String trimmed = message.trim();
+        if (trimmed.startsWith("/")) {
+            client.getConnection().sendCommand(trimmed.substring(1));
+        } else {
+            client.getConnection().sendChat(trimmed);
+        }
+    }
+
+    private static float notePitch(final int note) {
+        return (float) Math.pow(2.0, (note - 12) / 12.0);
+    }
+
+    private static String formatCoordinate(final double value) {
+        return "%.2f".formatted(Locale.ROOT, value);
+    }
+
     private static int teleport(final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
         Minecraft client = requireInGame(context, "teleport");
         if (client == null || client.getConnection() == null) {
@@ -940,7 +1198,7 @@ public final class AnarchyClientCommands {
         if (setting == null) {
             return 0;
         }
-        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + setting.value()));
+        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
         return SUCCESS;
     }
 
@@ -958,7 +1216,7 @@ public final class AnarchyClientCommands {
             return 0;
         }
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + setting.value()));
+        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
         return SUCCESS;
     }
 
@@ -985,15 +1243,18 @@ public final class AnarchyClientCommands {
             select.value(value);
             return;
         }
-        if (setting instanceof RegistryListSetting<?> list) {
-            list.valueFromString(value);
-            return;
-        }
-        if (setting instanceof StringSetting string) {
-            string.value(value);
+        if (setting instanceof TextValueSetting text) {
+            text.valueFromString(value);
             return;
         }
         throw new IllegalArgumentException("This setting cannot be changed from commands.");
+    }
+
+    private static String settingValueString(final Setting<?> setting) {
+        if (setting instanceof TextValueSetting text) {
+            return text.valueString();
+        }
+        return String.valueOf(setting.value());
     }
 
     private static Module findModule(final CommandContext<FabricClientCommandSource> context) {
@@ -1081,8 +1342,8 @@ public final class AnarchyClientCommands {
         if (setting instanceof SelectSetting select) {
             return SharedSuggestionProvider.suggest(select.options(), builder);
         }
-        if (setting instanceof RegistryListSetting<?> list) {
-            return SharedSuggestionProvider.suggest(list.suggestions(), builder);
+        if (setting instanceof TextValueSetting text) {
+            return SharedSuggestionProvider.suggest(text.suggestions(), builder);
         }
         return builder.buildFuture();
     }
@@ -1362,5 +1623,11 @@ public final class AnarchyClientCommands {
         };
 
         abstract double coordinate(double value);
+    }
+
+    private enum InventoryView {
+        SELECTED,
+        HOTBAR,
+        ARMOR
     }
 }

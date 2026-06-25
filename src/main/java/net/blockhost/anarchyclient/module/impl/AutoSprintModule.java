@@ -25,7 +25,7 @@ public final class AutoSprintModule extends Module {
             .build()));
 
     public AutoSprintModule() {
-        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT);
+        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, java.util.List.of("sprint"));
     }
 
     @Override

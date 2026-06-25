@@ -3,7 +3,7 @@ package net.blockhost.anarchyclient.setting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-public final class StringSetting extends Setting<String> {
+public final class StringSetting extends Setting<String> implements TextValueSetting {
 
     private StringSetting(final StringSettingSpec spec) {
         super(spec.id(), spec.name(), spec.description(), spec.defaultValue(), spec.aliases());
@@ -20,6 +20,16 @@ public final class StringSetting extends Setting<String> {
     @Override
     public JsonElement toJson() {
         return new JsonPrimitive(this.value());
+    }
+
+    @Override
+    public String valueString() {
+        return this.value();
+    }
+
+    @Override
+    public void valueFromString(final String value) {
+        this.value(value);
     }
 
     @Override

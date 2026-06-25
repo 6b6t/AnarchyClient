@@ -11,6 +11,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.setting.TextValueSetting;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
 import net.lenni0451.rivet.backend.render.Renderer;
@@ -581,8 +582,8 @@ public final class ModulePanel extends Container {
             if (setting instanceof SelectSetting select) {
                 return new SelectSettingRow(select, index, this::rebuild);
             }
-            if (setting instanceof StringSetting string) {
-                return new StringSettingRow(string, index);
+            if (setting instanceof TextValueSetting text) {
+                return new TextValueSettingRow(setting, text, index);
             }
             return new ValueSettingRow(setting, index);
         }
@@ -724,13 +725,13 @@ public final class ModulePanel extends Container {
         }
     }
 
-    private final class StringSettingRow extends SettingRow {
+    private final class TextValueSettingRow extends SettingRow {
 
-        private StringSettingRow(final StringSetting setting, final int index) {
+        private TextValueSettingRow(final Setting<?> setting, final TextValueSetting text, final int index) {
             super(index, STRING_ROW_HEIGHT);
             FormattedLabel name = label(setting.name(), MUTED);
             name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(STRING_ROW_HEIGHT));
-            TextField field = new TextField(setting.value());
+            TextField field = new TextField(text.valueString());
             field.backgroundColor().set(SURFACE_DARK);
             field.outlineColor().set(BORDER_SOFT);
             field.focusedOutlineColor().set(ACTIVE);
@@ -738,8 +739,12 @@ public final class ModulePanel extends Container {
             field.selectionColor().set(Color.fromRGBA(0, 236, 92, 90));
             field.cornerRadius().set(CONTROL_RADIUS);
             field.valueChangeListener().add(value -> {
-                setting.value(value);
-                ModulePanel.this.save();
+                try {
+                    text.valueFromString(value);
+                    ModulePanel.this.save();
+                } catch (IllegalArgumentException ignored) {
+                    // Keep the previous value while the user is typing an incomplete structured value.
+                }
             });
             field.layoutOptions(new GridLayoutOptions(1, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withWidth(96F).withHeight(STRING_ROW_HEIGHT - 6));
             this.addChild(name);
