@@ -1111,6 +1111,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class SearchInput extends Container implements LayoutDebugLabel {
 
+        private static final float FIELD_X = 22F;
+        private static final float FIELD_Y = 2F;
+        private static final float FIELD_RIGHT_PADDING = 4F;
+        private static final float FIELD_VERTICAL_PADDING = 4F;
+
         private final String placeholder;
         private final Surface background = surface(FIELD).outline(BORDER, 1F).cornerRadius(CORNER_RADIUS);
         private final IconNode icon = iconNode("search", FAINT);
@@ -1122,7 +1127,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private SearchInput(final String placeholder) {
             super(AbsoluteLayout.INSTANCE);
             this.placeholder = placeholder;
-            this.placeholderLabel = textNode(() -> this.field.text().isEmpty() ? this.placeholder : "", () -> FAINT);
+            this.placeholderLabel = textNode(() -> this.field.text().isEmpty() && !this.fieldFocused() ? this.placeholder : "", () -> FAINT);
             this.field.backgroundColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.outlineColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.focusedOutlineColor().set(Color.fromRGBA(0, 0, 0, 0));
@@ -1146,8 +1151,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     ICON_BOX,
                     ICON_BOX
             ));
-            this.placeholderLabel.layoutOptions(new AbsoluteLayoutOptions(26F, 0F, Math.max(0F, size.width() - 30F), size.height()));
-            this.field.layoutOptions(new AbsoluteLayoutOptions(22, 2, Math.max(0, size.width() - 26), Math.max(0, size.height() - 4)));
+            float textX = FIELD_X + this.field.innerPadding().value().left();
+            this.placeholderLabel.layoutOptions(new AbsoluteLayoutOptions(textX, 0F,
+                    Math.max(0F, size.width() - textX - FIELD_RIGHT_PADDING), size.height()));
+            this.field.layoutOptions(new AbsoluteLayoutOptions(
+                    FIELD_X,
+                    FIELD_Y,
+                    Math.max(0F, size.width() - FIELD_X - FIELD_RIGHT_PADDING),
+                    Math.max(0F, size.height() - FIELD_VERTICAL_PADDING)
+            ));
             super.computeLayout(size);
         }
 
@@ -1159,6 +1171,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         public String layoutDebugLabel() {
             return this.field.text().isBlank() ? "empty" : this.field.text();
+        }
+
+        private boolean fieldFocused() {
+            return this.field.rivet() != null && this.field.rivet().focusedComponent() == this.field;
         }
     }
 
