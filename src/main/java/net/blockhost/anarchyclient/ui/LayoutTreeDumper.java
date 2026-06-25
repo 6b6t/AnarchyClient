@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.ui;
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
+import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.layer.Layer;
 import net.lenni0451.rivet.layout.LayoutOptions;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayoutOptions;
@@ -56,7 +57,8 @@ final class LayoutTreeDumper {
                     .append(" bucket=").append(layer.bucket())
                     .append(" recalc=").append(layer.recalculateNextFrame())
                     .append('\n');
-            appendComponent(builder, issues, layer.container(), bounds, bounds, 1);
+            String rootName = componentName(layer.container());
+            appendComponent(builder, issues, layer.container(), bounds, bounds, rootName, rootName, false, 1);
             builder.append('\n');
         }
 
@@ -69,10 +71,10 @@ final class LayoutTreeDumper {
 
     private static void appendComponent(final StringBuilder builder, final List<LayoutIssue> issues,
                                         final Component component, final Rectangle localBounds,
-                                        final Rectangle absoluteBounds, final int depth) {
+                                        final Rectangle absoluteBounds, final String displayName,
+                                        final String path, final boolean hiddenAncestor, final int depth) {
         indent(builder, depth);
-        String path = componentName(component);
-        builder.append(path)
+        builder.append(displayName)
                 .append(" local=").append(format(localBounds))
                 .append(" abs=").append(format(absoluteBounds))
                 .append(" min=").append(format(component.minSize()))
@@ -84,8 +86,11 @@ final class LayoutTreeDumper {
                     .append(" content=").append(format(container.contentSize()))
                     .append(" children=").append(container.children().size());
         }
+        if (component instanceof ScrollContainer scroll) {
+            builder.append(" scroll=").append(format(scroll.scrollX())).append(',').append(format(scroll.scrollY()));
+        }
 
-        List<String> flags = flags(component, localBounds);
+        List<String> flags = flags(component, localBounds, hiddenAncestor);
         if (!flags.isEmpty()) {
             builder.append(" flags=").append(String.join(",", flags));
         }
@@ -97,29 +102,58 @@ final class LayoutTreeDumper {
             builder.append("options ").append(options).append('\n');
         }
 
-        if (!(component instanceof Container container)) {
-            return;
-        }
-
-        List<Component> children = container.children();
-        for (int index = 0; index < children.size(); index++) {
-            Component child = children.get(index);
-            Rectangle childBounds = container.childBounds(child);
-            Rectangle childAbsoluteBounds = childBounds.add(absoluteBounds.x(), absoluteBounds.y());
-            collectIssues(issues, path + "/" + index + ":" + componentName(child),
-                    child, childBounds, localBounds.size());
-            appendComponent(builder, issues, child, childBounds, childAbsoluteBounds, depth + 1);
+        boolean hiddenInTree = hiddenAncestor || isHidden(component, localBounds);
+        for (TreeChild child : treeChildren(component, localBounds)) {
+            Rectangle childAbsoluteBounds = child.bounds().add(absoluteBounds.x(), absoluteBounds.y());
+            if (!child.clippedByParent()) {
+                collectIssues(issues, path + "/" + child.pathSegment(),
+                        child.component(), child.bounds(), localBounds.size(), hiddenInTree);
+            }
+            appendComponent(builder, issues, child.component(), child.bounds(), childAbsoluteBounds,
+                    child.displayName(), path + "/" + child.pathSegment(), hiddenInTree, depth + 1);
         }
     }
 
-    private static List<String> flags(final Component component, final Rectangle bounds) {
+    private static List<TreeChild> treeChildren(final Component component, final Rectangle localBounds) {
+        List<TreeChild> children = new ArrayList<>();
+        if (component instanceof Container container) {
+            List<Component> containerChildren = container.children();
+            for (int index = 0; index < containerChildren.size(); index++) {
+                Component child = containerChildren.get(index);
+                String name = componentName(child);
+                children.add(new TreeChild(index + ":" + name, name, child, container.childBounds(child), false));
+            }
+        }
+        if (component instanceof LayoutDebugChildren debugChildren) {
+            for (LayoutDebugChildren.LayoutDebugChild child : debugChildren.layoutDebugChildren(localBounds)) {
+                String name = debugChildName(child);
+                children.add(new TreeChild(name, name, child.component(), child.bounds(), child.clippedByParent()));
+            }
+        }
+        return children;
+    }
+
+    private static String debugChildName(final LayoutDebugChildren.LayoutDebugChild child) {
+        String role = sanitize(child.role());
+        if (role.isBlank()) {
+            role = "debug";
+        }
+        return role + ":" + componentName(child.component());
+    }
+
+    private static List<String> flags(final Component component, final Rectangle bounds, final boolean hiddenAncestor) {
         List<String> flags = new ArrayList<>();
+        if (hiddenAncestor) {
+            flags.add("ANCESTOR_HIDDEN");
+            return flags;
+        }
         if (isHidden(component, bounds)) {
             flags.add("HIDDEN");
         } else if (bounds.width() <= EPSILON || bounds.height() <= EPSILON) {
             flags.add("ZERO_SIZE");
         }
-        if (component instanceof Container container
+        if (!isHidden(component, bounds)
+                && component instanceof Container container
                 && (container.contentSize().width() > bounds.width() + EPSILON
                 || container.contentSize().height() > bounds.height() + EPSILON)) {
             flags.add("CONTENT_OVERFLOW");
@@ -128,8 +162,8 @@ final class LayoutTreeDumper {
     }
 
     private static void collectIssues(final List<LayoutIssue> issues, final String path, final Component component,
-                                      final Rectangle bounds, final Size parentSize) {
-        if (isHidden(component, bounds)) {
+                                      final Rectangle bounds, final Size parentSize, final boolean hiddenAncestor) {
+        if (hiddenAncestor || isHidden(component, bounds)) {
             return;
         }
         if (bounds.width() < -EPSILON || bounds.height() < -EPSILON) {
@@ -193,5 +227,9 @@ final class LayoutTreeDumper {
     }
 
     private record LayoutIssue(String path, String message) {
+    }
+
+    private record TreeChild(String pathSegment, String displayName, Component component, Rectangle bounds,
+                             boolean clippedByParent) {
     }
 }

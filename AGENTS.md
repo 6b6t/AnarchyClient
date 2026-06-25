@@ -67,7 +67,9 @@ Target Java `25`; Gradle configures UTF-8 and `--release 25`. Use idiomatic Java
 
 Prefer small module classes that extend the existing module and setting abstractions. Avoid duplicate control flow when a shared helper already exists. For immutable collections, prefer `List.of()`, `Set.of()`, and `Map.of()` where they fit. Prefer `try-with-resources` for closeable resources, descriptive method names, and focused classes that match the existing package boundaries.
 
-For Rivet UI, prefer built-in components, theme options, and layout anchors such as `GridLayoutOptions` over manual positioning. Keep module expansion state and rendered children synchronized before layout so click state does not need a second interaction to catch up.
+For Rivet UI, use Rivet idiomatically for layout and composition. Prefer built-in components, theme options, and layout anchors such as `GridLayoutOptions` over manual positioning. Model visible UI atoms as components wherever practical: icons, labels, value text, dividers, active stripes, backgrounds, borders, buttons, rows, and controls should have real component bounds so Rivet owns layout, hit testing, and debug output. Keep manual pixel rendering inside small primitive components only when Rivet does not provide the shape directly, such as a custom toggle thumb or one reusable icon component. Avoid large `render` methods that hand-place text and icons with raw coordinates when child components and `computeLayout` can express the structure.
+
+Keep module expansion state and rendered children synchronized before layout so click state does not need a second interaction to catch up.
 
 ## Testing Guidelines
 

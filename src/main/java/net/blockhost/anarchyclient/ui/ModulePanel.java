@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public final class ModulePanel extends Container implements LayoutDebugLabel {
 
@@ -62,13 +63,24 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private static final float TEXT_ROW_HEIGHT = 38F;
     private static final float DRAWER_WIDTH = 280F;
     private static final float CORNER_RADIUS = 2F;
+    private static final float TOP_TAB_START_X = 144F;
+    private static final float TOP_TAB_PADDING_X = 8F;
+    private static final float TOP_TAB_GAP = 18F;
+    private static final float TOP_TAB_UNDERLINE_Y = 34F;
+    private static final float CATEGORY_ROW_X = 10F;
+    private static final float CATEGORY_ROW_HEIGHT = 34F;
+    private static final float CATEGORY_ROW_GAP = 6F;
+    private static final float CATEGORY_ICON_CENTER_X = 28F;
+    private static final float CATEGORY_TEXT_X = 48F;
+    private static final float CATEGORY_COUNT_X_FROM_RIGHT = 24F;
+    private static final float SEARCH_ICON_CENTER_X = 13F;
     private static final float SWITCH_WIDTH = 24F;
     private static final float SWITCH_HEIGHT = 12F;
-    private static final float ICON_BOX = 16F;
-    // Lucide glyphs (font size 14) render with their visual center this far below the
-    // top-left passed to the Minecraft font renderer. Single source for icon centering;
-    // nudge by a pixel here if icons ever look slightly high or low.
-    private static final float ICON_CENTER_OFFSET = 4F;
+    private static final float ICON_BOX = 20F;
+    // The Lucide TTF rasterizes as a 20px icon font in Minecraft. Keep the
+    // component box at that size so Rivet's component scissor does not crop it,
+    // and calibrate the font's y anchor once inside IconNode.
+    private static final float ICON_TEXT_Y_FROM_CENTER = 2F;
 
     private static final Color BACKDROP_TOP = Color.fromRGBA(0, 0, 0, 78);
     private static final Color BACKDROP_BOTTOM = Color.fromRGBA(0, 0, 0, 142);
@@ -98,7 +110,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private final CategoryRail categoryRail = new CategoryRail();
     private final SearchInput searchInput = new SearchInput("Search modules...");
     private final Container moduleRows = new Container(new VerticalListLayout(1, true));
-    private final ScrollContainer moduleScroll = new ScrollContainer(this.moduleRows);
+    private final ScrollContainer moduleScroll = new LayoutDebugScrollContainer(this.moduleRows);
     private final ModuleInspector inspector = new ModuleInspector();
     private final FriendsPanel friendsPanel = new FriendsPanel();
     private final ProfilesPanel profilesPanel = new ProfilesPanel();
@@ -566,7 +578,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     /**
      * Draws a Lucide icon centered on {@code (centerX, centerY)}. The X axis is centered exactly
-     * using the measured glyph width; the Y axis uses the single {@link #ICON_CENTER_OFFSET}
+     * using the measured glyph width; the Y axis uses the single {@link #ICON_TEXT_Y_FROM_CENTER}
      * calibration so every icon sits the same way instead of each call site guessing.
      */
     private static void drawIcon(final Renderer renderer, final String icon, final float centerX, final float centerY, final Color color) {
@@ -578,7 +590,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 .withStyle(style -> style.withFont(LUCIDE_FONT));
         float width = Minecraft.getInstance().font.width(component);
         float left = centerX - width / 2F;
-        float top = centerY - ICON_CENTER_OFFSET;
+        float top = centerY - ICON_TEXT_Y_FROM_CENTER;
         renderer.custom((GuiGraphicsExtractor graphics) -> graphics.text(
                 Minecraft.getInstance().font,
                 component,
@@ -586,7 +598,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 Math.round(top),
                 argb(color),
                 false
-        ), new Rectangle(left, centerY - ICON_BOX / 2F, width, ICON_BOX));
+        ), new Rectangle(0F, 0F, ICON_BOX, ICON_BOX));
     }
 
     private static void drawFittedText(final Component component, final Renderer renderer, final String text, final Color color,
@@ -604,6 +616,164 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         float radius = height / 2F;
         renderer.optimizedFillRoundedRect(x, y, SWITCH_WIDTH, height, radius, track);
         renderer.fillCircle(x + (checked ? SWITCH_WIDTH - radius : radius), y + radius, radius - 2F, checked ? SHELL : MUTED);
+    }
+
+    private static TextNode textNode(final String text, final Color color) {
+        return new TextNode(() -> text, () -> color);
+    }
+
+    private static TextNode textNode(final String text, final Supplier<Color> color) {
+        return new TextNode(() -> text, color);
+    }
+
+    private static TextNode textNode(final Supplier<String> text, final Supplier<Color> color) {
+        return new TextNode(text, color);
+    }
+
+    private static IconNode iconNode(final String icon, final Color color) {
+        return new IconNode(() -> icon, () -> color);
+    }
+
+    private static IconNode iconNode(final String icon, final Supplier<Color> color) {
+        return new IconNode(() -> icon, color);
+    }
+
+    private static IconNode iconNode(final Supplier<String> icon, final Supplier<Color> color) {
+        return new IconNode(icon, color);
+    }
+
+    private static Surface surface(final Color color) {
+        return new Surface(() -> color);
+    }
+
+    private static Surface surface(final Supplier<Color> color) {
+        return new Surface(color);
+    }
+
+    private static Surface horizontalRule(final Color color) {
+        return surface(color);
+    }
+
+    private static final class TextNode extends Component implements LayoutDebugLabel {
+
+        private final Supplier<String> text;
+        private final Supplier<Color> color;
+        private TextOrigin.Horizontal horizontal = TextOrigin.Horizontal.LOGICAL_LEFT;
+        private TextOrigin.Vertical vertical = TextOrigin.Vertical.LOGICAL_CENTER;
+
+        private TextNode(final Supplier<String> text, final Supplier<Color> color) {
+            this.text = text;
+            this.color = color;
+            this.interactive(false);
+        }
+
+        private TextNode origin(final TextOrigin.Horizontal horizontal, final TextOrigin.Vertical vertical) {
+            this.horizontal = horizontal;
+            this.vertical = vertical;
+            return this;
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            String value = this.text.get();
+            if (value.isBlank()) {
+                return;
+            }
+            Color currentColor = this.color.get();
+            float x = switch (this.horizontal) {
+                case LOGICAL_LEFT, VISUAL_LEFT -> 0F;
+                case VISUAL_CENTER -> bounds.width() / 2F;
+                case VISUAL_RIGHT -> bounds.width();
+            };
+            drawFittedText(this, renderer, value, currentColor, x, bounds.height() / 2F,
+                    bounds.width(), this.horizontal, this.vertical);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            if (this.rivet() == null) {
+                return Size.EMPTY;
+            }
+            String value = this.text.get();
+            if (value.isBlank()) {
+                return Size.EMPTY;
+            }
+            return new Size(Math.min(textWidth(this, value, this.color.get()), constraints.width()), this.rivet().backend().getTextHeight());
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.text.get();
+        }
+    }
+
+    private static final class IconNode extends Component implements LayoutDebugLabel {
+
+        private final Supplier<String> icon;
+        private final Supplier<Color> color;
+
+        private IconNode(final Supplier<String> icon, final Supplier<Color> color) {
+            this.icon = icon;
+            this.color = color;
+            this.fixedSize(new Size(ICON_BOX, ICON_BOX));
+            this.interactive(false);
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            drawIcon(renderer, this.icon.get(), bounds.width() / 2F, bounds.height() / 2F, this.color.get());
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(ICON_BOX, ICON_BOX);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.icon.get();
+        }
+    }
+
+    private static final class Surface extends Component {
+
+        private final Supplier<Color> color;
+        private Supplier<Color> outlineColor = () -> Color.TRANSPARENT;
+        private float outlineWidth;
+        private float cornerRadius;
+
+        private Surface(final Supplier<Color> color) {
+            this.color = color;
+            this.interactive(false);
+        }
+
+        private Surface outline(final Color color, final float width) {
+            this.outlineColor = () -> color;
+            this.outlineWidth = width;
+            return this;
+        }
+
+        private Surface cornerRadius(final float cornerRadius) {
+            this.cornerRadius = cornerRadius;
+            return this;
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            Color fill = this.color.get();
+            if (fill.getAlpha() > 0) {
+                renderer.optimizedFillRoundedRect(0, 0, bounds.width(), bounds.height(), this.cornerRadius, fill);
+            }
+            Color outline = this.outlineColor.get();
+            if (outline.getAlpha() > 0 && this.outlineWidth > 0F) {
+                renderer.optimizedOutlineRoundedRect(0, 0, bounds.width(), bounds.height(), this.cornerRadius, this.outlineWidth, outline);
+            }
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return Size.EMPTY;
+        }
     }
 
     /**
@@ -680,32 +850,32 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         GUI
     }
 
-    private final class TopBar extends Component {
+    private final class TopBar extends Container {
 
         private static final float REFRESH_ICON_X_FROM_RIGHT = 50F;
         private static final float SETTINGS_ICON_X_FROM_RIGHT = 24F;
 
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SHELL);
-            float centerY = bounds.height() / 2F;
-            drawText(this, renderer, "ANARCHY", TEXT, 14, centerY, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            float clientX = 14F + textWidth(this, "ANARCHY", TEXT) + 6F;
-            drawText(this, renderer, "client", ACTIVE, clientX, centerY, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+        private final Surface background = surface(SHELL);
+        private final TextNode brand = textNode("ANARCHY", TEXT);
+        private final TextNode client = textNode("client", ACTIVE);
+        private final List<TopTab> tabs = List.of(
+                new TopTab(Tab.MODULES),
+                new TopTab(Tab.FRIENDS),
+                new TopTab(Tab.PROFILES)
+        );
+        private final IconNode refreshIcon = iconNode("refresh-cw", () -> ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED);
+        private final IconNode settingsIcon = iconNode("settings", () -> ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE);
 
-            float tabX = 144F;
-            for (Tab tab : Tab.values()) {
-                float width = this.tabWidth(tab);
-                Color color = ModulePanel.this.selectedTab == tab ? TEXT : FAINT;
-                drawText(this, renderer, tab.label, color, tabX, centerY, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-                if (ModulePanel.this.selectedTab == tab) {
-                    renderer.fillRect(tabX, bounds.height() - 6F, width - 8F, 2F, ACTIVE);
-                }
-                tabX += width;
+        private TopBar() {
+            super(AbsoluteLayout.INSTANCE);
+            this.addChild(this.background);
+            this.addChild(this.brand);
+            this.addChild(this.client);
+            for (TopTab tab : this.tabs) {
+                this.addChild(tab);
             }
-
-            drawIcon(renderer, "refresh-cw", bounds.width() - REFRESH_ICON_X_FROM_RIGHT, centerY, ModulePanel.this.drawer == Drawer.NONE ? FAINT : MUTED);
-            drawIcon(renderer, "settings", bounds.width() - SETTINGS_ICON_X_FROM_RIGHT, centerY, ModulePanel.this.drawer == Drawer.NONE ? MUTED : ACTIVE);
+            this.addChild(this.refreshIcon);
+            this.addChild(this.settingsIcon);
         }
 
         @Override
@@ -714,20 +884,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 return false;
             }
             float x = event.x();
-            float tabX = 144F;
-            for (Tab tab : Tab.values()) {
-                float width = this.tabWidth(tab);
-                if (x >= tabX && x <= tabX + width - 10F && event.y() >= 8F && event.y() <= bounds.height()) {
-                    ModulePanel.this.selectTab(tab);
-                    return true;
-                }
-                tabX += width;
+            if (super.onComponentMouseDown(event, bounds)) {
+                return true;
             }
-            if (this.iconHit(event, x, bounds.width() - SETTINGS_ICON_X_FROM_RIGHT, bounds.height())) {
+            if (this.iconHit(event, x, this.iconCenterX(bounds.width(), SETTINGS_ICON_X_FROM_RIGHT), bounds.height())) {
                 ModulePanel.this.openDrawer(Drawer.ROOT);
                 return true;
             }
-            if (this.iconHit(event, x, bounds.width() - REFRESH_ICON_X_FROM_RIGHT, bounds.height())) {
+            if (this.iconHit(event, x, this.iconCenterX(bounds.width(), REFRESH_ICON_X_FROM_RIGHT), bounds.height())) {
                 ModulePanel.this.refreshModuleList();
                 ModulePanel.this.inspector.refresh();
                 return true;
@@ -745,56 +909,114 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             return new Size(constraints.width(), TOP_BAR_HEIGHT);
         }
 
-        private float tabWidth(final Tab tab) {
-            return switch (tab) {
-                case MODULES -> 78F;
-                case FRIENDS -> 72F;
-                case PROFILES -> 82F;
-            };
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.brand.layoutOptions(new AbsoluteLayoutOptions(14F, 0F, textWidth(this, "ANARCHY", TEXT), size.height()));
+            float clientX = 14F + textWidth(this, "ANARCHY", TEXT) + 6F;
+            this.client.layoutOptions(new AbsoluteLayoutOptions(clientX, 0F, textWidth(this, "client", ACTIVE), size.height()));
+
+            float tabX = TOP_TAB_START_X;
+            for (TopTab tab : this.tabs) {
+                float width = tab.tabWidth();
+                tab.layoutOptions(new AbsoluteLayoutOptions(tabX, 0F, width, size.height()));
+                tabX += width + TOP_TAB_GAP;
+            }
+
+            this.refreshIcon.layoutOptions(this.iconOptions(size, REFRESH_ICON_X_FROM_RIGHT));
+            this.settingsIcon.layoutOptions(this.iconOptions(size, SETTINGS_ICON_X_FROM_RIGHT));
+            super.computeLayout(size);
+        }
+
+        private AbsoluteLayoutOptions iconOptions(final Size size, final float xFromRight) {
+            float centerX = this.iconCenterX(size.width(), xFromRight);
+            return new AbsoluteLayoutOptions(centerX - ICON_BOX / 2F, size.height() / 2F - ICON_BOX / 2F, ICON_BOX, ICON_BOX);
+        }
+
+        private float iconCenterX(final float width, final float xFromRight) {
+            return width - xFromRight;
         }
     }
 
-    private final class CategoryRail extends Component {
+    private final class TopTab extends Container implements LayoutDebugLabel {
 
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SHELL);
-            drawText(this, renderer, "Modules", TEXT, 22, 28, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            float y = 56F;
-            for (ModuleCategory category : ModuleCategory.values()) {
-                boolean selected = ModulePanel.this.selectedCategory == category;
-                int enabled = ModulePanel.this.enabledCount(category);
-                float rowCenter = y + 17F;
-                if (selected) {
-                    renderer.fillRect(10, y, bounds.width() - 20F, 34F, SURFACE_ACTIVE);
-                    renderer.fillRect(10, y, 3F, 34F, ACTIVE);
-                }
-                Color textColor = selected ? TEXT : MUTED;
-                drawIcon(renderer, categoryIcon(category), 24F, rowCenter, selected ? ACTIVE : FAINT);
-                drawFittedText(this, renderer, category.displayName(), textColor, 42, rowCenter,
-                        Math.max(0F, bounds.width() - 78F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-                if (enabled > 0) {
-                    drawText(this, renderer, String.valueOf(enabled), selected ? ACTIVE : FAINT, bounds.width() - 24F, rowCenter,
-                            TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-                }
-                y += 40F;
-            }
+        private final Tab tab;
+        private final TextNode label;
+        private final Surface underline;
+
+        private TopTab(final Tab tab) {
+            super(AbsoluteLayout.INSTANCE);
+            this.tab = tab;
+            this.label = textNode(tab.label, () -> ModulePanel.this.selectedTab == tab ? TEXT : FAINT);
+            this.underline = surface(() -> ModulePanel.this.selectedTab == this.tab ? ACTIVE : Color.TRANSPARENT);
+            this.addChild(this.label);
+            this.addChild(this.underline);
         }
 
         @Override
         protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() != MouseButton.LEFT) {
-                return false;
-            }
-            float y = 56F;
-            for (ModuleCategory category : ModuleCategory.values()) {
-                if (event.y() >= y && event.y() <= y + 34F) {
-                    ModulePanel.this.selectCategory(category);
-                    return true;
-                }
-                y += 40F;
+            if (event.button() == MouseButton.LEFT) {
+                ModulePanel.this.selectTab(this.tab);
+                return true;
             }
             return false;
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            float labelWidth = this.labelWidth();
+            this.label.layoutOptions(new AbsoluteLayoutOptions(TOP_TAB_PADDING_X, 0F, labelWidth, size.height()));
+            this.underline.layoutOptions(new AbsoluteLayoutOptions(TOP_TAB_PADDING_X, TOP_TAB_UNDERLINE_Y, labelWidth, 2F));
+            super.computeLayout(size);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(this.tabWidth(), TOP_BAR_HEIGHT);
+        }
+
+        private float tabWidth() {
+            return this.labelWidth() + TOP_TAB_PADDING_X * 2F;
+        }
+
+        private float labelWidth() {
+            return textWidth(this, this.tab.label, TEXT);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.tab.name().toLowerCase(Locale.ROOT);
+        }
+    }
+
+    private final class CategoryRail extends Container {
+
+        private final Surface background = surface(SHELL);
+        private final TextNode title = textNode("Modules", TEXT);
+        private final List<CategoryButton> buttons = new ArrayList<>();
+
+        private CategoryRail() {
+            super(AbsoluteLayout.INSTANCE);
+            this.addChild(this.background);
+            this.addChild(this.title);
+            for (ModuleCategory category : ModuleCategory.values()) {
+                CategoryButton button = new CategoryButton(category);
+                this.buttons.add(button);
+                this.addChild(button);
+            }
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.title.layoutOptions(new AbsoluteLayoutOptions(22F, 0F, Math.max(0F, size.width() - 44F), 56F));
+            float y = 56F;
+            for (CategoryButton button : this.buttons) {
+                button.layoutOptions(new AbsoluteLayoutOptions(CATEGORY_ROW_X, y,
+                        Math.max(0F, size.width() - CATEGORY_ROW_X * 2F), CATEGORY_ROW_HEIGHT));
+                y += CATEGORY_ROW_HEIGHT + CATEGORY_ROW_GAP;
+            }
+            super.computeLayout(size);
         }
 
         @Override
@@ -802,6 +1024,79 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             return constraints;
         }
 
+    }
+
+    private final class CategoryButton extends Container implements LayoutDebugLabel {
+
+        private final ModuleCategory category;
+        private final Surface background;
+        private final Surface stripe;
+        private final IconNode icon;
+        private final TextNode label;
+        private final TextNode count;
+
+        private CategoryButton(final ModuleCategory category) {
+            super(AbsoluteLayout.INSTANCE);
+            this.category = category;
+            this.background = surface(() -> this.selected() ? SURFACE_ACTIVE : Color.TRANSPARENT);
+            this.stripe = surface(() -> this.selected() ? ACTIVE : Color.TRANSPARENT);
+            this.icon = iconNode(categoryIcon(category), () -> this.selected() ? ACTIVE : FAINT);
+            this.label = textNode(category.displayName(), () -> this.selected() ? TEXT : MUTED);
+            this.count = textNode(this::enabledText, () -> this.selected() ? ACTIVE : FAINT)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.fixedSize(new Size(-1, CATEGORY_ROW_HEIGHT));
+            this.addChild(this.background);
+            this.addChild(this.stripe);
+            this.addChild(this.icon);
+            this.addChild(this.label);
+            this.addChild(this.count);
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.stripe.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, 3F, size.height()));
+            this.icon.layoutOptions(new AbsoluteLayoutOptions(
+                    CATEGORY_ICON_CENTER_X - CATEGORY_ROW_X - ICON_BOX / 2F,
+                    (size.height() - ICON_BOX) / 2F,
+                    ICON_BOX,
+                    ICON_BOX
+            ));
+            float labelX = CATEGORY_TEXT_X - CATEGORY_ROW_X;
+            this.label.layoutOptions(new AbsoluteLayoutOptions(labelX, 0F,
+                    Math.max(0F, size.width() - labelX - 36F), size.height()));
+            this.count.layoutOptions(new AbsoluteLayoutOptions(0F, 0F,
+                    Math.max(0F, size.width() - CATEGORY_COUNT_X_FROM_RIGHT + CATEGORY_ROW_X), size.height()));
+            super.computeLayout(size);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (event.button() == MouseButton.LEFT) {
+                ModulePanel.this.selectCategory(this.category);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), CATEGORY_ROW_HEIGHT);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.category.name().toLowerCase(Locale.ROOT);
+        }
+
+        private boolean selected() {
+            return ModulePanel.this.selectedCategory == this.category;
+        }
+
+        private String enabledText() {
+            int count = ModulePanel.this.enabledCount(this.category);
+            return count > 0 ? String.valueOf(count) : "";
+        }
     }
 
     private int enabledCount(final ModuleCategory category) {
@@ -817,6 +1112,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private final class SearchInput extends Container implements LayoutDebugLabel {
 
         private final String placeholder;
+        private final Surface background = surface(FIELD).outline(BORDER, 1F).cornerRadius(CORNER_RADIUS);
+        private final IconNode icon = iconNode("search", FAINT);
+        private final TextNode placeholderLabel;
         private final TextField field = textField("");
         private Consumer<String> changeListener = ignored -> {
         };
@@ -824,10 +1122,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private SearchInput(final String placeholder) {
             super(AbsoluteLayout.INSTANCE);
             this.placeholder = placeholder;
+            this.placeholderLabel = textNode(() -> this.field.text().isEmpty() ? this.placeholder : "", () -> FAINT);
             this.field.backgroundColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.outlineColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.focusedOutlineColor().set(Color.fromRGBA(0, 0, 0, 0));
             this.field.valueChangeListener().add(value -> this.changeListener.accept(value));
+            this.addChild(this.background);
+            this.addChild(this.icon);
+            this.addChild(this.placeholderLabel);
             this.addChild(this.field);
         }
 
@@ -836,19 +1138,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.optimizedFillRoundedRect(0, 0, bounds.width(), bounds.height(), CORNER_RADIUS, FIELD);
-            renderer.optimizedOutlineRoundedRect(0, 0, bounds.width(), bounds.height(), CORNER_RADIUS, 1, BORDER);
-            drawIcon(renderer, "search", 13F, bounds.height() / 2F, FAINT);
-            if (this.field.text().isEmpty()) {
-                drawText(this, renderer, this.placeholder, FAINT, 26, bounds.height() / 2F,
-                        TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            }
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.icon.layoutOptions(new AbsoluteLayoutOptions(
+                    SEARCH_ICON_CENTER_X - ICON_BOX / 2F,
+                    (size.height() - ICON_BOX) / 2F,
+                    ICON_BOX,
+                    ICON_BOX
+            ));
+            this.placeholderLabel.layoutOptions(new AbsoluteLayoutOptions(26F, 0F, Math.max(0F, size.width() - 30F), size.height()));
             this.field.layoutOptions(new AbsoluteLayoutOptions(22, 2, Math.max(0, size.width() - 26), Math.max(0, size.height() - 4)));
             super.computeLayout(size);
         }
@@ -868,17 +1166,32 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private static final float SWITCH_X_FROM_RIGHT = 58F;
         private static final float KEBAB_X_FROM_RIGHT = 22F;
+        private static final float TEXT_SLOT_HEIGHT = 18F;
 
         private final Module module;
+        private final Surface background;
+        private final Surface stripe;
+        private final TextNode name;
+        private final TextNode summary;
         private final ToggleSwitch toggle;
+        private final IconNode menuIcon = iconNode("more-vertical", FAINT);
         private boolean hovered;
 
         private ModuleRow(final Module module) {
             super(AbsoluteLayout.INSTANCE);
             this.module = module;
+            this.background = surface(this::backgroundColor);
+            this.stripe = surface(this::stripeColor);
+            this.name = textNode(module.name(), () -> this.module.enabled() ? TEXT : MUTED);
+            this.summary = textNode(() -> this.showSummary() ? moduleSummary(this.module) : "", () -> FAINT);
             this.toggle = new ToggleSwitch(module::enabled, () -> ModulePanel.this.toggleModule(module));
             this.fixedSize(new Size(-1, ModulePanel.this.compactRows ? COMPACT_MODULE_ROW_HEIGHT : MODULE_ROW_HEIGHT));
+            this.addChild(this.background);
+            this.addChild(this.stripe);
+            this.addChild(this.name);
+            this.addChild(this.summary);
             this.addChild(this.toggle);
+            this.addChild(this.menuIcon);
         }
 
         @Override
@@ -893,34 +1206,26 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            boolean selected = this.module == ModulePanel.this.selectedModule;
-            Color background = selected ? SURFACE_ACTIVE : this.hovered ? SURFACE_HOVER : SURFACE;
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), background);
-            if (selected || this.module.enabled()) {
-                renderer.fillRect(0, 0, 3, bounds.height(), selected ? ACTIVE : ACTIVE.multiplyAlpha(0.55F));
-            }
-            Color nameColor = this.module.enabled() ? TEXT : MUTED;
-            float controlsX = bounds.width() - 66F;
-            float summaryX = 152F;
-            boolean twoLine = ModulePanel.this.showSummaries && !ModulePanel.this.compactRows;
-            float nameMaxWidth = twoLine ? summaryX - 28F : controlsX - 28F;
-            float nameCenterY = twoLine ? bounds.height() / 2F - 7F : bounds.height() / 2F;
-            drawFittedText(this, renderer, this.module.name(), nameColor, 18, nameCenterY,
-                    Math.max(0F, nameMaxWidth), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            if (twoLine) {
-                drawFittedText(this, renderer, moduleSummary(this.module), FAINT, summaryX, bounds.height() / 2F + 7F,
-                        Math.max(0F, controlsX - summaryX - 16F),
-                        TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            }
-            drawIcon(renderer, "more-vertical", bounds.width() - KEBAB_X_FROM_RIGHT, bounds.height() / 2F, FAINT);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            float controlsX = size.width() - 66F;
+            float summaryX = 152F;
+            boolean twoLine = this.showSummary();
+            float nameMaxWidth = twoLine ? summaryX - 28F : controlsX - 28F;
+            float nameCenterY = twoLine ? size.height() / 2F - 7F : size.height() / 2F;
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.stripe.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, 3F, size.height()));
+            this.name.layoutOptions(new AbsoluteLayoutOptions(18F, nameCenterY - TEXT_SLOT_HEIGHT / 2F,
+                    Math.max(0F, nameMaxWidth), TEXT_SLOT_HEIGHT));
+            this.summary.layoutOptions(new AbsoluteLayoutOptions(summaryX, size.height() / 2F + 7F - TEXT_SLOT_HEIGHT / 2F,
+                    Math.max(0F, controlsX - summaryX - 16F), TEXT_SLOT_HEIGHT));
             this.toggle.layoutOptions(new AbsoluteLayoutOptions(
                     size.width() - SWITCH_X_FROM_RIGHT, (size.height() - SWITCH_HEIGHT) / 2F, SWITCH_WIDTH, SWITCH_HEIGHT));
+            this.menuIcon.layoutOptions(new AbsoluteLayoutOptions(
+                    size.width() - KEBAB_X_FROM_RIGHT - ICON_BOX / 2F,
+                    (size.height() - ICON_BOX) / 2F,
+                    ICON_BOX,
+                    ICON_BOX
+            ));
             super.computeLayout(size);
         }
 
@@ -945,17 +1250,41 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         public String layoutDebugLabel() {
             return this.module.id();
         }
+
+        private boolean selected() {
+            return this.module == ModulePanel.this.selectedModule;
+        }
+
+        private boolean showSummary() {
+            return ModulePanel.this.showSummaries && !ModulePanel.this.compactRows;
+        }
+
+        private Color backgroundColor() {
+            if (this.selected()) {
+                return SURFACE_ACTIVE;
+            }
+            return this.hovered ? SURFACE_HOVER : SURFACE;
+        }
+
+        private Color stripeColor() {
+            if (this.selected()) {
+                return ACTIVE;
+            }
+            return this.module.enabled() ? ACTIVE.multiplyAlpha(0.55F) : Color.TRANSPARENT;
+        }
     }
 
     private final class ModuleInspector extends Container implements LayoutDebugLabel {
 
+        private final Surface background = surface(SURFACE);
         private final InspectorHeader header = new InspectorHeader();
         private final Container settings = new Container(new VerticalListLayout(0, true));
-        private final ScrollContainer scroll = new ScrollContainer(this.settings);
+        private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.settings);
 
         private ModuleInspector() {
             super(AbsoluteLayout.INSTANCE);
             ModulePanel.this.configureScroll(this.scroll);
+            this.addChild(this.background);
             this.addChild(this.header);
             this.addChild(this.scroll);
         }
@@ -992,14 +1321,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
             float headerHeight = 86F;
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
             this.header.layoutOptions(new AbsoluteLayoutOptions(0, 0, size.width(), headerHeight));
             this.scroll.layoutOptions(new AbsoluteLayoutOptions(0, headerHeight, size.width(), Math.max(0, size.height() - headerHeight)));
             super.computeLayout(size);
@@ -1022,6 +1346,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private static final float TOGGLE_X_FROM_RIGHT = 40F;
         private static final float ON_LABEL_X_FROM_RIGHT = 48F;
 
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode emptyLabel = textNode(() -> ModulePanel.this.selectedModule == null ? "No module" : "", () -> MUTED);
+        private final TextNode title = textNode(() -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.name(), () -> TEXT);
+        private final TextNode category = textNode(
+                () -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.category().displayName(),
+                () -> FAINT
+        );
+        private final TextNode enabledLabel = textNode(this::enabledLabel, this::enabledLabelColor)
+                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        private final IconNode star = iconNode(() -> ModulePanel.this.selectedModule == null ? "" : "star", this::starColor);
         private final ToggleSwitch toggle;
 
         private InspectorHeader() {
@@ -1033,35 +1368,32 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                             ModulePanel.this.toggleModule(ModulePanel.this.selectedModule);
                         }
                     });
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.emptyLabel);
+            this.addChild(this.title);
+            this.addChild(this.category);
+            this.addChild(this.enabledLabel);
+            this.addChild(this.star);
             this.addChild(this.toggle);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            Module module = ModulePanel.this.selectedModule;
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            if (module == null) {
-                drawText(this, renderer, "No module", MUTED, 16, bounds.height() / 2F,
-                        TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-                return;
-            }
-            drawFittedText(this, renderer, module.name(), TEXT, 16, TITLE_CENTER_Y,
-                    Math.max(0F, bounds.width() - 112F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawFittedText(this, renderer, module.category().displayName(), FAINT, 16, 52F,
-                    Math.max(0F, bounds.width() - 82F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            String onLabel = module.enabled() ? "ON" : "OFF";
-            Color onColor = module.enabled() ? ACTIVE : FAINT;
-            float onX = bounds.width() - ON_LABEL_X_FROM_RIGHT;
-            drawText(this, renderer, onLabel, onColor, onX, TITLE_CENTER_Y,
-                    TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-            float starX = onX - textWidth(this, onLabel, onColor) - 14F;
-            drawIcon(renderer, "star", starX, TITLE_CENTER_Y, module.enabled() ? WARNING : FAINT);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.emptyLabel.layoutOptions(new AbsoluteLayoutOptions(16F, 0F, Math.max(0F, size.width() - 32F), size.height()));
+            this.title.layoutOptions(new AbsoluteLayoutOptions(16F, TITLE_CENTER_Y - 9F,
+                    Math.max(0F, size.width() - 112F), 18F));
+            this.category.layoutOptions(new AbsoluteLayoutOptions(16F, 52F - 9F,
+                    Math.max(0F, size.width() - 82F), 18F));
+            String onText = this.enabledLabel();
+            Color onColor = this.enabledLabelColor();
+            float onX = size.width() - ON_LABEL_X_FROM_RIGHT;
+            float onWidth = Math.max(26F, textWidth(this, onText, onColor));
+            this.enabledLabel.layoutOptions(new AbsoluteLayoutOptions(onX - onWidth, TITLE_CENTER_Y - 9F, onWidth, 18F));
+            float starX = onX - onWidth - 14F;
+            this.star.layoutOptions(new AbsoluteLayoutOptions(starX - ICON_BOX / 2F, TITLE_CENTER_Y - ICON_BOX / 2F, ICON_BOX, ICON_BOX));
             if (ModulePanel.this.selectedModule != null) {
                 this.toggle.layoutOptions(new AbsoluteLayoutOptions(
                         size.width() - TOGGLE_X_FROM_RIGHT, TITLE_CENTER_Y - SWITCH_HEIGHT / 2F, SWITCH_WIDTH, SWITCH_HEIGHT));
@@ -1080,21 +1412,49 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         public String layoutDebugLabel() {
             return ModulePanel.this.selectedModule == null ? "empty" : ModulePanel.this.selectedModule.id();
         }
+
+        private String enabledLabel() {
+            Module module = ModulePanel.this.selectedModule;
+            if (module == null) {
+                return "";
+            }
+            return module.enabled() ? "ON" : "OFF";
+        }
+
+        private Color enabledLabelColor() {
+            Module module = ModulePanel.this.selectedModule;
+            return module != null && module.enabled() ? ACTIVE : FAINT;
+        }
+
+        private Color starColor() {
+            Module module = ModulePanel.this.selectedModule;
+            if (module == null) {
+                return Color.TRANSPARENT;
+            }
+            return module.enabled() ? WARNING : FAINT;
+        }
     }
 
-    private static final class GroupHeader extends Component implements LayoutDebugLabel {
+    private static final class GroupHeader extends Container implements LayoutDebugLabel {
 
         private final String name;
+        private final Surface background = surface(SHELL);
+        private final TextNode label;
 
         private GroupHeader(final String name) {
+            super(AbsoluteLayout.INSTANCE);
             this.name = name;
             this.fixedSize(new Size(-1, 24));
+            this.label = textNode(name, MUTED);
+            this.addChild(this.background);
+            this.addChild(this.label);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SHELL);
-            drawText(this, renderer, this.name, MUTED, 12, bounds.height() / 2F, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 24F), size.height()));
+            super.computeLayout(size);
         }
 
         @Override
@@ -1108,23 +1468,33 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
     }
 
-    private abstract static class SettingLine extends Component implements LayoutDebugLabel {
+    private abstract static class SettingLine extends Container implements LayoutDebugLabel {
 
         private final Setting<?> setting;
         private final float height;
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode label;
 
         private SettingLine(final Setting<?> setting, final float height) {
+            super(AbsoluteLayout.INSTANCE);
             this.setting = setting;
             this.height = height;
             this.fixedSize(new Size(-1, height));
+            this.label = textNode(setting.name(), MUTED);
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.label);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            drawFittedText(this, renderer, this.setting.name(), MUTED, 12, bounds.height() / 2F,
-                    Math.max(0F, this.labelMaxWidth(bounds)), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F,
+                    Math.max(0F, this.labelMaxWidth(size.width())), size.height()));
+            this.layoutControls(size);
+            super.computeLayout(size);
         }
 
         @Override
@@ -1132,8 +1502,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             return new Size(constraints.width(), this.height);
         }
 
-        protected float labelMaxWidth(final Rectangle bounds) {
-            return bounds.width() - 64F;
+        protected void layoutControls(final Size size) {
+        }
+
+        protected float labelMaxWidth(final float width) {
+            return width - 64F;
         }
 
         @Override
@@ -1146,27 +1519,41 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private final BooleanSetting setting;
         private final Runnable onChange;
+        private final ToggleSwitch toggle;
 
         private BooleanSettingRow(final BooleanSetting setting, final Runnable onChange) {
             super(setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
             this.onChange = onChange;
-        }
-
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            super.render(renderer, bounds);
-            drawSwitch(renderer, bounds.width() - 38, bounds.height() / 2F - SWITCH_HEIGHT / 2F, this.setting.value());
+            this.toggle = new ToggleSwitch(this.setting::value, this::toggle);
+            this.addChild(this.toggle);
         }
 
         @Override
         protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (super.onComponentMouseDown(event, bounds)) {
+                return true;
+            }
             if (event.button() == MouseButton.LEFT) {
-                this.setting.value(!this.setting.value());
-                this.onChange.run();
+                this.toggle();
                 return true;
             }
             return false;
+        }
+
+        @Override
+        protected void layoutControls(final Size size) {
+            this.toggle.layoutOptions(new AbsoluteLayoutOptions(
+                    size.width() - 38F,
+                    (size.height() - SWITCH_HEIGHT) / 2F,
+                    SWITCH_WIDTH,
+                    SWITCH_HEIGHT
+            ));
+        }
+
+        private void toggle() {
+            this.setting.value(!this.setting.value());
+            this.onChange.run();
         }
     }
 
@@ -1174,25 +1561,34 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private final SelectSetting setting;
         private final Runnable onChange;
+        private final TextNode value;
+        private final IconNode icon = iconNode("chevron-down", FAINT);
 
         private SelectSettingRow(final SelectSetting setting, final Runnable onChange) {
             super(setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
             this.onChange = onChange;
+            this.value = textNode(this.setting::value, () -> TEXT)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.addChild(this.value);
+            this.addChild(this.icon);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            super.render(renderer, bounds);
-            String value = fitText(this, this.setting.value(), TEXT, Math.min(100F, Math.max(0F, bounds.width() * 0.42F)));
-            drawText(this, renderer, value, TEXT, bounds.width() - 28, bounds.height() / 2F,
-                    TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawIcon(renderer, "chevron-down", bounds.width() - 20F, bounds.height() / 2F, FAINT);
+        protected float labelMaxWidth(final float width) {
+            return width - Math.min(130F, Math.max(80F, width * 0.46F));
         }
 
         @Override
-        protected float labelMaxWidth(final Rectangle bounds) {
-            return bounds.width() - Math.min(130F, Math.max(80F, bounds.width() * 0.46F));
+        protected void layoutControls(final Size size) {
+            float valueWidth = Math.min(100F, Math.max(0F, size.width() * 0.42F));
+            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 28F - valueWidth, 0F, valueWidth, size.height()));
+            this.icon.layoutOptions(new AbsoluteLayoutOptions(
+                    size.width() - 20F - ICON_BOX / 2F,
+                    (size.height() - ICON_BOX) / 2F,
+                    ICON_BOX,
+                    ICON_BOX
+            ));
         }
 
         @Override
@@ -1209,29 +1605,35 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private static final class ValueSettingRow extends SettingLine {
 
         private final Setting<?> setting;
+        private final TextNode value;
 
         private ValueSettingRow(final Setting<?> setting) {
             super(setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
+            this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.addChild(this.value);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            super.render(renderer, bounds);
-            String value = fitText(this, SettingControls.displayValue(this.setting), TEXT, Math.min(112F, Math.max(0F, bounds.width() * 0.44F)));
-            drawText(this, renderer, value, TEXT, bounds.width() - 12,
-                    bounds.height() / 2F, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        protected void layoutControls(final Size size) {
+            float valueWidth = Math.min(112F, Math.max(0F, size.width() * 0.44F));
+            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 12F - valueWidth, 0F, valueWidth, size.height()));
         }
 
         @Override
-        protected float labelMaxWidth(final Rectangle bounds) {
-            return bounds.width() - Math.min(136F, Math.max(84F, bounds.width() * 0.48F));
+        protected float labelMaxWidth(final float width) {
+            return width - Math.min(136F, Math.max(84F, width * 0.48F));
         }
     }
 
     private static final class NumberSettingRow extends Container implements LayoutDebugLabel {
 
         private final NumberSetting setting;
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode label;
+        private final TextNode value;
         private final Slider slider;
         private final Runnable save;
 
@@ -1239,29 +1641,29 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             super(AbsoluteLayout.INSTANCE);
             this.setting = setting;
             this.save = save;
+            this.label = textNode(setting.name(), MUTED);
+            this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
             this.slider = slider(setting);
             this.slider.valueChangeListener().add(value -> {
                 setting.value(value);
                 this.save.run();
             });
             this.fixedSize(new Size(-1, NUMBER_ROW_HEIGHT));
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.label);
+            this.addChild(this.value);
             this.addChild(this.slider);
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            drawFittedText(this, renderer, this.setting.name(), MUTED, 12, 15,
-                    Math.max(0F, bounds.width() - 74F), TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawFittedText(this, renderer, SettingControls.displayValue(this.setting), TEXT, bounds.width() - 12, 15,
-                    Math.min(58F, Math.max(0F, bounds.width() * 0.25F)),
-                    TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            float valueWidth = Math.min(58F, Math.max(0F, size.width() * 0.25F));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 6F, Math.max(0F, size.width() - 74F), 18F));
+            this.value.layoutOptions(new AbsoluteLayoutOptions(size.width() - 12F - valueWidth, 6F, valueWidth, 18F));
             this.slider.layoutOptions(new AbsoluteLayoutOptions(12F, 28F, Math.max(0F, size.width() - 24F), 16F));
             super.computeLayout(size);
         }
@@ -1281,6 +1683,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private final Setting<?> setting;
         private final TextValueSetting textSetting;
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode label;
         private final TextField field;
         private final Runnable save;
 
@@ -1289,6 +1694,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.setting = setting;
             this.textSetting = textSetting;
             this.save = save;
+            this.label = textNode(setting.name(), MUTED);
             this.field = textField(textSetting.valueString());
             this.field.valueChangeListener().add(value -> {
                 try {
@@ -1299,23 +1705,19 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 }
             });
             this.fixedSize(new Size(-1, TEXT_ROW_HEIGHT));
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.label);
             this.addChild(this.field);
-        }
-
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            float fieldWidth = this.fieldWidth(bounds.width());
-            float labelWidth = Math.max(0F, bounds.width() - fieldWidth - 30F);
-            drawFittedText(this, renderer, this.setting.name(), MUTED, 12, bounds.height() / 2F,
-                    labelWidth, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            super.render(renderer, bounds);
         }
 
         @Override
         public void computeLayout(final Size size) {
             float fieldWidth = this.fieldWidth(size.width());
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F,
+                    Math.max(0F, size.width() - fieldWidth - 30F), size.height()));
             this.field.layoutOptions(new AbsoluteLayoutOptions(size.width() - fieldWidth - 10F, 7F, fieldWidth, 24F));
             super.computeLayout(size);
         }
@@ -1337,14 +1739,18 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class FriendsPanel extends Container implements LayoutDebugLabel {
 
+        private final Surface background = surface(SURFACE);
+        private final TextNode title = textNode("Friends", TEXT);
         private final TextField addField = textField("");
         private final Button addButton = button("Add", TEXT, ignored -> this.addFriend());
         private final Container rows = new Container(new VerticalListLayout(1, true));
-        private final ScrollContainer scroll = new ScrollContainer(this.rows);
+        private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
 
         private FriendsPanel() {
             super(AbsoluteLayout.INSTANCE);
             ModulePanel.this.configureScroll(this.scroll);
+            this.addChild(this.background);
+            this.addChild(this.title);
             this.addChild(this.addField);
             this.addChild(this.addButton);
             this.addChild(this.scroll);
@@ -1371,14 +1777,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            drawText(this, renderer, "Friends", TEXT, 0, 12, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.title.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), 24F));
             this.addField.layoutOptions(new AbsoluteLayoutOptions(0F, 28F, Math.max(0F, size.width() - 70F), 28F));
             this.addButton.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 62F), 28F, 62F, 28F));
             this.scroll.layoutOptions(new AbsoluteLayoutOptions(0F, 66F, size.width(), Math.max(0F, size.height() - 66F)));
@@ -1396,21 +1797,24 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
     }
 
-    private final class FriendRow extends Component implements LayoutDebugLabel {
+    private final class FriendRow extends Container implements LayoutDebugLabel {
 
         private final String friend;
+        private final Surface background = surface(SURFACE_SOFT);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode name;
+        private final TextNode remove = textNode("Remove", MUTED)
+                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
 
         private FriendRow(final String friend) {
+            super(AbsoluteLayout.INSTANCE);
             this.friend = friend;
             this.fixedSize(new Size(-1, 34));
-        }
-
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE_SOFT);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            drawText(this, renderer, this.friend, TEXT, 12, bounds.height() / 2F, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawText(this, renderer, "Remove", MUTED, bounds.width() - 12, bounds.height() / 2F, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.name = textNode(friend, TEXT);
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.name);
+            this.addChild(this.remove);
         }
 
         @Override
@@ -1422,6 +1826,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 return true;
             }
             return false;
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.name.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 96F), size.height()));
+            this.remove.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 88F), 0F, 76F, size.height()));
+            super.computeLayout(size);
         }
 
         @Override
@@ -1437,14 +1850,18 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class ProfilesPanel extends Container implements LayoutDebugLabel {
 
+        private final Surface background = surface(SURFACE);
+        private final TextNode title = textNode("Profiles", TEXT);
         private final TextField nameField = textField("");
         private final Button saveButton = button("Capture", TEXT, ignored -> this.capture());
         private final Container rows = new Container(new VerticalListLayout(1, true));
-        private final ScrollContainer scroll = new ScrollContainer(this.rows);
+        private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
 
         private ProfilesPanel() {
             super(AbsoluteLayout.INSTANCE);
             ModulePanel.this.configureScroll(this.scroll);
+            this.addChild(this.background);
+            this.addChild(this.title);
             this.addChild(this.nameField);
             this.addChild(this.saveButton);
             this.addChild(this.scroll);
@@ -1474,14 +1891,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            drawText(this, renderer, "Profiles", TEXT, 0, 12, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            super.render(renderer, bounds);
-        }
-
-        @Override
         public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.title.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), 24F));
             this.nameField.layoutOptions(new AbsoluteLayoutOptions(0F, 28F, Math.max(0F, size.width() - 92F), 28F));
             this.saveButton.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 84F), 28F, 84F, 28F));
             this.scroll.layoutOptions(new AbsoluteLayoutOptions(0F, 66F, size.width(), Math.max(0F, size.height() - 66F)));
@@ -1499,23 +1911,30 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
     }
 
-    private final class ProfileRow extends Component implements LayoutDebugLabel {
+    private final class ProfileRow extends Container implements LayoutDebugLabel {
 
         private final ProfileManager.ProfileSummary profile;
+        private final Surface background = surface(SURFACE_SOFT);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode name;
+        private final TextNode modules;
+        private final TextNode apply = textNode("Apply", ACTIVE)
+                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        private final TextNode delete = textNode("Delete", MUTED)
+                .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
 
         private ProfileRow(final ProfileManager.ProfileSummary profile) {
+            super(AbsoluteLayout.INSTANCE);
             this.profile = profile;
             this.fixedSize(new Size(-1, 44));
-        }
-
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE_SOFT);
-            renderer.line(0, bounds.height() - 1, bounds.width(), bounds.height() - 1, 1, BORDER_SOFT);
-            drawText(this, renderer, this.profile.name(), TEXT, 12, bounds.height() / 2F - 7F, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawText(this, renderer, this.profile.modules() + " modules", FAINT, 12, bounds.height() / 2F + 7F, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawText(this, renderer, "Apply", ACTIVE, bounds.width() - 72, bounds.height() / 2F, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawText(this, renderer, "Delete", MUTED, bounds.width() - 12, bounds.height() / 2F, TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.name = textNode(profile.name(), TEXT);
+            this.modules = textNode(profile.modules() + " modules", FAINT);
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.name);
+            this.addChild(this.modules);
+            this.addChild(this.apply);
+            this.addChild(this.delete);
         }
 
         @Override
@@ -1540,6 +1959,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.name.layoutOptions(new AbsoluteLayoutOptions(12F, size.height() / 2F - 16F, Math.max(0F, size.width() - 142F), 18F));
+            this.modules.layoutOptions(new AbsoluteLayoutOptions(12F, size.height() / 2F - 2F, Math.max(0F, size.width() - 142F), 18F));
+            this.apply.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 124F), 0F, 52F, size.height()));
+            this.delete.layoutOptions(new AbsoluteLayoutOptions(Math.max(0F, size.width() - 62F), 0F, 50F, size.height()));
+            super.computeLayout(size);
+        }
+
+        @Override
         public Size computeIdealSize(final Size constraints) {
             return new Size(constraints.width(), 44);
         }
@@ -1550,27 +1980,41 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
     }
 
-    private final class SettingsDrawer extends Component implements LayoutDebugLabel {
+    private final class SettingsDrawer extends Container implements LayoutDebugLabel {
 
-        private void refresh() {
-            ModulePanel.this.requestFrame();
+        private static final float HEADER_HEIGHT = 38F;
+        private static final float ROW_START_Y = 42F;
+        private static final float ROW_HEIGHT = 36F;
+
+        private final Surface background = surface(Color.fromRGBA(13, 13, 15, 246)).outline(BORDER_SOFT, 1F);
+        private final Surface headerDivider = horizontalRule(BORDER_SOFT);
+        private final IconNode titleIcon = iconNode(this::titleIcon, () -> MUTED);
+        private final TextNode title = textNode(this::title, () -> TEXT);
+        private final IconNode closeIcon = iconNode("x", FAINT);
+        private final List<DrawerChild> bodyChildren = new ArrayList<>();
+
+        private SettingsDrawer() {
+            super(AbsoluteLayout.INSTANCE);
+            this.addChild(this.background);
+            this.addChild(this.headerDivider);
+            this.addChild(this.titleIcon);
+            this.addChild(this.title);
+            this.addChild(this.closeIcon);
         }
 
-        @Override
-        public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), Color.fromRGBA(13, 13, 15, 246));
-            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, BORDER_SOFT);
-            renderer.line(0, 38, bounds.width(), 38, 1, BORDER_SOFT);
-            drawText(this, renderer, this.title(), TEXT, 30, 19, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            drawIcon(renderer, this.titleIcon(), 18F, 19F, MUTED);
-            drawIcon(renderer, "x", bounds.width() - 18F, 19F, FAINT);
+        private void refresh() {
+            for (DrawerChild child : this.bodyChildren) {
+                this.removeChild(child.component());
+            }
+            this.bodyChildren.clear();
             switch (ModulePanel.this.drawer) {
-                case ROOT -> this.renderRoot(renderer, bounds);
-                case MODULES -> this.renderModules(renderer, bounds);
-                case GUI -> this.renderGui(renderer, bounds);
+                case ROOT -> this.buildRoot();
+                case MODULES -> this.buildModules();
+                case GUI -> this.buildGui();
                 case NONE -> {
                 }
             }
+            ModulePanel.this.requestFrame();
         }
 
         @Override
@@ -1583,16 +2027,22 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 ModulePanel.this.requestFrame();
                 return true;
             }
-            if (event.y() < 42F) {
-                return false;
+            return super.onComponentMouseDown(event, bounds);
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.headerDivider.layoutOptions(new AbsoluteLayoutOptions(0F, HEADER_HEIGHT, size.width(), 1F));
+            float iconY = (HEADER_HEIGHT - ICON_BOX) / 2F;
+            float titleX = 10F + ICON_BOX + 4F;
+            this.titleIcon.layoutOptions(new AbsoluteLayoutOptions(10F, iconY, ICON_BOX, ICON_BOX));
+            this.title.layoutOptions(new AbsoluteLayoutOptions(titleX, 0F, Math.max(0F, size.width() - titleX - 38F), HEADER_HEIGHT));
+            this.closeIcon.layoutOptions(new AbsoluteLayoutOptions(size.width() - 10F - ICON_BOX, iconY, ICON_BOX, ICON_BOX));
+            for (DrawerChild child : this.bodyChildren) {
+                child.component().layoutOptions(new AbsoluteLayoutOptions(0F, child.y(), size.width(), child.height()));
             }
-            int index = (int) ((event.y() - 42F) / 36F);
-            return switch (ModulePanel.this.drawer) {
-                case ROOT -> this.clickRoot(index);
-                case MODULES -> this.clickModules(index);
-                case GUI -> this.clickGui(index);
-                case NONE -> false;
-            };
+            super.computeLayout(size);
         }
 
         @Override
@@ -1623,110 +2073,217 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             };
         }
 
-        private void renderRoot(final Renderer renderer, final Rectangle bounds) {
-            this.row(renderer, 0, "General", false, false, false);
-            this.row(renderer, 1, "Modules", true, false, false);
-            this.row(renderer, 2, "GUI", true, false, false);
-            this.row(renderer, 3, "Sound", false, false, false);
-            this.row(renderer, 4, "Notifications", false, false, false);
-            this.row(renderer, 5, "GUI Theme", false, true, true);
-            this.colorStrip(renderer, bounds, 42F + 5F * 36F + 29F);
+        private void buildRoot() {
+            this.addRow(0, new DrawerRow("General", false, null, () -> {
+            }));
+            this.addRow(1, new DrawerRow("Modules", true, null, () -> this.openNestedDrawer(Drawer.MODULES)));
+            this.addRow(2, new DrawerRow("GUI", true, null, () -> this.openNestedDrawer(Drawer.GUI)));
+            this.addRow(3, new DrawerRow("Sound", false, null, () -> {
+            }));
+            this.addRow(4, new DrawerRow("Notifications", false, null, () -> {
+            }));
+            this.addRow(5, new DrawerRow("GUI Theme", false, () -> true, () -> {
+            }));
+            this.addBody(new ColorStrip(), ROW_START_Y + 5F * ROW_HEIGHT + 29F, 2F);
         }
 
-        private void renderModules(final Renderer renderer, final Rectangle bounds) {
-            this.row(renderer, 0, "Show disabled modules", false, true, ModulePanel.this.showDisabledModules);
-            this.row(renderer, 1, "Enabled modules first", false, true, ModulePanel.this.enabledFirst);
-            this.row(renderer, 2, "Show module summaries", false, true, ModulePanel.this.showSummaries);
+        private void buildModules() {
+            this.addRow(0, new DrawerRow("Show disabled modules", false,
+                    () -> ModulePanel.this.showDisabledModules,
+                    () -> {
+                        ModulePanel.this.showDisabledModules = !ModulePanel.this.showDisabledModules;
+                        ModulePanel.this.refreshModuleList();
+                    }));
+            this.addRow(1, new DrawerRow("Enabled modules first", false,
+                    () -> ModulePanel.this.enabledFirst,
+                    () -> {
+                        ModulePanel.this.enabledFirst = !ModulePanel.this.enabledFirst;
+                        ModulePanel.this.refreshModuleList();
+                    }));
+            this.addRow(2, new DrawerRow("Show module summaries", false,
+                    () -> ModulePanel.this.showSummaries,
+                    () -> {
+                        ModulePanel.this.showSummaries = !ModulePanel.this.showSummaries;
+                        ModulePanel.this.refreshModuleList();
+                    }));
         }
 
-        private void renderGui(final Renderer renderer, final Rectangle bounds) {
-            this.row(renderer, 0, "Compact rows", false, true, ModulePanel.this.compactRows);
-            this.row(renderer, 1, "Wide inspector", false, true, ModulePanel.this.wideInspector);
-            this.row(renderer, 2, "GUI style - Central", false, false, false);
+        private void buildGui() {
+            this.addRow(0, new DrawerRow("Compact rows", false,
+                    () -> ModulePanel.this.compactRows,
+                    () -> {
+                        ModulePanel.this.compactRows = !ModulePanel.this.compactRows;
+                        ModulePanel.this.refreshModuleList();
+                    }));
+            this.addRow(1, new DrawerRow("Wide inspector", false,
+                    () -> ModulePanel.this.wideInspector,
+                    () -> ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector));
+            this.addRow(2, new DrawerRow("GUI style - Central", false, null, () -> {
+            }));
         }
 
-        private void row(final Renderer renderer, final int index, final String text, final boolean arrow, final boolean toggle, final boolean checked) {
-            float y = 42F + index * 36F;
-            renderer.fillRect(0, y, DRAWER_WIDTH, 36F, SURFACE);
-            renderer.line(0, y + 35F, DRAWER_WIDTH, y + 35F, 1, BORDER_SOFT);
-            drawText(this, renderer, text, toggle || arrow || checked ? TEXT : MUTED, 12, y + 18F,
-                    TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
-            if (toggle) {
-                drawSwitch(renderer, DRAWER_WIDTH - 38F, y + 18F - SWITCH_HEIGHT / 2F, checked);
-            } else if (arrow) {
-                drawIcon(renderer, "chevron-right", DRAWER_WIDTH - 20F, y + 18F, FAINT);
-            }
+        private void addRow(final int index, final DrawerRow row) {
+            this.addBody(row, ROW_START_Y + index * ROW_HEIGHT, ROW_HEIGHT);
         }
 
-        private void colorStrip(final Renderer renderer, final Rectangle bounds, final float y) {
-            float x = 12F;
-            float width = Math.max(0, bounds.width() - 24F);
-            renderer.fillRect(x, y, width, 2F, TRACK);
-            renderer.fillRect(x, y, width * 0.18F, 2F, Color.fromRGB(245, 56, 70));
-            renderer.fillRect(x + width * 0.18F, y, width * 0.18F, 2F, Color.fromRGB(245, 132, 35));
-            renderer.fillRect(x + width * 0.36F, y, width * 0.18F, 2F, Color.fromRGB(245, 204, 60));
-            renderer.fillRect(x + width * 0.54F, y, width * 0.18F, 2F, ACTIVE);
-            renderer.fillRect(x + width * 0.72F, y, width * 0.14F, 2F, Color.fromRGB(70, 116, 240));
-            renderer.fillRect(x + width * 0.86F, y, width * 0.14F, 2F, Color.fromRGB(227, 70, 150));
+        private void addBody(final Component component, final float y, final float height) {
+            this.bodyChildren.add(new DrawerChild(component, y, height));
+            this.addChild(component);
         }
 
-        private boolean clickRoot(final int index) {
-            if (index == 1) {
-                ModulePanel.this.drawer = Drawer.MODULES;
-                ModulePanel.this.requestFrame();
-                return true;
-            }
-            if (index == 2) {
-                ModulePanel.this.drawer = Drawer.GUI;
-                ModulePanel.this.requestFrame();
-                return true;
-            }
-            return index >= 0 && index <= 5;
+        private void openNestedDrawer(final Drawer drawer) {
+            ModulePanel.this.drawer = drawer;
+            this.refresh();
         }
 
-        private boolean clickModules(final int index) {
-            if (index == 0) {
-                ModulePanel.this.showDisabledModules = !ModulePanel.this.showDisabledModules;
-            } else if (index == 1) {
-                ModulePanel.this.enabledFirst = !ModulePanel.this.enabledFirst;
-            } else if (index == 2) {
-                ModulePanel.this.showSummaries = !ModulePanel.this.showSummaries;
-            } else {
-                return false;
-            }
-            ModulePanel.this.refreshModuleList();
-            ModulePanel.this.requestFrame();
-            return true;
-        }
-
-        private boolean clickGui(final int index) {
-            if (index == 0) {
-                ModulePanel.this.compactRows = !ModulePanel.this.compactRows;
-                ModulePanel.this.refreshModuleList();
-            } else if (index == 1) {
-                ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector;
-            } else {
-                return index == 2;
-            }
-            ModulePanel.this.requestFrame();
-            return true;
+        private record DrawerChild(Component component, float y, float height) {
         }
     }
 
-    private static final class EmptyState extends Component implements LayoutDebugLabel {
+    private final class DrawerRow extends Container implements LayoutDebugLabel {
 
-        private final String message;
+        private final String text;
+        private final BooleanSupplier checked;
+        private final Runnable action;
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode label;
+        private final IconNode arrow;
+        private final ToggleSwitch toggle;
 
-        private EmptyState(final String message) {
-            this.message = message;
-            this.fixedSize(new Size(-1, 72));
+        private DrawerRow(final String text, final boolean arrow, final BooleanSupplier checked, final Runnable action) {
+            super(AbsoluteLayout.INSTANCE);
+            this.text = text;
+            this.checked = checked;
+            this.action = action;
+            this.label = textNode(text, () -> arrow || this.checked() ? TEXT : MUTED);
+            this.arrow = arrow ? iconNode("chevron-right", FAINT) : null;
+            this.toggle = checked == null ? null : new ToggleSwitch(this::checked, this::runAction);
+            this.fixedSize(new Size(-1, SettingsDrawer.ROW_HEIGHT));
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.label);
+            if (this.arrow != null) {
+                this.addChild(this.arrow);
+            }
+            if (this.toggle != null) {
+                this.addChild(this.toggle);
+            }
         }
 
         @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (super.onComponentMouseDown(event, bounds)) {
+                return true;
+            }
+            if (event.button() == MouseButton.LEFT) {
+                this.runAction();
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.divider.layoutOptions(new AbsoluteLayoutOptions(0F, Math.max(0F, size.height() - 1F), size.width(), 1F));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 58F), size.height()));
+            if (this.toggle != null) {
+                this.toggle.layoutOptions(new AbsoluteLayoutOptions(
+                        size.width() - 38F,
+                        (size.height() - SWITCH_HEIGHT) / 2F,
+                        SWITCH_WIDTH,
+                        SWITCH_HEIGHT
+                ));
+            }
+            if (this.arrow != null) {
+                this.arrow.layoutOptions(new AbsoluteLayoutOptions(
+                        size.width() - 20F - ICON_BOX / 2F,
+                        (size.height() - ICON_BOX) / 2F,
+                        ICON_BOX,
+                        ICON_BOX
+                ));
+            }
+            super.computeLayout(size);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), SettingsDrawer.ROW_HEIGHT);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.text;
+        }
+
+        private boolean checked() {
+            return this.checked != null && this.checked.getAsBoolean();
+        }
+
+        private void runAction() {
+            this.action.run();
+            ModulePanel.this.settingsDrawer.refresh();
+            ModulePanel.this.requestFrame();
+        }
+    }
+
+    private static final class ColorStrip extends Component implements LayoutDebugLabel {
+
+        private static final List<Color> COLORS = List.of(
+                Color.fromRGB(245, 56, 70),
+                Color.fromRGB(245, 132, 35),
+                Color.fromRGB(245, 204, 60),
+                ACTIVE,
+                Color.fromRGB(70, 116, 240),
+                Color.fromRGB(227, 70, 150)
+        );
+        private static final List<Float> FRACTIONS = List.of(0.18F, 0.18F, 0.18F, 0.18F, 0.14F, 0.14F);
+
+        @Override
         public void render(final Renderer renderer, final Rectangle bounds) {
-            renderer.fillRect(0, 0, bounds.width(), bounds.height(), SURFACE);
-            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, BORDER_SOFT);
-            drawText(this, renderer, this.message, FAINT, 12, bounds.height() / 2F, TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+            float x = 12F;
+            float width = Math.max(0F, bounds.width() - 24F);
+            renderer.fillRect(x, 0F, width, bounds.height(), TRACK);
+            float offset = 0F;
+            for (int index = 0; index < COLORS.size(); index++) {
+                float segmentWidth = width * FRACTIONS.get(index);
+                renderer.fillRect(x + offset, 0F, segmentWidth, bounds.height(), COLORS.get(index));
+                offset += segmentWidth;
+            }
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), 2F);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return "theme";
+        }
+    }
+
+    private static final class EmptyState extends Container implements LayoutDebugLabel {
+
+        private final String message;
+        private final Surface background = surface(SURFACE).outline(BORDER_SOFT, 1F);
+        private final TextNode label;
+
+        private EmptyState(final String message) {
+            super(AbsoluteLayout.INSTANCE);
+            this.message = message;
+            this.fixedSize(new Size(-1, 72));
+            this.label = textNode(message, FAINT);
+            this.addChild(this.background);
+            this.addChild(this.label);
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            this.background.layoutOptions(new AbsoluteLayoutOptions(0F, 0F, size.width(), size.height()));
+            this.label.layoutOptions(new AbsoluteLayoutOptions(12F, 0F, Math.max(0F, size.width() - 24F), size.height()));
+            super.computeLayout(size);
         }
 
         @Override
