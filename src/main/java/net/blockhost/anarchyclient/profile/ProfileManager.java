@@ -112,6 +112,38 @@ public final class ProfileManager {
         return removed;
     }
 
+    public synchronized boolean exportProfile(final String name, final Path output) throws IOException {
+        Profile profile = this.profiles.get(key(name));
+        if (profile == null) {
+            return false;
+        }
+        Path parent = output.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        try (Writer writer = Files.newBufferedWriter(output)) {
+            GSON.toJson(profile, writer);
+        }
+        return true;
+    }
+
+    public synchronized Profile importProfile(final Path input) throws IOException {
+        try (Reader reader = Files.newBufferedReader(input)) {
+            Profile profile = GSON.fromJson(reader, Profile.class);
+            if (profile == null) {
+                throw new IOException("Profile file is empty.");
+            }
+            String fallback = input.getFileName() == null ? "imported" : input.getFileName().toString().replaceFirst("\\.json$", "");
+            profile = profile.normalized(fallback);
+            profile.updatedAt = Instant.now().toString();
+            this.profiles.put(key(profile.name), profile);
+            this.save();
+            return profile.copy();
+        } catch (RuntimeException exception) {
+            throw new IOException("Invalid profile file: " + input, exception);
+        }
+    }
+
     public synchronized int apply(final String name, final ModuleManager modules) {
         Profile profile = this.profiles.get(key(name));
         if (profile == null) {

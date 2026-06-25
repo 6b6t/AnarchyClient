@@ -86,6 +86,21 @@ public final class InventoryCleanerModule extends Module {
             .name("Pearls")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting keepRanged = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("keep_ranged")
+            .name("Ranged")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting keepPotions = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("keep_potions")
+            .name("Potions")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting keepThrowables = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("keep_throwables")
+            .name("Throw")
+            .defaultValue(true)
+            .build()));
 
     public InventoryCleanerModule() {
         super("inventory_cleaner", "Inventory Cleaner", ModuleCategory.PLAYER);
@@ -107,7 +122,10 @@ public final class InventoryCleanerModule extends Module {
                 this.keepFood.value(),
                 this.keepBlocks.value(),
                 this.keepTotems.value(),
-                this.keepPearls.value()
+                this.keepPearls.value(),
+                this.keepRanged.value(),
+                this.keepPotions.value(),
+                this.keepThrowables.value()
         );
         int inventorySlot = findDropSlot(stacks, player.getInventory().getSelectedSlot(), options);
         int menuSlot = InventorySlots.toInventoryMenuSlot(inventorySlot);
@@ -149,7 +167,7 @@ public final class InventoryCleanerModule extends Module {
     }
 
     static CleanerOptions defaultOptions() {
-        return new CleanerOptions(false, defaultJunkItems(), true, true, true, true, true, true, true);
+        return new CleanerOptions(false, defaultJunkItems(), true, true, true, true, true, true, true, true, true, true);
     }
 
     private static Set<Integer> keepSlots(final List<ItemStack> stacks, final CleanerOptions options) {
@@ -177,11 +195,30 @@ public final class InventoryCleanerModule extends Module {
             if (options.keepFood() && stack.has(DataComponents.FOOD)
                     || options.keepBlocks() && stack.getItem() instanceof BlockItem
                     || options.keepTotems() && stack.is(Items.TOTEM_OF_UNDYING)
-                    || options.keepPearls() && stack.is(Items.ENDER_PEARL)) {
+                    || options.keepPearls() && stack.is(Items.ENDER_PEARL)
+                    || options.keepRanged() && isRanged(stack)
+                    || options.keepPotions() && isPotion(stack)
+                    || options.keepThrowables() && isThrowable(stack)) {
                 keep.add(slot);
             }
         }
         return keep;
+    }
+
+    static boolean isRanged(final ItemStack stack) {
+        return stack.is(Items.BOW) || stack.is(Items.CROSSBOW) || stack.is(Items.TRIDENT) || stack.is(Items.ARROW);
+    }
+
+    static boolean isPotion(final ItemStack stack) {
+        return stack.is(Items.POTION) || stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION);
+    }
+
+    static boolean isThrowable(final ItemStack stack) {
+        return stack.is(Items.ENDER_PEARL)
+                || stack.is(Items.SNOWBALL)
+                || stack.is(Items.EGG)
+                || stack.is(Items.EXPERIENCE_BOTTLE)
+                || stack.is(Items.WIND_CHARGE);
     }
 
     private static void keepBestWeapon(final List<ItemStack> stacks, final Set<Integer> keep) {
@@ -267,7 +304,7 @@ public final class InventoryCleanerModule extends Module {
 
     record CleanerOptions(boolean strict, Set<Item> junkItems, boolean keepWeapons, boolean keepTools,
                           boolean keepArmor, boolean keepFood, boolean keepBlocks, boolean keepTotems,
-                          boolean keepPearls) {
+                          boolean keepPearls, boolean keepRanged, boolean keepPotions, boolean keepThrowables) {
 
         CleanerOptions {
             junkItems = Set.copyOf(junkItems);

@@ -17,7 +17,7 @@ public final class FlightModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Velocity")
-            .addAllOptions(List.of("Velocity", "Creative"))
+            .addAllOptions(List.of("Velocity", "Creative", "Glide", "Hover", "Damage"))
             .build()));
     private final NumberSetting horizontal = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("horizontal")
@@ -59,7 +59,12 @@ public final class FlightModule extends Module {
         }
         this.clearAbilities(player);
         Vec3 horizontalVelocity = MovementVelocity.fromKeys(client, player.getYRot(), this.horizontal.value());
-        double y = 0.0;
+        double y = switch (this.mode.value()) {
+            case "Glide" -> -0.03;
+            case "Hover" -> player.getDeltaMovement().y * 0.2;
+            case "Damage" -> player.hurtTime > 0 ? this.vertical.value() : -0.02;
+            default -> 0.0;
+        };
         if (client.options.keyJump.isDown()) {
             y += this.vertical.value();
         }

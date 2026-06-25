@@ -72,6 +72,7 @@ public final class ServerObserver {
     private static int velocityCorrections;
     private static int tabAdds;
     private static int tabRemoves;
+    private static int payloadSequence;
 
     private ServerObserver() {
     }
@@ -119,7 +120,9 @@ public final class ServerObserver {
             return;
         }
         if (packet instanceof ClientboundCustomPayloadPacket payload) {
-            payloadChannels.add(payload.payload().type().id());
+            if (payloadChannels.add(payload.payload().type().id())) {
+                payloadSequence++;
+            }
             return;
         }
         if (packet instanceof ClientboundSetTimePacket) {
@@ -195,7 +198,20 @@ public final class ServerObserver {
                 lastFlag,
                 velocityCorrections,
                 tabAdds,
-                tabRemoves
+                tabRemoves,
+                payloadSequence
+        );
+    }
+
+    public static Fingerprint fingerprint() {
+        Snapshot snapshot = snapshot();
+        return new Fingerprint(
+                snapshot.rootDomain(),
+                snapshot.antiCheat().orElse(""),
+                snapshot.environmentLabels(),
+                snapshot.plugins(),
+                snapshot.payloadChannels().stream().map(Identifier::toString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)),
+                snapshot.safetyScore()
         );
     }
 
@@ -423,6 +439,7 @@ public final class ServerObserver {
         velocityCorrections = 0;
         tabAdds = 0;
         tabRemoves = 0;
+        payloadSequence = 0;
     }
 
     public enum ServerType {
@@ -460,7 +477,8 @@ public final class ServerObserver {
             FlagInfo lastFlag,
             int velocityCorrections,
             int tabAdds,
-            int tabRemoves
+            int tabRemoves,
+            int payloadSequence
     ) {
         public Set<String> environmentLabels() {
             Set<String> labels = new LinkedHashSet<>();
@@ -507,6 +525,13 @@ public final class ServerObserver {
                 score += 15;
             }
             return Math.min(100, score);
+        }
+    }
+
+    public record Fingerprint(String rootDomain, String antiCheat, Set<String> labels, Set<String> plugins,
+                              Set<String> payloadChannels, int safetyScore) {
+        public boolean hasLabel(final String label) {
+            return this.labels.contains(label);
         }
     }
 }

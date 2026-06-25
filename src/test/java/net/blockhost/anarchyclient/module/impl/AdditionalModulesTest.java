@@ -277,6 +277,9 @@ class AdditionalModulesTest {
                 true,
                 true,
                 true,
+                true,
+                true,
+                true,
                 true
         );
 

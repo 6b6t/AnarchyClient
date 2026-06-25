@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.SettingGroup;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -135,6 +136,24 @@ public abstract class Module {
         group.add(setting);
         this.settings.add(setting);
         return setting;
+    }
+
+    protected final SelectSetting modeSetting(final String id, final String name, final ModuleMode defaultMode,
+                                              final List<ModuleMode> modes) {
+        return this.setting(SelectSetting.from(SelectSetting.builder()
+                .id(id)
+                .name(name)
+                .defaultValue(defaultMode.name())
+                .addAllOptions(modes.stream().map(ModuleMode::name).toList())
+                .build()));
+    }
+
+    protected final void debugValue(final String key, final Object value) {
+        DebugValueRegistry.put(this.id, key, value);
+    }
+
+    protected final void clearDebugValues() {
+        DebugValueRegistry.clear(this.id);
     }
 
     final void activationListener(final ActivationListener activationListener) {

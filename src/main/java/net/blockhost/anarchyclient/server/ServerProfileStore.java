@@ -92,6 +92,19 @@ public final class ServerProfileStore {
         save();
     }
 
+    public static synchronized void recordFingerprint(final ServerObserver.Fingerprint fingerprint) {
+        if (fingerprint == null || fingerprint.rootDomain().isBlank()) {
+            return;
+        }
+        ServerProfile profile = getOrCreate(fingerprint.rootDomain());
+        profile.antiCheat = fingerprint.antiCheat();
+        profile.knownPlugins = new LinkedHashSet<>(fingerprint.plugins());
+        profile.payloadChannels = new LinkedHashSet<>(fingerprint.payloadChannels());
+        profile.environmentLabels = new LinkedHashSet<>(fingerprint.labels());
+        profile.lastSafetyScore = fingerprint.safetyScore();
+        save();
+    }
+
     public static synchronized int apply(final ModuleManager modules, final String domain) {
         Optional<ServerProfile> maybeProfile = find(domain);
         if (maybeProfile.isEmpty()) {
@@ -152,9 +165,12 @@ public final class ServerProfileStore {
 
         public String antiCheat = "";
         public Set<String> knownPlugins = new LinkedHashSet<>();
+        public Set<String> payloadChannels = new LinkedHashSet<>();
+        public Set<String> environmentLabels = new LinkedHashSet<>();
         public Set<String> staffNames = new LinkedHashSet<>();
         public Map<String, Boolean> moduleStates = new LinkedHashMap<>();
         public Map<String, Map<String, JsonElement>> settings = new LinkedHashMap<>();
+        public int lastSafetyScore;
         public String notes = "";
 
         private ServerProfile normalized() {
@@ -163,6 +179,12 @@ public final class ServerProfileStore {
             }
             if (this.staffNames == null) {
                 this.staffNames = new LinkedHashSet<>();
+            }
+            if (this.payloadChannels == null) {
+                this.payloadChannels = new LinkedHashSet<>();
+            }
+            if (this.environmentLabels == null) {
+                this.environmentLabels = new LinkedHashSet<>();
             }
             if (this.moduleStates == null) {
                 this.moduleStates = new LinkedHashMap<>();

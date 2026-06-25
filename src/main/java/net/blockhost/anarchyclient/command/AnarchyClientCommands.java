@@ -125,7 +125,15 @@ public final class AnarchyClientCommands {
                         .then(literal("delete")
                                 .then(argument("name", StringArgumentType.word())
                                         .suggests(AnarchyClientCommands::suggestProfiles)
-                                        .executes(AnarchyClientCommands::deleteProfile))))
+                                        .executes(AnarchyClientCommands::deleteProfile)))
+                        .then(literal("export")
+                                .then(argument("name", StringArgumentType.word())
+                                        .suggests(AnarchyClientCommands::suggestProfiles)
+                                        .then(argument("path", StringArgumentType.greedyString())
+                                                .executes(AnarchyClientCommands::exportProfile))))
+                        .then(literal("import")
+                                .then(argument("path", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::importProfile))))
                 .then(literal("waypoint")
                         .then(literal("list")
                                 .executes(AnarchyClientCommands::listWaypoints))
@@ -425,6 +433,34 @@ public final class AnarchyClientCommands {
             context.getSource().sendFeedback(Component.literal("No saved profile named " + name + "."));
         }
         return SUCCESS;
+    }
+
+    private static int exportProfile(final CommandContext<FabricClientCommandSource> context) {
+        String name = StringArgumentType.getString(context, "name");
+        Path output = Path.of(StringArgumentType.getString(context, "path"));
+        try {
+            if (!AnarchyClient.PROFILES.exportProfile(name, output)) {
+                context.getSource().sendError(Component.literal("Unknown profile: " + name));
+                return 0;
+            }
+            context.getSource().sendFeedback(Component.literal("Exported profile " + name + " to " + output + "."));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to export profile: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int importProfile(final CommandContext<FabricClientCommandSource> context) {
+        Path input = Path.of(StringArgumentType.getString(context, "path"));
+        try {
+            ProfileManager.Profile profile = AnarchyClient.PROFILES.importProfile(input);
+            context.getSource().sendFeedback(Component.literal("Imported profile " + profile.name + "."));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to import profile: " + exception.getMessage()));
+            return 0;
+        }
     }
 
     private static int listWaypoints(final CommandContext<FabricClientCommandSource> context) {

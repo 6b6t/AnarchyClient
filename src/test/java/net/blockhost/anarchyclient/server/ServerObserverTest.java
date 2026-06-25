@@ -71,7 +71,8 @@ class ServerObserverTest {
                 ),
                 4,
                 8,
-                4
+                4,
+                2
         );
 
         assertEquals(Set.of("grim-like", "strict-movement", "strict-rotation", "plugin-leak", "low-tps", "tab-churn"),
