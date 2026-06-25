@@ -44,9 +44,9 @@ public final class StaffAlertModule extends Module {
     private final NumberSetting proximityRange = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("proximity_range")
             .name("Range")
-            .defaultValue(48.0)
+            .defaultValue(80.0)
             .min(8.0)
-            .max(160.0)
+            .max(256.0)
             .step(4.0)
             .build()));
     private final StringSetting moduleList = this.setting(StringSetting.from(StringSetting.builder()
@@ -103,7 +103,7 @@ public final class StaffAlertModule extends Module {
         }
         Set<String> names = new LinkedHashSet<>(parseNames(this.staffNames.value()));
         names.addAll(parseNames(String.join(",", ServerProfileStore.staffNames(ServerObserver.snapshot().rootDomain()))));
-        return names.contains(normalized) || TargetClassifier.looksLikeStaffName(name) && names.isEmpty();
+        return names.contains(normalized) || TargetClassifier.looksLikeStaffName(name);
     }
 
     private void alert(final Minecraft client, final String name) {

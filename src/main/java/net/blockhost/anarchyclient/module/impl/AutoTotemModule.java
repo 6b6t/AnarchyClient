@@ -27,7 +27,7 @@ public final class AutoTotemModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Totem")
-            .addAllOptions(List.of("Totem", "Crystal", "Golden Apple", "Shield"))
+            .addAllOptions(List.of("Totem", "Crystal", "Golden Apple", "Shield", "Wind Charge"))
             .build()));
     private final NumberSetting healthThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("health_threshold")
@@ -143,6 +143,7 @@ public final class AutoTotemModule extends Module {
             case "Crystal" -> Items.END_CRYSTAL;
             case "Golden Apple" -> Items.GOLDEN_APPLE;
             case "Shield" -> Items.SHIELD;
+            case "Wind Charge" -> Items.WIND_CHARGE;
             default -> Items.TOTEM_OF_UNDYING;
         };
     }

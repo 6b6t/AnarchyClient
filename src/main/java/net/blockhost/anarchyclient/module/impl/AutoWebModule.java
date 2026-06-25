@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -14,6 +15,12 @@ import java.util.List;
 
 public final class AutoWebModule extends Module {
 
+    private final SelectSetting targetMode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("target")
+            .name("Target")
+            .defaultValue("Enemy")
+            .addAllOptions(List.of("Enemy", "Self"))
+            .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
@@ -30,6 +37,7 @@ public final class AutoWebModule extends Module {
 
     public AutoWebModule() {
         super("auto_web", "Auto Web", ModuleCategory.COMBAT);
+        this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 
     @Override
@@ -38,7 +46,7 @@ public final class AutoWebModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = nearestPlayer(client, player, this.range.value());
+        Player target = "Self".equals(this.targetMode.value()) ? player : nearestPlayer(client, player, this.range.value());
         if (target == null) {
             return;
         }

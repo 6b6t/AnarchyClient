@@ -17,7 +17,7 @@ public final class FlightModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Velocity")
-            .addAllOptions(List.of("Velocity", "Creative", "Glide", "Hover", "Damage"))
+            .addAllOptions(List.of("Velocity", "Full", "Creative", "Glide", "Hover", "Damage"))
             .build()));
     private final NumberSetting horizontal = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("horizontal")
@@ -36,9 +36,10 @@ public final class FlightModule extends Module {
             .step(0.05)
             .build()));
     private boolean changedAbilities;
+    private int antiKickTicks;
 
     public FlightModule() {
-        super("flight", "Flight", ModuleCategory.MOVEMENT, List.of("full_flight"));
+        super("flight", "Flight", ModuleCategory.MOVEMENT);
     }
 
     @Override
@@ -60,6 +61,7 @@ public final class FlightModule extends Module {
         this.clearAbilities(player);
         Vec3 horizontalVelocity = MovementVelocity.fromKeys(client, player.getYRot(), this.horizontal.value());
         double y = switch (this.mode.value()) {
+            case "Full" -> ++this.antiKickTicks % 20 == 0 ? -0.04 : 0.0;
             case "Glide" -> -0.03;
             case "Hover" -> player.getDeltaMovement().y * 0.2;
             case "Damage" -> player.hurtTime > 0 ? this.vertical.value() : -0.02;
@@ -81,6 +83,7 @@ public final class FlightModule extends Module {
         if (client.player != null) {
             this.clearAbilities(client.player);
         }
+        this.antiKickTicks = 0;
     }
 
     private void clearAbilities(final LocalPlayer player) {

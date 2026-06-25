@@ -46,8 +46,8 @@ class NyanCatGifSpammerModuleTest {
 
     @Test
     void autoEatTriggersForLowHungerOrHealth() {
-        assertTrue(AutoEatModule.shouldEat(10, 20.0F, 14.0, 10.0));
-        assertTrue(AutoEatModule.shouldEat(20, 8.0F, 14.0, 10.0));
-        assertEquals(false, AutoEatModule.shouldEat(20, 20.0F, 14.0, 10.0));
+        assertTrue(SmartEatModule.shouldEat(10, 20.0F, 14.0, 10.0));
+        assertTrue(SmartEatModule.shouldEat(20, 8.0F, 14.0, 10.0));
+        assertEquals(false, SmartEatModule.shouldEat(20, 20.0F, 14.0, 10.0));
     }
 }

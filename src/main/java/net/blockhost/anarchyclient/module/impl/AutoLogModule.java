@@ -50,7 +50,7 @@ public final class AutoLogModule extends Module {
             .name("Player Range")
             .defaultValue(12.0)
             .min(2.0)
-            .max(64.0)
+            .max(96.0)
             .step(1.0)
             .build()));
     private final NumberSetting dangerousEntityCount = this.setting(NumberSetting.from(NumberSetting.builder()

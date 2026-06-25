@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.rotation.RotationRequest;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.target.TargetPolicy;
 import net.blockhost.anarchyclient.target.TargetQuery;
 import net.minecraft.client.Minecraft;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public final class AutoShootModule extends Module {
@@ -28,7 +30,7 @@ public final class AutoShootModule extends Module {
             .name("Range")
             .defaultValue(24.0)
             .min(4.0)
-            .max(64.0)
+            .max(128.0)
             .step(2.0)
             .build()));
     private final NumberSetting cooldown = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -36,8 +38,14 @@ public final class AutoShootModule extends Module {
             .name("Cooldown")
             .defaultValue(12.0)
             .min(1.0)
-            .max(80.0)
+            .max(200.0)
             .step(1.0)
+            .build()));
+    private final SelectSetting projectile = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("projectile")
+            .name("Projectile")
+            .defaultValue("Throwables")
+            .addAllOptions(List.of("Throwables", "Ender Pearl", "Fishing Rod", "All"))
             .build()));
     private final BooleanSetting players = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("players")
@@ -71,7 +79,7 @@ public final class AutoShootModule extends Module {
         if (target.isEmpty()) {
             return;
         }
-        if (SilentHotbar.selectMatching(player, this.id(), AutoShootModule::isThrowable,
+        if (SilentHotbar.selectMatching(player, this.id(), stack -> this.matchesProjectile(stack),
                 SilentHotbar.PRIORITY_COMBAT, 6, true).isEmpty()) {
             return;
         }
@@ -95,5 +103,14 @@ public final class AutoShootModule extends Module {
                 || stack.is(Items.EGG)
                 || stack.is(Items.ENDER_PEARL)
                 || stack.is(Items.EXPERIENCE_BOTTLE);
+    }
+
+    private boolean matchesProjectile(final ItemStack stack) {
+        return switch (this.projectile.value()) {
+            case "Ender Pearl" -> stack.is(Items.ENDER_PEARL);
+            case "Fishing Rod" -> stack.is(Items.FISHING_ROD);
+            case "All" -> isThrowable(stack) || stack.is(Items.FISHING_ROD);
+            default -> isThrowable(stack);
+        };
     }
 }

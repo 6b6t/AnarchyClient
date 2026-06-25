@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -15,6 +16,12 @@ import java.util.List;
 
 public final class AutoTrapModule extends Module {
 
+    private final SelectSetting targetMode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("target")
+            .name("Target")
+            .defaultValue("Enemy")
+            .addAllOptions(List.of("Enemy", "Self"))
+            .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
@@ -36,9 +43,15 @@ public final class AutoTrapModule extends Module {
             .name("Rotate")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting includeFeet = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("include_feet")
+            .name("Feet")
+            .defaultValue(false)
+            .build()));
 
     public AutoTrapModule() {
         super("auto_trap", "Auto Trap", ModuleCategory.COMBAT);
+        this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 
     @Override
@@ -47,12 +60,12 @@ public final class AutoTrapModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = nearestPlayer(client, player, this.range.value());
+        Player target = "Self".equals(this.targetMode.value()) ? player : nearestPlayer(client, player, this.range.value());
         if (target == null) {
             return;
         }
         int placed = 0;
-        for (BlockPos pos : trapPositions(target.blockPosition())) {
+        for (BlockPos pos : trapPositions(target.blockPosition(), this.includeFeet.value())) {
             if (BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F) == BlockPlacement.PlacementResult.PLACED
                     && ++placed >= this.blocksPerTick.value().intValue()) {
                 return;
@@ -61,10 +74,17 @@ public final class AutoTrapModule extends Module {
     }
 
     static List<BlockPos> trapPositions(final BlockPos base) {
+        return trapPositions(base, false);
+    }
+
+    static List<BlockPos> trapPositions(final BlockPos base, final boolean includeFeet) {
         List<BlockPos> positions = new ArrayList<>();
         positions.add(base.above(2));
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             positions.add(base.above().relative(direction));
+            if (includeFeet) {
+                positions.add(base.relative(direction));
+            }
         }
         return positions;
     }

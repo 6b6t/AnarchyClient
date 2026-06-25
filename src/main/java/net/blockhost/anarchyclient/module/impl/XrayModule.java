@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
@@ -21,11 +22,19 @@ public final class XrayModule extends Module {
     private final StringSetting blocks = this.setting(StringSetting.from(StringSetting.builder()
             .id("blocks")
             .name("Blocks")
-            .defaultValue("diamond_ore,deepslate_diamond_ore,ancient_debris,emerald_ore,deepslate_emerald_ore")
+            .defaultValue("diamond_ore,deepslate_diamond_ore,ancient_debris,emerald_ore,deepslate_emerald_ore,spawner")
             .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
+            .defaultValue(48.0)
+            .min(8.0)
+            .max(96.0)
+            .step(4.0)
+            .build()));
+    private final NumberSetting verticalRange = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("vertical_range")
+            .name("Vertical")
             .defaultValue(48.0)
             .min(8.0)
             .max(96.0)
@@ -38,6 +47,12 @@ public final class XrayModule extends Module {
             .min(16.0)
             .max(512.0)
             .step(16.0)
+            .build()));
+    private final SelectSetting renderMode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("render_mode")
+            .name("Render")
+            .defaultValue("Filled")
+            .addAllOptions(List.of("Filled", "Outline"))
             .build()));
 
     private List<BlockPos> cachedPositions = List.of();
@@ -60,9 +75,9 @@ public final class XrayModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        this.cachedPositions = BlockScan.matchingBlocks(client, this.parsedBlocks, this.range.value().intValue(),
-                this.range.value().intValue(), this.maxBlocks.value().intValue());
-        this.cooldownTicks = 40;
+        this.cachedPositions = BlockScan.matchingBlocks(client, this.parsedBlocks,
+                this.range.value().intValue(), this.verticalRange.value().intValue(), this.maxBlocks.value().intValue());
+        this.cooldownTicks = 30;
     }
 
     @Override
@@ -74,9 +89,12 @@ public final class XrayModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        boolean filled = "Filled".equals(this.renderMode.value());
         for (BlockPos pos : this.cachedPositions) {
             AABB box = new AABB(pos).move(camera.scale(-1));
-            WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(90, 255, 160, 35));
+            if (filled) {
+                WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(90, 255, 160, 35));
+            }
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(90, 255, 160, 180));
         }
     }

@@ -19,7 +19,7 @@ class PhaseModulesTest {
     void hudAndRenderUtilitiesFormatStableValues() {
         assertEquals("[N] E S W", CompassHudModule.compassLine(Direction.NORTH));
         assertEquals(270.0F, CompassHudModule.wrapYaw(-90.0F));
-        assertEquals(90.0F, CameraTweaksModule.clampPitch(120.0F));
+        assertEquals(90.0F, RenderingModule.clampPitch(120.0F));
         assertEquals("1:05", PotionTimersHudModule.formatTicks(20 * 65));
         assertEquals("empty", ArmorHudModule.describe(ItemStack.EMPTY));
     }

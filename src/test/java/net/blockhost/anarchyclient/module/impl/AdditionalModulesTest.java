@@ -94,10 +94,10 @@ class AdditionalModulesTest {
 
     @Test
     void autoSoupRecognizesSoupStacksAndHands() {
-        assertTrue(AutoSoupModule.isSoupItemId("mushroom_stew"));
-        assertTrue(AutoSoupModule.isSoupItemId("rabbit_stew"));
-        assertTrue(AutoSoupModule.isSoupItemId("beetroot_soup"));
-        assertFalse(AutoSoupModule.isSoupItemId("bowl"));
+        assertTrue(SmartEatModule.isSoupItemId("mushroom_stew"));
+        assertTrue(SmartEatModule.isSoupItemId("rabbit_stew"));
+        assertTrue(SmartEatModule.isSoupItemId("beetroot_soup"));
+        assertFalse(SmartEatModule.isSoupItemId("bowl"));
     }
 
     @Test

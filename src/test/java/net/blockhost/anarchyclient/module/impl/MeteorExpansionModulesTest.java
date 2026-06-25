@@ -29,7 +29,7 @@ class MeteorExpansionModulesTest {
         ModuleRegistry.registerDefaults(modules);
 
         for (String id : List.of(
-                "auto_exp",
+                "exp_thrower",
                 "attribute_swap",
                 "wall_hack",
                 "air_jump",
@@ -44,8 +44,8 @@ class MeteorExpansionModulesTest {
                 "ghost_hand",
                 "reach",
                 "rotation",
-                "no_rotate",
-                "no_status_effects",
+                "no_rotate_set",
+                "rendering",
                 "better_beacons",
                 "blur",
                 "entity_owner",
