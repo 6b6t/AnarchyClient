@@ -32,12 +32,15 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("auto_craft").orElseThrow());
         assertNotNull(modules.find("auto_rename").orElseThrow());
         assertNotNull(modules.find("auto_grind").orElseThrow());
+        assertNotNull(modules.find("auto_enchant").orElseThrow());
         assertNotNull(modules.find("new_chunks").orElseThrow());
         assertNotNull(modules.find("chest_aura").orElseThrow());
+        assertNotNull(modules.find("auto_farm").orElseThrow());
         assertNotNull(modules.find("tree_aura").orElseThrow());
         assertNotNull(modules.find("moss_bot").orElseThrow());
         assertNotNull(modules.find("lawn_bot").orElseThrow());
         assertNotNull(modules.find("aim_assist").orElseThrow());
+        assertNotNull(modules.find("anti_bot").orElseThrow());
         assertNotNull(modules.find("anti_spawnpoint").orElseThrow());
         assertNotNull(modules.find("coord_logger").orElseThrow());
         assertNotNull(modules.find("gamemode_notifier").orElseThrow());
@@ -48,6 +51,7 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("block_in").orElseThrow());
         assertNotNull(modules.find("boost").orElseThrow());
         assertNotNull(modules.find("glide").orElseThrow());
+        assertNotNull(modules.find("jetpack").orElseThrow());
         assertNotNull(modules.find("extra_elytra").orElseThrow());
         assertNotNull(modules.find("anti_vanish").orElseThrow());
         assertNotNull(modules.find("silent_disconnect").orElseThrow());

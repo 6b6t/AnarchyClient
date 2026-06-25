@@ -4,6 +4,8 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -80,6 +82,38 @@ class AnarchyClientCommandsTest {
         assertEquals(-4.5, AnarchyClientCommands.CenterMode.MIDDLE.coordinate(-4.8));
         assertEquals(12.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(12.2));
         assertEquals(-5.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(-4.8));
+    }
+
+    @Test
+    void parsesCommandCoordinatesAndRelativeBlockPositions() {
+        assertEquals(12.0, AnarchyClientCommands.parseCoordinate("12", 5.0));
+        assertEquals(5.0, AnarchyClientCommands.parseCoordinate("~", 5.0));
+        assertEquals(7.5, AnarchyClientCommands.parseCoordinate("~2.5", 5.0));
+        assertEquals(new BlockPos(12, 64, -5),
+                AnarchyClientCommands.parseBlockPosition("~2", "64", "~-1", new Vec3(10.2, 70.0, -3.4)));
+        assertThrows(IllegalArgumentException.class, () -> AnarchyClientCommands.parseCoordinate("~bad", 0.0));
+    }
+
+    @Test
+    void fillAreasAreNormalizedAndBounded() {
+        AnarchyClientCommands.BlockArea area = AnarchyClientCommands.blockArea(
+                new BlockPos(3, 5, 7),
+                new BlockPos(1, 4, 6),
+                12
+        );
+
+        assertEquals(1, area.minX());
+        assertEquals(4, area.minY());
+        assertEquals(6, area.minZ());
+        assertEquals(3, area.maxX());
+        assertEquals(5, area.maxY());
+        assertEquals(7, area.maxZ());
+        assertEquals(12, area.count());
+        assertThrows(IllegalArgumentException.class, () -> AnarchyClientCommands.blockArea(
+                new BlockPos(0, 0, 0),
+                new BlockPos(3, 3, 3),
+                8
+        ));
     }
 
     @Test

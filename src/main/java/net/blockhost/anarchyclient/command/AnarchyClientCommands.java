@@ -5,6 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -31,10 +33,15 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
@@ -57,6 +64,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 public final class AnarchyClientCommands {
 
     private static final int SUCCESS = com.mojang.brigadier.Command.SINGLE_SUCCESS;
+    private static final int MAX_FILL_BLOCKS = 32_768;
 
     private AnarchyClientCommands() {
     }
@@ -99,6 +107,46 @@ public final class AnarchyClientCommands {
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestOnlinePlayers)
                                 .executes(AnarchyClientCommands::saveSkin)))
+                .then(literal("ghost")
+                        .executes(context -> ghostBlocks(context, 4))
+                        .then(argument("radius", IntegerArgumentType.integer(1, 16))
+                                .executes(context -> ghostBlocks(context, IntegerArgumentType.getInteger(context, "radius")))))
+                .then(literal("set-velocity")
+                        .then(argument("value", DoubleArgumentType.doubleArg())
+                                .executes(AnarchyClientCommands::setVelocityY)
+                                .then(argument("second", DoubleArgumentType.doubleArg())
+                                        .executes(AnarchyClientCommands::setVelocityXZ)
+                                        .then(argument("third", DoubleArgumentType.doubleArg())
+                                                .executes(AnarchyClientCommands::setVelocityXYZ)))))
+                .then(literal("teleport")
+                        .then(argument("x", StringArgumentType.word())
+                                .then(argument("y", StringArgumentType.word())
+                                        .then(argument("z", StringArgumentType.word())
+                                                .executes(context -> teleport(context, false))
+                                                .then(argument("yaw", FloatArgumentType.floatArg())
+                                                        .then(argument("pitch", FloatArgumentType.floatArg())
+                                                                .executes(context -> teleport(context, true))))))))
+                .then(literal("setblock")
+                        .then(argument("x", StringArgumentType.word())
+                                .then(argument("y", StringArgumentType.word())
+                                        .then(argument("z", StringArgumentType.word())
+                                                .then(argument("block", StringArgumentType.word())
+                                                        .suggests(AnarchyClientCommands::suggestBlocks)
+                                                        .executes(AnarchyClientCommands::setBlock))))))
+                .then(literal("fill")
+                        .then(argument("from_x", StringArgumentType.word())
+                                .then(argument("from_y", StringArgumentType.word())
+                                        .then(argument("from_z", StringArgumentType.word())
+                                                .then(argument("to_x", StringArgumentType.word())
+                                                        .then(argument("to_y", StringArgumentType.word())
+                                                                .then(argument("to_z", StringArgumentType.word())
+                                                                        .then(argument("block", StringArgumentType.word())
+                                                                                .suggests(AnarchyClientCommands::suggestBlocks)
+                                                                                .executes(context -> fill(context, false))
+                                                                                .then(literal("replace")
+                                                                                        .then(argument("filter", StringArgumentType.word())
+                                                                                                .suggests(AnarchyClientCommands::suggestBlocks)
+                                                                                                .executes(context -> fill(context, true))))))))))))
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestModules)
@@ -242,6 +290,166 @@ public final class AnarchyClientCommands {
         return SUCCESS;
     }
 
+    private static int ghostBlocks(final CommandContext<FabricClientCommandSource> context, final int radius) {
+        Minecraft client = requireInGame(context, "refresh ghost blocks");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        BlockPos center = client.player.blockPosition();
+        int sent = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    client.getConnection().send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                            center.offset(dx, dy, dz),
+                            Direction.UP
+                    ));
+                    sent++;
+                }
+            }
+        }
+        context.getSource().sendFeedback(Component.literal("Sent " + sent + " ghost-block refresh packets."));
+        return SUCCESS;
+    }
+
+    private static int setVelocityY(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "set velocity");
+        if (client == null) {
+            return 0;
+        }
+        Vec3 current = client.player.getDeltaMovement();
+        client.player.setDeltaMovement(current.x, DoubleArgumentType.getDouble(context, "value"), current.z);
+        return SUCCESS;
+    }
+
+    private static int setVelocityXZ(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "set velocity");
+        if (client == null) {
+            return 0;
+        }
+        client.player.setDeltaMovement(
+                DoubleArgumentType.getDouble(context, "value"),
+                client.player.getDeltaMovement().y,
+                DoubleArgumentType.getDouble(context, "second")
+        );
+        return SUCCESS;
+    }
+
+    private static int setVelocityXYZ(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "set velocity");
+        if (client == null) {
+            return 0;
+        }
+        client.player.setDeltaMovement(
+                DoubleArgumentType.getDouble(context, "value"),
+                DoubleArgumentType.getDouble(context, "second"),
+                DoubleArgumentType.getDouble(context, "third")
+        );
+        return SUCCESS;
+    }
+
+    private static int teleport(final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
+        Minecraft client = requireInGame(context, "teleport");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        BlockPos pos;
+        try {
+            pos = parseBlockPosition(
+                    StringArgumentType.getString(context, "x"),
+                    StringArgumentType.getString(context, "y"),
+                    StringArgumentType.getString(context, "z"),
+                    client.player.position()
+            );
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+        double x = pos.getX();
+        double y = pos.getY();
+        double z = pos.getZ();
+        if (includeRotation) {
+            float yaw = FloatArgumentType.getFloat(context, "yaw");
+            float pitch = FloatArgumentType.getFloat(context, "pitch");
+            client.player.absSnapTo(x, y, z, yaw, pitch);
+            client.getConnection().send(new ServerboundMovePlayerPacket.PosRot(
+                    x, y, z, yaw, pitch, client.player.onGround(), client.player.horizontalCollision
+            ));
+        } else {
+            client.player.absSnapTo(x, y, z);
+            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
+                    x, y, z, client.player.onGround(), client.player.horizontalCollision
+            ));
+        }
+        return SUCCESS;
+    }
+
+    private static int setBlock(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "set a client block");
+        if (client == null || client.level == null) {
+            return 0;
+        }
+        try {
+            BlockPos pos = parseBlockPosition(
+                    StringArgumentType.getString(context, "x"),
+                    StringArgumentType.getString(context, "y"),
+                    StringArgumentType.getString(context, "z"),
+                    client.player.position()
+            );
+            client.level.setBlockAndUpdate(pos, parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState());
+            return SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int fill(final CommandContext<FabricClientCommandSource> context, final boolean replaceOnly) {
+        Minecraft client = requireInGame(context, "fill client blocks");
+        if (client == null || client.level == null) {
+            return 0;
+        }
+        try {
+            BlockArea area = blockArea(
+                    parseBlockPosition(
+                            StringArgumentType.getString(context, "from_x"),
+                            StringArgumentType.getString(context, "from_y"),
+                            StringArgumentType.getString(context, "from_z"),
+                            client.player.position()
+                    ),
+                    parseBlockPosition(
+                            StringArgumentType.getString(context, "to_x"),
+                            StringArgumentType.getString(context, "to_y"),
+                            StringArgumentType.getString(context, "to_z"),
+                            client.player.position()
+                    ),
+                    MAX_FILL_BLOCKS
+            );
+            BlockState state = parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState();
+            Block filter = replaceOnly ? parseBlock(StringArgumentType.getString(context, "filter")) : null;
+            int changed = 0;
+            for (int x = area.minX(); x <= area.maxX(); x++) {
+                for (int y = area.minY(); y <= area.maxY(); y++) {
+                    for (int z = area.minZ(); z <= area.maxZ(); z++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (filter != null && client.level.getBlockState(pos).getBlock() != filter) {
+                            continue;
+                        }
+                        if (client.level.setBlockAndUpdate(pos, state)) {
+                            changed++;
+                        }
+                    }
+                }
+            }
+            context.getSource().sendFeedback(Component.literal("Changed " + changed + " client block" + (changed == 1 ? "" : "s") + "."));
+            return SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
     private static int bindModule(final CommandContext<FabricClientCommandSource> context) {
         ModuleBindAction action = ModuleBindAction.parse(StringArgumentType.getString(context, "action"));
         return bindModule(context, action);
@@ -382,6 +590,12 @@ public final class AnarchyClientCommands {
                 .map(info -> info.getProfile().name()), builder);
     }
 
+    private static CompletableFuture<Suggestions> suggestBlocks(final CommandContext<FabricClientCommandSource> context,
+                                                                final SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggest(BuiltInRegistries.BLOCK.keySet().stream()
+                .map(Identifier::toString), builder);
+    }
+
     private static CompletableFuture<Suggestions> suggestSettingValues(final CommandContext<FabricClientCommandSource> context,
                                                                       final SuggestionsBuilder builder) {
         Module module = AnarchyClient.MODULES.find(StringArgumentType.getString(context, "module")).orElse(null);
@@ -497,6 +711,74 @@ public final class AnarchyClientCommands {
         }
         String sanitized = value.replaceAll("[^A-Za-z0-9_.-]", "_");
         return sanitized.isBlank() ? "skin" : sanitized;
+    }
+
+    private static Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context,
+                                           final String action) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null) {
+            context.getSource().sendError(Component.literal("You must be in-game to " + action + "."));
+            return null;
+        }
+        return client;
+    }
+
+    static double parseCoordinate(final String token, final double origin) {
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Expected a coordinate.");
+        }
+        if (token.charAt(0) == '~') {
+            if (token.length() == 1) {
+                return origin;
+            }
+            return origin + parseDouble(token.substring(1), token);
+        }
+        return parseDouble(token, token);
+    }
+
+    static BlockPos parseBlockPosition(final String xToken, final String yToken, final String zToken,
+                                       final Vec3 origin) {
+        return BlockPos.containing(
+                parseCoordinate(xToken, origin.x),
+                parseCoordinate(yToken, origin.y),
+                parseCoordinate(zToken, origin.z)
+        );
+    }
+
+    static Block parseBlock(final String id) {
+        Identifier identifier = id != null && id.contains(":")
+                ? Identifier.tryParse(id)
+                : Identifier.withDefaultNamespace(id == null ? "" : id);
+        if (identifier == null) {
+            throw new IllegalArgumentException("Invalid block id: " + id);
+        }
+        return BuiltInRegistries.BLOCK.getOptional(identifier)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown block: " + id));
+    }
+
+    static BlockArea blockArea(final BlockPos first, final BlockPos second, final int maxBlocks) {
+        int minX = Math.min(first.getX(), second.getX());
+        int minY = Math.min(first.getY(), second.getY());
+        int minZ = Math.min(first.getZ(), second.getZ());
+        int maxX = Math.max(first.getX(), second.getX());
+        int maxY = Math.max(first.getY(), second.getY());
+        int maxZ = Math.max(first.getZ(), second.getZ());
+        long count = (long) (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
+        if (count > maxBlocks) {
+            throw new IllegalArgumentException("Fill area is too large: " + count + " blocks, max " + maxBlocks + ".");
+        }
+        return new BlockArea(minX, minY, minZ, maxX, maxY, maxZ, (int) count);
+    }
+
+    private static double parseDouble(final String token, final String original) {
+        try {
+            return Double.parseDouble(token);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("Invalid coordinate: " + original, exception);
+        }
+    }
+
+    record BlockArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int count) {
     }
 
     enum CenterMode {

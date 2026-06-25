@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
@@ -9,6 +10,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
@@ -123,6 +125,26 @@ class AdditionalModulesTest {
     void glideCapsOnlyExcessiveDownwardVelocity() {
         assertEquals(-0.125, GlideModule.cappedFallVelocity(-0.5, 0.125));
         assertEquals(-0.05, GlideModule.cappedFallVelocity(-0.05, 0.125));
+    }
+
+    @Test
+    void jetpackOnlyReplacesVerticalVelocityWhenActive() {
+        Vec3 current = new Vec3(0.25, -0.4, 0.5);
+
+        assertEquals(new Vec3(0.25, 0.42, 0.5), JetpackModule.jetpackVelocity(current, 0.42, true));
+        assertEquals(current, JetpackModule.jetpackVelocity(current, 0.42, false));
+    }
+
+    @Test
+    void antiBotUsesStrictCandidateChecks() {
+        GameProfile validProfile = new GameProfile(UUID.randomUUID(), "Steve");
+
+        assertTrue(AntiBotModule.shouldRemoveCandidate(false, false, true, true, false, false,
+                false, null, null, 0));
+        assertTrue(AntiBotModule.shouldRemoveCandidate(false, false, false, true, false, false,
+                true, GameType.SURVIVAL, new GameProfile(new UUID(0L, 0L), "Bot"), 0));
+        assertFalse(AntiBotModule.shouldRemoveCandidate(false, false, true, true, false, false,
+                true, GameType.SURVIVAL, validProfile, 42));
     }
 
     @Test
@@ -370,5 +392,27 @@ class AdditionalModulesTest {
         assertTrue(AutoMendModule.protectedTotem(8.0F, 2.0F, true, 12.0));
         assertFalse(AutoMendModule.protectedTotem(8.0F, 6.0F, true, 12.0));
         assertFalse(AutoMendModule.protectedTotem(8.0F, 2.0F, false, 12.0));
+    }
+
+    @Test
+    void autoFarmMapsPlantableBaseBlocksAndScanLimits() {
+        assertIterableEquals(List.of("wheat_seeds", "carrot", "potato", "beetroot_seeds"),
+                AutoFarmModule.plantItemIds("minecraft:farmland"));
+        assertIterableEquals(List.of("nether_wart"), AutoFarmModule.plantItemIds("soul_sand"));
+        assertTrue(AutoFarmModule.plantItemIds("stone").isEmpty());
+        assertEquals(27, AutoFarmModule.scanLimit(1));
+        assertEquals(4096, AutoFarmModule.scanLimit(16));
+        assertEquals(1, AutoFarmModule.clampedActions(-5.0));
+        assertEquals(8, AutoFarmModule.clampedActions(100.0));
+    }
+
+    @Test
+    void autoEnchantClampsLevelAndValidatesChoiceCost() {
+        assertEquals(1, AutoEnchantModule.targetLevel(-5.0));
+        assertEquals(2, AutoEnchantModule.targetLevel(2.8));
+        assertEquals(3, AutoEnchantModule.targetLevel(5.0));
+        assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 30, 3, false));
+        assertFalse(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 20, 3, false));
+        assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 0, 0, true));
     }
 }
