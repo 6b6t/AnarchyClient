@@ -16,9 +16,11 @@ import net.minecraft.resources.Identifier;
 public final class AnarchyClientRenderPipelines {
 
     public static final RenderPipeline MATRIX_PANEL = panelPipeline("matrix_panel");
-    public static final RenderPipeline AURORA_PANEL = panelPipeline("aurora_panel");
-    public static final RenderPipeline GRID_PANEL = panelPipeline("grid_panel");
-    public static final RenderPipeline EMBER_PANEL = panelPipeline("ember_panel");
+    public static final RenderPipeline CAUSTICS_PANEL = panelPipeline("caustics_panel");
+    public static final RenderPipeline RETRO_GRID_PANEL = panelPipeline("retro_grid_panel");
+    public static final RenderPipeline FIRE_PANEL = panelPipeline("fire_panel");
+    public static final RenderPipeline DEEP_PANEL = panelPipeline("deep_panel");
+    public static final RenderPipeline SIMPLEX_FLOW_PANEL = panelPipeline("simplex_flow_panel");
     private static final DepthStencilState NO_DEPTH = new DepthStencilState(CompareOp.ALWAYS_PASS, false);
     private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)

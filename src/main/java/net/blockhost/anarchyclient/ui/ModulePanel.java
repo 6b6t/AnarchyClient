@@ -6,6 +6,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.profile.ProfileManager;
+import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -39,11 +40,14 @@ import net.lenni0451.rivet.text.model.TextFormat;
 import net.lenni0451.rivet.text.model.TextLine;
 import net.lenni0451.rivet.text.model.TextOrigin;
 import net.lenni0451.rivet.text.model.TextSection;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -98,8 +102,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private static final Color TEXT = Color.fromRGB(230, 230, 224);
     private static final Color MUTED = Color.fromRGB(142, 142, 138);
     private static final Color FAINT = Color.fromRGB(84, 84, 82);
-    private static final Color ACTIVE = Color.fromRGB(0, 186, 148);
-    private static final Color ACTIVE_SOFT = Color.fromRGBA(0, 186, 148, 72);
+    private static Color ACTIVE = GuiThemePalette.of(ClientConfig.GuiThemePreset.EMERALD).active();
+    private static Color ACTIVE_SOFT = GuiThemePalette.of(ClientConfig.GuiThemePreset.EMERALD).activeSoft();
     private static final Color WARNING = Color.fromRGB(236, 142, 47);
     private static final FontDescription LUCIDE_FONT = new FontDescription.Resource(
             Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "lucide")
@@ -107,15 +111,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final ModuleManager modules;
     private final ClientConfig config;
-    private final TopBar topBar = new TopBar();
-    private final CategoryRail categoryRail = new CategoryRail();
-    private final SearchInput searchInput = new SearchInput("Search modules...");
-    private final Container moduleRows = new Container(new VerticalListLayout(1, true));
-    private final ScrollContainer moduleScroll = new LayoutDebugScrollContainer(this.moduleRows);
-    private final ModuleInspector inspector = new ModuleInspector();
-    private final FriendsPanel friendsPanel = new FriendsPanel();
-    private final ProfilesPanel profilesPanel = new ProfilesPanel();
-    private final SettingsDrawer settingsDrawer = new SettingsDrawer();
+    private final TopBar topBar;
+    private final CategoryRail categoryRail;
+    private final SearchInput searchInput;
+    private final Container moduleRows;
+    private final ScrollContainer moduleScroll;
+    private final ModuleInspector inspector;
+    private final FriendsPanel friendsPanel;
+    private final ProfilesPanel profilesPanel;
+    private final SettingsDrawer settingsDrawer;
 
     private Tab selectedTab = Tab.MODULES;
     private ModuleCategory selectedCategory;
@@ -127,6 +131,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private boolean showSummaries = true;
     private boolean compactRows;
     private boolean wideInspector;
+    private ClientConfig.GuiThemePreset guiTheme = ClientConfig.GuiThemePreset.EMERALD;
+    private BackgroundDesign backgroundDesign = BackgroundDesign.NONE;
 
     private float shellX;
     private float shellY;
@@ -139,6 +145,16 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         super(AbsoluteLayout.INSTANCE);
         this.modules = modules;
         this.config = config;
+        this.loadUiPreferences(config.uiPreferences());
+        this.topBar = new TopBar();
+        this.categoryRail = new CategoryRail();
+        this.searchInput = new SearchInput("Search modules...");
+        this.moduleRows = new Container(new VerticalListLayout(1, true));
+        this.moduleScroll = new LayoutDebugScrollContainer(this.moduleRows);
+        this.inspector = new ModuleInspector();
+        this.friendsPanel = new FriendsPanel();
+        this.profilesPanel = new ProfilesPanel();
+        this.settingsDrawer = new SettingsDrawer();
         this.selectedCategory = this.initialCategory();
         this.selectedModule = this.initialModule();
         this.searchInput.onChange(value -> {
@@ -158,6 +174,53 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         this.inspector.refresh();
         this.friendsPanel.refresh();
         this.profilesPanel.refresh();
+    }
+
+    private void loadUiPreferences(final ClientConfig.UiPreferences preferences) {
+        this.showDisabledModules = preferences.showDisabledModules();
+        this.enabledFirst = preferences.enabledModulesFirst();
+        this.showSummaries = preferences.showModuleSummaries();
+        this.compactRows = preferences.compactRows();
+        this.wideInspector = preferences.wideInspector();
+        this.guiTheme = preferences.guiTheme();
+        this.backgroundDesign = preferences.backgroundDesign();
+        applyPanelTheme(this.guiTheme);
+    }
+
+    private void saveUiPreferences() {
+        this.config.uiPreferences(new ClientConfig.UiPreferences(
+                this.showDisabledModules,
+                this.enabledFirst,
+                this.showSummaries,
+                this.compactRows,
+                this.wideInspector,
+                this.guiTheme,
+                this.backgroundDesign
+        ));
+        this.config.save();
+    }
+
+    private void resetUiPreferences() {
+        this.loadUiPreferences(ClientConfig.UiPreferences.DEFAULT);
+        this.saveUiPreferences();
+        this.refreshModuleList();
+        this.inspector.refresh();
+        this.applyRivetTheme();
+    }
+
+    private void applyRivetTheme() {
+        applyPanelTheme(this.guiTheme);
+        if (this.rivet() != null) {
+            this.rivet().theme(new AnarchyClientTheme(this.guiTheme));
+        }
+        this.configureScroll(this.moduleScroll);
+        this.requestFrame();
+    }
+
+    private static void applyPanelTheme(final ClientConfig.GuiThemePreset preset) {
+        GuiThemePalette palette = GuiThemePalette.of(preset);
+        ACTIVE = palette.active();
+        ACTIVE_SOFT = palette.activeSoft();
     }
 
     @Override
@@ -336,6 +399,96 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         this.drawer = this.drawer == drawer ? Drawer.NONE : drawer;
         this.settingsDrawer.refresh();
         this.requestFrame();
+    }
+
+    private void openRootDrawer() {
+        this.drawer = Drawer.ROOT;
+        this.settingsDrawer.refresh();
+        this.requestFrame();
+    }
+
+    private void saveConfigNow() {
+        this.saveUiPreferences();
+        this.config.save();
+    }
+
+    private void reloadConfig() {
+        this.config.load();
+        this.loadUiPreferences(this.config.uiPreferences());
+        this.selectedCategory = this.initialCategory();
+        this.selectedModule = this.initialModule();
+        this.refreshModuleList();
+        this.inspector.refresh();
+        this.friendsPanel.refresh();
+        this.profilesPanel.refresh();
+        this.applyRivetTheme();
+    }
+
+    private void resetModuleListPreferences() {
+        this.showDisabledModules = ClientConfig.UiPreferences.DEFAULT.showDisabledModules();
+        this.enabledFirst = ClientConfig.UiPreferences.DEFAULT.enabledModulesFirst();
+        this.showSummaries = ClientConfig.UiPreferences.DEFAULT.showModuleSummaries();
+        this.searchQuery = "";
+        this.searchInput.text("");
+        this.saveUiPreferences();
+        this.refreshModuleList();
+    }
+
+    private void cycleTheme() {
+        this.guiTheme = this.guiTheme.next();
+        this.saveUiPreferences();
+        this.applyRivetTheme();
+        this.refreshModuleList();
+        this.inspector.refresh();
+        this.friendsPanel.refresh();
+        this.profilesPanel.refresh();
+    }
+
+    private void cycleBackgroundDesign() {
+        BackgroundDesign[] designs = BackgroundDesign.values();
+        this.backgroundDesign = designs[(this.backgroundDesign.ordinal() + 1) % designs.length];
+        this.saveUiPreferences();
+        this.requestFrame();
+    }
+
+    private void selectModuleShortcut(final Module module) {
+        this.selectedTab = Tab.MODULES;
+        this.drawer = Drawer.NONE;
+        this.selectModule(module);
+        this.requestFrame();
+    }
+
+    private Module module(final String id) {
+        return this.modules.find(id).orElse(null);
+    }
+
+    private boolean addModuleShortcut(final Container container, final String moduleId) {
+        Module module = this.module(moduleId);
+        if (module != null) {
+            container.addChild(new ModuleShortcutRow(module));
+            return true;
+        }
+        return false;
+    }
+
+    private void dumpLayoutTree() {
+        if (this.rivet() == null) {
+            return;
+        }
+        Minecraft client = Minecraft.getInstance();
+        Path directory = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-debug");
+        try {
+            Path file = LayoutTreeDumper.writeSnapshot(this.rivet(), directory);
+            AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
+            if (client.player != null) {
+                client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Layout tree saved to " + file + "."));
+            }
+        } catch (IOException exception) {
+            AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
+            if (client.player != null) {
+                client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Failed to save layout tree snapshot."));
+            }
+        }
     }
 
     private void saveSelectedModule() {
@@ -698,7 +851,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     private static IconButton iconButton(final String icon, final Supplier<Color> color, final Runnable action) {
-        return new IconButton(() -> icon, color, action);
+        return iconButton(icon, color, action, () -> true);
+    }
+
+    private static IconButton iconButton(final String icon, final Supplier<Color> color, final Runnable action,
+                                         final BooleanSupplier visible) {
+        return new IconButton(() -> icon, color, action, visible);
     }
 
     private static TextAction textAction(final String text, final Color color, final Runnable action) {
@@ -805,22 +963,28 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Supplier<String> icon;
         private final Supplier<Color> color;
         private final Runnable action;
+        private final BooleanSupplier visible;
 
-        private IconButton(final Supplier<String> icon, final Supplier<Color> color, final Runnable action) {
+        private IconButton(final Supplier<String> icon, final Supplier<Color> color, final Runnable action,
+                           final BooleanSupplier visible) {
             this.icon = icon;
             this.color = color;
             this.action = action;
+            this.visible = visible;
             this.fixedSize(new Size(ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
         }
 
         @Override
         public void render(final Renderer renderer, final Rectangle bounds) {
+            if (!this.visible.getAsBoolean()) {
+                return;
+            }
             drawIcon(renderer, this.icon.get(), bounds.width() / 2F, bounds.height() / 2F, this.color.get());
         }
 
         @Override
         protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
-            if (event.button() != MouseButton.LEFT) {
+            if (!this.visible.getAsBoolean() || event.button() != MouseButton.LEFT) {
                 return false;
             }
             this.action.run();
@@ -834,7 +998,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public String layoutDebugLabel() {
-            return this.icon.get();
+            return this.visible.getAsBoolean() ? this.icon.get() : "";
         }
     }
 
@@ -1028,8 +1192,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private enum Drawer {
         NONE,
         ROOT,
+        GENERAL,
         MODULES,
-        GUI
+        GUI,
+        SOUND,
+        NOTIFICATIONS
     }
 
     private final class TopBar extends Container {
@@ -1260,6 +1427,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private void onChange(final Consumer<String> listener) {
             this.changeListener = listener;
+        }
+
+        private void text(final String value) {
+            this.field.text(value);
+            this.changeListener.accept(value);
         }
 
         @Override
@@ -2034,6 +2206,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface background = surface(Color.fromRGBA(13, 13, 15, 246)).outline(BORDER_SOFT, 1F);
         private final Surface headerDivider = horizontalRule(BORDER_SOFT);
         private final IconNode titleIcon = iconNode(this::titleIcon, () -> MUTED);
+        private final IconButton backIcon = iconButton("chevron-left", () -> MUTED,
+                ModulePanel.this::openRootDrawer,
+                () -> ModulePanel.this.drawer != Drawer.ROOT && ModulePanel.this.drawer != Drawer.NONE);
         private final TextNode title = textNode(this::title, () -> TEXT);
         private final IconButton closeIcon = iconButton("x", () -> FAINT, () -> {
             ModulePanel.this.drawer = Drawer.NONE;
@@ -2048,6 +2223,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     Padding.EMPTY, null, 1F));
             this.titleIcon.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.LEFT, GridFill.NONE,
                     padding(10F, 0F, 0F, 0F), ICON_BOX, ICON_BOX));
+            this.backIcon.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.LEFT, GridFill.NONE,
+                    padding(6F, 0F, 0F, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
             this.title.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(34F, 0F, 38F, 0F), null, HEADER_HEIGHT));
             this.closeIcon.layoutOptions(cell(0, 0, 1, 1, 0F, 0F, GridAnchor.RIGHT, GridFill.NONE,
@@ -2056,6 +2233,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.addChild(this.background);
             this.addChild(this.headerDivider);
             this.addChild(this.titleIcon);
+            this.addChild(this.backIcon);
             this.addChild(this.title);
             this.addChild(this.closeIcon);
             this.addChild(this.body);
@@ -2065,8 +2243,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.body.clearChildren();
             switch (ModulePanel.this.drawer) {
                 case ROOT -> this.buildRoot();
+                case GENERAL -> this.buildGeneral();
                 case MODULES -> this.buildModules();
                 case GUI -> this.buildGui();
+                case SOUND -> this.buildSound();
+                case NOTIFICATIONS -> this.buildNotifications();
                 case NONE -> {
                 }
             }
@@ -2086,8 +2267,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private String title() {
             return switch (ModulePanel.this.drawer) {
                 case ROOT -> "Settings";
+                case GENERAL -> "General";
                 case MODULES -> "Modules";
                 case GUI -> "GUI";
+                case SOUND -> "Sound";
+                case NOTIFICATIONS -> "Notifications";
                 case NONE -> "";
             };
         }
@@ -2095,24 +2279,24 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private String titleIcon() {
             return switch (ModulePanel.this.drawer) {
                 case ROOT -> "settings";
-                case MODULES -> "package";
-                case GUI -> "layout";
-                case NONE -> "circle";
+                case NONE -> "";
+                default -> "";
             };
         }
 
         private void buildRoot() {
-            this.addRow(new DrawerRow("General", false, null, () -> {
-            }));
+            this.addRow(new DrawerRow("General", true, null, () -> this.openNestedDrawer(Drawer.GENERAL)));
             this.addRow(new DrawerRow("Modules", true, null, () -> this.openNestedDrawer(Drawer.MODULES)));
             this.addRow(new DrawerRow("GUI", true, null, () -> this.openNestedDrawer(Drawer.GUI)));
-            this.addRow(new DrawerRow("Sound", false, null, () -> {
-            }));
-            this.addRow(new DrawerRow("Notifications", false, null, () -> {
-            }));
-            this.addRow(new DrawerRow("GUI Theme", false, () -> true, () -> {
-            }));
-            this.addBody(new ColorStrip());
+            this.addRow(new DrawerRow("Sound", true, null, () -> this.openNestedDrawer(Drawer.SOUND)));
+            this.addRow(new DrawerRow("Notifications", true, null, () -> this.openNestedDrawer(Drawer.NOTIFICATIONS)));
+        }
+
+        private void buildGeneral() {
+            this.addRow(new DrawerRow("Save config now", false, null, ModulePanel.this::saveConfigNow));
+            this.addRow(new DrawerRow("Reload config", false, null, ModulePanel.this::reloadConfig));
+            this.addRow(new DrawerRow("Reset UI preferences", false, null, ModulePanel.this::resetUiPreferences));
+            this.addRow(new DrawerRow("Dump layout tree", false, null, ModulePanel.this::dumpLayoutTree));
         }
 
         private void buildModules() {
@@ -2120,34 +2304,73 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     () -> ModulePanel.this.showDisabledModules,
                     () -> {
                         ModulePanel.this.showDisabledModules = !ModulePanel.this.showDisabledModules;
+                        ModulePanel.this.saveUiPreferences();
                         ModulePanel.this.refreshModuleList();
                     }));
             this.addRow(new DrawerRow("Enabled modules first", false,
                     () -> ModulePanel.this.enabledFirst,
                     () -> {
                         ModulePanel.this.enabledFirst = !ModulePanel.this.enabledFirst;
+                        ModulePanel.this.saveUiPreferences();
                         ModulePanel.this.refreshModuleList();
                     }));
             this.addRow(new DrawerRow("Show module summaries", false,
                     () -> ModulePanel.this.showSummaries,
                     () -> {
                         ModulePanel.this.showSummaries = !ModulePanel.this.showSummaries;
+                        ModulePanel.this.saveUiPreferences();
                         ModulePanel.this.refreshModuleList();
                     }));
+            this.addRow(new DrawerRow("Reset module filters", false, null, ModulePanel.this::resetModuleListPreferences));
         }
 
         private void buildGui() {
+            this.addRow(new DrawerRow("Theme", true, null,
+                    () -> ModulePanel.this.guiTheme.displayName(),
+                    ModulePanel.this::cycleTheme));
+            this.addBody(new ColorStrip());
+            this.addRow(new DrawerRow("Background", true, null,
+                    () -> ModulePanel.this.backgroundDesign.displayName(),
+                    ModulePanel.this::cycleBackgroundDesign));
             this.addRow(new DrawerRow("Compact rows", false,
                     () -> ModulePanel.this.compactRows,
                     () -> {
                         ModulePanel.this.compactRows = !ModulePanel.this.compactRows;
+                        ModulePanel.this.saveUiPreferences();
                         ModulePanel.this.refreshModuleList();
                     }));
             this.addRow(new DrawerRow("Wide inspector", false,
                     () -> ModulePanel.this.wideInspector,
-                    () -> ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector));
-            this.addRow(new DrawerRow("GUI style - Central", false, null, () -> {
-            }));
+                    () -> {
+                        ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector;
+                        ModulePanel.this.saveUiPreferences();
+                    }));
+        }
+
+        private void buildSound() {
+            int rows = this.addShortcuts(
+                    "sound_locator",
+                    "sound_blocker",
+                    "notebot",
+                    "auto_fish",
+                    "ambience"
+            );
+            if (rows == 0) {
+                this.addBody(new EmptyState("No sound modules are registered."));
+            }
+        }
+
+        private void buildNotifications() {
+            int rows = this.addShortcuts(
+                    "notifier",
+                    "gamemode_notifier",
+                    "lag_notifier_hud",
+                    "staff_alert",
+                    "auto_reconnect"
+            );
+            if (rows == 0) {
+                this.addBody(new EmptyState("No notification modules are registered."));
+            }
         }
 
         private void addRow(final DrawerRow row) {
@@ -2163,25 +2386,45 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.refresh();
         }
 
+        private int addShortcuts(final String... moduleIds) {
+            int rows = 0;
+            for (String moduleId : moduleIds) {
+                if (ModulePanel.this.addModuleShortcut(this.body, moduleId)) {
+                    rows++;
+                }
+            }
+            return rows;
+        }
+
     }
 
     private final class DrawerRow extends Container implements LayoutDebugLabel {
 
         private final String text;
+        private final Supplier<String> value;
         private final BooleanSupplier checked;
         private final Runnable action;
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode label;
+        private final TextNode valueLabel;
         private final IconNode arrow;
         private final ToggleSwitch toggle;
 
         private DrawerRow(final String text, final boolean arrow, final BooleanSupplier checked, final Runnable action) {
+            this(text, arrow, checked, () -> "", action);
+        }
+
+        private DrawerRow(final String text, final boolean arrow, final BooleanSupplier checked,
+                          final Supplier<String> value, final Runnable action) {
             super(new GridLayout(0, 0));
             this.text = text;
+            this.value = value;
             this.checked = checked;
             this.action = action;
-            this.label = textNode(text, () -> arrow || this.checked() ? TEXT : MUTED);
+            this.label = textNode(text, () -> this.checked == null || this.checked() ? TEXT : MUTED);
+            this.valueLabel = textNode(this.value, () -> ACTIVE)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
             this.arrow = arrow ? iconNode("chevron-right", FAINT) : null;
             this.toggle = checked == null ? null : new ToggleSwitch(this::checked, this::runAction);
             this.fixedSize(new Size(-1, SettingsDrawer.ROW_HEIGHT));
@@ -2190,9 +2433,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     Padding.EMPTY, null, 1F));
             this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(12F, 0F, 8F, 0F), null, null));
+            this.valueLabel.layoutOptions(cell(1, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 4F, 0F), 86F, null));
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.label);
+            this.addChild(this.valueLabel);
             if (this.arrow != null) {
                 this.arrow.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
                         padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
@@ -2238,16 +2484,68 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
     }
 
+    private final class ModuleShortcutRow extends Container implements LayoutDebugLabel {
+
+        private final Module module;
+        private final Surface background = surface(SURFACE);
+        private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final TextNode label;
+        private final TextNode category;
+        private final ToggleSwitch toggle;
+        private final IconNode arrow = iconNode("chevron-right", FAINT);
+
+        private ModuleShortcutRow(final Module module) {
+            super(new GridLayout(0, 0));
+            this.module = module;
+            this.label = textNode(module.name(), () -> this.module.enabled() ? TEXT : MUTED);
+            this.category = textNode(module.category().displayName(), () -> FAINT)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.toggle = new ToggleSwitch(this.module::enabled, () -> ModulePanel.this.toggleModule(this.module));
+            this.fixedSize(new Size(-1, SettingsDrawer.ROW_HEIGHT));
+            this.background.layoutOptions(fillCell(0, 0, 4, 2));
+            this.divider.layoutOptions(cell(0, 1, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    Padding.EMPTY, null, 1F));
+            this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 0F), null, null));
+            this.category.layoutOptions(cell(1, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, 6F, 0F), 58F, null));
+            this.toggle.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 6F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
+            this.arrow.layoutOptions(cell(3, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
+            this.addChild(this.background);
+            this.addChild(this.divider);
+            this.addChild(this.label);
+            this.addChild(this.category);
+            this.addChild(this.toggle);
+            this.addChild(this.arrow);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (super.onComponentMouseDown(event, bounds)) {
+                return true;
+            }
+            if (event.button() == MouseButton.LEFT) {
+                ModulePanel.this.selectModuleShortcut(this.module);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), SettingsDrawer.ROW_HEIGHT);
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return this.module.id();
+        }
+    }
+
     private static final class ColorStrip extends Component implements LayoutDebugLabel {
 
-        private static final List<Color> COLORS = List.of(
-                Color.fromRGB(245, 56, 70),
-                Color.fromRGB(245, 132, 35),
-                Color.fromRGB(245, 204, 60),
-                ACTIVE,
-                Color.fromRGB(70, 116, 240),
-                Color.fromRGB(227, 70, 150)
-        );
         private static final List<Float> FRACTIONS = List.of(0.18F, 0.18F, 0.18F, 0.18F, 0.14F, 0.14F);
 
         @Override
@@ -2256,9 +2554,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             float width = Math.max(0F, bounds.width() - 24F);
             renderer.fillRect(x, 0F, width, bounds.height(), TRACK);
             float offset = 0F;
-            for (int index = 0; index < COLORS.size(); index++) {
+            List<Color> colors = this.colors();
+            for (int index = 0; index < colors.size(); index++) {
                 float segmentWidth = width * FRACTIONS.get(index);
-                renderer.fillRect(x + offset, 0F, segmentWidth, bounds.height(), COLORS.get(index));
+                renderer.fillRect(x + offset, 0F, segmentWidth, bounds.height(), colors.get(index));
                 offset += segmentWidth;
             }
         }
@@ -2271,6 +2570,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         public String layoutDebugLabel() {
             return "theme";
+        }
+
+        private List<Color> colors() {
+            return List.of(
+                    Color.fromRGB(245, 56, 70),
+                    Color.fromRGB(245, 132, 35),
+                    Color.fromRGB(245, 204, 60),
+                    ACTIVE,
+                    Color.fromRGB(70, 116, 240),
+                    Color.fromRGB(227, 70, 150)
+            );
         }
     }
 

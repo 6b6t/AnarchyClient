@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.friends.FriendManager;
+import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -74,6 +75,15 @@ class ClientConfigTest {
         saved.favoriteModules(Set.of("auto_gg", "esp"));
         saved.selectedCategory(ModuleCategory.COMBAT);
         saved.selectedModuleId("auto_gg");
+        saved.uiPreferences(new ClientConfig.UiPreferences(
+                false,
+                true,
+                false,
+                true,
+                true,
+                ClientConfig.GuiThemePreset.ROSE,
+                BackgroundDesign.DEEP
+        ));
 
         saved.save();
 
@@ -97,6 +107,15 @@ class ClientConfigTest {
         assertTrue(loaded.moduleFavorite("auto_gg"));
         assertEquals(ModuleCategory.COMBAT, loaded.selectedCategory().orElseThrow());
         assertEquals("auto_gg", loaded.selectedModuleId().orElseThrow());
+        assertEquals(new ClientConfig.UiPreferences(
+                false,
+                true,
+                false,
+                true,
+                true,
+                ClientConfig.GuiThemePreset.ROSE,
+                BackgroundDesign.DEEP
+        ), loaded.uiPreferences());
     }
 
     @Test

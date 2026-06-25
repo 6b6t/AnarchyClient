@@ -75,7 +75,6 @@ import net.blockhost.anarchyclient.module.impl.AutoWindChargeModule;
 import net.blockhost.anarchyclient.module.impl.AutoWitherModule;
 import net.blockhost.anarchyclient.module.impl.AutoWaspModule;
 import net.blockhost.anarchyclient.module.impl.AvoidHazardsModule;
-import net.blockhost.anarchyclient.module.impl.BackgroundModule;
 import net.blockhost.anarchyclient.module.impl.BacktrackModule;
 import net.blockhost.anarchyclient.module.impl.BedAuraModule;
 import net.blockhost.anarchyclient.module.impl.BedPlatesModule;
@@ -626,6 +625,5 @@ public final class ModuleRegistry {
         modules.register(new SwarmModule());
         modules.register(new ItemGeneratorModule());
         modules.register(new NyanCatGifSpammerModule());
-        modules.register(new BackgroundModule());
     }
 }

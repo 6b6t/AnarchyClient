@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
@@ -47,6 +48,13 @@ public final class ClientConfig {
     private final Set<String> favoriteModules = new HashSet<>();
     private ModuleCategory selectedCategory;
     private String selectedModuleId;
+    private boolean showDisabledModules = UiPreferences.DEFAULT.showDisabledModules();
+    private boolean enabledModulesFirst = UiPreferences.DEFAULT.enabledModulesFirst();
+    private boolean showModuleSummaries = UiPreferences.DEFAULT.showModuleSummaries();
+    private boolean compactRows = UiPreferences.DEFAULT.compactRows();
+    private boolean wideInspector = UiPreferences.DEFAULT.wideInspector();
+    private GuiThemePreset guiTheme = UiPreferences.DEFAULT.guiTheme();
+    private BackgroundDesign backgroundDesign = UiPreferences.DEFAULT.backgroundDesign();
 
     public ClientConfig(final ModuleManager modules) {
         this(modules, null, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
@@ -73,6 +81,7 @@ public final class ClientConfig {
         this.favoriteModules.clear();
         this.selectedCategory = null;
         this.selectedModuleId = null;
+        this.uiPreferences(UiPreferences.DEFAULT);
         if (!Files.exists(this.path)) {
             this.save();
             return;
@@ -193,6 +202,33 @@ public final class ClientConfig {
         this.selectedModuleId = moduleId;
     }
 
+    public UiPreferences uiPreferences() {
+        return new UiPreferences(
+                this.showDisabledModules,
+                this.enabledModulesFirst,
+                this.showModuleSummaries,
+                this.compactRows,
+                this.wideInspector,
+                this.guiTheme,
+                this.backgroundDesign
+        );
+    }
+
+    public void uiPreferences(final UiPreferences preferences) {
+        UiPreferences value = preferences == null ? UiPreferences.DEFAULT : preferences;
+        this.showDisabledModules = value.showDisabledModules();
+        this.enabledModulesFirst = value.enabledModulesFirst();
+        this.showModuleSummaries = value.showModuleSummaries();
+        this.compactRows = value.compactRows();
+        this.wideInspector = value.wideInspector();
+        this.guiTheme = value.guiTheme();
+        this.backgroundDesign = value.backgroundDesign();
+    }
+
+    public void resetUiPreferences() {
+        this.uiPreferences(UiPreferences.DEFAULT);
+    }
+
     public void save() {
         JsonObject root = new JsonObject();
         JsonObject moduleRoot = new JsonObject();
@@ -295,6 +331,20 @@ public final class ClientConfig {
         if (selectedModuleJson != null && selectedModuleJson.isJsonPrimitive()) {
             this.selectedModuleId(selectedModuleJson.getAsString());
         }
+
+        this.showDisabledModules = readBoolean(ui, "showDisabledModules", this.showDisabledModules);
+        this.enabledModulesFirst = readBoolean(ui, "enabledModulesFirst", this.enabledModulesFirst);
+        this.showModuleSummaries = readBoolean(ui, "showModuleSummaries", this.showModuleSummaries);
+        this.compactRows = readBoolean(ui, "compactRows", this.compactRows);
+        this.wideInspector = readBoolean(ui, "wideInspector", this.wideInspector);
+        JsonElement themeJson = ui.get("guiTheme");
+        if (themeJson != null && themeJson.isJsonPrimitive()) {
+            GuiThemePreset.fromKey(themeJson.getAsString()).ifPresent(theme -> this.guiTheme = theme);
+        }
+        JsonElement backgroundJson = ui.get("backgroundDesign");
+        if (backgroundJson != null && backgroundJson.isJsonPrimitive()) {
+            this.backgroundDesign = parseBackgroundDesign(backgroundJson.getAsString());
+        }
     }
 
     private void saveUi(final JsonObject root) {
@@ -331,10 +381,33 @@ public final class ClientConfig {
         if (this.selectedModuleId != null && !this.selectedModuleId.isBlank()) {
             ui.addProperty("selectedModule", this.selectedModuleId);
         }
+        UiPreferences preferences = this.uiPreferences();
+        ui.addProperty("showDisabledModules", preferences.showDisabledModules());
+        ui.addProperty("enabledModulesFirst", preferences.enabledModulesFirst());
+        ui.addProperty("showModuleSummaries", preferences.showModuleSummaries());
+        ui.addProperty("compactRows", preferences.compactRows());
+        ui.addProperty("wideInspector", preferences.wideInspector());
+        ui.addProperty("guiTheme", preferences.guiTheme().key());
+        ui.addProperty("backgroundDesign", preferences.backgroundDesign().name().toLowerCase(Locale.ROOT));
 
         if (ui.size() > 0) {
             root.add("ui", ui);
         }
+    }
+
+    private static boolean readBoolean(final JsonObject json, final String key, final boolean fallback) {
+        JsonElement element = json.get(key);
+        return element != null && element.isJsonPrimitive() ? element.getAsBoolean() : fallback;
+    }
+
+    private static BackgroundDesign parseBackgroundDesign(final String value) {
+        for (BackgroundDesign design : BackgroundDesign.values()) {
+            if (design.name().equalsIgnoreCase(value)
+                    || design.displayName().equalsIgnoreCase(value)) {
+                return design;
+            }
+        }
+        return BackgroundDesign.NONE;
     }
 
     private static String categoryKey(final ModuleCategory category) {
@@ -453,5 +526,70 @@ public final class ClientConfig {
     }
 
     public record CategoryWindowState(float x, float y) {
+    }
+
+    public record UiPreferences(boolean showDisabledModules,
+                                boolean enabledModulesFirst,
+                                boolean showModuleSummaries,
+                                boolean compactRows,
+                                boolean wideInspector,
+                                GuiThemePreset guiTheme,
+                                BackgroundDesign backgroundDesign) {
+
+        public static final UiPreferences DEFAULT = new UiPreferences(
+                true,
+                false,
+                true,
+                false,
+                false,
+                GuiThemePreset.EMERALD,
+                BackgroundDesign.NONE
+        );
+
+        public UiPreferences {
+            if (guiTheme == null) {
+                guiTheme = GuiThemePreset.EMERALD;
+            }
+            if (backgroundDesign == null) {
+                backgroundDesign = BackgroundDesign.NONE;
+            }
+        }
+    }
+
+    public enum GuiThemePreset {
+        EMERALD("emerald", "Emerald"),
+        AMBER("amber", "Amber"),
+        ROSE("rose", "Rose"),
+        CYAN("cyan", "Cyan");
+
+        private final String key;
+        private final String displayName;
+
+        GuiThemePreset(final String key, final String displayName) {
+            this.key = key;
+            this.displayName = displayName;
+        }
+
+        public String key() {
+            return this.key;
+        }
+
+        public String displayName() {
+            return this.displayName;
+        }
+
+        public GuiThemePreset next() {
+            GuiThemePreset[] presets = values();
+            return presets[(this.ordinal() + 1) % presets.length];
+        }
+
+        public static Optional<GuiThemePreset> fromKey(final String key) {
+            for (GuiThemePreset preset : values()) {
+                if (preset.key.equalsIgnoreCase(key) || preset.name().equalsIgnoreCase(key)) {
+                    return Optional.of(preset);
+                }
+            }
+            return Optional.empty();
+        }
     }
 }

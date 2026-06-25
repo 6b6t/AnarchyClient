@@ -3,7 +3,6 @@ package net.blockhost.anarchyclient.ui;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.module.impl.BackgroundModule;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.Blaze3DBackend;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
@@ -46,7 +45,7 @@ public final class AnarchyClientScreen extends Screen {
     protected void init() {
         Minecraft client = Minecraft.getInstance();
         this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, new Size(this.width, this.height));
-        this.rivet.theme(new AnarchyClientTheme()).snapToInteger(true);
+        this.rivet.theme(new AnarchyClientTheme(this.config.uiPreferences().guiTheme())).snapToInteger(true);
         this.rivet.root().addChild(new ModulePanel(this.modules, this.config));
     }
 
@@ -74,11 +73,7 @@ public final class AnarchyClientScreen extends Screen {
     }
 
     private BackgroundDesign backgroundDesign() {
-        return this.modules.find("background")
-                .filter(BackgroundModule.class::isInstance)
-                .map(BackgroundModule.class::cast)
-                .map(BackgroundModule::selectedDesign)
-                .orElse(BackgroundDesign.NONE);
+        return this.config.uiPreferences().backgroundDesign();
     }
 
     @Override

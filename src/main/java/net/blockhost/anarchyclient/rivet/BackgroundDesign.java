@@ -13,9 +13,11 @@ public enum BackgroundDesign {
 
     NONE("None", null),
     MATRIX("Matrix", AnarchyClientRenderPipelines.MATRIX_PANEL),
-    AURORA("Aurora", AnarchyClientRenderPipelines.AURORA_PANEL),
-    GRID("Grid", AnarchyClientRenderPipelines.GRID_PANEL),
-    EMBER("Ember", AnarchyClientRenderPipelines.EMBER_PANEL);
+    CAUSTICS("Caustics", AnarchyClientRenderPipelines.CAUSTICS_PANEL),
+    RETRO_GRID("Retro Grid", AnarchyClientRenderPipelines.RETRO_GRID_PANEL),
+    FIRE("Fire", AnarchyClientRenderPipelines.FIRE_PANEL),
+    DEEP("Deep", AnarchyClientRenderPipelines.DEEP_PANEL),
+    SIMPLEX_FLOW("Simplex Flow", AnarchyClientRenderPipelines.SIMPLEX_FLOW_PANEL);
 
     private final String displayName;
     private final RenderPipeline pipeline;

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.config.ClientConfig;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.component.container.Button;
@@ -11,12 +12,21 @@ import net.lenni0451.rivet.theme.impl.DefaultDark;
 
 final class AnarchyClientTheme extends DefaultDark {
 
-    private static final Color ACTIVE = Color.fromRGB(0, 186, 148);
+    private final GuiThemePalette palette;
+
+    AnarchyClientTheme() {
+        this(ClientConfig.GuiThemePreset.EMERALD);
+    }
+
+    AnarchyClientTheme(final ClientConfig.GuiThemePreset preset) {
+        this.palette = GuiThemePalette.of(preset);
+    }
 
     @Override
     protected void addValues(final Rivet rivet, final Values values) {
         super.addValues(rivet, values);
 
+        Color active = this.palette.active();
         values.put(Theme.TEXT_COLOR, Color.fromRGB(236, 232, 224));
 
         values.put(Theme.BUTTON_CORNER_RADIUS, 0F);
@@ -26,14 +36,14 @@ final class AnarchyClientTheme extends DefaultDark {
         values.put(Theme.BUTTON_ACTIVE_COLOR, Color.fromRGBA(34, 34, 38, 186));
         values.put(Theme.BUTTON_ACTIVE_OUTLINE_COLOR, Color.fromRGBA(82, 82, 92, 196));
         values.put(Theme.BUTTON_CLICK_COLOR, Color.fromRGBA(12, 12, 14, 120));
-        values.put(Theme.BUTTON_CLICK_OUTLINE_COLOR, ACTIVE);
+        values.put(Theme.BUTTON_CLICK_OUTLINE_COLOR, active);
         values.put(Theme.BUTTON_INNER_PADDING, new Padding(6, 3, 6, 3));
         values.put(Theme.BUTTON_CLICK_ON, Button.ClickOn.UP);
 
         values.put(Theme.SLIDER_BAR_COLOR, Color.fromRGBA(50, 50, 56, 210));
-        values.put(Theme.SLIDER_ACTIVE_BAR_COLOR, ACTIVE);
+        values.put(Theme.SLIDER_ACTIVE_BAR_COLOR, active);
         values.put(Theme.SLIDER_THUMB_COLOR, Color.fromRGB(236, 232, 224));
-        values.put(Theme.SLIDER_THUMB_CLICK_COLOR, ACTIVE);
+        values.put(Theme.SLIDER_THUMB_CLICK_COLOR, active);
         values.put(Theme.SLIDER_TICK_COLOR, Color.fromRGB(154, 150, 142));
         values.put(Theme.SLIDER_BAR_HEIGHT, 3F);
         values.put(Theme.SLIDER_THUMB_WIDTH, 8F);
@@ -44,20 +54,20 @@ final class AnarchyClientTheme extends DefaultDark {
 
         values.put(Theme.SCROLL_BAR_COLOR, Color.fromRGBA(154, 150, 142, 80));
         values.put(Theme.SCROLL_BAR_HOVER_COLOR, Color.fromRGBA(154, 150, 142, 130));
-        values.put(Theme.SCROLL_BAR_CLICK_COLOR, Color.fromRGBA(0, 236, 92, 170));
+        values.put(Theme.SCROLL_BAR_CLICK_COLOR, active.multiplyAlpha(0.72F));
         values.put(Theme.SCROLL_SPEED, 18F);
         values.put(Theme.SCROLL_BAR_TYPE, ScrollContainer.ScrollBarType.FLOATING);
 
         values.put(Theme.TEXT_FIELD_BACKGROUND_COLOR, Color.fromRGBA(12, 12, 14, 120));
         values.put(Theme.TEXT_FIELD_OUTLINE_COLOR, Color.fromRGBA(54, 54, 62, 160));
-        values.put(Theme.TEXT_FIELD_FOCUSED_OUTLINE_COLOR, ACTIVE);
-        values.put(Theme.TEXT_FIELD_SELECTION_COLOR, Color.fromRGBA(0, 236, 92, 90));
+        values.put(Theme.TEXT_FIELD_FOCUSED_OUTLINE_COLOR, active);
+        values.put(Theme.TEXT_FIELD_SELECTION_COLOR, this.palette.selection());
         values.put(Theme.TEXT_FIELD_CURSOR_COLOR, Color.fromRGB(236, 232, 224));
         values.put(Theme.TEXT_FIELD_CORNER_RADIUS, 0F);
 
         values.put(Theme.CHECKBOX_BACKGROUND_COLOR, Color.fromRGBA(12, 12, 14, 140));
         values.put(Theme.CHECKBOX_OUTLINE_COLOR, Color.fromRGBA(82, 82, 92, 196));
-        values.put(Theme.CHECKBOX_CHECK_COLOR, ACTIVE);
+        values.put(Theme.CHECKBOX_CHECK_COLOR, active);
         values.put(Theme.CHECKBOX_CORNER_RADIUS, 0F);
 
         values.put(Theme.SEPARATOR_COLOR, Color.fromRGBA(54, 54, 62, 120));
