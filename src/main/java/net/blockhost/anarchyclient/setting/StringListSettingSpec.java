@@ -17,18 +17,9 @@ public interface StringListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<String> defaultValue() {
-        return List.of();
-    }
+    List<String> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 
-    @Value.Default
-    default List<String> suggestions() {
-        return List.of();
-    }
+    List<String> suggestions();
 }

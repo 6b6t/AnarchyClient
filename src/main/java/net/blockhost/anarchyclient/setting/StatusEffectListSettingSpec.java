@@ -18,13 +18,7 @@ public interface StatusEffectListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<MobEffect> defaultValue() {
-        return List.of();
-    }
+    List<MobEffect> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

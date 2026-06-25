@@ -11,7 +11,7 @@ import net.lenni0451.rivet.theme.impl.DefaultDark;
 
 final class AnarchyClientTheme extends DefaultDark {
 
-    private static final Color ACTIVE = Color.fromRGB(0, 236, 92);
+    private static final Color ACTIVE = Color.fromRGB(0, 186, 148);
 
     @Override
     protected void addValues(final Rivet rivet, final Values values) {

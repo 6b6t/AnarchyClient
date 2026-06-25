@@ -22,8 +22,5 @@ public interface ColorSettingSpec {
         return SettingColor.rgb(255, 255, 255);
     }
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

@@ -21,7 +21,7 @@ public final class ItemHighlightModule extends Module {
     private final ItemListSetting items = this.setting(ItemListSetting.from(ItemListSetting.builder()
             .id("items")
             .name("Items")
-            .defaultValue(List.of(Items.TOTEM_OF_UNDYING, Items.END_CRYSTAL, Items.ENCHANTED_GOLDEN_APPLE))
+            .addAllDefaultValue(List.of(Items.TOTEM_OF_UNDYING, Items.END_CRYSTAL, Items.ENCHANTED_GOLDEN_APPLE))
             .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")

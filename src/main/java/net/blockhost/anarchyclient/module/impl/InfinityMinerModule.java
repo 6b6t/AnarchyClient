@@ -15,7 +15,7 @@ public final class InfinityMinerModule extends Module {
     private final BlockListSetting blocks = this.setting(BlockListSetting.from(BlockListSetting.builder()
             .id("blocks")
             .name("Blocks")
-            .defaultValue(List.of(Blocks.STONE, Blocks.DEEPSLATE, Blocks.NETHERRACK))
+            .addAllDefaultValue(List.of(Blocks.STONE, Blocks.DEEPSLATE, Blocks.NETHERRACK))
             .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")

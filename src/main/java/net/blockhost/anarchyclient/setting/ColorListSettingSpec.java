@@ -17,13 +17,7 @@ public interface ColorListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<SettingColor> defaultValue() {
-        return List.of();
-    }
+    List<SettingColor> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

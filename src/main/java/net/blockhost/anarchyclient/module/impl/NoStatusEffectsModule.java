@@ -16,7 +16,7 @@ public final class NoStatusEffectsModule extends Module {
     private final StatusEffectListSetting effects = this.setting(StatusEffectListSetting.from(StatusEffectListSetting.builder()
             .id("effects")
             .name("Effects")
-            .defaultValue(List.of(
+            .addAllDefaultValue(List.of(
                     MobEffects.BLINDNESS.value(),
                     MobEffects.DARKNESS.value(),
                     MobEffects.LEVITATION.value(),

@@ -71,6 +71,8 @@ class ClientConfigTest {
                 ModuleCategory.COMBAT
         ));
         saved.expandedModules(Set.of("auto_gg", "nyan_cat_gif_spammer"));
+        saved.selectedCategory(ModuleCategory.COMBAT);
+        saved.selectedModuleId("auto_gg");
 
         saved.save();
 
@@ -90,6 +92,8 @@ class ClientConfigTest {
                 ModuleCategory.MISC
         ), loaded.categoryOrder().orElseThrow());
         assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
+        assertEquals(ModuleCategory.COMBAT, loaded.selectedCategory().orElseThrow());
+        assertEquals("auto_gg", loaded.selectedModuleId().orElseThrow());
     }
 
     @Test
@@ -246,7 +250,7 @@ class ClientConfigTest {
                 .id("enabled_setting")
                 .name("Enabled Setting")
                 .defaultValue(true)
-                .aliases(List.of("old_enabled_setting"))
+                .addAllAliases(List.of("old_enabled_setting"))
                 .build()));
 
         private AliasModule() {

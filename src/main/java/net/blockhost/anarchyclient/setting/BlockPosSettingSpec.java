@@ -23,8 +23,5 @@ public interface BlockPosSettingSpec {
         return BlockPos.ZERO;
     }
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

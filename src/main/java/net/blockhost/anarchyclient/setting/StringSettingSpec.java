@@ -19,8 +19,5 @@ public interface StringSettingSpec {
 
     String defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

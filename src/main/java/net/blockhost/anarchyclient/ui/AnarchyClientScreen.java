@@ -20,8 +20,8 @@ import net.minecraft.network.chat.Component;
 
 public final class AnarchyClientScreen extends Screen {
 
-    private static final int MATRIX_BACKDROP_TOP = 0x78020A05;
-    private static final int MATRIX_BACKDROP_BOTTOM = 0xB8001008;
+    private static final int BACKDROP_TOP = 0x8A000000;
+    private static final int BACKDROP_BOTTOM = 0xC4000000;
 
     private final ModuleManager modules;
     private final ClientConfig config;
@@ -61,7 +61,7 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         graphics.blurBeforeThisStratum();
-        graphics.fillGradient(0, 0, this.width, this.height, MATRIX_BACKDROP_TOP, MATRIX_BACKDROP_BOTTOM);
+        graphics.fillGradient(0, 0, this.width, this.height, BACKDROP_TOP, BACKDROP_BOTTOM);
     }
 
     private BackgroundDesign backgroundDesign() {

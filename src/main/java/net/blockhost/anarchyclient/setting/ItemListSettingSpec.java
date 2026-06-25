@@ -18,13 +18,7 @@ public interface ItemListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<Item> defaultValue() {
-        return List.of();
-    }
+    List<Item> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

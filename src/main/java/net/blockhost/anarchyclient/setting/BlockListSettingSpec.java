@@ -18,13 +18,7 @@ public interface BlockListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<Block> defaultValue() {
-        return List.of();
-    }
+    List<Block> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

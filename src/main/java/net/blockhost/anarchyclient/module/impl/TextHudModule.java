@@ -10,7 +10,7 @@ public final class TextHudModule extends HudElementModule {
     private final StringListSetting lines = this.setting(StringListSetting.from(StringListSetting.builder()
             .id("lines")
             .name("Lines")
-            .defaultValue(List.of("AnarchyClient"))
+            .addAllDefaultValue(List.of("AnarchyClient"))
             .build()));
 
     public TextHudModule() {

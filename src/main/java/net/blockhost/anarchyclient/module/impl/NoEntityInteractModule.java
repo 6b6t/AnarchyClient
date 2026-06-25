@@ -18,7 +18,7 @@ public final class NoEntityInteractModule extends Module {
     private final EntityTypeListSetting entityTypes = this.setting(EntityTypeListSetting.from(EntityTypeListSetting.builder()
             .id("entity_types")
             .name("Entities")
-            .defaultValue(List.of(EntityTypes.ARMOR_STAND, EntityTypes.ITEM_FRAME, EntityTypes.GLOW_ITEM_FRAME))
+            .addAllDefaultValue(List.of(EntityTypes.ARMOR_STAND, EntityTypes.ITEM_FRAME, EntityTypes.GLOW_ITEM_FRAME))
             .build()));
 
     public NoEntityInteractModule() {

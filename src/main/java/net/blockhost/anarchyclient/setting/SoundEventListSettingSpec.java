@@ -18,13 +18,7 @@ public interface SoundEventListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<SoundEvent> defaultValue() {
-        return List.of();
-    }
+    List<SoundEvent> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

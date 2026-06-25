@@ -23,8 +23,5 @@ public interface Vector3dSettingSpec {
         return Vec3.ZERO;
     }
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

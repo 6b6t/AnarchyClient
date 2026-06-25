@@ -18,13 +18,7 @@ public interface EntityTypeListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<EntityType<?>> defaultValue() {
-        return List.of();
-    }
+    List<EntityType<?>> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

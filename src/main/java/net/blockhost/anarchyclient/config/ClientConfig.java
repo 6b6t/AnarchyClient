@@ -44,6 +44,8 @@ public final class ClientConfig {
     private final Map<ModuleCategory, CategoryWindowState> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
+    private ModuleCategory selectedCategory;
+    private String selectedModuleId;
 
     public ClientConfig(final ModuleManager modules) {
         this(modules, null, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
@@ -67,6 +69,8 @@ public final class ClientConfig {
         this.categoryWindows.clear();
         this.categoryOrder.clear();
         this.expandedModules.clear();
+        this.selectedCategory = null;
+        this.selectedModuleId = null;
         if (!Files.exists(this.path)) {
             this.save();
             return;
@@ -141,6 +145,22 @@ public final class ClientConfig {
     public void expandedModules(final Set<String> moduleIds) {
         this.expandedModules.clear();
         this.expandedModules.addAll(moduleIds);
+    }
+
+    public Optional<ModuleCategory> selectedCategory() {
+        return Optional.ofNullable(this.selectedCategory);
+    }
+
+    public void selectedCategory(final ModuleCategory category) {
+        this.selectedCategory = category;
+    }
+
+    public Optional<String> selectedModuleId() {
+        return Optional.ofNullable(this.selectedModuleId);
+    }
+
+    public void selectedModuleId(final String moduleId) {
+        this.selectedModuleId = moduleId;
     }
 
     public void save() {
@@ -224,6 +244,16 @@ public final class ClientConfig {
                 this.categoryOrder(categories);
             }
         }
+
+        JsonElement selectedCategoryJson = ui.get("selectedCategory");
+        if (selectedCategoryJson != null && selectedCategoryJson.isJsonPrimitive()) {
+            parseCategory(selectedCategoryJson.getAsString()).ifPresent(this::selectedCategory);
+        }
+
+        JsonElement selectedModuleJson = ui.get("selectedModule");
+        if (selectedModuleJson != null && selectedModuleJson.isJsonPrimitive()) {
+            this.selectedModuleId(selectedModuleJson.getAsString());
+        }
     }
 
     private void saveUi(final JsonObject root) {
@@ -248,6 +278,13 @@ public final class ClientConfig {
             JsonArray categories = new JsonArray();
             this.categoryOrder.forEach(category -> categories.add(categoryKey(category)));
             ui.add("categoryOrder", categories);
+        }
+
+        if (this.selectedCategory != null) {
+            ui.addProperty("selectedCategory", categoryKey(this.selectedCategory));
+        }
+        if (this.selectedModuleId != null && !this.selectedModuleId.isBlank()) {
+            ui.addProperty("selectedModule", this.selectedModuleId);
         }
 
         if (ui.size() > 0) {

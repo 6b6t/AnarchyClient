@@ -19,7 +19,7 @@ public final class WallHackModule extends Module {
     private final BlockListSetting blocks = this.setting(BlockListSetting.from(BlockListSetting.builder()
             .id("blocks")
             .name("Blocks")
-            .defaultValue(List.of(
+            .addAllDefaultValue(List.of(
                     Blocks.DIAMOND_ORE,
                     Blocks.DEEPSLATE_DIAMOND_ORE,
                     Blocks.EMERALD_ORE,

@@ -19,7 +19,7 @@ class RegistryListSettingTest {
         BlockListSetting setting = BlockListSetting.from(BlockListSetting.builder()
                 .id("blocks")
                 .name("Blocks")
-                .defaultValue(List.of(Blocks.STONE))
+                .addAllDefaultValue(List.of(Blocks.STONE))
                 .build());
 
         setting.valueFromString("dirt,minecraft:stone,missing_block");

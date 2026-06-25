@@ -18,8 +18,8 @@ class TextValueSettingsTest {
         StringListSetting setting = StringListSetting.from(StringListSetting.builder()
                 .id("messages")
                 .name("Messages")
-                .defaultValue(List.of("default"))
-                .suggestions(List.of("z", "a", "z"))
+                .addAllDefaultValue(List.of("default"))
+                .addAllSuggestions(List.of("z", "a", "z"))
                 .build());
 
         setting.valueFromString("one, two;two three");

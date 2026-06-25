@@ -18,13 +18,7 @@ public interface ParticleTypeListSettingSpec {
         return "";
     }
 
-    @Value.Default
-    default List<ParticleType<?>> defaultValue() {
-        return List.of();
-    }
+    List<ParticleType<?>> defaultValue();
 
-    @Value.Default
-    default List<String> aliases() {
-        return List.of();
-    }
+    List<String> aliases();
 }

@@ -14,7 +14,7 @@ public final class NotebotModule extends Module {
     private final StringListSetting notes = this.setting(StringListSetting.from(StringListSetting.builder()
             .id("notes")
             .name("Notes")
-            .defaultValue(List.of("0", "4", "7", "12"))
+            .addAllDefaultValue(List.of("0", "4", "7", "12"))
             .build()));
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")

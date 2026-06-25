@@ -14,7 +14,7 @@ public final class BookBotModule extends Module {
     private final StringListSetting pages = this.setting(StringListSetting.from(StringListSetting.builder()
             .id("pages")
             .name("Pages")
-            .defaultValue(List.of("AnarchyClient page 1", "AnarchyClient page 2"))
+            .addAllDefaultValue(List.of("AnarchyClient page 1", "AnarchyClient page 2"))
             .build()));
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")

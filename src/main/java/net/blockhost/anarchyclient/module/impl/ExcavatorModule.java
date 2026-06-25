@@ -15,7 +15,7 @@ public final class ExcavatorModule extends Module {
     private final BlockListSetting blocks = this.setting(BlockListSetting.from(BlockListSetting.builder()
             .id("blocks")
             .name("Blocks")
-            .defaultValue(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRAVEL, Blocks.SAND))
+            .addAllDefaultValue(List.of(Blocks.DIRT, Blocks.GRASS_BLOCK, Blocks.GRAVEL, Blocks.SAND))
             .build()));
     private final NumberSetting radius = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("radius")

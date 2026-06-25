@@ -15,7 +15,7 @@ public final class NoBlockInteractModule extends Module {
     private final BlockListSetting blocks = this.setting(BlockListSetting.from(BlockListSetting.builder()
             .id("blocks")
             .name("Blocks")
-            .defaultValue(List.of(
+            .addAllDefaultValue(List.of(
                     Blocks.CHEST,
                     Blocks.TRAPPED_CHEST,
                     Blocks.ENDER_CHEST,

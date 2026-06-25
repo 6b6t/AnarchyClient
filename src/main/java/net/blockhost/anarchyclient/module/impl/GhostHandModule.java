@@ -15,7 +15,7 @@ public final class GhostHandModule extends Module {
     private final BlockListSetting passThrough = this.setting(BlockListSetting.from(BlockListSetting.builder()
             .id("pass_through")
             .name("Pass Through")
-            .defaultValue(List.of(Blocks.SHORT_GRASS, Blocks.TALL_GRASS, Blocks.VINE, Blocks.SNOW))
+            .addAllDefaultValue(List.of(Blocks.SHORT_GRASS, Blocks.TALL_GRASS, Blocks.VINE, Blocks.SNOW))
             .build()));
 
     public GhostHandModule() {
