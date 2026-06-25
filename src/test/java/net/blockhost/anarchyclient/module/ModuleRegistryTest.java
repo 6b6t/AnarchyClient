@@ -1,10 +1,13 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MinecraftBootstrapExtension.class)
 class ModuleRegistryTest {
 
     @Test

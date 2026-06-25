@@ -56,6 +56,7 @@ dependencies {
     compileOnly("org.jetbrains:annotations:26.1.0")
 
     testImplementation(platform("org.junit:junit-bom:6.1.0"))
+    testImplementation("net.fabricmc:fabric-loader-junit:$loaderVersion")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
