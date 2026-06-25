@@ -11,7 +11,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -151,6 +153,24 @@ class ModuleManagerTest {
         assertEquals(List.of(module.combatSetting), module.settingGroups().get(1).settings());
     }
 
+    @Test
+    void dispatchesTransformHooksThroughEnabledModules() {
+        ModuleManager manager = new ModuleManager();
+        TestModule module = new TestModule("transforms", ModuleCategory.MISC);
+        manager.register(module);
+        module.enabled(true);
+
+        assertEquals("[test] hello", manager.chatMessage(null, Component.literal("hello")).getString());
+        assertEquals("hello!", manager.sendChatMessage(null, "hello", false));
+        assertEquals(95.0F, manager.fov(null, 90.0F));
+
+        net.blockhost.anarchyclient.event.CameraTransformEvent camera =
+                manager.cameraTransform(null, Vec3.ZERO, 10.0F, 20.0F);
+        assertEquals(new Vec3(1.0, 2.0, 3.0), camera.position());
+        assertEquals(11.0F, camera.yaw());
+        assertEquals(21.0F, camera.pitch());
+    }
+
     private static final class TestModule extends Module {
 
         private int ticks;
@@ -192,6 +212,27 @@ class ModuleManagerTest {
         @Override
         public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
             this.hudRenders++;
+        }
+
+        @Override
+        public Component chatMessage(final Minecraft client, final Component message) {
+            return Component.literal("[test] ").append(message);
+        }
+
+        @Override
+        public String sendChatMessage(final Minecraft client, final String message, final boolean command) {
+            return message + "!";
+        }
+
+        @Override
+        public float fov(final Minecraft client, final float fov) {
+            return fov + 5.0F;
+        }
+
+        @Override
+        public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
+                                               final float pitch) {
+            return new CameraTransform(new Vec3(1.0, 2.0, 3.0), yaw + 1.0F, pitch + 1.0F);
         }
 
         @Override

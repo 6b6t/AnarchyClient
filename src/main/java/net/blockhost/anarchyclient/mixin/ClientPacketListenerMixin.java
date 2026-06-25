@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.mixin;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
+import net.blockhost.anarchyclient.event.SendChatEvent;
 import net.blockhost.anarchyclient.event.SoundPacketEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -11,6 +12,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPacketListener.class)
@@ -29,5 +31,15 @@ public abstract class ClientPacketListenerMixin {
     @Inject(method = "clearLevel", at = @At("HEAD"))
     private void anarchyclient$clearLevel(final CallbackInfo info) {
         AnarchyClient.MODULES.call(new GameLeftEvent(Minecraft.getInstance(), (ClientPacketListener) (Object) this));
+    }
+
+    @ModifyVariable(method = "sendChat", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private String anarchyclient$sendChat(final String message) {
+        return AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), message, false)).message();
+    }
+
+    @ModifyVariable(method = "sendCommand", at = @At("HEAD"), argsOnly = true, ordinal = 0)
+    private String anarchyclient$sendCommand(final String command) {
+        return AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), command, true)).message();
     }
 }

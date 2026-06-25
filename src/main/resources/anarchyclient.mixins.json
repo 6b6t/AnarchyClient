@@ -3,11 +3,15 @@
   "package": "net.blockhost.anarchyclient.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
+    "CameraMixin",
+    "ChatComponentMixin",
     "ClientCommonPacketListenerMixin",
+    "ClientLevelMixin",
     "ClientPacketListenerMixin",
     "ClientInputAccessor",
     "ConnectionMixin",
     "EntityRendererMixin",
+    "ItemStackMixin",
     "KeyboardInputMixin",
     "LivingEntityAccessor",
     "LocalPlayerPortalMixin",
@@ -15,7 +19,8 @@
     "MinecraftActionsMixin",
     "MouseHandlerMixin",
     "MultiPlayerGameModeMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "PlayerTabOverlayMixin"
   ],
   "injectors": {
     "defaultRequire": 1

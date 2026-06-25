@@ -24,6 +24,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.function.Predicate;
 
 final class BlockPlacement {
 
@@ -32,6 +33,12 @@ final class BlockPlacement {
 
     static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
                                  final boolean rotate, final float maxTurnDegrees) {
+        return place(client, owner, target, rotate, maxTurnDegrees, stack -> true);
+    }
+
+    static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
+                                 final boolean rotate, final float maxTurnDegrees,
+                                 final Predicate<ItemStack> itemPredicate) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return PlacementResult.WAITING;
@@ -43,7 +50,7 @@ final class BlockPlacement {
         if (placementTarget.isEmpty()) {
             return PlacementResult.WAITING;
         }
-        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target);
+        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate);
         if (hotbarSlot.isEmpty()) {
             return PlacementResult.WAITING;
         }
@@ -77,9 +84,15 @@ final class BlockPlacement {
 
     static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
                                                final LocalPlayer player, final BlockPos target) {
+        return findPlaceableHotbarSlot(inventory, level, player, target, stack -> true);
+    }
+
+    static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
+                                               final LocalPlayer player, final BlockPos target,
+                                               final Predicate<ItemStack> itemPredicate) {
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (isPlaceableBlock(stack, level, player, target)) {
+            if (itemPredicate.test(stack) && isPlaceableBlock(stack, level, player, target)) {
                 return OptionalInt.of(slot);
             }
         }

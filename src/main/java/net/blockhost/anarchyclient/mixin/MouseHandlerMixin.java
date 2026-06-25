@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.MouseClickEvent;
+import net.blockhost.anarchyclient.event.MouseScrollInputEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.input.MouseButtonInfo;
@@ -17,6 +18,15 @@ public abstract class MouseHandlerMixin {
     private void anarchyclient$mouseClick(final long window, final MouseButtonInfo buttonInfo, final int action,
                                           final CallbackInfo info) {
         MouseClickEvent event = AnarchyClient.MODULES.call(new MouseClickEvent(Minecraft.getInstance(), buttonInfo, action));
+        if (event.isCancelled()) {
+            info.cancel();
+        }
+    }
+
+    @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
+    private void anarchyclient$mouseScroll(final long window, final double xOffset, final double yOffset,
+                                           final CallbackInfo info) {
+        MouseScrollInputEvent event = AnarchyClient.MODULES.call(new MouseScrollInputEvent(Minecraft.getInstance(), xOffset, yOffset));
         if (event.isCancelled()) {
             info.cancel();
         }

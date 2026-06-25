@@ -2,16 +2,24 @@ package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.event.AnarchyEventBus;
 import net.blockhost.anarchyclient.event.AnarchyClientEvent;
+import net.blockhost.anarchyclient.event.CameraTransformEvent;
+import net.blockhost.anarchyclient.event.ChatMessageEvent;
 import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
+import net.blockhost.anarchyclient.event.FovEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
+import net.blockhost.anarchyclient.event.SendChatEvent;
+import net.blockhost.anarchyclient.event.TabPlayerNameEvent;
 import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -84,6 +92,27 @@ public final class ModuleManager {
 
     public boolean preventEdgeFall(final Minecraft client, final Player player) {
         return this.call(new PreventEdgeFallEvent(client, player)).isCancelled();
+    }
+
+    public Component chatMessage(final Minecraft client, final Component message) {
+        return this.call(new ChatMessageEvent(client, message)).message();
+    }
+
+    public String sendChatMessage(final Minecraft client, final String message, final boolean command) {
+        return this.call(new SendChatEvent(client, message, command)).message();
+    }
+
+    public Component tabPlayerName(final Minecraft client, final PlayerInfo playerInfo, final Component name) {
+        return this.call(new TabPlayerNameEvent(client, playerInfo, name)).name();
+    }
+
+    public float fov(final Minecraft client, final float fov) {
+        return this.call(new FovEvent(client, fov)).fov();
+    }
+
+    public CameraTransformEvent cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
+                                                final float pitch) {
+        return this.call(new CameraTransformEvent(client, position, yaw, pitch));
     }
 
     public void renderWorld(final LevelRenderContext context) {

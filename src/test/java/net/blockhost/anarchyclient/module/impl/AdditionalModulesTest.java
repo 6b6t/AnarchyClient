@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -414,5 +415,65 @@ class AdditionalModulesTest {
         assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 30, 3, false));
         assertFalse(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 20, 3, false));
         assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 0, 0, true));
+    }
+
+    @Test
+    void betterChatPrefixesStableTimestamps() {
+        assertEquals("[09:05] hello", BetterChatModule.withTimestamp(
+                net.minecraft.network.chat.Component.literal("hello"),
+                LocalTime.of(9, 5)
+        ).getString());
+    }
+
+    @Test
+    void nameProtectReplacesLocalNameText() {
+        assertEquals("You joined", NameProtectModule.replace("Steve joined", "Steve", "You"));
+        assertEquals("Alex joined", NameProtectModule.replace("Alex joined", "", "You"));
+    }
+
+    @Test
+    void surroundUsesFloorAndHorizontalShell() {
+        BlockPos base = new BlockPos(0, 64, 0);
+        List<BlockPos> positions = SurroundModule.targetPositions(base);
+
+        assertEquals(5, positions.size());
+        assertTrue(positions.contains(base.below()));
+        assertTrue(positions.contains(base.north()));
+        assertTrue(positions.contains(base.south()));
+        assertTrue(positions.contains(base.west()));
+        assertTrue(positions.contains(base.east()));
+    }
+
+    @Test
+    void autoTrapTargetsHeadAndTopBlocks() {
+        BlockPos base = new BlockPos(4, 70, -2);
+
+        assertTrue(AutoTrapModule.trapPositions(base).contains(base.above(2)));
+        assertTrue(AutoTrapModule.trapPositions(base).contains(base.above().north()));
+        assertEquals(5, AutoTrapModule.trapPositions(base).size());
+    }
+
+    @Test
+    void waypointsParseNamedBlockPositions() {
+        List<WaypointsModule.Waypoint> points = WaypointsModule.parse("home:1:64:-3;bad;stash:10:70:5");
+
+        assertEquals(2, points.size());
+        assertEquals("home", points.getFirst().name());
+        assertEquals(new BlockPos(1, 64, -3), points.getFirst().pos());
+        assertEquals("stash", points.get(1).name());
+    }
+
+    @Test
+    void freecamMovesRelativeToYawAndVerticalInput() {
+        Vec3 moved = FreecamModule.move(
+                Vec3.ZERO,
+                0.0F,
+                new Input(true, false, false, false, true, false, false),
+                1.0
+        );
+
+        assertEquals(0.0, moved.x, 1.0E-9);
+        assertEquals(Math.sqrt(0.5), moved.y, 1.0E-9);
+        assertEquals(Math.sqrt(0.5), moved.z, 1.0E-9);
     }
 }

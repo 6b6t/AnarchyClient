@@ -8,11 +8,20 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -148,6 +157,56 @@ public abstract class Module {
         return false;
     }
 
+    public Component chatMessage(final Minecraft client, final Component message) {
+        return message;
+    }
+
+    public String sendChatMessage(final Minecraft client, final String message, final boolean command) {
+        return message;
+    }
+
+    public Component tabPlayerName(final Minecraft client, final PlayerInfo playerInfo, final Component name) {
+        return name;
+    }
+
+    public void itemTooltip(final Minecraft client, final ItemStack stack, final List<Component> lines) {
+    }
+
+    public void entityAdded(final Minecraft client, final Entity entity) {
+    }
+
+    public void entityRemoved(final Minecraft client, final Entity entity, final RemovalReason reason) {
+    }
+
+    public void blockBreakingProgress(final Minecraft client, final int breakerId, final BlockPos pos,
+                                      final int progress) {
+    }
+
+    public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
+        return false;
+    }
+
+    public boolean itemUse(final Minecraft client, final InteractionHand hand) {
+        return false;
+    }
+
+    public boolean mouseScroll(final Minecraft client, final double xOffset, final double yOffset) {
+        return false;
+    }
+
+    public boolean particle(final Minecraft client, final ParticleOptions particle, final boolean alwaysShow) {
+        return false;
+    }
+
+    public float fov(final Minecraft client, final float fov) {
+        return fov;
+    }
+
+    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
+                                           final float pitch) {
+        return new CameraTransform(position, yaw, pitch);
+    }
+
     public void renderWorld(final LevelRenderContext context) {
     }
 
@@ -187,5 +246,8 @@ public abstract class Module {
     interface ActivationListener {
 
         void onActivationChanged(Module module, boolean enabled);
+    }
+
+    public record CameraTransform(Vec3 position, float yaw, float pitch) {
     }
 }
