@@ -16,6 +16,8 @@ class ModuleRegistryTest {
         assertTrue(modules.all().size() >= 28);
         assertNotNull(modules.find("auto_weapon").orElseThrow());
         assertNotNull(modules.find("auto_armor").orElseThrow());
+        assertNotNull(modules.find("auto_log").orElseThrow());
+        assertNotNull(modules.find("auto_mend").orElseThrow());
         assertNotNull(modules.find("block_esp").orElseThrow());
         assertNotNull(modules.find("storage_esp").orElseThrow());
         assertNotNull(modules.find("trajectories").orElseThrow());
@@ -39,6 +41,7 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("anti_spawnpoint").orElseThrow());
         assertNotNull(modules.find("coord_logger").orElseThrow());
         assertNotNull(modules.find("gamemode_notifier").orElseThrow());
+        assertNotNull(modules.find("notifier").orElseThrow());
         assertNotNull(modules.find("auto_soup").orElseThrow());
         assertNotNull(modules.find("no_jump_delay").orElseThrow());
         assertNotNull(modules.find("vehicle_one_hit").orElseThrow());
@@ -69,12 +72,15 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("no_slot_set").orElseThrow());
         assertNotNull(modules.find("no_swing").orElseThrow());
         assertNotNull(modules.find("chest_stealer").orElseThrow());
+        assertNotNull(modules.find("chest_swap").orElseThrow());
         assertNotNull(modules.find("inventory_cleaner").orElseThrow());
         assertNotNull(modules.find("fast_place").orElseThrow());
         assertNotNull(modules.find("tnt_timer").orElseThrow());
         assertNotNull(modules.find("zoom").orElseThrow());
         assertNotNull(modules.find("auto_disable").orElseThrow());
         assertNotNull(modules.find("hole_esp").orElseThrow());
+        assertNotNull(modules.find("light_overlay").orElseThrow());
+        assertNotNull(modules.find("logout_spots").orElseThrow());
         assertNotNull(modules.find("color_signs").orElseThrow());
     }
 }

@@ -314,4 +314,49 @@ class AdditionalModulesTest {
 
         assertEquals(new Vec3(10.0, 70.0, 4.4), position);
     }
+
+    @Test
+    void autoLogUsesEffectiveHealthAndTotemPopThresholds() {
+        assertTrue(AutoLogModule.shouldDisconnectForHealth(9.0F, 2.0F, 11.0, true));
+        assertFalse(AutoLogModule.shouldDisconnectForHealth(9.0F, 2.0F, 8.0, false));
+        assertTrue(AutoLogModule.shouldDisconnectForTotemPops(2, 2));
+        assertFalse(AutoLogModule.shouldDisconnectForTotemPops(2, 0));
+    }
+
+    @Test
+    void notifierFormatsTotemPopCounts() {
+        assertEquals("Steve popped a totem.", NotifierModule.totemPopMessage("Steve", 1));
+        assertEquals("Steve popped a totem (x3).", NotifierModule.totemPopMessage("Steve", 3));
+    }
+
+    @Test
+    void logoutSpotsFormatLabelsAndExpireByAge() {
+        assertEquals("Steve 17.5 HP", LogoutSpotsModule.formatLabel("Steve", 17.5F));
+        assertFalse(LogoutSpotsModule.expired(20, 20));
+        assertTrue(LogoutSpotsModule.expired(21, 20));
+    }
+
+    @Test
+    void lightOverlayRequiresSpawnableLowLightBlocks() {
+        assertTrue(LightOverlayModule.shouldRenderSpawnMarker(true, true, true, 0, 0));
+        assertTrue(LightOverlayModule.shouldRenderSpawnMarker(true, true, true, 4, 7));
+        assertFalse(LightOverlayModule.shouldRenderSpawnMarker(false, true, true, 0, 0));
+        assertFalse(LightOverlayModule.shouldRenderSpawnMarker(true, true, false, 0, 0));
+        assertFalse(LightOverlayModule.shouldRenderSpawnMarker(true, true, true, 8, 7));
+    }
+
+    @Test
+    void chestSwapTargetsOppositeChestSlotState() {
+        assertEquals(ChestSwapModule.SwapTarget.CHESTPLATE, ChestSwapModule.swapTarget(true));
+        assertEquals(ChestSwapModule.SwapTarget.GLIDER, ChestSwapModule.swapTarget(false));
+    }
+
+    @Test
+    void autoMendUsesDurabilityAndTotemSafetyThresholds() {
+        assertTrue(AutoMendModule.needsMending(400, 200, 75.0));
+        assertFalse(AutoMendModule.needsMending(400, 40, 75.0));
+        assertTrue(AutoMendModule.protectedTotem(8.0F, 2.0F, true, 12.0));
+        assertFalse(AutoMendModule.protectedTotem(8.0F, 6.0F, true, 12.0));
+        assertFalse(AutoMendModule.protectedTotem(8.0F, 2.0F, false, 12.0));
+    }
 }
