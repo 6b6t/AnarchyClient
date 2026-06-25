@@ -16,7 +16,7 @@ val reflectVersion = "1.5.0"
 val asmVersion = "9.10.1"
 val javaVersion = 25
 
-version = "0.1.2"
+version = "0.1.3"
 group = "net.blockhost"
 
 base {
