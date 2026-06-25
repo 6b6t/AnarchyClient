@@ -6,6 +6,8 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -78,5 +80,20 @@ class AnarchyClientCommandsTest {
         assertEquals(-4.5, AnarchyClientCommands.CenterMode.MIDDLE.coordinate(-4.8));
         assertEquals(12.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(12.2));
         assertEquals(-5.0, AnarchyClientCommands.CenterMode.CORNER.coordinate(-4.8));
+    }
+
+    @Test
+    void extractsSkinUrlFromMojangProfilePayload() {
+        String texturePayload = "{\"textures\":{\"SKIN\":{\"url\":\"https://textures.minecraft.net/texture/example\"}}}";
+        String encoded = Base64.getEncoder().encodeToString(texturePayload.getBytes(StandardCharsets.UTF_8));
+        String profile = "{\"properties\":[{\"name\":\"textures\",\"value\":\"" + encoded + "\"}]}";
+
+        assertEquals("https://textures.minecraft.net/texture/example", AnarchyClientCommands.skinUrl(profile));
+    }
+
+    @Test
+    void sanitizesSkinFileNames() {
+        assertEquals("Bad_Name__", AnarchyClientCommands.sanitizeFileName("Bad/Name:*"));
+        assertEquals("skin", AnarchyClientCommands.sanitizeFileName("   "));
     }
 }

@@ -8,7 +8,7 @@ public final class PacketReceiveEvent extends CancellableAnarchyClientEvent {
 
     private final Minecraft client;
     private final Connection connection;
-    private final Packet<?> packet;
+    private Packet<?> packet;
 
     public PacketReceiveEvent(final Minecraft client, final Connection connection, final Packet<?> packet) {
         this.client = client;
@@ -26,5 +26,9 @@ public final class PacketReceiveEvent extends CancellableAnarchyClientEvent {
 
     public Packet<?> packet() {
         return this.packet;
+    }
+
+    public void packet(final Packet<?> packet) {
+        this.packet = packet;
     }
 }

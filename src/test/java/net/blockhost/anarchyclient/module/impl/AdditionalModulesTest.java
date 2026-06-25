@@ -283,4 +283,35 @@ class AdditionalModulesTest {
         assertFalse(HoleEspModule.isHole(false, true, true, true, true, true, true));
         assertFalse(HoleEspModule.isHole(true, true, true, true, false, true, true));
     }
+
+    @Test
+    void blockTargetScannerSortsByDistance() {
+        List<BlockTargetScanner.BlockTarget> targets = new java.util.ArrayList<>(List.of(
+                new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 3), null, 9.0),
+                new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 1), null, 1.0),
+                new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 2), null, 4.0)
+        ));
+
+        BlockTargetScanner.sort(targets, BlockTargetScanner.SortMode.CLOSEST);
+
+        assertIterableEquals(List.of(
+                new BlockPos(0, 0, 1),
+                new BlockPos(0, 0, 2),
+                new BlockPos(0, 0, 3)
+        ), targets.stream().map(BlockTargetScanner.BlockTarget::pos).toList());
+    }
+
+    @Test
+    void colorSignsConvertsAmpersandFormattingCodes() {
+        assertEquals("\u00a7aGreen \u00a7lBold", ColorSignsModule.colorize("&aGreen &lBold"));
+        assertEquals("plain text", ColorSignsModule.colorize("plain text"));
+    }
+
+    @Test
+    void shieldBypassPositionsBehindTargetLookDirection() {
+        Vec3 position = ShieldBypassModule.behindPosition(new Vec3(10.0, 64.0, 5.0), new Vec3(0.0, 0.0, 1.0),
+                70.0, 0.6);
+
+        assertEquals(new Vec3(10.0, 70.0, 4.4), position);
+    }
 }

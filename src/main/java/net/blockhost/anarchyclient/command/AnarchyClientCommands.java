@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.command;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -17,16 +21,33 @@ import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.world.level.block.state.BlockState;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
@@ -69,6 +90,15 @@ public final class AnarchyClientCommands {
                         .executes(AnarchyClientCommands::clearChat))
                 .then(literal("reconnect")
                         .executes(AnarchyClientCommands::reconnect))
+                .then(literal("server-info")
+                        .executes(AnarchyClientCommands::serverInfo))
+                .then(literal("terrain-export")
+                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                                .executes(AnarchyClientCommands::terrainExport)))
+                .then(literal("save-skin")
+                        .then(argument("player", StringArgumentType.word())
+                                .suggests(AnarchyClientCommands::suggestOnlinePlayers)
+                                .executes(AnarchyClientCommands::saveSkin)))
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestModules)
@@ -159,6 +189,56 @@ public final class AnarchyClientCommands {
         }
         ServerAddress address = ServerAddress.parseString(server.ip);
         ConnectScreen.startConnecting(new TitleScreen(), client, address, server, false, null);
+        return SUCCESS;
+    }
+
+    private static int serverInfo(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        ServerData server = client.getCurrentServer();
+        ClientPacketListener connection = client.getConnection();
+        String address = server == null ? "singleplayer" : server.ip;
+        String brand = connection == null || connection.serverBrand() == null ? "unknown" : connection.serverBrand();
+        context.getSource().sendFeedback(Component.literal("Server: " + address + " | Brand: " + brand));
+        return SUCCESS;
+    }
+
+    private static int terrainExport(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.level == null) {
+            context.getSource().sendError(Component.literal("You must be in-game to export terrain."));
+            return 0;
+        }
+        int distance = IntegerArgumentType.getInteger(context, "distance");
+        BlockPos center = client.player.blockPosition();
+        Path output = terrainExportPath(center, distance);
+        try {
+            Files.createDirectories(output.getParent());
+            Files.write(output, terrainLines(client, center, distance), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to export terrain: " + exception.getMessage()));
+            return 0;
+        }
+        context.getSource().sendFeedback(Component.literal("Exported terrain to " + output));
+        return SUCCESS;
+    }
+
+    private static int saveSkin(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        ClientPacketListener connection = client.getConnection();
+        if (connection == null) {
+            context.getSource().sendError(Component.literal("You must be connected to a server to save a skin."));
+            return 0;
+        }
+        String playerName = StringArgumentType.getString(context, "player");
+        PlayerInfo info = connection.getPlayerInfoIgnoreCase(playerName);
+        if (info == null) {
+            context.getSource().sendError(Component.literal("Unknown online player: " + playerName));
+            return 0;
+        }
+        String profileName = info.getProfile().name();
+        String uuid = info.getProfile().id().toString().replace("-", "");
+        downloadSkin(client, context.getSource(), profileName, uuid);
+        context.getSource().sendFeedback(Component.literal("Saving skin for " + profileName + "..."));
         return SUCCESS;
     }
 
@@ -292,6 +372,16 @@ public final class AnarchyClientCommands {
                 .map(action -> action.name().toLowerCase(Locale.ROOT)), builder);
     }
 
+    private static CompletableFuture<Suggestions> suggestOnlinePlayers(final CommandContext<FabricClientCommandSource> context,
+                                                                       final SuggestionsBuilder builder) {
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        if (connection == null) {
+            return builder.buildFuture();
+        }
+        return SharedSuggestionProvider.suggest(connection.getOnlinePlayers().stream()
+                .map(info -> info.getProfile().name()), builder);
+    }
+
     private static CompletableFuture<Suggestions> suggestSettingValues(final CommandContext<FabricClientCommandSource> context,
                                                                       final SuggestionsBuilder builder) {
         Module module = AnarchyClient.MODULES.find(StringArgumentType.getString(context, "module")).orElse(null);
@@ -306,6 +396,107 @@ public final class AnarchyClientCommands {
             return SharedSuggestionProvider.suggest(select.options(), builder);
         }
         return builder.buildFuture();
+    }
+
+    private static List<String> terrainLines(final Minecraft client, final BlockPos center, final int distance) {
+        List<String> lines = new ArrayList<>();
+        lines.add("dx,dy,dz,block");
+        for (int y = center.getY() - distance; y <= center.getY() + distance; y++) {
+            if (y < client.level.getMinY() || y >= client.level.getMinY() + client.level.getHeight()) {
+                continue;
+            }
+            for (int x = center.getX() - distance; x <= center.getX() + distance; x++) {
+                for (int z = center.getZ() - distance; z <= center.getZ() + distance; z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (!client.level.isLoaded(pos)) {
+                        continue;
+                    }
+                    BlockState state = client.level.getBlockState(pos);
+                    if (state.isAir() || state.getCollisionShape(client.level, pos).isEmpty()) {
+                        continue;
+                    }
+                    lines.add((x - center.getX()) + "," + (y - center.getY()) + "," + (z - center.getZ())
+                            + "," + BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+                }
+            }
+        }
+        return List.copyOf(lines);
+    }
+
+    private static Path terrainExportPath(final BlockPos center, final int distance) {
+        String fileName = "terrain-" + center.getX() + "-" + center.getY() + "-" + center.getZ()
+                + "-r" + distance + ".csv";
+        return FabricLoader.getInstance().getConfigDir().resolve("anarchyclient").resolve("exports").resolve(fileName);
+    }
+
+    private static void downloadSkin(final Minecraft client, final FabricClientCommandSource source,
+                                     final String profileName, final String uuid) {
+        CompletableFuture.runAsync(() -> {
+            try {
+                HttpClient http = HttpClient.newHttpClient();
+                HttpRequest profileRequest = HttpRequest.newBuilder(URI.create(
+                                "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
+                        .GET()
+                        .build();
+                HttpResponse<String> profileResponse = http.send(profileRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                if (profileResponse.statusCode() != 200) {
+                    throw new IOException("profile request returned HTTP " + profileResponse.statusCode());
+                }
+                String skinUrl = skinUrl(profileResponse.body());
+                if (skinUrl == null) {
+                    throw new IOException("profile does not contain a skin texture");
+                }
+                HttpResponse<byte[]> skinResponse = http.send(HttpRequest.newBuilder(URI.create(skinUrl)).GET().build(),
+                        HttpResponse.BodyHandlers.ofByteArray());
+                if (skinResponse.statusCode() != 200) {
+                    throw new IOException("skin request returned HTTP " + skinResponse.statusCode());
+                }
+                Path output = skinPath(profileName);
+                Files.createDirectories(output.getParent());
+                Files.write(output, skinResponse.body());
+                client.execute(() -> source.sendFeedback(Component.literal("Saved skin to " + output)));
+            } catch (IOException exception) {
+                client.execute(() -> source.sendError(Component.literal("Failed to save skin: " + exception.getMessage())));
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                client.execute(() -> source.sendError(Component.literal("Failed to save skin: interrupted")));
+            }
+        });
+    }
+
+    static String skinUrl(final String profileJson) {
+        JsonObject root = JsonParser.parseString(profileJson).getAsJsonObject();
+        JsonArray properties = root.getAsJsonArray("properties");
+        if (properties == null) {
+            return null;
+        }
+        for (JsonElement element : properties) {
+            JsonObject property = element.getAsJsonObject();
+            if (!"textures".equals(property.get("name").getAsString()) || !property.has("value")) {
+                continue;
+            }
+            String decoded = new String(Base64.getDecoder().decode(property.get("value").getAsString()), StandardCharsets.UTF_8);
+            JsonObject textures = JsonParser.parseString(decoded).getAsJsonObject().getAsJsonObject("textures");
+            if (textures != null && textures.has("SKIN")) {
+                return textures.getAsJsonObject("SKIN").get("url").getAsString();
+            }
+        }
+        return null;
+    }
+
+    private static Path skinPath(final String playerName) {
+        return FabricLoader.getInstance().getConfigDir()
+                .resolve("anarchyclient")
+                .resolve("skins")
+                .resolve(sanitizeFileName(playerName) + ".png");
+    }
+
+    static String sanitizeFileName(final String value) {
+        if (value == null || value.isBlank()) {
+            return "skin";
+        }
+        String sanitized = value.replaceAll("[^A-Za-z0-9_.-]", "_");
+        return sanitized.isBlank() ? "skin" : sanitized;
     }
 
     enum CenterMode {

@@ -52,6 +52,11 @@ public abstract class ConnectionMixin {
         ));
         if (event.isCancelled()) {
             info.cancel();
+            return;
+        }
+        if (event.packet() != packet) {
+            info.cancel();
+            PacketEventSilencer.runSilently(() -> ((Connection) (Object) this).send(event.packet(), listener, flush));
         }
     }
 

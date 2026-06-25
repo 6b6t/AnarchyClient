@@ -1,0 +1,24 @@
+package net.blockhost.anarchyclient.mixin;
+
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.event.MouseClickEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.MouseHandler;
+import net.minecraft.client.input.MouseButtonInfo;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(MouseHandler.class)
+public abstract class MouseHandlerMixin {
+
+    @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
+    private void anarchyclient$mouseClick(final long window, final MouseButtonInfo buttonInfo, final int action,
+                                          final CallbackInfo info) {
+        MouseClickEvent event = AnarchyClient.MODULES.call(new MouseClickEvent(Minecraft.getInstance(), buttonInfo, action));
+        if (event.isCancelled()) {
+            info.cancel();
+        }
+    }
+}

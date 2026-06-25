@@ -11,6 +11,8 @@
     "KeyboardInputMixin",
     "LivingEntityAccessor",
     "MinecraftAccessor",
+    "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
     "PlayerMixin"
   ],
   "injectors": {

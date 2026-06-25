@@ -27,8 +27,14 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("radar_hud").orElseThrow());
         assertNotNull(modules.find("auto_login").orElseThrow());
         assertNotNull(modules.find("auto_extinguish").orElseThrow());
+        assertNotNull(modules.find("auto_craft").orElseThrow());
+        assertNotNull(modules.find("auto_rename").orElseThrow());
+        assertNotNull(modules.find("auto_grind").orElseThrow());
         assertNotNull(modules.find("new_chunks").orElseThrow());
         assertNotNull(modules.find("chest_aura").orElseThrow());
+        assertNotNull(modules.find("tree_aura").orElseThrow());
+        assertNotNull(modules.find("moss_bot").orElseThrow());
+        assertNotNull(modules.find("lawn_bot").orElseThrow());
         assertNotNull(modules.find("aim_assist").orElseThrow());
         assertNotNull(modules.find("anti_spawnpoint").orElseThrow());
         assertNotNull(modules.find("coord_logger").orElseThrow());
@@ -43,6 +49,8 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("anti_vanish").orElseThrow());
         assertNotNull(modules.find("silent_disconnect").orElseThrow());
         assertNotNull(modules.find("skeleton_esp").orElseThrow());
+        assertNotNull(modules.find("knockback_plus").orElseThrow());
+        assertNotNull(modules.find("shield_bypass").orElseThrow());
         assertNotNull(modules.find("auto_pot").orElseThrow());
         assertNotNull(modules.find("auto_walk").orElseThrow());
         assertNotNull(modules.find("auto_jump").orElseThrow());
@@ -67,5 +75,6 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("zoom").orElseThrow());
         assertNotNull(modules.find("auto_disable").orElseThrow());
         assertNotNull(modules.find("hole_esp").orElseThrow());
+        assertNotNull(modules.find("color_signs").orElseThrow());
     }
 }

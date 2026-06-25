@@ -5,11 +5,13 @@ import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -138,6 +140,14 @@ public abstract class Module {
         return false;
     }
 
+    public boolean mouseClick(final Minecraft client, final MouseButtonInfo buttonInfo, final int action) {
+        return false;
+    }
+
+    public boolean attackEntity(final Minecraft client, final Player player, final Entity target) {
+        return false;
+    }
+
     public void renderWorld(final LevelRenderContext context) {
     }
 
@@ -149,6 +159,10 @@ public abstract class Module {
 
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         return false;
+    }
+
+    public Packet<?> replaceSendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        return packet;
     }
 
     public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
