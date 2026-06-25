@@ -44,29 +44,65 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         env:
-          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-setup-home
         with:
           cache-disabled: true
 
-      - name: Build
+      - name: Build release candidate
         env:
-          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home
-        run: ./gradlew --no-build-cache --refresh-dependencies clean build --stacktrace
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home-primary
+        run: |
+          rm -rf .gradle build
+          ./gradlew --no-build-cache --refresh-dependencies clean build --stacktrace
 
-      - name: Drop sources jar from release assets
-        run: rm -f build/libs/*-sources.jar
-
-      - name: Collect release file name
+      - name: Collect release candidate
         id: release_file
         shell: bash
         run: |
+          rm -f build/libs/*-sources.jar
           mapfile -t release_files < <(find build/libs -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort)
           if [ "${#release_files[@]}" -ne 1 ]; then
             echo "Expected exactly one release jar in build/libs, found ${#release_files[@]}" >&2
             printf '%s\n' "${release_files[@]}" >&2
             exit 1
           fi
+          release_sha256="$(sha256sum "build/libs/${release_files[0]}" | awk '{print $1}')"
           echo "name=${release_files[0]}" >> "$GITHUB_OUTPUT"
+          echo "sha256=$release_sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild release candidate
+        env:
+          GRADLE_USER_HOME: ${{ runner.temp }}/gradle-user-home-secondary
+        run: |
+          rm -rf .gradle build
+          ./gradlew --no-build-cache --refresh-dependencies clean build --stacktrace
+
+      - name: Verify reproducible release jar
+        shell: bash
+        run: |
+          rm -f build/libs/*-sources.jar
+          mapfile -t release_files < <(find build/libs -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort)
+          if [ "${#release_files[@]}" -ne 1 ]; then
+            echo "Expected exactly one release jar in build/libs, found ${#release_files[@]}" >&2
+            printf '%s\n' "${release_files[@]}" >&2
+            exit 1
+          fi
+
+          if [ "${release_files[0]}" != "${{ steps.release_file.outputs.name }}" ]; then
+            echo "Release jar name changed between builds: ${{ steps.release_file.outputs.name }} != ${release_files[0]}" >&2
+            exit 1
+          fi
+
+          actual_sha256="$(sha256sum "build/libs/${release_files[0]}" | awk '{print $1}')"
+          expected_sha256="${{ steps.release_file.outputs.sha256 }}"
+          if [ "$actual_sha256" != "$expected_sha256" ]; then
+            echo "Release jar is not reproducible." >&2
+            echo "First build:  $expected_sha256  ${{ steps.release_file.outputs.name }}" >&2
+            echo "Second build: $actual_sha256  ${release_files[0]}" >&2
+            exit 1
+          fi
+
+          echo "Reproducible release jar verified: $actual_sha256  ${release_files[0]}"
 
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
