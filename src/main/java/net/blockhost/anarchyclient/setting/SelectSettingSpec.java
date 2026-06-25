@@ -12,6 +12,11 @@ public interface SelectSettingSpec {
 
     String name();
 
+    @Value.Default
+    default String description() {
+        return "";
+    }
+
     String defaultValue();
 
     List<String> options();

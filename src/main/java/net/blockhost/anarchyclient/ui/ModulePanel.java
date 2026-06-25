@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
@@ -52,6 +53,7 @@ public final class ModulePanel extends Container {
     private static final float MAX_WINDOW_WIDTH = 224;
     private static final float HEADER_HEIGHT = 20;
     private static final float MODULE_HEADER_HEIGHT = 24;
+    private static final float GROUP_HEADER_HEIGHT = 18;
     private static final float BOOLEAN_ROW_HEIGHT = 24;
     private static final float NUMBER_ROW_HEIGHT = 38;
     private static final float SELECT_ROW_HEIGHT = 26;
@@ -302,9 +304,16 @@ public final class ModulePanel extends Container {
         for (Module module : this.modules.byCategory(category)) {
             height += MODULE_HEADER_HEIGHT + GAP;
             if (this.isExpanded(module)) {
-                for (Setting<?> setting : module.settings()) {
-                    if (setting.visible()) {
-                        height += settingRowHeight(setting);
+                List<SettingGroup> groups = visibleSettingGroups(module);
+                boolean showGroupHeaders = showGroupHeaders(groups);
+                for (SettingGroup group : groups) {
+                    if (showGroupHeaders) {
+                        height += GROUP_HEADER_HEIGHT;
+                    }
+                    for (Setting<?> setting : group.settings()) {
+                        if (setting.visible()) {
+                            height += settingRowHeight(setting);
+                        }
                     }
                 }
             }
@@ -334,6 +343,20 @@ public final class ModulePanel extends Container {
         int categoryCount = Math.max(1, ModuleCategory.values().length);
         float available = size.width() - 20 - (categoryCount - 1) * (GAP + 3);
         return clamp(available / categoryCount, MIN_WINDOW_WIDTH, MAX_WINDOW_WIDTH);
+    }
+
+    private static List<SettingGroup> visibleSettingGroups(final Module module) {
+        List<SettingGroup> groups = new ArrayList<>();
+        for (SettingGroup group : module.settingGroups()) {
+            if (group.visible()) {
+                groups.add(group);
+            }
+        }
+        return groups;
+    }
+
+    private static boolean showGroupHeaders(final List<SettingGroup> groups) {
+        return groups.size() > 1 || (!groups.isEmpty() && !"general".equals(groups.getFirst().id()));
     }
 
     private static float clamp(final double value, final double min, final double max) {
@@ -527,9 +550,16 @@ public final class ModulePanel extends Container {
             this.addChild(new ModuleHeader(this.module, this));
             if (ModulePanel.this.isExpanded(this.module)) {
                 int index = 0;
-                for (Setting<?> setting : this.module.settings()) {
-                    if (setting.visible()) {
-                        this.addChild(settingRow(setting, index++));
+                List<SettingGroup> groups = visibleSettingGroups(this.module);
+                boolean showGroupHeaders = showGroupHeaders(groups);
+                for (SettingGroup group : groups) {
+                    if (showGroupHeaders) {
+                        this.addChild(new SettingGroupHeader(group));
+                    }
+                    for (Setting<?> setting : group.settings()) {
+                        if (setting.visible()) {
+                            this.addChild(settingRow(setting, index++));
+                        }
                     }
                 }
             }
@@ -555,6 +585,32 @@ public final class ModulePanel extends Container {
                 return new StringSettingRow(string, index);
             }
             return new ValueSettingRow(setting, index);
+        }
+    }
+
+    private static final class SettingGroupHeader extends Component {
+
+        private final SettingGroup group;
+
+        private SettingGroupHeader(final SettingGroup group) {
+            this.group = group;
+            this.fixedSize(new Size(-1, GROUP_HEADER_HEIGHT));
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), WINDOW);
+            renderer.line(0, 0, bounds.width(), 0, 1, BORDER_SOFT);
+            renderer.text(this.rivet().backend().shapeText(this.group.name(), FAINT),
+                    6,
+                    bounds.height() / 2F,
+                    TextOrigin.Horizontal.LOGICAL_LEFT,
+                    TextOrigin.Vertical.LOGICAL_CENTER);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), GROUP_HEADER_HEIGHT);
         }
     }
 

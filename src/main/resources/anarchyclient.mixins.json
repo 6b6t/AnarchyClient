@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "ClientPacketListenerMixin",
+    "ConnectionMixin",
     "EntityRendererMixin",
     "KeyboardInputMixin",
     "PlayerMixin"

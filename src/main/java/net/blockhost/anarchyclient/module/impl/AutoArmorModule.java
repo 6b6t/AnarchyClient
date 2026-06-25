@@ -10,11 +10,16 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.List;
+import java.util.Set;
 
 public final class AutoArmorModule extends Module {
 
@@ -33,6 +38,22 @@ public final class AutoArmorModule extends Module {
             .max(40.0)
             .step(1.0)
             .build()));
+    private final SelectSetting preferredProtection = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("preferred_protection")
+            .name("Protection")
+            .defaultValue("Protection")
+            .addAllOptions(List.of("Protection", "Blast", "Fire", "Projectile"))
+            .build()));
+    private final StringSetting avoidedEnchantments = this.setting(StringSetting.from(StringSetting.builder()
+            .id("avoided_enchantments")
+            .name("Avoid")
+            .defaultValue("binding_curse, frost_walker")
+            .build()));
+    private final BooleanSetting antiBreak = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("anti_break")
+            .name("Anti Break")
+            .defaultValue(false)
+            .build()));
     private final BooleanSetting keepElytra = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("keep_elytra")
             .name("Keep Elytra")
@@ -50,11 +71,17 @@ public final class AutoArmorModule extends Module {
             return;
         }
 
+        EquipmentScorer.ProtectionPreference protection = EquipmentScorer.ProtectionPreference.fromSetting(this.preferredProtection.value());
+        Set<String> avoided = EquipmentScorer.parseIdentifiers(this.avoidedEnchantments.value());
         for (EquipmentSlot slot : ARMOR_SLOTS) {
-            if (slot == EquipmentSlot.CHEST && this.keepElytra.value() && player.getItemBySlot(slot).has(net.minecraft.core.component.DataComponents.GLIDER)) {
+            ItemStack current = player.getItemBySlot(slot);
+            if (slot == EquipmentSlot.CHEST && this.keepElytra.value() && current.has(net.minecraft.core.component.DataComponents.GLIDER)) {
                 continue;
             }
-            int inventorySlot = bestArmorSlot(player.getInventory(), slot, player.getItemBySlot(slot));
+            if (EquipmentScorer.hasEnchantment(current, net.minecraft.world.item.enchantment.Enchantments.BINDING_CURSE)) {
+                continue;
+            }
+            int inventorySlot = bestArmorSlot(player.getInventory(), slot, current, protection, avoided, this.antiBreak.value());
             if (inventorySlot >= 0) {
                 InventorySlotRef source = InventorySlots.storageSlot(inventorySlot).orElse(null);
                 if (source == null) {
@@ -77,12 +104,18 @@ public final class AutoArmorModule extends Module {
     }
 
     static int bestArmorSlot(final Inventory inventory, final EquipmentSlot slot, final ItemStack current) {
-        double currentScore = EquipmentScorer.armorScore(current, slot);
+        return bestArmorSlot(inventory, slot, current, EquipmentScorer.ProtectionPreference.PROTECTION, Set.of(), false);
+    }
+
+    static int bestArmorSlot(final Inventory inventory, final EquipmentSlot slot, final ItemStack current,
+                             final EquipmentScorer.ProtectionPreference protection, final Set<String> avoidedEnchantments,
+                             final boolean antiBreak) {
+        double currentScore = EquipmentScorer.armorScore(current, slot, protection, avoidedEnchantments, antiBreak);
         int bestSlot = -1;
         double bestScore = currentScore;
         for (int inventorySlot = 0; inventorySlot < inventory.getContainerSize(); inventorySlot++) {
             ItemStack stack = inventory.getItem(inventorySlot);
-            double score = EquipmentScorer.armorScore(stack, slot);
+            double score = EquipmentScorer.armorScore(stack, slot, protection, avoidedEnchantments, antiBreak);
             if (score > bestScore + 0.1) {
                 bestScore = score;
                 bestSlot = inventorySlot;

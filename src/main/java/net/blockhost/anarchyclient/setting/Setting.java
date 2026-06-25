@@ -9,18 +9,24 @@ public abstract class Setting<T> {
 
     private final String id;
     private final String name;
+    private final String description;
     private final List<String> aliases;
     private final T defaultValue;
     private T value;
     private Supplier<Boolean> visibilityCondition;
 
     protected Setting(final String id, final String name, final T defaultValue) {
-        this(id, name, defaultValue, List.of());
+        this(id, name, "", defaultValue, List.of());
     }
 
     protected Setting(final String id, final String name, final T defaultValue, final List<String> aliases) {
+        this(id, name, "", defaultValue, aliases);
+    }
+
+    protected Setting(final String id, final String name, final String description, final T defaultValue, final List<String> aliases) {
         this.id = id;
         this.name = name;
+        this.description = description == null ? "" : description;
         this.aliases = List.copyOf(aliases);
         this.defaultValue = defaultValue;
         this.value = defaultValue;
@@ -32,6 +38,10 @@ public abstract class Setting<T> {
 
     public final String name() {
         return this.name;
+    }
+
+    public final String description() {
+        return this.description;
     }
 
     public final List<String> aliases() {

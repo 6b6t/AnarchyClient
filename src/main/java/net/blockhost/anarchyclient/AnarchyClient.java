@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient;
 
+import net.blockhost.anarchyclient.command.AnarchyClientCommands;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
@@ -53,6 +54,7 @@ public final class AnarchyClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
                 Category.MISC
         ));
+        AnarchyClientCommands.register();
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {

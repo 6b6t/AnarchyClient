@@ -12,6 +12,11 @@ public interface BooleanSettingSpec {
 
     String name();
 
+    @Value.Default
+    default String description() {
+        return "";
+    }
+
     boolean defaultValue();
 
     @Value.Default

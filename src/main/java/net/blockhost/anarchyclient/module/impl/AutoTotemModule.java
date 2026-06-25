@@ -14,10 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
-import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,13 +22,6 @@ import net.minecraft.world.item.Items;
 import java.util.List;
 
 public final class AutoTotemModule extends Module {
-
-    private static final EquipmentSlot[] ARMOR_SLOTS = {
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
-    };
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
@@ -182,84 +171,38 @@ public final class AutoTotemModule extends Module {
     }
 
     private boolean needsTotem(final LocalPlayer player, final ClientLevel level) {
-        float health = effectiveHealth(player, this.includeAbsorption.value());
-        if (health <= this.healthThreshold.value()) {
-            return true;
-        }
-        if (this.missingArmorTotem.value() && missingArmor(player)) {
-            return true;
-        }
-        if (player.fallDistance >= this.fallDistanceThreshold.value()) {
-            return true;
-        }
-        if (this.fireTotem.value() && player.isOnFire()) {
-            return true;
-        }
-        if (!this.predictExplosions.value() || level == null) {
-            return false;
-        }
-        double predictedDamage = predictedExplosionDamage(level.entitiesForRendering(), player, this.explosionRange.value());
-        return predictedDamage >= damageUntilThreshold(health, this.healthThreshold.value());
+        return TotemRiskEstimator.needsTotem(
+                player,
+                level,
+                this.includeAbsorption.value(),
+                this.missingArmorTotem.value(),
+                this.healthThreshold.value(),
+                this.fallDistanceThreshold.value(),
+                this.fireTotem.value(),
+                this.predictExplosions.value(),
+                this.explosionRange.value()
+        );
     }
 
     static float effectiveHealth(final LocalPlayer player, final boolean includeAbsorption) {
-        float health = player.getHealth();
-        if (includeAbsorption) {
-            health += player.getAbsorptionAmount();
-        }
-        return health;
+        return TotemRiskEstimator.effectiveHealth(player, includeAbsorption);
     }
 
     static double damageUntilThreshold(final double health, final double threshold) {
-        return Math.max(0.0, health - threshold);
+        return TotemRiskEstimator.damageUntilThreshold(health, threshold);
     }
 
     static boolean missingArmor(final LocalPlayer player) {
-        for (EquipmentSlot slot : ARMOR_SLOTS) {
-            if (player.getItemBySlot(slot).isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+        return TotemRiskEstimator.missingArmor(player);
     }
 
     static double predictedExplosionDamage(final Iterable<? extends Entity> entities, final LocalPlayer player,
                                            final double range) {
-        double predictedDamage = 0.0;
-        double rangeSqr = range * range;
-        for (Entity entity : entities) {
-            double maxDamage = maxExplosionDamage(entity);
-            if (maxDamage <= 0.0) {
-                continue;
-            }
-            double distanceSqr = player.distanceToSqr(entity);
-            if (distanceSqr <= rangeSqr) {
-                predictedDamage = Math.max(predictedDamage, estimateExplosionDamage(distanceSqr, range, maxDamage));
-            }
-        }
-        return predictedDamage;
+        return TotemRiskEstimator.predictedExplosionDamage(entities, player, range);
     }
 
     static double estimateExplosionDamage(final double distanceSqr, final double range, final double maxDamage) {
-        if (range <= 0.0 || maxDamage <= 0.0) {
-            return 0.0;
-        }
-        double distance = Math.sqrt(Math.max(0.0, distanceSqr));
-        double exposure = Math.max(0.0, 1.0 - distance / range);
-        return maxDamage * exposure * exposure;
-    }
-
-    private static double maxExplosionDamage(final Entity entity) {
-        if (!entity.isAlive()) {
-            return 0.0;
-        }
-        if (entity instanceof EndCrystal || entity instanceof PrimedTnt) {
-            return 20.0;
-        }
-        if (entity instanceof Creeper) {
-            return 18.0;
-        }
-        return 0.0;
+        return TotemRiskEstimator.estimateExplosionDamage(distanceSqr, range, maxDamage);
     }
 
     private int findItemSlot(final Inventory inventory, final Item item) {

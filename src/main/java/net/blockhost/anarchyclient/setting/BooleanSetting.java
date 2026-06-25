@@ -6,7 +6,7 @@ import com.google.gson.JsonPrimitive;
 public final class BooleanSetting extends Setting<Boolean> {
 
     private BooleanSetting(final BooleanSettingSpec spec) {
-        super(spec.id(), spec.name(), spec.defaultValue(), spec.aliases());
+        super(spec.id(), spec.name(), spec.description(), spec.defaultValue(), spec.aliases());
     }
 
     public static ImmutableBooleanSettingSpec.IdBuildStage builder() {

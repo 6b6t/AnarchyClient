@@ -21,6 +21,8 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -34,6 +36,7 @@ public final class ClientConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT);
 
     private final ModuleManager modules;
     private final FriendManager friends;
@@ -105,7 +108,9 @@ public final class ClientConfig {
             }
         } catch (RuntimeException | IOException exception) {
             LOGGER.warn("Failed to load AnarchyClient config from {}", this.path, exception);
-            this.save();
+            if (this.backupFailedConfig()) {
+                this.save();
+            }
         }
     }
 
@@ -289,6 +294,40 @@ public final class ClientConfig {
             }
         }
         return null;
+    }
+
+    private boolean backupFailedConfig() {
+        if (!Files.exists(this.path)) {
+            return true;
+        }
+        Path backup = this.backupPath();
+        try {
+            Files.move(this.path, backup, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            LOGGER.info("Backed up unreadable AnarchyClient config to {}", backup);
+            return true;
+        } catch (IOException atomicException) {
+            try {
+                Files.move(this.path, backup, StandardCopyOption.REPLACE_EXISTING);
+                LOGGER.info("Backed up unreadable AnarchyClient config to {}", backup);
+                return true;
+            } catch (IOException moveException) {
+                LOGGER.warn("Failed to back up unreadable AnarchyClient config at {}", this.path, moveException);
+                return false;
+            }
+        }
+    }
+
+    private Path backupPath() {
+        Path fileName = this.path.getFileName();
+        String baseName = fileName == null ? AnarchyClient.MOD_ID : fileName.toString();
+        String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
+        Path backup = this.path.resolveSibling(baseName + "." + timestamp + ".backup.json");
+        int copy = 1;
+        while (Files.exists(backup)) {
+            backup = this.path.resolveSibling(baseName + "." + timestamp + "." + copy + ".backup.json");
+            copy++;
+        }
+        return backup;
     }
 
     private boolean migrateLegacyFriends(final JsonObject moduleRoot) {

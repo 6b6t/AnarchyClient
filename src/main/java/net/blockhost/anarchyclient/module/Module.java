@@ -1,10 +1,14 @@
 package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.world.entity.player.Player;
 
@@ -21,6 +25,9 @@ public abstract class Module {
     private final ModuleKeybind keybind;
     private final List<Setting<?>> settings = new ArrayList<>();
     private final List<Setting<?>> settingsView = Collections.unmodifiableList(this.settings);
+    private final List<SettingGroup> settingGroups = new ArrayList<>();
+    private final List<SettingGroup> settingGroupsView = Collections.unmodifiableList(this.settingGroups);
+    private final SettingGroup defaultSettingGroup = new SettingGroup("general", "General");
     private ActivationListener activationListener;
     private boolean enabled;
 
@@ -39,6 +46,7 @@ public abstract class Module {
         this.category = category;
         this.aliases = List.copyOf(aliases);
         this.keybind = keybind == null ? ModuleKeybind.unbound() : keybind;
+        this.settingGroups.add(this.defaultSettingGroup);
     }
 
     public final String id() {
@@ -88,7 +96,30 @@ public abstract class Module {
         return this.settingsView;
     }
 
+    public final List<SettingGroup> settingGroups() {
+        return this.settingGroupsView;
+    }
+
     protected final <T extends Setting<?>> T setting(final T setting) {
+        return this.setting(this.defaultSettingGroup, setting);
+    }
+
+    protected final SettingGroup settingGroup(final String id, final String name) {
+        for (SettingGroup group : this.settingGroups) {
+            if (group.id().equals(id)) {
+                return group;
+            }
+        }
+        SettingGroup group = new SettingGroup(id, name);
+        this.settingGroups.add(group);
+        return group;
+    }
+
+    protected final <T extends Setting<?>> T setting(final SettingGroup group, final T setting) {
+        if (!this.settingGroups.contains(group)) {
+            this.settingGroups.add(group);
+        }
+        group.add(setting);
         this.settings.add(setting);
         return setting;
     }
@@ -114,6 +145,23 @@ public abstract class Module {
     }
 
     public void soundPacket(final Minecraft client, final ClientboundSoundPacket packet) {
+    }
+
+    public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        return false;
+    }
+
+    public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        return false;
+    }
+
+    public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+    }
+
+    public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
+    }
+
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
     }
 
     protected void onEnable() {

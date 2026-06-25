@@ -12,6 +12,11 @@ public interface NumberSettingSpec {
 
     String name();
 
+    @Value.Default
+    default String description() {
+        return "";
+    }
+
     double defaultValue();
 
     double min();

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -165,6 +166,46 @@ class ClientConfigTest {
         assertTrue(friends.isFriend("steve"));
         assertTrue(friends.isFriend("enderdash"));
         assertEquals(List.of("Alex", "Steve", "EnderDash"), friends.friends());
+    }
+
+    @Test
+    void backsUpMalformedConfigBeforeSavingFreshConfig() throws Exception {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        Files.writeString(path, "{ definitely not json");
+
+        new ClientConfig(new ModuleManager(), path).load();
+
+        assertTrue(Files.exists(path));
+        assertTrue(Files.readString(path).contains("\"modules\""));
+        Path backup = backupFiles(path).getFirst();
+        assertEquals("{ definitely not json", Files.readString(backup));
+    }
+
+    @Test
+    void backsUpInvalidConfigShapeBeforeSavingFreshConfig() throws Exception {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        Files.writeString(path, """
+                {
+                  "modules": []
+                }
+                """);
+
+        new ClientConfig(new ModuleManager(), path).load();
+
+        assertTrue(Files.exists(path));
+        assertTrue(Files.readString(path).contains("\"modules\""));
+        Path backup = backupFiles(path).getFirst();
+        assertTrue(Files.readString(backup).contains("\"modules\": []"));
+    }
+
+    private static List<Path> backupFiles(final Path configPath) throws Exception {
+        try (var files = Files.list(configPath.getParent())) {
+            return files
+                    .filter(path -> path.getFileName().toString().startsWith(configPath.getFileName() + "."))
+                    .filter(path -> path.getFileName().toString().endsWith(".backup.json"))
+                    .sorted(Comparator.comparing(Path::toString))
+                    .toList();
+        }
     }
 
     private static final class ConfigModule extends Module {

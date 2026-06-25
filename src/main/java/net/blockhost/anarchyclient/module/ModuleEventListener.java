@@ -2,7 +2,12 @@ package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
+import net.blockhost.anarchyclient.event.GameJoinedEvent;
+import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
+import net.blockhost.anarchyclient.event.PacketReceiveEvent;
+import net.blockhost.anarchyclient.event.PacketSendEvent;
+import net.blockhost.anarchyclient.event.PacketSentEvent;
 import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.blockhost.anarchyclient.event.SoundPacketEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
@@ -46,5 +51,34 @@ public final class ModuleEventListener {
     @EventHandler
     public void handleSoundPacket(final SoundPacketEvent event) {
         this.module.soundPacket(event.client(), event.packet());
+    }
+
+    @EventHandler
+    public void handlePacketReceive(final PacketReceiveEvent event) {
+        if (this.module.receivePacket(event.client(), event.connection(), event.packet())) {
+            event.cancel();
+        }
+    }
+
+    @EventHandler
+    public void handlePacketSend(final PacketSendEvent event) {
+        if (this.module.sendPacket(event.client(), event.connection(), event.packet())) {
+            event.cancel();
+        }
+    }
+
+    @EventHandler
+    public void handlePacketSent(final PacketSentEvent event) {
+        this.module.sentPacket(event.client(), event.connection(), event.packet());
+    }
+
+    @EventHandler
+    public void handleGameJoined(final GameJoinedEvent event) {
+        this.module.gameJoined(event.client(), event.listener());
+    }
+
+    @EventHandler
+    public void handleGameLeft(final GameLeftEvent event) {
+        this.module.gameLeft(event.client(), event.listener());
     }
 }

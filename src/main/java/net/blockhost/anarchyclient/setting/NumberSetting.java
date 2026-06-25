@@ -11,7 +11,7 @@ public final class NumberSetting extends Setting<Double> {
     private final double step;
 
     private NumberSetting(final NumberSettingSpec spec) {
-        super(spec.id(), spec.name(), spec.defaultValue(), spec.aliases());
+        super(spec.id(), spec.name(), spec.description(), spec.defaultValue(), spec.aliases());
         this.min = spec.min();
         this.max = spec.max();
         this.step = spec.step();

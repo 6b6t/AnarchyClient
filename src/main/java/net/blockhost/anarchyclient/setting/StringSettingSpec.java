@@ -12,6 +12,11 @@ public interface StringSettingSpec {
 
     String name();
 
+    @Value.Default
+    default String description() {
+        return "";
+    }
+
     String defaultValue();
 
     @Value.Default
