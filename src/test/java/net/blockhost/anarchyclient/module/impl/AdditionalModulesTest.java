@@ -1,9 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
+import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
@@ -11,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -204,5 +210,77 @@ class AdditionalModulesTest {
         assertEquals(0.0, stopped.x, 1.0E-9);
         assertEquals(0.0, stopped.y, 1.0E-9);
         assertEquals(0.0, stopped.z, 1.0E-9);
+    }
+
+    @Test
+    void packetGuardModulesClassifyTheirPackets() {
+        assertTrue(NoRotateSetModule.shouldCancel(new ClientboundPlayerRotationPacket(90.0F, false, 30.0F, false), false));
+        assertTrue(NoSlotSetModule.shouldCancel(new ClientboundSetHeldSlotPacket(2)));
+        assertTrue(NoSwingModule.shouldCancel(new ServerboundSwingPacket(InteractionHand.MAIN_HAND), true));
+        assertFalse(NoSwingModule.shouldCancel(new ServerboundSwingPacket(InteractionHand.MAIN_HAND), false));
+    }
+
+    @Test
+    void autoClickerDelayUsesFasterConfiguredRate() {
+        assertEquals(2, AutoClickerModule.delayTicks(8.0, 12.0));
+        assertEquals(20, AutoClickerModule.delayTicks(1.0, 1.0));
+    }
+
+    @Test
+    void chestStealerIgnoresEmptySlots() {
+        List<ItemStack> stacks = List.of(
+                ItemStack.EMPTY,
+                ItemStack.EMPTY,
+                ItemStack.EMPTY
+        );
+
+        assertEquals(-1, ChestStealerModule.firstStealableSlot(stacks, 3, true, Set.of()));
+    }
+
+    @Test
+    void inventoryCleanerSkipsEmptyAndSelectedSlots() {
+        List<ItemStack> stacks = List.of(
+                ItemStack.EMPTY,
+                ItemStack.EMPTY,
+                ItemStack.EMPTY
+        );
+        InventoryCleanerModule.CleanerOptions options = new InventoryCleanerModule.CleanerOptions(
+                true,
+                Set.of(),
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+        );
+
+        assertEquals(-1, InventoryCleanerModule.findDropSlot(stacks, 1, options));
+    }
+
+    @Test
+    void tntTimerFormatsFuseSeconds() {
+        assertEquals("4.0s", TntTimerModule.formatFuse(80));
+        assertEquals("0.0s", TntTimerModule.formatFuse(-5));
+    }
+
+    @Test
+    void zoomFovUsesConfiguredFactorWithFloor() {
+        assertEquals(30, ZoomModule.zoomedFov(90, 3.0));
+        assertEquals(10, ZoomModule.zoomedFov(30, 10.0));
+    }
+
+    @Test
+    void autoDisableParsesModuleIds() {
+        assertIterableEquals(List.of("kill_aura", "velocity", "zoom"),
+                AutoDisableModule.parseModuleIds("kill_aura, velocity; zoom").stream().toList());
+    }
+
+    @Test
+    void holeEspRequiresTwoAirBlocksAndSafeShell() {
+        assertTrue(HoleEspModule.isHole(true, true, true, true, true, true, true));
+        assertFalse(HoleEspModule.isHole(false, true, true, true, true, true, true));
+        assertFalse(HoleEspModule.isHole(true, true, true, true, false, true, true));
     }
 }

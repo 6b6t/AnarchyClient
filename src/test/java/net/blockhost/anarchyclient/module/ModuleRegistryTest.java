@@ -56,5 +56,16 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("velocity").orElseThrow());
         assertNotNull(modules.find("void_esp").orElseThrow());
         assertNotNull(modules.find("breadcrumbs").orElseThrow());
+        assertNotNull(modules.find("auto_clicker").orElseThrow());
+        assertNotNull(modules.find("no_rotate_set").orElseThrow());
+        assertNotNull(modules.find("no_slot_set").orElseThrow());
+        assertNotNull(modules.find("no_swing").orElseThrow());
+        assertNotNull(modules.find("chest_stealer").orElseThrow());
+        assertNotNull(modules.find("inventory_cleaner").orElseThrow());
+        assertNotNull(modules.find("fast_place").orElseThrow());
+        assertNotNull(modules.find("tnt_timer").orElseThrow());
+        assertNotNull(modules.find("zoom").orElseThrow());
+        assertNotNull(modules.find("auto_disable").orElseThrow());
+        assertNotNull(modules.find("hole_esp").orElseThrow());
     }
 }
