@@ -3,10 +3,6 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: Version to release, for example 0.1.0. Must match build.gradle.kts.
-        required: true
-        type: string
       prerelease:
         description: Mark the GitHub release as prerelease
         required: true
@@ -28,21 +24,16 @@ jobs:
         with:
           ref: ${{ github.sha }}
 
-      - name: Verify release version
+      - name: Read release version
+        id: release_version
         shell: bash
-        env:
-          RELEASE_VERSION: ${{ inputs.version }}
         run: |
-          actual_version="$(sed -nE 's/^version = "([^"]+)"/\1/p' build.gradle.kts)"
-          if [ -z "$actual_version" ]; then
+          release_version="$(sed -nE 's/^version = "([^"]+)"/\1/p' build.gradle.kts)"
+          if [ -z "$release_version" ]; then
             echo "Could not read version from build.gradle.kts" >&2
             exit 1
           fi
-          if [ "$actual_version" != "$RELEASE_VERSION" ]; then
-            echo "Release input version ($RELEASE_VERSION) must match committed Gradle version ($actual_version)." >&2
-            echo "Run the manual set-version workflow and push the version bump before releasing." >&2
-            exit 1
-          fi
+          echo "version=$release_version" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 25
         uses: actions/setup-java@v5
@@ -159,8 +150,8 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.version }}
-          name: AnarchyClient ${{ inputs.version }}
+          tag_name: ${{ steps.release_version.outputs.version }}
+          name: AnarchyClient ${{ steps.release_version.outputs.version }}
           target_commitish: ${{ github.sha }}
           prerelease: ${{ inputs.prerelease }}
           body: |
@@ -168,12 +159,12 @@ jobs:
 
             | Platform | Download Link |
             |----------|---------------|
-            | Minecraft 26.2 | [Download](https://github.com/6b6t/AnarchyClient/releases/download/${{ inputs.version }}/${{ steps.release_file.outputs.name }}) |
+            | Minecraft 26.2 | [Download](https://github.com/6b6t/AnarchyClient/releases/download/${{ steps.release_version.outputs.version }}/${{ steps.release_file.outputs.name }}) |
 
             ## Verify Provenance
 
             ```bash
-            gh release download "${{ inputs.version }}" \
+            gh release download "${{ steps.release_version.outputs.version }}" \
               --repo 6b6t/AnarchyClient \
               --pattern "${{ steps.release_file.outputs.name }}" \
               --clobber
