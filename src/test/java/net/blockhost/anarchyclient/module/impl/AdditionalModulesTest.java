@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
@@ -455,7 +456,7 @@ class AdditionalModulesTest {
 
     @Test
     void waypointsParseNamedBlockPositions() {
-        List<WaypointsModule.Waypoint> points = WaypointsModule.parse("home:1:64:-3;bad;stash:10:70:5");
+        List<Waypoint> points = WaypointsModule.parse("home:1:64:-3;bad;stash:10:70:5");
 
         assertEquals(2, points.size());
         assertEquals("home", points.getFirst().name());

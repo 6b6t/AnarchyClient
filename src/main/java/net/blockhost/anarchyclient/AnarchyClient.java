@@ -11,11 +11,13 @@ import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
+import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
 import net.blockhost.anarchyclient.timer.TimerManager;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -39,6 +41,8 @@ public final class AnarchyClient implements ClientModInitializer {
     public static final FriendManager FRIENDS = new FriendManager(
             FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + "-friends.txt")
     );
+    public static final ProfileManager PROFILES = new ProfileManager(ProfileManager.defaultPath());
+    public static final WaypointStore WAYPOINTS = new WaypointStore(WaypointStore.defaultPath());
     public static final ClientConfig CONFIG = new ClientConfig(MODULES, FRIENDS);
     private static final Identifier HUD_MODULES_ID = Identifier.fromNamespaceAndPath(MOD_ID, "module_hud");
 
@@ -49,6 +53,8 @@ public final class AnarchyClient implements ClientModInitializer {
         AnarchyClientRenderPipelines.initialize();
         ModuleRegistry.registerDefaults(MODULES);
         FRIENDS.load();
+        PROFILES.load();
+        WAYPOINTS.load();
         CONFIG.load();
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(

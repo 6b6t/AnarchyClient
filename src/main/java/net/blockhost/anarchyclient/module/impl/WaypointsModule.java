@@ -1,9 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.waypoint.Waypoint;
+import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -18,11 +21,12 @@ public final class WaypointsModule extends Module {
 
     private final StringSetting points = this.setting(StringSetting.from(StringSetting.builder()
             .id("points")
-            .name("Points")
-            .defaultValue("home:0:64:0")
+            .name("Legacy Points")
+            .defaultValue("")
             .build()));
     private String lastPoints = "";
-    private List<Waypoint> parsed = List.of();
+    private String lastWorld = "";
+    private List<Waypoint> legacy = List.of();
 
     public WaypointsModule() {
         super("waypoints", "Waypoints", ModuleCategory.RENDER);
@@ -30,9 +34,11 @@ public final class WaypointsModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (!this.lastPoints.equals(this.points.value())) {
-            this.parsed = parse(this.points.value());
+        String world = WaypointStore.currentWorld(client);
+        if (!this.lastPoints.equals(this.points.value()) || !this.lastWorld.equals(world)) {
+            this.legacy = parse(world, this.points.value());
             this.lastPoints = this.points.value();
+            this.lastWorld = world;
         }
     }
 
@@ -45,7 +51,9 @@ public final class WaypointsModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        for (Waypoint waypoint : this.parsed) {
+        List<Waypoint> waypoints = new ArrayList<>(AnarchyClient.WAYPOINTS.byWorld(WaypointStore.currentWorld(client)));
+        waypoints.addAll(this.legacy);
+        for (Waypoint waypoint : waypoints) {
             BlockPos pos = waypoint.pos();
             AABB box = new AABB(pos).inflate(0.08).move(camera.scale(-1));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(120, 230, 255, 210));
@@ -57,27 +65,13 @@ public final class WaypointsModule extends Module {
     }
 
     static List<Waypoint> parse(final String value) {
+        return parse("unknown", value);
+    }
+
+    static List<Waypoint> parse(final String world, final String value) {
         if (value == null || value.isBlank()) {
             return List.of();
         }
-        List<Waypoint> result = new ArrayList<>();
-        for (String token : value.split(";")) {
-            String[] parts = token.trim().split(":");
-            if (parts.length != 4) {
-                continue;
-            }
-            try {
-                result.add(new Waypoint(parts[0], new BlockPos(
-                        Integer.parseInt(parts[1].trim()),
-                        Integer.parseInt(parts[2].trim()),
-                        Integer.parseInt(parts[3].trim())
-                )));
-            } catch (NumberFormatException ignored) {
-            }
-        }
-        return List.copyOf(result);
-    }
-
-    record Waypoint(String name, BlockPos pos) {
+        return WaypointStore.parseLegacy(world, value);
     }
 }

@@ -16,11 +16,15 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
+import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.RegistryListSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.waypoint.Waypoint;
+import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
@@ -100,6 +104,30 @@ public final class AnarchyClientCommands {
                         .executes(AnarchyClientCommands::clearChat))
                 .then(literal("reconnect")
                         .executes(AnarchyClientCommands::reconnect))
+                .then(literal("profile")
+                        .then(literal("list")
+                                .executes(AnarchyClientCommands::listProfiles))
+                        .then(literal("save")
+                                .then(argument("name", StringArgumentType.word())
+                                        .executes(AnarchyClientCommands::saveProfile)))
+                        .then(literal("load")
+                                .then(argument("name", StringArgumentType.word())
+                                        .suggests(AnarchyClientCommands::suggestProfiles)
+                                        .executes(AnarchyClientCommands::loadProfile)))
+                        .then(literal("delete")
+                                .then(argument("name", StringArgumentType.word())
+                                        .suggests(AnarchyClientCommands::suggestProfiles)
+                                        .executes(AnarchyClientCommands::deleteProfile))))
+                .then(literal("waypoint")
+                        .then(literal("list")
+                                .executes(AnarchyClientCommands::listWaypoints))
+                        .then(literal("add")
+                                .then(argument("name", StringArgumentType.word())
+                                        .executes(AnarchyClientCommands::addWaypoint)))
+                        .then(literal("remove")
+                                .then(argument("name", StringArgumentType.word())
+                                        .suggests(AnarchyClientCommands::suggestWaypoints)
+                                        .executes(AnarchyClientCommands::removeWaypoint))))
                 .then(literal("server-info")
                         .executes(AnarchyClientCommands::serverInfo)
                         .then(literal("ports")
@@ -260,6 +288,95 @@ public final class AnarchyClientCommands {
         }
         ServerAddress address = ServerAddress.parseString(server.ip);
         ConnectScreen.startConnecting(new TitleScreen(), client, address, server, false, null);
+        return SUCCESS;
+    }
+
+    private static int listProfiles(final CommandContext<FabricClientCommandSource> context) {
+        List<ProfileManager.ProfileSummary> profiles = AnarchyClient.PROFILES.summaries();
+        if (profiles.isEmpty()) {
+            context.getSource().sendFeedback(Component.literal("No saved profiles."));
+            return SUCCESS;
+        }
+        for (ProfileManager.ProfileSummary profile : profiles) {
+            String updated = profile.updatedAt().isBlank() ? "unknown" : profile.updatedAt();
+            context.getSource().sendFeedback(Component.literal(profile.name() + " | modules: " + profile.modules() + " | updated: " + updated));
+        }
+        return SUCCESS;
+    }
+
+    private static int saveProfile(final CommandContext<FabricClientCommandSource> context) {
+        String name = StringArgumentType.getString(context, "name");
+        try {
+            ProfileManager.Profile profile = AnarchyClient.PROFILES.capture(name, AnarchyClient.MODULES);
+            context.getSource().sendFeedback(Component.literal("Saved profile " + profile.name + "."));
+            return SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int loadProfile(final CommandContext<FabricClientCommandSource> context) {
+        String name = StringArgumentType.getString(context, "name");
+        int changed = AnarchyClient.PROFILES.apply(name, AnarchyClient.MODULES);
+        if (changed < 0) {
+            context.getSource().sendError(Component.literal("Unknown profile: " + name));
+            return 0;
+        }
+        AnarchyClient.CONFIG.save();
+        context.getSource().sendFeedback(Component.literal("Loaded profile " + name + " and changed " + changed + " value" + (changed == 1 ? "" : "s") + "."));
+        return SUCCESS;
+    }
+
+    private static int deleteProfile(final CommandContext<FabricClientCommandSource> context) {
+        String name = StringArgumentType.getString(context, "name");
+        if (AnarchyClient.PROFILES.delete(name)) {
+            context.getSource().sendFeedback(Component.literal("Deleted profile " + name + "."));
+        } else {
+            context.getSource().sendFeedback(Component.literal("No saved profile named " + name + "."));
+        }
+        return SUCCESS;
+    }
+
+    private static int listWaypoints(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = WaypointStore.currentWorld(client);
+        List<Waypoint> waypoints = AnarchyClient.WAYPOINTS.byWorld(world);
+        if (waypoints.isEmpty()) {
+            context.getSource().sendFeedback(Component.literal("No waypoints for " + world + "."));
+            return SUCCESS;
+        }
+        for (Waypoint waypoint : waypoints) {
+            BlockPos pos = waypoint.pos();
+            context.getSource().sendFeedback(Component.literal(waypoint.name() + " = "
+                    + pos.getX() + ", " + pos.getY() + ", " + pos.getZ()));
+        }
+        return SUCCESS;
+    }
+
+    private static int addWaypoint(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "add a waypoint");
+        if (client == null) {
+            return 0;
+        }
+        String name = StringArgumentType.getString(context, "name");
+        String world = WaypointStore.currentWorld(client);
+        BlockPos pos = client.player.blockPosition();
+        AnarchyClient.WAYPOINTS.add(new Waypoint(world, name, pos, WaypointStore.DEFAULT_COLOR));
+        context.getSource().sendFeedback(Component.literal("Saved waypoint " + name + " at "
+                + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "."));
+        return SUCCESS;
+    }
+
+    private static int removeWaypoint(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String name = StringArgumentType.getString(context, "name");
+        String world = WaypointStore.currentWorld(client);
+        if (AnarchyClient.WAYPOINTS.remove(world, name)) {
+            context.getSource().sendFeedback(Component.literal("Removed waypoint " + name + "."));
+        } else {
+            context.getSource().sendFeedback(Component.literal("No waypoint named " + name + " for this world."));
+        }
         return SUCCESS;
     }
 
@@ -680,6 +797,10 @@ public final class AnarchyClientCommands {
             select.value(value);
             return;
         }
+        if (setting instanceof RegistryListSetting<?> list) {
+            list.valueFromString(value);
+            return;
+        }
         if (setting instanceof StringSetting string) {
             string.value(value);
             return;
@@ -730,6 +851,19 @@ public final class AnarchyClientCommands {
                 .map(action -> action.name().toLowerCase(Locale.ROOT)), builder);
     }
 
+    private static CompletableFuture<Suggestions> suggestProfiles(final CommandContext<FabricClientCommandSource> context,
+                                                                  final SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggest(AnarchyClient.PROFILES.summaries().stream()
+                .map(ProfileManager.ProfileSummary::name), builder);
+    }
+
+    private static CompletableFuture<Suggestions> suggestWaypoints(final CommandContext<FabricClientCommandSource> context,
+                                                                   final SuggestionsBuilder builder) {
+        String world = WaypointStore.currentWorld(Minecraft.getInstance());
+        return SharedSuggestionProvider.suggest(AnarchyClient.WAYPOINTS.byWorld(world).stream()
+                .map(Waypoint::name), builder);
+    }
+
     private static CompletableFuture<Suggestions> suggestOnlinePlayers(final CommandContext<FabricClientCommandSource> context,
                                                                        final SuggestionsBuilder builder) {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
@@ -758,6 +892,9 @@ public final class AnarchyClientCommands {
         }
         if (setting instanceof SelectSetting select) {
             return SharedSuggestionProvider.suggest(select.options(), builder);
+        }
+        if (setting instanceof RegistryListSetting<?> list) {
+            return SharedSuggestionProvider.suggest(list.suggestions(), builder);
         }
         return builder.buildFuture();
     }
