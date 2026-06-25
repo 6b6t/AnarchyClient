@@ -71,6 +71,7 @@ class ClientConfigTest {
                 ModuleCategory.COMBAT
         ));
         saved.expandedModules(Set.of("auto_gg", "nyan_cat_gif_spammer"));
+        saved.favoriteModules(Set.of("auto_gg", "esp"));
         saved.selectedCategory(ModuleCategory.COMBAT);
         saved.selectedModuleId("auto_gg");
 
@@ -92,6 +93,8 @@ class ClientConfigTest {
                 ModuleCategory.MISC
         ), loaded.categoryOrder().orElseThrow());
         assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
+        assertEquals(Set.of("auto_gg", "esp"), loaded.favoriteModules().orElseThrow());
+        assertTrue(loaded.moduleFavorite("auto_gg"));
         assertEquals(ModuleCategory.COMBAT, loaded.selectedCategory().orElseThrow());
         assertEquals("auto_gg", loaded.selectedModuleId().orElseThrow());
     }

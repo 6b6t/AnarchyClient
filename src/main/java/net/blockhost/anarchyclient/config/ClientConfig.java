@@ -44,6 +44,7 @@ public final class ClientConfig {
     private final Map<ModuleCategory, CategoryWindowState> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
+    private final Set<String> favoriteModules = new HashSet<>();
     private ModuleCategory selectedCategory;
     private String selectedModuleId;
 
@@ -69,6 +70,7 @@ public final class ClientConfig {
         this.categoryWindows.clear();
         this.categoryOrder.clear();
         this.expandedModules.clear();
+        this.favoriteModules.clear();
         this.selectedCategory = null;
         this.selectedModuleId = null;
         if (!Files.exists(this.path)) {
@@ -145,6 +147,34 @@ public final class ClientConfig {
     public void expandedModules(final Set<String> moduleIds) {
         this.expandedModules.clear();
         this.expandedModules.addAll(moduleIds);
+    }
+
+    public Optional<Set<String>> favoriteModules() {
+        return Optional.of(Set.copyOf(this.favoriteModules));
+    }
+
+    public void favoriteModules(final Set<String> moduleIds) {
+        this.favoriteModules.clear();
+        for (String moduleId : moduleIds) {
+            if (moduleId != null && !moduleId.isBlank()) {
+                this.favoriteModules.add(moduleId);
+            }
+        }
+    }
+
+    public boolean moduleFavorite(final String moduleId) {
+        return moduleId != null && this.favoriteModules.contains(moduleId);
+    }
+
+    public void moduleFavorite(final String moduleId, final boolean favorite) {
+        if (moduleId == null || moduleId.isBlank()) {
+            return;
+        }
+        if (favorite) {
+            this.favoriteModules.add(moduleId);
+        } else {
+            this.favoriteModules.remove(moduleId);
+        }
     }
 
     public Optional<ModuleCategory> selectedCategory() {
@@ -232,6 +262,17 @@ public final class ClientConfig {
             this.expandedModules(moduleIds);
         }
 
+        JsonElement favorites = ui.get("favoriteModules");
+        if (favorites != null && favorites.isJsonArray()) {
+            Set<String> moduleIds = new HashSet<>();
+            for (JsonElement element : favorites.getAsJsonArray()) {
+                if (element != null && element.isJsonPrimitive()) {
+                    moduleIds.add(element.getAsString());
+                }
+            }
+            this.favoriteModules(moduleIds);
+        }
+
         JsonElement categoryOrderJson = ui.get("categoryOrder");
         if (categoryOrderJson != null && categoryOrderJson.isJsonArray()) {
             List<ModuleCategory> categories = new ArrayList<>();
@@ -273,6 +314,10 @@ public final class ClientConfig {
         JsonArray expanded = new JsonArray();
         this.expandedModules.stream().sorted().forEach(expanded::add);
         ui.add("expandedModules", expanded);
+
+        JsonArray favorites = new JsonArray();
+        this.favoriteModules.stream().sorted().forEach(favorites::add);
+        ui.add("favoriteModules", favorites);
 
         if (!this.categoryOrder.isEmpty()) {
             JsonArray categories = new JsonArray();

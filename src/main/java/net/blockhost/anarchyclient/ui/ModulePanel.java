@@ -326,6 +326,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         this.requestFrame();
     }
 
+    private void toggleFavorite(final Module module) {
+        this.config.moduleFavorite(module.id(), !this.config.moduleFavorite(module.id()));
+        this.config.save();
+        this.requestFrame();
+    }
+
     private void openDrawer(final Drawer drawer) {
         this.drawer = this.drawer == drawer ? Drawer.NONE : drawer;
         this.settingsDrawer.refresh();
@@ -1453,11 +1459,16 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         );
         private final TextNode enabledLabel = textNode(this::enabledLabel, this::enabledLabelColor)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        private final IconNode star = iconNode(() -> ModulePanel.this.selectedModule == null ? "" : "star", this::starColor);
+        private final IconButton star;
         private final ToggleSwitch toggle;
 
         private InspectorHeader() {
             super(new GridLayout(0, 0));
+            this.star = iconButton("star", this::starColor, () -> {
+                if (ModulePanel.this.selectedModule != null) {
+                    ModulePanel.this.toggleFavorite(ModulePanel.this.selectedModule);
+                }
+            });
             this.toggle = new ToggleSwitch(
                     () -> ModulePanel.this.selectedModule != null,
                     () -> ModulePanel.this.selectedModule != null && ModulePanel.this.selectedModule.enabled(),
@@ -1473,7 +1484,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     padding(16F, 0F, 12F, 0F), null, 18F));
             this.category.layoutOptions(cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(16F, 0F, 12F, 0F), null, 18F));
-            this.star.layoutOptions(fixedCell(1, 0, 1, 2, ICON_BOX, ICON_BOX, GridAnchor.CENTER));
+            this.star.layoutOptions(fixedCell(1, 0, 1, 2, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
             this.enabledLabel.layoutOptions(cell(2, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, 4F, 0F), 30F, null));
             this.toggle.layoutOptions(cell(3, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
@@ -1515,7 +1526,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             if (module == null) {
                 return Color.TRANSPARENT;
             }
-            return module.enabled() ? WARNING : FAINT;
+            return ModulePanel.this.config.moduleFavorite(module.id()) ? WARNING : FAINT;
         }
     }
 
