@@ -44,5 +44,17 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("silent_disconnect").orElseThrow());
         assertNotNull(modules.find("skeleton_esp").orElseThrow());
         assertNotNull(modules.find("auto_pot").orElseThrow());
+        assertNotNull(modules.find("auto_walk").orElseThrow());
+        assertNotNull(modules.find("auto_jump").orElseThrow());
+        assertNotNull(modules.find("sneak").orElseThrow());
+        assertNotNull(modules.find("sound_blocker").orElseThrow());
+        assertNotNull(modules.find("packet_logger").orElseThrow());
+        assertNotNull(modules.find("auto_gap").orElseThrow());
+        assertNotNull(modules.find("exp_thrower").orElseThrow());
+        assertNotNull(modules.find("auto_replenish").orElseThrow());
+        assertNotNull(modules.find("anti_void").orElseThrow());
+        assertNotNull(modules.find("velocity").orElseThrow());
+        assertNotNull(modules.find("void_esp").orElseThrow());
+        assertNotNull(modules.find("breadcrumbs").orElseThrow());
     }
 }

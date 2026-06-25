@@ -2,6 +2,9 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
@@ -131,5 +134,75 @@ class AdditionalModulesTest {
         assertTrue(AutoPotModule.shouldUseHealing(10.0F, 10.0));
         assertTrue(AutoPotModule.shouldUseHealing(9.5F, 10.0));
         assertFalse(AutoPotModule.shouldUseHealing(10.5F, 10.0));
+    }
+
+    @Test
+    void inputStatesComputeUpdatedMoveVectors() {
+        Input forwardRight = new Input(true, false, false, true, false, false, false);
+        Vec2 vector = InputStates.moveVector(forwardRight);
+
+        assertEquals(-0.70710677F, vector.x, 1.0E-6F);
+        assertEquals(0.70710677F, vector.y, 1.0E-6F);
+        Vec2 stopped = InputStates.moveVector(new Input(true, true, false, false, false, false, false));
+        assertEquals(0.0F, stopped.x, 1.0E-6F);
+        assertEquals(0.0F, stopped.y, 1.0E-6F);
+    }
+
+    @Test
+    void autoJumpRequiresGroundMovementAndDryBlocksWhenConfigured() {
+        assertTrue(AutoJumpModule.shouldJump(true, true, false, true, true));
+        assertTrue(AutoJumpModule.shouldJump(true, false, false, false, true));
+        assertFalse(AutoJumpModule.shouldJump(false, true, false, true, true));
+        assertFalse(AutoJumpModule.shouldJump(true, false, false, true, true));
+        assertFalse(AutoJumpModule.shouldJump(true, true, true, true, true));
+    }
+
+    @Test
+    void soundBlockerMatchesListedSoundsAndSafeEmptyLists() {
+        Identifier step = Identifier.withDefaultNamespace("block.stone.step");
+        Identifier splash = Identifier.withDefaultNamespace("entity.generic.splash");
+
+        assertTrue(SoundBlockerModule.shouldBlock(step, java.util.Set.of(step), false));
+        assertFalse(SoundBlockerModule.shouldBlock(splash, java.util.Set.of(step), false));
+        assertFalse(SoundBlockerModule.shouldBlock(step, java.util.Set.of(step), true));
+        assertTrue(SoundBlockerModule.shouldBlock(splash, java.util.Set.of(step), true));
+        assertFalse(SoundBlockerModule.shouldBlock(step, java.util.Set.of(), true));
+    }
+
+    @Test
+    void expThrowerScoresDurabilityPercent() {
+        assertEquals(50.0, EXPThrowerModule.durabilityPercent(400, 200));
+        assertEquals(100.0, EXPThrowerModule.durabilityPercent(400, 0));
+        assertEquals(100.0, EXPThrowerModule.durabilityPercent(0, 10));
+    }
+
+    @Test
+    void packetLoggerFiltersCaseInsensitively() {
+        assertTrue(PacketLoggerModule.matchesFilter("clientbound/minecraft:sound", "SOUND"));
+        assertTrue(PacketLoggerModule.matchesFilter("ClientboundSoundPacket", ""));
+        assertFalse(PacketLoggerModule.matchesFilter("ClientboundSoundPacket", "chat"));
+    }
+
+    @Test
+    void breadcrumbsAgeTrailPointsImmutably() {
+        BreadcrumbsModule.TrailPoint point = new BreadcrumbsModule.TrailPoint(new Vec3(1.0, 2.0, 3.0), 4);
+        BreadcrumbsModule.TrailPoint ticked = BreadcrumbsModule.tick(point);
+
+        assertEquals(new Vec3(1.0, 2.0, 3.0), ticked.position());
+        assertEquals(5, ticked.age());
+        assertEquals(4, point.age());
+    }
+
+    @Test
+    void velocityScalesHorizontalAndVerticalMotionIndependently() {
+        Vec3 scaled = VelocityModule.scaleMotion(new Vec3(2.0, 4.0, -4.0), 50.0, 25.0);
+        assertEquals(1.0, scaled.x, 1.0E-9);
+        assertEquals(1.0, scaled.y, 1.0E-9);
+        assertEquals(-2.0, scaled.z, 1.0E-9);
+
+        Vec3 stopped = VelocityModule.scaleMotion(new Vec3(2.0, 4.0, -4.0), 0.0, 0.0);
+        assertEquals(0.0, stopped.x, 1.0E-9);
+        assertEquals(0.0, stopped.y, 1.0E-9);
+        assertEquals(0.0, stopped.z, 1.0E-9);
     }
 }

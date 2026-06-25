@@ -81,7 +81,7 @@ public final class SoundLocatorModule extends Module {
             this.parsedSounds = SoundScan.parseSoundIds(this.sounds.value());
             this.lastSounds = this.sounds.value();
         }
-        Identifier id = soundId(packet);
+        Identifier id = SoundScan.soundId(packet);
         if (!this.parsedSounds.isEmpty() && !this.parsedSounds.contains(id)) {
             return;
         }
@@ -135,12 +135,6 @@ public final class SoundLocatorModule extends Module {
         synchronized (this.markers) {
             this.markers.clear();
         }
-    }
-
-    private static Identifier soundId(final ClientboundSoundPacket packet) {
-        return packet.getSound().unwrapKey()
-                .map(key -> key.identifier())
-                .orElse(packet.getSound().value().location());
     }
 
     private record SoundMarker(Identifier sound, Vec3 position, int ticksRemaining) {

@@ -5,6 +5,7 @@
   "client": [
     "ClientCommonPacketListenerMixin",
     "ClientPacketListenerMixin",
+    "ClientInputAccessor",
     "ConnectionMixin",
     "EntityRendererMixin",
     "KeyboardInputMixin",
