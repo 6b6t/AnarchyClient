@@ -36,6 +36,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.Identifier;
@@ -52,6 +53,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -99,7 +101,28 @@ public final class AnarchyClientCommands {
                 .then(literal("reconnect")
                         .executes(AnarchyClientCommands::reconnect))
                 .then(literal("server-info")
-                        .executes(AnarchyClientCommands::serverInfo))
+                        .executes(AnarchyClientCommands::serverInfo)
+                        .then(literal("ports")
+                                .executes(AnarchyClientCommands::serverPortsKnown)
+                                .then(literal("known")
+                                        .executes(AnarchyClientCommands::serverPortsKnown))
+                                .then(argument("from", IntegerArgumentType.integer(1, 65535))
+                                        .then(argument("to", IntegerArgumentType.integer(1, 65535))
+                                                .executes(AnarchyClientCommands::serverPortsRange)))))
+                .then(literal("kick")
+                        .then(literal("disconnect")
+                                .executes(AnarchyClientCommands::kickDisconnect))
+                        .then(literal("position")
+                                .executes(AnarchyClientCommands::kickPosition)))
+                .then(literal("seed")
+                        .executes(AnarchyClientCommands::showSeed)
+                        .then(literal("set")
+                                .then(argument("seed", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::setSeed)))
+                        .then(literal("list")
+                                .executes(AnarchyClientCommands::listSeeds))
+                        .then(literal("delete")
+                                .executes(AnarchyClientCommands::deleteSeed)))
                 .then(literal("terrain-export")
                         .then(argument("distance", IntegerArgumentType.integer(1, 64))
                                 .executes(AnarchyClientCommands::terrainExport)))
@@ -248,6 +271,133 @@ public final class AnarchyClientCommands {
         String brand = connection == null || connection.serverBrand() == null ? "unknown" : connection.serverBrand();
         context.getSource().sendFeedback(Component.literal("Server: " + address + " | Brand: " + brand));
         return SUCCESS;
+    }
+
+    private static int serverPortsKnown(final CommandContext<FabricClientCommandSource> context) {
+        return scanServerPorts(context, ServerPortScanner.knownPorts(), "known ports");
+    }
+
+    private static int serverPortsRange(final CommandContext<FabricClientCommandSource> context) {
+        int first = IntegerArgumentType.getInteger(context, "from");
+        int second = IntegerArgumentType.getInteger(context, "to");
+        try {
+            ServerPortScanner.PortRange range = ServerPortScanner.range(first, second);
+            return scanServerPorts(context, range.checks(), "ports " + range.min() + "-" + range.max());
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int scanServerPorts(final CommandContext<FabricClientCommandSource> context,
+                                       final List<ServerPortScanner.PortCheck> ports,
+                                       final String label) {
+        Minecraft client = Minecraft.getInstance();
+        ServerData server = client.getCurrentServer();
+        if (server == null) {
+            context.getSource().sendError(Component.literal("You must be connected to a multiplayer server to scan ports."));
+            return 0;
+        }
+        String host = ServerAddress.parseString(server.ip).getHost();
+        if (host.isBlank()) {
+            context.getSource().sendError(Component.literal("Could not resolve server host from " + server.ip + "."));
+            return 0;
+        }
+        context.getSource().sendFeedback(Component.literal("Scanning " + label + " on " + host + "..."));
+        CompletableFuture
+                .supplyAsync(() -> ServerPortScanner.scan(host, ports))
+                .thenAccept(results -> client.execute(() -> context.getSource()
+                        .sendFeedback(Component.literal(ServerPortScanner.format(results)))));
+        return SUCCESS;
+    }
+
+    private static int kickDisconnect(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "kick yourself");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        client.getConnection().handleDisconnect(new ClientboundDisconnectPacket(Component.literal("Disconnected by AnarchyClient.")));
+        return SUCCESS;
+    }
+
+    private static int kickPosition(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "kick yourself");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
+                Double.NaN,
+                Double.POSITIVE_INFINITY,
+                Double.NaN,
+                client.player.onGround(),
+                client.player.horizontalCollision
+        ));
+        context.getSource().sendFeedback(Component.literal("Sent invalid position packet."));
+        return SUCCESS;
+    }
+
+    private static int showSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            SeedStore.SeedRecord record = SeedStore.get(seedPath(), world);
+            if (record == null) {
+                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+            } else {
+                context.getSource().sendFeedback(Component.literal(world + " seed: " + record.seed()));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int setSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            SeedStore.SeedRecord record = SeedStore.put(seedPath(), world,
+                    StringArgumentType.getString(context, "seed"), Instant.now());
+            context.getSource().sendFeedback(Component.literal("Saved seed for " + record.world() + ": " + record.seed()));
+            return SUCCESS;
+        } catch (IllegalArgumentException | IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to save seed: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int listSeeds(final CommandContext<FabricClientCommandSource> context) {
+        try {
+            List<SeedStore.SeedRecord> records = SeedStore.list(seedPath());
+            if (records.isEmpty()) {
+                context.getSource().sendFeedback(Component.literal("No saved seeds."));
+                return SUCCESS;
+            }
+            for (SeedStore.SeedRecord record : records) {
+                context.getSource().sendFeedback(Component.literal(record.world() + " = " + record.seed()));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int deleteSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            if (SeedStore.delete(seedPath(), world)) {
+                context.getSource().sendFeedback(Component.literal("Deleted saved seed for " + world + "."));
+            } else {
+                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to delete seed: " + exception.getMessage()));
+            return 0;
+        }
     }
 
     private static int terrainExport(final CommandContext<FabricClientCommandSource> context) {
@@ -703,6 +853,12 @@ public final class AnarchyClientCommands {
                 .resolve("anarchyclient")
                 .resolve("skins")
                 .resolve(sanitizeFileName(playerName) + ".png");
+    }
+
+    private static Path seedPath() {
+        return FabricLoader.getInstance().getConfigDir()
+                .resolve("anarchyclient")
+                .resolve("seeds.json");
     }
 
     static String sanitizeFileName(final String value) {

@@ -39,6 +39,12 @@ public final class BlockPlacer {
     public static PlacementResult place(final Minecraft client, final String owner, final BlockPos target,
                                         final boolean rotate, final float maxTurnDegrees,
                                         final Predicate<ItemStack> itemPredicate) {
+        return place(client, owner, target, rotate, maxTurnDegrees, itemPredicate, PlacementOptions.DEFAULT);
+    }
+
+    public static PlacementResult place(final Minecraft client, final String owner, final BlockPos target,
+                                        final boolean rotate, final float maxTurnDegrees,
+                                        final Predicate<ItemStack> itemPredicate, final PlacementOptions options) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return PlacementResult.WAITING;
@@ -50,7 +56,7 @@ public final class BlockPlacer {
         if (placementTarget.isEmpty()) {
             return PlacementResult.WAITING;
         }
-        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate);
+        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate, options);
         if (hotbarSlot.isEmpty()) {
             return PlacementResult.MISSING_ITEM;
         }
@@ -80,6 +86,31 @@ public final class BlockPlacer {
         return PlacementResult.WAITING;
     }
 
+    public static int placeBatch(final Minecraft client, final String owner, final Iterable<PlacementRequest> requests,
+                                 final int maxPlacements, final boolean rotate, final float maxTurnDegrees) {
+        int limit = placementsPerTick(maxPlacements);
+        int placed = 0;
+        for (PlacementRequest request : requests) {
+            PlacementResult result = place(
+                    client,
+                    owner,
+                    request.target(),
+                    rotate,
+                    maxTurnDegrees,
+                    request.itemPredicate(),
+                    request.options()
+            );
+            if (result == PlacementResult.PLACED && ++placed >= limit) {
+                return placed;
+            }
+        }
+        return placed;
+    }
+
+    public static int placementsPerTick(final int value) {
+        return Math.max(1, value);
+    }
+
     public static boolean needsPlacement(final ClientLevel level, final BlockPos target) {
         BlockState state = level.getBlockState(target);
         return state.canBeReplaced() || !state.getFluidState().isEmpty();
@@ -93,9 +124,16 @@ public final class BlockPlacer {
     public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
                                                       final LocalPlayer player, final BlockPos target,
                                                       final Predicate<ItemStack> itemPredicate) {
+        return findPlaceableHotbarSlot(inventory, level, player, target, itemPredicate, PlacementOptions.DEFAULT);
+    }
+
+    public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
+                                                      final LocalPlayer player, final BlockPos target,
+                                                      final Predicate<ItemStack> itemPredicate,
+                                                      final PlacementOptions options) {
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (itemPredicate.test(stack) && isPlaceableBlock(stack, level, player, target)) {
+            if (itemPredicate.test(stack) && isPlaceableBlock(stack, level, player, target, options)) {
                 return OptionalInt.of(slot);
             }
         }
@@ -104,14 +142,19 @@ public final class BlockPlacer {
 
     public static boolean isPlaceableBlock(final ItemStack stack, final ClientLevel level, final LocalPlayer player,
                                            final BlockPos target) {
+        return isPlaceableBlock(stack, level, player, target, PlacementOptions.DEFAULT);
+    }
+
+    public static boolean isPlaceableBlock(final ItemStack stack, final ClientLevel level, final LocalPlayer player,
+                                           final BlockPos target, final PlacementOptions options) {
         if (!(stack.getItem() instanceof BlockItem blockItem)) {
             return false;
         }
         Block block = blockItem.getBlock();
         BlockState state = block.defaultBlockState();
         if (!needsPlacement(level, target)
-                || !Block.isShapeFullBlock(state.getCollisionShape(level, target))
-                || block instanceof FallingBlock && FallingBlock.isFree(level.getBlockState(target.below()))) {
+                || options.requireFullBlock() && !Block.isShapeFullBlock(state.getCollisionShape(level, target))
+                || !options.allowFallingBlocks() && block instanceof FallingBlock && FallingBlock.isFree(level.getBlockState(target.below()))) {
             return false;
         }
         return level.isUnobstructed(state, target, CollisionContext.placementContext(player));
@@ -134,6 +177,20 @@ public final class BlockPlacer {
         PLACED,
         WAITING,
         MISSING_ITEM
+    }
+
+    public record PlacementOptions(boolean requireFullBlock, boolean allowFallingBlocks) {
+
+        public static final PlacementOptions DEFAULT = new PlacementOptions(true, false);
+        public static final PlacementOptions NON_FULL = new PlacementOptions(false, false);
+        public static final PlacementOptions ANY_BLOCK_ITEM = new PlacementOptions(false, true);
+    }
+
+    public record PlacementRequest(BlockPos target, Predicate<ItemStack> itemPredicate, PlacementOptions options) {
+
+        public PlacementRequest(final BlockPos target, final Predicate<ItemStack> itemPredicate) {
+            this(target, itemPredicate, PlacementOptions.DEFAULT);
+        }
     }
 
     public record PlacementTarget(BlockHitResult hitResult, Vec3 hitLocation) {

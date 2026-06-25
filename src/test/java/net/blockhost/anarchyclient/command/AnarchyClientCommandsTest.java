@@ -7,15 +7,24 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnarchyClientCommandsTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void parsesBooleanSettingValues() {
@@ -129,5 +138,47 @@ class AnarchyClientCommandsTest {
     void sanitizesSkinFileNames() {
         assertEquals("Bad_Name__", AnarchyClientCommands.sanitizeFileName("Bad/Name:*"));
         assertEquals("skin", AnarchyClientCommands.sanitizeFileName("   "));
+    }
+
+    @Test
+    void validatesPortScanRanges() {
+        ServerPortScanner.PortRange range = ServerPortScanner.range(25570, 25565);
+
+        assertEquals(25565, range.min());
+        assertEquals(25570, range.max());
+        assertEquals(6, range.checks().size());
+        assertThrows(IllegalArgumentException.class, () -> ServerPortScanner.range(1, ServerPortScanner.MAX_RANGE_SIZE + 2));
+    }
+
+    @Test
+    void formatsOpenPortScanResults() {
+        assertEquals("No open ports found.", ServerPortScanner.format(List.of(
+                new ServerPortScanner.PortResult(25565, "Minecraft", false)
+        )));
+        assertEquals("Open ports: 25565 (Minecraft), 8123 (Dynmap)", ServerPortScanner.format(List.of(
+                new ServerPortScanner.PortResult(25565, "Minecraft", true),
+                new ServerPortScanner.PortResult(22, "SSH", false),
+                new ServerPortScanner.PortResult(8123, "Dynmap", true)
+        )));
+    }
+
+    @Test
+    void storesSeedsByWorldKey() throws Exception {
+        Path path = this.tempDir.resolve("seeds.json");
+        String world = SeedStore.worldKey("example.org:25565");
+
+        assertEquals("server:example.org:25565", world);
+        assertEquals("12345", SeedStore.normalizeSeed(" 12345 "));
+        assertThrows(IllegalArgumentException.class, () -> SeedStore.normalizeSeed("   "));
+        assertNull(SeedStore.get(path, world));
+
+        SeedStore.SeedRecord saved = SeedStore.put(path, world, " 12345 ", Instant.parse("2026-06-25T00:00:00Z"));
+        assertEquals(world, saved.world());
+        assertEquals("12345", saved.seed());
+        assertEquals("2026-06-25T00:00:00Z", saved.savedAt());
+        assertEquals(1, SeedStore.list(path).size());
+        assertEquals("12345", SeedStore.get(path, world).seed());
+        assertTrue(SeedStore.delete(path, world));
+        assertFalse(SeedStore.delete(path, world));
     }
 }
