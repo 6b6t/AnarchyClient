@@ -1,12 +1,16 @@
 package net.blockhost.anarchyclient.rivet;
 
 import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.rendertype.RenderSetup;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.resources.Identifier;
 
 public final class AnarchyClientRenderPipelines {
@@ -15,6 +19,27 @@ public final class AnarchyClientRenderPipelines {
     public static final RenderPipeline AURORA_PANEL = panelPipeline("aurora_panel");
     public static final RenderPipeline GRID_PANEL = panelPipeline("grid_panel");
     public static final RenderPipeline EMBER_PANEL = panelPipeline("ember_panel");
+    private static final DepthStencilState NO_DEPTH = new DepthStencilState(CompareOp.ALWAYS_PASS, false);
+    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+                    .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/lines_no_depth"))
+                    .withDepthStencilState(NO_DEPTH)
+                    .build()
+    );
+    private static final RenderPipeline QUADS_NO_DEPTH_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/quads_no_depth"))
+                    .withDepthStencilState(NO_DEPTH)
+                    .build()
+    );
+    public static final RenderType LINES_NO_DEPTH = RenderType.create(
+            "anarchyclient:lines_no_depth",
+            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).createRenderSetup()
+    );
+    public static final RenderType QUADS_NO_DEPTH = RenderType.create(
+            "anarchyclient:quads_no_depth",
+            RenderSetup.builder(QUADS_NO_DEPTH_PIPELINE).createRenderSetup()
+    );
 
     private AnarchyClientRenderPipelines() {
     }

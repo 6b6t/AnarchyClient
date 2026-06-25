@@ -5,17 +5,26 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.List;
 
 public final class ItemEspModule extends Module {
 
+    private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("mode")
+            .name("Mode")
+            .defaultValue("Box")
+            .addAllOptions(List.of("Box", "Shader"))
+            .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
@@ -53,6 +62,8 @@ public final class ItemEspModule extends Module {
         }
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        boolean shaderMode = "Shader".equals(this.mode.value());
         double maxDistanceSqr = this.range.value() * this.range.value();
         for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof ItemEntity itemEntity) || itemEntity.distanceToSqr(player) > maxDistanceSqr) {
@@ -61,8 +72,13 @@ public final class ItemEspModule extends Module {
             if (this.valuableOnly.value() && !isValuable(itemEntity)) {
                 continue;
             }
-            AABB box = itemEntity.getBoundingBox().inflate(0.08).move(camera.scale(-1));
-            WorldLineRenderer.box(matrices, submits, box, new WorldLineRenderer.Color(92, 214, 255, this.opacity.value().intValue()));
+            if (shaderMode) {
+                EspOutlineRegistry.set(entity.getId(), ARGB.color(255, 92, 214, 255));
+            } else {
+                WorldLineRenderer.boxNoDepth(matrices, submits,
+                        WorldLineRenderer.interpolatedBox(itemEntity, partialTick, 0.08, camera),
+                        new WorldLineRenderer.Color(92, 214, 255, this.opacity.value().intValue()));
+            }
         }
     }
 

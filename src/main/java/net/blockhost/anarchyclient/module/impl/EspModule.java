@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
 import net.blockhost.anarchyclient.target.TargetClassifier;
 import net.blockhost.anarchyclient.target.TargetKind;
@@ -15,16 +15,22 @@ import net.blockhost.anarchyclient.target.TargetQuery;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 public final class EspModule extends Module {
 
+    private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("mode")
+            .name("Mode")
+            .defaultValue("Box")
+            .addAllOptions(List.of("Box", "Shader"))
+            .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
@@ -57,11 +63,6 @@ public final class EspModule extends Module {
             .id("ignore_friends")
             .name("Friends")
             .defaultValue(true)
-            .build()));
-    private final StringSetting friends = this.setting(StringSetting.from(StringSetting.builder()
-            .id("friends")
-            .name("Friend List")
-            .defaultValue("")
             .build()));
     private final BooleanSetting ignoreTeams = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("ignore_teams")
@@ -118,6 +119,8 @@ public final class EspModule extends Module {
         }
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        boolean shaderMode = "Shader".equals(this.mode.value());
         TargetPolicy policy = this.targetPolicy();
         for (LivingEntity entity : RenderedEntityCache.entities()) {
             if (!TargetQuery.allowed(entity, player, policy)) {
@@ -134,8 +137,13 @@ public final class EspModule extends Module {
                 alpha = Math.max(35, alpha / 2);
             }
 
-            AABB box = entity.getBoundingBox().inflate(0.04).move(camera.scale(-1));
-            WorldLineRenderer.box(matrices, submits, box, this.color(entity, Math.sqrt(distanceSqr), alpha));
+            WorldLineRenderer.Color color = this.color(entity, Math.sqrt(distanceSqr), alpha);
+            if (shaderMode) {
+                EspOutlineRegistry.set(entity.getId(), ARGB.color(255, color.red(), color.green(), color.blue()));
+            } else {
+                WorldLineRenderer.boxNoDepth(matrices, submits,
+                        WorldLineRenderer.interpolatedBox(entity, partialTick, 0.04, camera), color);
+            }
         }
     }
 
@@ -144,7 +152,7 @@ public final class EspModule extends Module {
     }
 
     private WorldLineRenderer.Color color(final Entity entity, final double distance, final int alpha) {
-        if (TargetClassifier.isFriend(entity, this.friends.value())) {
+        if (TargetClassifier.isPlayer(entity) && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName())) {
             return new WorldLineRenderer.Color(98, 170, 255, alpha);
         }
         return switch (this.colorMode.value()) {
@@ -173,7 +181,6 @@ public final class EspModule extends Module {
                 this.passiveMobs.value(),
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
-                this.friends.value(),
                 this.ignoreTeams.value(),
                 this.antiBot.value()
         );

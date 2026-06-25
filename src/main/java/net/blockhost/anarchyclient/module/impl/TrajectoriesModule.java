@@ -86,7 +86,7 @@ public final class TrajectoriesModule extends Module {
             Vec3 next = position.add(motion);
             BlockHitResult hit = client.level.clip(new ClipContext(position, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));
             Vec3 end = hit.getType() == HitResult.Type.MISS ? next : hit.getLocation();
-            WorldLineRenderer.line(matrices, submits, position.subtract(camera), end.subtract(camera), color);
+            WorldLineRenderer.lineNoDepth(matrices, submits, position.subtract(camera), end.subtract(camera), color);
             if (hit.getType() != HitResult.Type.MISS) {
                 return;
             }

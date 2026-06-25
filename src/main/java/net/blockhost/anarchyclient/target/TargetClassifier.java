@@ -12,10 +12,6 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.regex.Pattern;
 
 public final class TargetClassifier {
@@ -67,23 +63,6 @@ public final class TargetClassifier {
                 && !(entity instanceof ArmorStand)
                 && (allowDead || living.isAlive() && !living.isDeadOrDying())
                 && !living.isSpectator();
-    }
-
-    public static boolean isFriend(final Entity entity, final String value) {
-        if (!(entity instanceof Player)) {
-            return false;
-        }
-        return parseNames(value).contains(entity.getScoreboardName().toLowerCase(Locale.ROOT));
-    }
-
-    public static Set<String> parseNames(final String value) {
-        if (value == null || value.isBlank()) {
-            return Set.of();
-        }
-        return Arrays.stream(value.split("[,|\\s]+"))
-                .map(name -> name.trim().toLowerCase(Locale.ROOT))
-                .filter(name -> !name.isEmpty())
-                .collect(Collectors.toUnmodifiableSet());
     }
 
     public static boolean looksLikeBot(final String name, final int tickCount) {

@@ -10,10 +10,10 @@ public final class FullbrightModule extends Module {
     private final NumberSetting brightness = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("brightness")
             .name("Brightness")
-            .defaultValue(1.0)
+            .defaultValue(10.0)
             .min(0.0)
-            .max(1.0)
-            .step(0.05)
+            .max(10.0)
+            .step(0.5)
             .build()));
     private Double previousBrightness;
 
@@ -24,16 +24,16 @@ public final class FullbrightModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         if (this.previousBrightness == null) {
-            this.previousBrightness = client.options.gamma().get();
+            this.previousBrightness = client.options.gamma().value;
         }
-        client.options.gamma().set(this.brightness.value());
+        client.options.gamma().value = this.brightness.value();
     }
 
     @Override
     protected void onDisable() {
         Minecraft client = Minecraft.getInstance();
         if (this.previousBrightness != null) {
-            client.options.gamma().set(this.previousBrightness);
+            client.options.gamma().value = this.previousBrightness;
             this.previousBrightness = null;
         }
     }

@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -35,17 +36,27 @@ public final class ClientConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private final ModuleManager modules;
+    private final FriendManager friends;
     private final Path path;
     private final Map<ModuleCategory, CategoryWindowState> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
 
     public ClientConfig(final ModuleManager modules) {
-        this(modules, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
+        this(modules, null, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
     }
 
     public ClientConfig(final ModuleManager modules, final Path path) {
+        this(modules, null, path);
+    }
+
+    public ClientConfig(final ModuleManager modules, final FriendManager friends) {
+        this(modules, friends, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
+    }
+
+    public ClientConfig(final ModuleManager modules, final FriendManager friends, final Path path) {
         this.modules = modules;
+        this.friends = friends;
         this.path = path;
     }
 
@@ -67,6 +78,7 @@ public final class ClientConfig {
             if (moduleRoot == null) {
                 return;
             }
+            boolean migratedFriends = this.migrateLegacyFriends(moduleRoot);
             for (Module module : this.modules.all()) {
                 JsonObject moduleJson = findObject(moduleRoot, module.id(), module.aliases());
                 if (moduleJson == null) {
@@ -87,6 +99,9 @@ public final class ClientConfig {
                 for (Setting<?> setting : module.settings()) {
                     setting.fromJson(findElement(settings, setting.id(), setting.aliases()));
                 }
+            }
+            if (migratedFriends) {
+                this.save();
             }
         } catch (RuntimeException | IOException exception) {
             LOGGER.warn("Failed to load AnarchyClient config from {}", this.path, exception);
@@ -274,6 +289,31 @@ public final class ClientConfig {
             }
         }
         return null;
+    }
+
+    private boolean migrateLegacyFriends(final JsonObject moduleRoot) {
+        if (this.friends == null) {
+            return false;
+        }
+        Set<String> names = new HashSet<>();
+        boolean foundLegacyField = false;
+        for (String moduleId : List.of("esp", "tracers", "nametags", "kill_aura")) {
+            JsonObject moduleJson = moduleRoot.getAsJsonObject(moduleId);
+            if (moduleJson == null) {
+                continue;
+            }
+            JsonObject settings = moduleJson.getAsJsonObject("settings");
+            if (settings == null) {
+                continue;
+            }
+            JsonElement friendsJson = settings.get("friends");
+            if (friendsJson != null && friendsJson.isJsonPrimitive()) {
+                foundLegacyField = true;
+                names.addAll(FriendManager.parseNames(friendsJson.getAsString()));
+            }
+        }
+        this.friends.addAll(names);
+        return foundLegacyField;
     }
 
     private static List<ModuleCategory> normalizeCategoryOrder(final List<ModuleCategory> categories) {

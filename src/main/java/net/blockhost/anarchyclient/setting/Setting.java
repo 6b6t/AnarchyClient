@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.setting;
 import com.google.gson.JsonElement;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class Setting<T> {
 
@@ -11,6 +12,7 @@ public abstract class Setting<T> {
     private final List<String> aliases;
     private final T defaultValue;
     private T value;
+    private Supplier<Boolean> visibilityCondition;
 
     protected Setting(final String id, final String name, final T defaultValue) {
         this(id, name, defaultValue, List.of());
@@ -46,6 +48,14 @@ public abstract class Setting<T> {
 
     public final void value(final T value) {
         this.value = this.sanitize(value);
+    }
+
+    public final boolean visible() {
+        return this.visibilityCondition == null || this.visibilityCondition.get();
+    }
+
+    public final void visibleWhen(final Supplier<Boolean> condition) {
+        this.visibilityCondition = condition;
     }
 
     protected T sanitize(final T value) {

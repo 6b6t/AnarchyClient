@@ -4,16 +4,15 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public record TargetPolicy(Set<TargetKind> kinds, boolean invisibles, boolean dead, boolean ignoreFriends,
-                           String friends, boolean ignoreTeams, boolean antiBot) {
+                           boolean ignoreTeams, boolean antiBot) {
 
     public TargetPolicy {
         kinds = kinds.isEmpty() ? Set.of() : Set.copyOf(kinds);
-        friends = friends == null ? "" : friends;
     }
 
     public static TargetPolicy of(final boolean players, final boolean hostiles, final boolean passives,
-                                  final boolean invisibles, final boolean ignoreFriends, final String friends,
-                                  final boolean ignoreTeams, final boolean antiBot) {
+                                  final boolean invisibles, final boolean ignoreFriends, final boolean ignoreTeams,
+                                  final boolean antiBot) {
         EnumSet<TargetKind> kinds = EnumSet.noneOf(TargetKind.class);
         if (players) {
             kinds.add(TargetKind.PLAYER);
@@ -25,7 +24,7 @@ public record TargetPolicy(Set<TargetKind> kinds, boolean invisibles, boolean de
             kinds.add(TargetKind.PASSIVE);
             kinds.add(TargetKind.WATER_CREATURE);
         }
-        return new TargetPolicy(kinds, invisibles, false, ignoreFriends, friends, ignoreTeams, antiBot);
+        return new TargetPolicy(kinds, invisibles, false, ignoreFriends, ignoreTeams, antiBot);
     }
 
     public boolean allows(final TargetKind kind) {

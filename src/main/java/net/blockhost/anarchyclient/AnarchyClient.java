@@ -4,9 +4,11 @@ import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
+import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
+import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
@@ -17,6 +19,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping.Category;
@@ -30,7 +33,10 @@ public final class AnarchyClient implements ClientModInitializer {
     public static final String MOD_ID = "anarchyclient";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final ModuleManager MODULES = new ModuleManager();
-    public static final ClientConfig CONFIG = new ClientConfig(MODULES);
+    public static final FriendManager FRIENDS = new FriendManager(
+            FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + "-friends.txt")
+    );
+    public static final ClientConfig CONFIG = new ClientConfig(MODULES, FRIENDS);
     private static final Identifier HUD_MODULES_ID = Identifier.fromNamespaceAndPath(MOD_ID, "module_hud");
 
     private KeyMapping openMenuKey;
@@ -39,6 +45,7 @@ public final class AnarchyClient implements ClientModInitializer {
     public void onInitializeClient() {
         AnarchyClientRenderPipelines.initialize();
         ModuleRegistry.registerDefaults(MODULES);
+        FRIENDS.load();
         CONFIG.load();
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
@@ -48,7 +55,10 @@ public final class AnarchyClient implements ClientModInitializer {
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        LevelRenderEvents.COLLECT_SUBMITS.register(context -> MODULES.call(new WorldRenderEvent(context)));
+        LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
+            EspOutlineRegistry.clear();
+            MODULES.call(new WorldRenderEvent(context));
+        });
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
                 (graphics, deltaTracker) -> MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics)));
     }

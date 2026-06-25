@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.target;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,8 @@ public final class TargetQuery {
         if (!policy.invisibles() && entity.isInvisible()) {
             return false;
         }
-        if (policy.ignoreFriends() && TargetClassifier.isFriend(entity, policy.friends())) {
+        if (policy.ignoreFriends() && TargetClassifier.isPlayer(entity)
+                && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName())) {
             return false;
         }
         if (policy.ignoreTeams() && entity.getTeam() != null && player.getTeam() != null

@@ -5,7 +5,6 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.blockhost.anarchyclient.target.TargetPolicy;
 import net.minecraft.client.Minecraft;
@@ -93,11 +92,6 @@ public final class KillAuraModule extends Module {
             .id("ignore_friends")
             .name("Friends")
             .defaultValue(true)
-            .build()));
-    private final StringSetting friends = this.setting(StringSetting.from(StringSetting.builder()
-            .id("friends")
-            .name("Friend List")
-            .defaultValue("")
             .build()));
     private final BooleanSetting ignoreTeams = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("ignore_teams")
@@ -218,7 +212,6 @@ public final class KillAuraModule extends Module {
                 this.passiveMobs.value(),
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
-                this.friends.value(),
                 this.ignoreTeams.value(),
                 this.antiBot.value()
         );

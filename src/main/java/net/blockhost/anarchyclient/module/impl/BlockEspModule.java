@@ -82,7 +82,7 @@ public final class BlockEspModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         for (BlockPos pos : this.cachedPositions) {
-            WorldLineRenderer.box(matrices, submits, new AABB(pos).move(camera.scale(-1)), new WorldLineRenderer.Color(76, 228, 120, 190));
+            WorldLineRenderer.boxNoDepth(matrices, submits, new AABB(pos).move(camera.scale(-1)), new WorldLineRenderer.Color(76, 228, 120, 190));
         }
     }
 }

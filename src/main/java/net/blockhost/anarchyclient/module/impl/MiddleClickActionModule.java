@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -7,7 +8,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -22,7 +23,7 @@ public final class MiddleClickActionModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Pearl")
-            .addAllOptions(List.of("Pearl", "XP Bottle", "Command"))
+            .addAllOptions(List.of("Pearl", "XP Bottle", "Command", "Add Friend"))
             .build()));
     private final StringSetting command = this.setting(StringSetting.from(StringSetting.builder()
             .id("command")
@@ -55,6 +56,11 @@ public final class MiddleClickActionModule extends Module {
             case "Command" -> {
                 String target = client.hitResult instanceof EntityHitResult hit ? hit.getEntity().getScoreboardName() : "";
                 ChatActions.send(client, this.command.value().replace("{target}", target));
+            }
+            case "Add Friend" -> {
+                if (client.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof Player target) {
+                    AnarchyClient.FRIENDS.add(target.getScoreboardName());
+                }
             }
             default -> useHotbarItem(client, player, Items.ENDER_PEARL);
         }

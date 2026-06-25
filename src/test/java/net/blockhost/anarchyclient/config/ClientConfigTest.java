@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -134,6 +135,36 @@ class ClientConfigTest {
         assertEquals(false, loadedModule.enabledSetting.value());
         assertEquals(82, loadedModule.keybind().key());
         assertEquals(ModuleBindAction.SMART, loadedModule.keybind().action());
+    }
+
+    @Test
+    void migratesLegacyModuleFriendSettings() throws Exception {
+        Path configPath = this.tempDir.resolve("anarchyclient.json");
+        Path friendsPath = this.tempDir.resolve("friends.txt");
+        Files.writeString(configPath, """
+                {
+                  "modules": {
+                    "esp": {
+                      "settings": {
+                        "friends": "Alex, Steve"
+                      }
+                    },
+                    "kill_aura": {
+                      "settings": {
+                        "friends": "alex | EnderDash"
+                      }
+                    }
+                  }
+                }
+                """);
+        FriendManager friends = new FriendManager(friendsPath);
+
+        new ClientConfig(new ModuleManager(), friends, configPath).load();
+
+        assertTrue(friends.isFriend("alex"));
+        assertTrue(friends.isFriend("steve"));
+        assertTrue(friends.isFriend("enderdash"));
+        assertEquals(List.of("Alex", "Steve", "EnderDash"), friends.friends());
     }
 
     private static final class ConfigModule extends Module {

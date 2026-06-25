@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -91,6 +92,9 @@ public final class ModulePanel extends Container {
     private float dragOffsetX;
     private float dragOffsetY;
     private boolean animationsActive;
+    private boolean friendsMode;
+    private final FriendsTabButton friendsTabButton;
+    private final FriendsPanel friendsPanel;
 
     public ModulePanel(final ModuleManager modules, final ClientConfig config) {
         super(AbsoluteLayout.INSTANCE);
@@ -98,6 +102,9 @@ public final class ModulePanel extends Container {
         this.config = config;
         this.restoreExpandedModules();
         this.restoreZOrder();
+        this.friendsTabButton = new FriendsTabButton();
+        this.friendsPanel = new FriendsPanel();
+        this.addChild(this.friendsTabButton);
         for (ModuleCategory category : this.zOrder) {
             CategoryWindow window = new CategoryWindow(this, category);
             this.categoryWindows.put(category, window);
@@ -121,6 +128,17 @@ public final class ModulePanel extends Container {
         this.animationsActive = false;
         this.ensureWindows(size);
         this.applyWindowLayouts(size, now);
+        this.friendsTabButton.layoutOptions(new AbsoluteLayoutOptions(130F, 3F, 70F, 18F));
+        if (this.friendsMode) {
+            float panelPadding = 8;
+            float top = 26;
+            this.friendsPanel.layoutOptions(new AbsoluteLayoutOptions(
+                    panelPadding,
+                    top,
+                    Math.max(0, size.width() - panelPadding * 2),
+                    Math.max(0, size.height() - top - panelPadding)
+            ));
+        }
         super.computeLayout(size);
     }
 
@@ -169,6 +187,21 @@ public final class ModulePanel extends Container {
         this.config.expandedModules(this.expandedModules);
         group.rebuild();
         this.save();
+        this.rivet().recalculateNextFrame();
+    }
+
+    private void toggleFriendsMode() {
+        this.friendsMode = !this.friendsMode;
+        this.clearChildren();
+        this.addChild(this.friendsTabButton);
+        if (this.friendsMode) {
+            this.friendsPanel.refresh();
+            this.addChild(this.friendsPanel);
+        } else {
+            for (ModuleCategory category : this.zOrder) {
+                this.addChild(this.categoryWindows.get(category));
+            }
+        }
         this.rivet().recalculateNextFrame();
     }
 
@@ -253,9 +286,10 @@ public final class ModulePanel extends Container {
             window.pulseFocus();
         }
         this.sortChildren((left, right) -> {
-            ModuleCategory leftCategory = ((CategoryWindow) left).category();
-            ModuleCategory rightCategory = ((CategoryWindow) right).category();
-            return Integer.compare(this.zOrder.indexOf(leftCategory), this.zOrder.indexOf(rightCategory));
+            if (!(left instanceof CategoryWindow leftWindow) || !(right instanceof CategoryWindow rightWindow)) {
+                return (left instanceof CategoryWindow) ? 1 : (right instanceof CategoryWindow) ? -1 : 0;
+            }
+            return Integer.compare(this.zOrder.indexOf(leftWindow.category()), this.zOrder.indexOf(rightWindow.category()));
         });
     }
 
@@ -269,7 +303,9 @@ public final class ModulePanel extends Container {
             height += MODULE_HEADER_HEIGHT + GAP;
             if (this.isExpanded(module)) {
                 for (Setting<?> setting : module.settings()) {
-                    height += settingRowHeight(setting);
+                    if (setting.visible()) {
+                        height += settingRowHeight(setting);
+                    }
                 }
             }
         }
@@ -492,23 +528,28 @@ public final class ModulePanel extends Container {
             if (ModulePanel.this.isExpanded(this.module)) {
                 int index = 0;
                 for (Setting<?> setting : this.module.settings()) {
-                    this.addChild(settingRow(setting, index++));
+                    if (setting.visible()) {
+                        this.addChild(settingRow(setting, index++));
+                    }
                 }
             }
             if (this.parent() != null) {
                 this.parent().requestLayoutRecalculation();
             }
+            if (ModulePanel.this.rivet() != null) {
+                ModulePanel.this.rivet().recalculateNextFrame();
+            }
         }
 
         private Component settingRow(final Setting<?> setting, final int index) {
             if (setting instanceof BooleanSetting bool) {
-                return new BooleanSettingRow(bool, index);
+                return new BooleanSettingRow(bool, index, this::rebuild);
             }
             if (setting instanceof NumberSetting number) {
                 return new NumberSettingRow(number, index);
             }
             if (setting instanceof SelectSetting select) {
-                return new SelectSettingRow(select, index);
+                return new SelectSettingRow(select, index, this::rebuild);
             }
             if (setting instanceof StringSetting string) {
                 return new StringSettingRow(string, index);
@@ -569,13 +610,14 @@ public final class ModulePanel extends Container {
 
     private final class BooleanSettingRow extends SettingRow {
 
-        private BooleanSettingRow(final BooleanSetting setting, final int index) {
+        private BooleanSettingRow(final BooleanSetting setting, final int index, final Runnable onChange) {
             super(index, BOOLEAN_ROW_HEIGHT);
             FormattedLabel name = label(setting.name(), MUTED);
             name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withAnchor(GridAnchor.LEFT).withHeight(BOOLEAN_ROW_HEIGHT));
             Checkbox value = checkbox(setting.value());
             value.toggleListener().add(checked -> {
                 setting.value(checked);
+                onChange.run();
                 ModulePanel.this.save();
             });
             value.layoutOptions(toggleCell(1, BOOLEAN_ROW_HEIGHT));
@@ -608,7 +650,7 @@ public final class ModulePanel extends Container {
 
     private final class SelectSettingRow extends SettingRow {
 
-        private SelectSettingRow(final SelectSetting setting, final int index) {
+        private SelectSettingRow(final SelectSetting setting, final int index, final Runnable onChange) {
             super(index, SELECT_ROW_HEIGHT);
             FormattedLabel name = label(setting.name(), MUTED);
             name.layoutOptions(new GridLayoutOptions(0, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withHeight(SELECT_ROW_HEIGHT));
@@ -617,6 +659,7 @@ public final class ModulePanel extends Container {
             Button value = button(current, ignored -> {
                 setting.next();
                 current.text(new TextLine(new TextSection(setting.value(), TextFormat.DEFAULT.withColor(TEXT))));
+                onChange.run();
                 ModulePanel.this.save();
             });
             value.layoutOptions(new GridLayoutOptions(1, 0).withFill(GridFill.HORIZONTAL).withWeightX(1).withWidth(72F).withHeight(SELECT_ROW_HEIGHT - 4));
@@ -659,6 +702,138 @@ public final class ModulePanel extends Container {
             value.layoutOptions(new GridLayoutOptions(1, 0).withAnchor(GridAnchor.RIGHT).withHeight(BOOLEAN_ROW_HEIGHT));
             this.addChild(name);
             this.addChild(value);
+        }
+    }
+
+    private final class FriendsTabButton extends Component {
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            boolean active = ModulePanel.this.friendsMode;
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), active ? ACTIVE.multiplyAlpha(0.22F) : SURFACE);
+            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, active ? ACTIVE : BORDER_SOFT);
+            renderer.text(this.rivet().backend().shapeText("Friends", active ? ACTIVE : MUTED),
+                    bounds.width() / 2F,
+                    bounds.height() / 2F,
+                    TextOrigin.Horizontal.VISUAL_CENTER,
+                    TextOrigin.Vertical.LOGICAL_CENTER);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Rectangle bounds) {
+            if (event.button() != MouseButton.LEFT) {
+                return false;
+            }
+            ModulePanel.this.toggleFriendsMode();
+            return true;
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(70, 18);
+        }
+    }
+
+    private final class FriendsPanel extends Container {
+
+        private final TextField addField;
+        private final Button addButton;
+        private final Container friendsList;
+        private final ScrollContainer scroll;
+
+        private FriendsPanel() {
+            super(AbsoluteLayout.INSTANCE);
+            this.addField = new TextField("");
+            this.addField.backgroundColor().set(SURFACE_DARK);
+            this.addField.outlineColor().set(BORDER_SOFT);
+            this.addField.focusedOutlineColor().set(ACTIVE);
+            this.addField.cursorColor().set(TEXT);
+            this.addField.selectionColor().set(Color.fromRGBA(0, 236, 92, 90));
+            this.addField.cornerRadius().set(CONTROL_RADIUS);
+
+            this.addButton = button(label("Add", TEXT), ignored -> {
+                if (AnarchyClient.FRIENDS.add(this.addField.text())) {
+                    this.addField.text("");
+                    this.refresh();
+                }
+            });
+            this.friendsList = new Container(new VerticalListLayout(3, true));
+            this.scroll = new ScrollContainer(this.friendsList);
+            this.scroll.barColor().set(Color.fromRGBA(154, 150, 142, 80));
+            this.scroll.barHoverColor().set(Color.fromRGBA(154, 150, 142, 130));
+            this.scroll.barClickColor().set(Color.fromRGBA(0, 236, 92, 170));
+            this.scroll.scrollSpeed().set(18F);
+
+            this.addChild(this.addField);
+            this.addChild(this.addButton);
+            this.addChild(this.scroll);
+        }
+
+        private void refresh() {
+            this.friendsList.clearChildren();
+            int index = 0;
+            for (String name : AnarchyClient.FRIENDS.friends()) {
+                this.friendsList.addChild(this.friendRow(name, index++));
+            }
+            if (this.parent() != null) {
+                this.parent().requestLayoutRecalculation();
+            }
+            if (ModulePanel.this.rivet() != null) {
+                ModulePanel.this.rivet().recalculateNextFrame();
+            }
+        }
+
+        private Container friendRow(final String name, final int index) {
+            final boolean even = index % 2 == 0;
+            Container row = new Container(new GridLayout(4, 0)) {
+                @Override
+                public void render(final Renderer renderer, final Rectangle bounds) {
+                    renderer.fillRect(0, 0, bounds.width(), bounds.height(), even ? SURFACE_DARK : WINDOW);
+                    super.render(renderer, bounds);
+                }
+            };
+            row.fixedSize(new Size(-1, BOOLEAN_ROW_HEIGHT));
+            FormattedLabel nameLabel = label(name, TEXT);
+            nameLabel.layoutOptions(new GridLayoutOptions(0, 0)
+                    .withFill(GridFill.HORIZONTAL)
+                    .withWeightX(1)
+                    .withHeight(BOOLEAN_ROW_HEIGHT));
+            Button remove = button(label("Remove", MUTED), ignored -> {
+                if (AnarchyClient.FRIENDS.remove(name)) {
+                    this.refresh();
+                }
+            });
+            remove.layoutOptions(new GridLayoutOptions(1, 0)
+                    .withAnchor(GridAnchor.CENTER)
+                    .withWidth(58F)
+                    .withHeight(BOOLEAN_ROW_HEIGHT - 4));
+            row.addChild(nameLabel);
+            row.addChild(remove);
+            return row;
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            float addHeight = 26;
+            float addButtonWidth = 52;
+            float gap = 4;
+            this.addField.layoutOptions(new AbsoluteLayoutOptions(0, 0, Math.max(0, size.width() - addButtonWidth - gap), addHeight));
+            this.addButton.layoutOptions(new AbsoluteLayoutOptions(Math.max(0, size.width() - addButtonWidth), 0, addButtonWidth, addHeight));
+            float scrollTop = addHeight + 6;
+            this.scroll.layoutOptions(new AbsoluteLayoutOptions(0, scrollTop, size.width(), Math.max(0, size.height() - scrollTop)));
+            super.computeLayout(size);
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Rectangle bounds) {
+            renderer.fillRect(0, 0, bounds.width(), bounds.height(), WINDOW_ACTIVE);
+            renderer.outlineRect(0, 0, bounds.width(), bounds.height(), 1, BORDER_SOFT);
+            super.render(renderer, bounds);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return constraints;
         }
     }
 
