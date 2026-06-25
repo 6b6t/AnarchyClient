@@ -4,11 +4,10 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.world.HoleManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.Blocks;
 
 public final class HoleFillerModule extends Module {
 
@@ -45,40 +44,19 @@ public final class HoleFillerModule extends Module {
             return;
         }
         int placed = 0;
-        int radius = this.range.value().intValue();
         BlockPos center = player.blockPosition();
-        for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
-            for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
-                BlockPos pos = new BlockPos(x, center.getY(), z);
-                if (pos.equals(center) || !isHole(client, pos)) {
-                    continue;
-                }
-                if (BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F) == BlockPlacement.PlacementResult.PLACED
-                        && ++placed >= this.blocksPerTick.value().intValue()) {
-                    return;
-                }
+        for (BlockPos pos : HoleManager.nearbyHoles(client.level, center, this.range.value().intValue())) {
+            if (pos.equals(center)) {
+                continue;
+            }
+            if (BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F) == BlockPlacement.PlacementResult.PLACED
+                    && ++placed >= this.blocksPerTick.value().intValue()) {
+                return;
             }
         }
     }
 
     static boolean isHole(final Minecraft client, final BlockPos pos) {
-        if (!client.level.getBlockState(pos).canBeReplaced()
-                || !client.level.getBlockState(pos.above()).canBeReplaced()
-                || !solidWall(client, pos.below())) {
-            return false;
-        }
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (!solidWall(client, pos.relative(direction))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean solidWall(final Minecraft client, final BlockPos pos) {
-        return client.level.getBlockState(pos).is(Blocks.BEDROCK)
-                || client.level.getBlockState(pos).is(Blocks.OBSIDIAN)
-                || client.level.getBlockState(pos).is(Blocks.CRYING_OBSIDIAN)
-                || client.level.getBlockState(pos).is(Blocks.ENDER_CHEST);
+        return HoleManager.isHole(client.level, pos);
     }
 }

@@ -7,12 +7,14 @@ import net.blockhost.anarchyclient.event.HudRenderEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
 import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
+import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
+import net.blockhost.anarchyclient.timer.TimerManager;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -71,6 +73,8 @@ public final class AnarchyClient implements ClientModInitializer {
         }
         RenderedEntityCache.refresh(client);
         RotationManager.tick();
+        TimerManager.tick();
+        SilentHotbar.tick(client);
         MODULES.handleKeybinds(client);
         MODULES.call(new ClientTickEvent(client));
         InventoryActionScheduler.tick(client);

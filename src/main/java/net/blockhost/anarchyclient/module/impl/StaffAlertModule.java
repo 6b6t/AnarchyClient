@@ -7,12 +7,16 @@ import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.server.ServerProfileStore;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.target.TargetClassifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -32,6 +36,19 @@ public final class StaffAlertModule extends Module {
             .name("Disable")
             .defaultValue(false)
             .build()));
+    private final BooleanSetting proximity = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("proximity")
+            .name("Proximity")
+            .defaultValue(true)
+            .build()));
+    private final NumberSetting proximityRange = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("proximity_range")
+            .name("Range")
+            .defaultValue(48.0)
+            .min(8.0)
+            .max(160.0)
+            .step(4.0)
+            .build()));
     private final StringSetting moduleList = this.setting(StringSetting.from(StringSetting.builder()
             .id("modules")
             .name("Modules")
@@ -47,6 +64,22 @@ public final class StaffAlertModule extends Module {
     @Override
     protected void onEnable() {
         this.alerted.clear();
+    }
+
+    @Override
+    public void tick(final Minecraft client) {
+        if (!this.proximity.value() || client.player == null || client.level == null) {
+            return;
+        }
+        double rangeSqr = this.proximityRange.value() * this.proximityRange.value();
+        for (Entity entity : client.level.entitiesForRendering()) {
+            if (entity instanceof Player player && player != client.player
+                    && client.player.distanceToSqr(player) <= rangeSqr
+                    && this.isStaff(player.getScoreboardName())
+                    && this.alerted.add(("near:" + player.getScoreboardName()).toLowerCase(Locale.ROOT))) {
+                this.alert(client, player.getScoreboardName() + " nearby");
+            }
+        }
     }
 
     @Override
@@ -70,7 +103,7 @@ public final class StaffAlertModule extends Module {
         }
         Set<String> names = new LinkedHashSet<>(parseNames(this.staffNames.value()));
         names.addAll(parseNames(String.join(",", ServerProfileStore.staffNames(ServerObserver.snapshot().rootDomain()))));
-        return names.contains(normalized);
+        return names.contains(normalized) || TargetClassifier.looksLikeStaffName(name) && names.isEmpty();
     }
 
     private void alert(final Minecraft client, final String name) {

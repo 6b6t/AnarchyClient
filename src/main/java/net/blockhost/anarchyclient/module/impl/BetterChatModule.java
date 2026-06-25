@@ -20,6 +20,16 @@ public final class BetterChatModule extends Module {
             .name("Timestamps")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting antiClear = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("anti_clear")
+            .name("Anti Clear")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting compactDuplicates = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("compact_duplicates")
+            .name("Compact")
+            .defaultValue(true)
+            .build()));
     private final BooleanSetting outgoingSuffix = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("outgoing_suffix")
             .name("Suffix")
@@ -30,6 +40,9 @@ public final class BetterChatModule extends Module {
             .name("Text")
             .defaultValue(" | AnarchyClient")
             .build()));
+    private static BetterChatModule active;
+    private String lastMessage = "";
+    private int duplicateCount;
 
     public BetterChatModule() {
         super("better_chat", "Better Chat", ModuleCategory.MISC);
@@ -37,10 +50,14 @@ public final class BetterChatModule extends Module {
 
     @Override
     public Component chatMessage(final Minecraft client, final Component message) {
-        if (!this.timestamps.value() || message == null) {
+        if (message == null) {
             return message;
         }
-        return withTimestamp(message, LocalTime.now());
+        Component result = this.compactDuplicate(message);
+        if (this.timestamps.value()) {
+            result = withTimestamp(result, LocalTime.now());
+        }
+        return result;
     }
 
     @Override
@@ -49,6 +66,42 @@ public final class BetterChatModule extends Module {
             return message;
         }
         return message + this.suffix.value();
+    }
+
+    @Override
+    protected void onEnable() {
+        active = this;
+        this.lastMessage = "";
+        this.duplicateCount = 0;
+    }
+
+    @Override
+    protected void onDisable() {
+        if (active == this) {
+            active = null;
+        }
+        this.lastMessage = "";
+        this.duplicateCount = 0;
+    }
+
+    public static boolean shouldPreventClearMessages() {
+        return active != null && active.antiClear.value();
+    }
+
+    private Component compactDuplicate(final Component message) {
+        if (!this.compactDuplicates.value()) {
+            this.lastMessage = message.getString();
+            this.duplicateCount = 1;
+            return message;
+        }
+        String raw = message.getString();
+        if (raw.equals(this.lastMessage)) {
+            this.duplicateCount++;
+            return Component.literal(raw + " x" + this.duplicateCount).withStyle(message.getStyle());
+        }
+        this.lastMessage = raw;
+        this.duplicateCount = 1;
+        return message;
     }
 
     static Component withTimestamp(final Component message, final LocalTime time) {

@@ -8,6 +8,9 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.Identifier;
@@ -66,6 +69,9 @@ public final class ServerObserver {
     private static int pluginScanSequence;
     private static int flagSequence;
     private static FlagInfo lastFlag = FlagInfo.none();
+    private static int velocityCorrections;
+    private static int tabAdds;
+    private static int tabRemoves;
 
     private ServerObserver() {
     }
@@ -120,6 +126,20 @@ public final class ServerObserver {
             rememberTimePacket(System.nanoTime());
             return;
         }
+        if (packet instanceof ClientboundSetEntityMotionPacket motion) {
+            if (client.player != null && motion.id() == client.player.getId() && motion.movement().lengthSqr() > 0.0001) {
+                velocityCorrections++;
+            }
+            return;
+        }
+        if (packet instanceof ClientboundPlayerInfoUpdatePacket info) {
+            tabAdds += info.newEntries().size();
+            return;
+        }
+        if (packet instanceof ClientboundPlayerInfoRemovePacket remove) {
+            tabRemoves += remove.profileIds().size();
+            return;
+        }
         if (packet instanceof ClientboundCommandSuggestionsPacket suggestions) {
             handleCommandSuggestions(suggestions);
             return;
@@ -172,7 +192,10 @@ public final class ServerObserver {
                 Set.copyOf(plugins),
                 pluginScanSequence,
                 flagSequence,
-                lastFlag
+                lastFlag,
+                velocityCorrections,
+                tabAdds,
+                tabRemoves
         );
     }
 
@@ -397,6 +420,9 @@ public final class ServerObserver {
         pluginScanSequence = 0;
         flagSequence = 0;
         lastFlag = FlagInfo.none();
+        velocityCorrections = 0;
+        tabAdds = 0;
+        tabRemoves = 0;
     }
 
     public enum ServerType {
@@ -431,7 +457,56 @@ public final class ServerObserver {
             Set<String> plugins,
             int pluginScanSequence,
             int flagSequence,
-            FlagInfo lastFlag
+            FlagInfo lastFlag,
+            int velocityCorrections,
+            int tabAdds,
+            int tabRemoves
     ) {
+        public Set<String> environmentLabels() {
+            Set<String> labels = new LinkedHashSet<>();
+            this.antiCheat.ifPresent(value -> {
+                String normalized = value.toLowerCase(Locale.ROOT);
+                if (normalized.contains("grim")) {
+                    labels.add("grim-like");
+                } else if (normalized.contains("vulcan")) {
+                    labels.add("vulcan-like");
+                } else if (normalized.contains("matrix")) {
+                    labels.add("matrix-like");
+                } else if (normalized.contains("verus")) {
+                    labels.add("verus-like");
+                } else if (!normalized.equals("unknown")) {
+                    labels.add("known-anticheat");
+                }
+            });
+            if (this.flagSequence >= 2 || this.velocityCorrections >= 3) {
+                labels.add("strict-movement");
+            }
+            if (this.lastFlag.sequence() > 0 && this.lastFlag.reason() == FlagReason.FORCE_ROTATE) {
+                labels.add("strict-rotation");
+            }
+            if (!this.plugins.isEmpty()) {
+                labels.add("plugin-leak");
+            }
+            if (this.tps.orElse(20.0) < 16.0) {
+                labels.add("low-tps");
+            }
+            if (this.tabAdds + this.tabRemoves >= 10) {
+                labels.add("tab-churn");
+            }
+            return Set.copyOf(labels);
+        }
+
+        public int safetyScore() {
+            int score = 0;
+            if (this.antiCheat.isPresent() && !"Unknown".equals(this.antiCheat.orElse(""))) {
+                score += 25;
+            }
+            score += Math.min(35, this.flagSequence * 8);
+            score += Math.min(20, this.velocityCorrections * 5);
+            if (this.environmentLabels().contains("strict-rotation")) {
+                score += 15;
+            }
+            return Math.min(100, score);
+        }
     }
 }

@@ -40,7 +40,10 @@ public final class AntiCheatDetectModule extends Module {
         }
         this.lastAlert = antiCheat;
         if (client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Detected anti-cheat: " + antiCheat + "."));
+            String labels = snapshot.environmentLabels().isEmpty() ? "" : " " + snapshot.environmentLabels();
+            client.player.sendSystemMessage(Component.literal(
+                    "Detected anti-cheat: " + antiCheat + " (safety " + snapshot.safetyScore() + "/100)." + labels
+            ));
         }
         if (this.storeProfile.value()) {
             ServerProfileStore.recordAntiCheat(snapshot.rootDomain(), antiCheat);

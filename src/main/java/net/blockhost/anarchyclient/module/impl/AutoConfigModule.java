@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.server.ServerProfileStore;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
@@ -24,6 +25,24 @@ public final class AutoConfigModule extends Module {
             .id("notify_missing")
             .name("Missing")
             .defaultValue(false)
+            .build()));
+    private final BooleanSetting safetyDisable = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("safety_disable")
+            .name("Safety")
+            .defaultValue(true)
+            .build()));
+    private final NumberSetting safetyThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("safety_threshold")
+            .name("Safety %")
+            .defaultValue(45.0)
+            .min(0.0)
+            .max(100.0)
+            .step(5.0)
+            .build()));
+    private final StringSetting riskyModules = this.setting(StringSetting.from(StringSetting.builder()
+            .id("risky_modules")
+            .name("Risky")
+            .defaultValue("kill_aura, auto_clicker, velocity, glide, boost, blink, fake_lag, ping_spoof, scaffold, packet_mine")
             .build()));
     private final NumberSetting timeout = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("timeout")
@@ -62,6 +81,7 @@ public final class AutoConfigModule extends Module {
         if (this.waitForDetection.value() && snapshot.antiCheat().isEmpty() && this.pendingTicks-- > 0) {
             return;
         }
+        this.applySafety(snapshot);
         this.apply(client, this.pendingDomain);
         this.clear();
     }
@@ -85,6 +105,17 @@ public final class AutoConfigModule extends Module {
         AnarchyClient.CONFIG.save();
         if (client.player != null) {
             client.player.sendSystemMessage(Component.literal("Applied server profile for " + domain + " (" + changed + " changes)."));
+        }
+    }
+
+    private void applySafety(final ServerObserver.Snapshot snapshot) {
+        if (!this.safetyDisable.value() || snapshot.safetyScore() < this.safetyThreshold.value()) {
+            return;
+        }
+        for (String id : AutoDisableModule.parseModuleIds(this.riskyModules.value())) {
+            if (!id.equals(this.id())) {
+                this.modules.find(id).ifPresent(module -> module.enabled(false));
+            }
         }
     }
 

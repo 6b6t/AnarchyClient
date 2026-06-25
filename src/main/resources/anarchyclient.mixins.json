@@ -10,6 +10,8 @@
     "ClientPacketListenerMixin",
     "ClientInputAccessor",
     "ConnectionMixin",
+    "DeltaTrackerTimerMixin",
+    "EditBoxMixin",
     "EntityRendererMixin",
     "ItemStackMixin",
     "KeyboardInputMixin",

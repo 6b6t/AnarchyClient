@@ -1,28 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.rotation.Rotation;
-import net.blockhost.anarchyclient.rotation.RotationManager;
-import net.blockhost.anarchyclient.rotation.RotationRequest;
-import net.blockhost.anarchyclient.rotation.RotationTurnMode;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.FallingBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
 
@@ -39,47 +25,15 @@ final class BlockPlacement {
     static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
                                  final boolean rotate, final float maxTurnDegrees,
                                  final Predicate<ItemStack> itemPredicate) {
-        LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null) {
-            return PlacementResult.WAITING;
-        }
-        if (!needsPlacement(client.level, target)) {
-            return PlacementResult.FILLED;
-        }
-        Optional<PlacementTarget> placementTarget = findPlacementTarget(client.level, target);
-        if (placementTarget.isEmpty()) {
-            return PlacementResult.WAITING;
-        }
-        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate);
-        if (hotbarSlot.isEmpty()) {
-            return PlacementResult.WAITING;
-        }
-        InventoryActions.selectHotbarSlot(player, hotbarSlot.orElseThrow());
-        PlacementTarget placement = placementTarget.orElseThrow();
-        if (rotate) {
-            Rotation rotation = Rotation.lookingAt(placement.hitLocation(), player.getEyePosition());
-            RotationManager.request(new RotationRequest(
-                    owner.id(),
-                    rotation,
-                    70,
-                    maxTurnDegrees,
-                    2,
-                    2.0F,
-                    RotationTurnMode.STEPPED,
-                    true
-            ));
-            RotationManager.apply(player);
-        }
-        InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, placement.hitResult());
-        if (result.consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
-            return PlacementResult.PLACED;
-        }
-        return PlacementResult.WAITING;
+        return switch (BlockPlacer.place(client, owner.id(), target, rotate, maxTurnDegrees, itemPredicate)) {
+            case FILLED -> PlacementResult.FILLED;
+            case PLACED -> PlacementResult.PLACED;
+            case WAITING, MISSING_ITEM -> PlacementResult.WAITING;
+        };
     }
 
     static boolean needsPlacement(final ClientLevel level, final BlockPos target) {
-        return level.getBlockState(target).canBeReplaced();
+        return BlockPlacer.needsPlacement(level, target);
     }
 
     static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
@@ -90,40 +44,12 @@ final class BlockPlacement {
     static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
                                                final LocalPlayer player, final BlockPos target,
                                                final Predicate<ItemStack> itemPredicate) {
-        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (itemPredicate.test(stack) && isPlaceableBlock(stack, level, player, target)) {
-                return OptionalInt.of(slot);
-            }
-        }
-        return OptionalInt.empty();
+        return BlockPlacer.findPlaceableHotbarSlot(inventory, level, player, target, itemPredicate);
     }
 
     static boolean isPlaceableBlock(final ItemStack stack, final ClientLevel level, final LocalPlayer player,
                                     final BlockPos target) {
-        if (!(stack.getItem() instanceof BlockItem blockItem)) {
-            return false;
-        }
-        Block block = blockItem.getBlock();
-        BlockState state = block.defaultBlockState();
-        if (!needsPlacement(level, target)
-                || !Block.isShapeFullBlock(state.getCollisionShape(level, target))
-                || block instanceof FallingBlock && FallingBlock.isFree(level.getBlockState(target.below()))) {
-            return false;
-        }
-        return level.isUnobstructed(state, target, CollisionContext.placementContext(player));
-    }
-
-    private static Optional<PlacementTarget> findPlacementTarget(final ClientLevel level, final BlockPos target) {
-        for (Direction direction : Direction.values()) {
-            BlockPos neighbor = target.relative(direction);
-            Direction face = direction.getOpposite();
-            if (level.getBlockState(neighbor).isFaceSturdy(level, neighbor, face)) {
-                Vec3 hitLocation = Vec3.atCenterOf(neighbor).relative(face, 0.5);
-                return Optional.of(new PlacementTarget(new BlockHitResult(hitLocation, face, neighbor, false), hitLocation));
-            }
-        }
-        return Optional.empty();
+        return BlockPlacer.isPlaceableBlock(stack, level, player, target);
     }
 
     enum PlacementResult {
@@ -132,6 +58,4 @@ final class BlockPlacement {
         WAITING
     }
 
-    private record PlacementTarget(BlockHitResult hitResult, Vec3 hitLocation) {
-    }
 }

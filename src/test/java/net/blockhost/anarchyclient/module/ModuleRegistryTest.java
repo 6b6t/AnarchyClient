@@ -137,5 +137,15 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("auto_web").orElseThrow());
         assertNotNull(modules.find("bow_aimbot").orElseThrow());
         assertNotNull(modules.find("criticals").orElseThrow());
+        assertNotNull(modules.find("auto_rod").orElseThrow());
+        assertNotNull(modules.find("auto_shoot").orElseThrow());
+        assertNotNull(modules.find("smart_eat").orElseThrow());
+        assertNotNull(modules.find("fast_exp").orElseThrow());
+        assertNotNull(modules.find("scaffold").orElseThrow());
+        assertNotNull(modules.find("packet_mine").orElseThrow());
+        assertNotNull(modules.find("liquid_filler").orElseThrow());
+        assertNotNull(modules.find("stronghold_finder").orElseThrow());
+        assertNotNull(modules.find("text_field_protect").orElseThrow());
+        assertNotNull(modules.find("inventory_tracker").orElseThrow());
     }
 }
