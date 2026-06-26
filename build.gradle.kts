@@ -31,24 +31,17 @@ repositories {
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
     implementation("net.fabricmc:fabric-loader:$loaderVersion")
-    implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
+    implementation(include("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion") as Any)
 
-    implementation("com.google.code.gson:gson:2.14.0")
-    implementation("net.lenni0451.commons:core:$commonsVersion")
-    implementation("net.lenni0451.commons:animation:$commonsVersion")
-    implementation("net.lenni0451:LambdaEvents:$lambdaEventsVersion")
-    implementation("net.lenni0451:Reflect:$reflectVersion")
-    implementation("org.ow2.asm:asm:$asmVersion")
-    implementation("com.github.Lenni0451.rivet:core:40c6f6c3a7")
-    include("com.github.Lenni0451.rivet:core:40c6f6c3a7")
-    add("include", "net.lenni0451.commons:core:$commonsVersion")
-    add("include", "net.lenni0451.commons:animation:$commonsVersion")
-    add("include", "net.lenni0451:LambdaEvents:$lambdaEventsVersion")
-    add("include", "net.lenni0451:Reflect:$reflectVersion")
-    add("include", "org.ow2.asm:asm:$asmVersion")
+    implementation(include("com.github.Lenni0451.rivet:core:40c6f6c3a7") as Any)
+    implementation(include("net.lenni0451.commons:core:$commonsVersion") as Any)
+    implementation(include("net.lenni0451.commons:animation:$commonsVersion") as Any)
+    implementation(include("net.lenni0451:LambdaEvents:$lambdaEventsVersion") as Any)
+    implementation(include("net.lenni0451:Reflect:$reflectVersion") as Any)
 
     compileOnly("org.immutables:value-annotations:$immutablesVersion")
     annotationProcessor("org.immutables:value:$immutablesVersion")
+
     testCompileOnly("org.immutables:value-annotations:$immutablesVersion")
     testAnnotationProcessor("org.immutables:value:$immutablesVersion")
 
