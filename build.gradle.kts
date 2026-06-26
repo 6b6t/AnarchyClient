@@ -39,11 +39,9 @@ dependencies {
     implementation(include("net.lenni0451:LambdaEvents:$lambdaEventsVersion") as Any)
     implementation(include("net.lenni0451:Reflect:$reflectVersion") as Any)
 
-    compileOnly("org.immutables:value-annotations:$immutablesVersion")
+    annotationProcessor("org.immutables:gson:$immutablesVersion")
+    compileOnly("org.immutables:value:${immutablesVersion}")
     annotationProcessor("org.immutables:value:$immutablesVersion")
-
-    testCompileOnly("org.immutables:value-annotations:$immutablesVersion")
-    testAnnotationProcessor("org.immutables:value:$immutablesVersion")
 
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly("org.jetbrains:annotations:26.1.0")
