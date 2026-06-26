@@ -67,9 +67,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private static final float SEARCH_HEIGHT = 28F;
     private static final float MODULE_ROW_HEIGHT = 46F;
     private static final float COMPACT_MODULE_ROW_HEIGHT = 36F;
-    private static final float SETTING_ROW_HEIGHT = 34F;
-    private static final float NUMBER_ROW_HEIGHT = 50F;
-    private static final float TEXT_ROW_HEIGHT = 38F;
+    private static final float SETTING_ROW_HEIGHT = 46F;
+    private static final float NUMBER_ROW_HEIGHT = 64F;
+    private static final float TEXT_ROW_HEIGHT = 54F;
+    private static final float INSPECTOR_HEADER_HEIGHT = 102F;
     private static final float DRAWER_WIDTH = 280F;
     private static final float CORNER_RADIUS = 2F;
     private static final float TOP_TAB_START_X = 144F;
@@ -577,11 +578,20 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     private static boolean matchesQuery(final Module module, final String query) {
-        if (module.name().toLowerCase(Locale.ROOT).contains(query) || module.id().contains(query)) {
+        if (module.name().toLowerCase(Locale.ROOT).contains(query)
+                || module.id().contains(query)
+                || module.description().toLowerCase(Locale.ROOT).contains(query)) {
             return true;
         }
         for (String alias : module.aliases()) {
             if (alias.toLowerCase(Locale.ROOT).contains(query)) {
+                return true;
+            }
+        }
+        for (Setting<?> setting : module.settings()) {
+            if (setting.id().contains(query)
+                    || setting.name().toLowerCase(Locale.ROOT).contains(query)
+                    || module.settingDescription(setting).toLowerCase(Locale.ROOT).contains(query)) {
                 return true;
             }
         }
@@ -602,48 +612,20 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return groups.size() > 1 || (!groups.isEmpty() && !"general".equals(groups.getFirst().id()));
     }
 
-    private static String moduleSummary(final Module module) {
-        List<String> parts = new ArrayList<>();
-        for (Setting<?> setting : module.settings()) {
-            if (!setting.visible()) {
-                continue;
-            }
-            String value = SettingControls.displayValue(setting);
-            if (setting instanceof BooleanSetting bool) {
-                if (bool.value()) {
-                    parts.add(setting.name());
-                }
-            } else if (!value.isBlank()) {
-                parts.add(value + " " + setting.name());
-            }
-            if (parts.size() >= 4) {
-                break;
-            }
-        }
-        return parts.isEmpty() ? "No visible settings" : abbreviate(String.join(", ", parts), 82);
-    }
-
-    private static Component settingRow(final Setting<?> setting, final Runnable rebuild, final Runnable save) {
+    private static Component settingRow(final Module module, final Setting<?> setting, final Runnable rebuild, final Runnable save) {
         if (setting instanceof BooleanSetting bool) {
-            return new BooleanSettingRow(bool, rebuild);
+            return new BooleanSettingRow(module, bool, rebuild);
         }
         if (setting instanceof NumberSetting number) {
-            return new NumberSettingRow(number, save);
+            return new NumberSettingRow(module, number, save);
         }
         if (setting instanceof SelectSetting select) {
-            return new SelectSettingRow(select, rebuild);
+            return new SelectSettingRow(module, select, rebuild);
         }
         if (setting instanceof TextValueSetting text) {
-            return new TextSettingRow(setting, text, save);
+            return new TextSettingRow(module, setting, text, save);
         }
-        return new ValueSettingRow(setting);
-    }
-
-    private static String abbreviate(final String value, final int maxLength) {
-        if (value.length() <= maxLength) {
-            return value;
-        }
-        return value.substring(0, Math.max(0, maxLength - 3)).stripTrailing() + "...";
+        return new ValueSettingRow(module, setting);
     }
 
     private static String fitText(final Component component, final String value, final Color color, final float maxWidth) {
@@ -1456,6 +1438,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Module module;
         private final Surface background;
         private final Surface stripe;
+        private final IconNode moduleIcon;
         private final TextNode name;
         private final TextNode summary;
         private final ToggleSwitch toggle;
@@ -1467,12 +1450,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.module = module;
             this.background = surface(this::backgroundColor);
             this.stripe = surface(this::stripeColor);
+            this.moduleIcon = iconNode(module::icon, () -> this.module.enabled() ? ACTIVE : MUTED);
             this.name = textNode(module.name(), () -> this.module.enabled() ? TEXT : MUTED);
-            this.summary = textNode(() -> this.showSummary() ? moduleSummary(this.module) : "", () -> FAINT);
+            this.summary = textNode(() -> this.showSummary() ? this.module.description() : "", () -> FAINT);
             this.toggle = new ToggleSwitch(module::enabled, () -> ModulePanel.this.toggleModule(module));
             this.fixedSize(new Size(-1, ModulePanel.this.compactRows ? COMPACT_MODULE_ROW_HEIGHT : MODULE_ROW_HEIGHT));
             this.addChild(this.background);
             this.addChild(this.stripe);
+            this.addChild(this.moduleIcon);
             this.addChild(this.name);
             this.addChild(this.summary);
             this.addChild(this.toggle);
@@ -1494,22 +1479,24 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         public void computeLayout(final Size size) {
             boolean twoLine = this.showSummary();
             int rows = twoLine ? 2 : 1;
-            this.background.layoutOptions(fillCell(0, 0, 5, rows));
+            this.background.layoutOptions(fillCell(0, 0, 6, rows));
             this.stripe.layoutOptions(fixedCell(0, 0, 1, rows, 3F, size.height(), GridAnchor.LEFT));
-            this.toggle.layoutOptions(cell(3, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+            this.moduleIcon.layoutOptions(cell(1, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(8F, 0F, 0F, 0F), ICON_BOX, ICON_BOX));
+            this.toggle.layoutOptions(cell(4, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
                     padding(0F, 0F, 2F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
-            this.menuIcon.layoutOptions(cell(4, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+            this.menuIcon.layoutOptions(cell(5, 0, 1, rows, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
                     padding(0F, 0F, 12F, 0F), ICON_BOX, ICON_BOX));
             if (twoLine) {
-                this.name.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                        padding(15F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
-                this.summary.layoutOptions(cell(1, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                        padding(15F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
+                this.name.layoutOptions(cell(2, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(8F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
+                this.summary.layoutOptions(cell(2, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(8F, 0F, 12F, 0F), null, TEXT_SLOT_HEIGHT));
             } else {
-                this.name.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                        padding(15F, 0F, 12F, 0F), null, null));
-                this.summary.layoutOptions(cell(1, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                        padding(15F, 0F, 12F, 0F), null, null));
+                this.name.layoutOptions(cell(2, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(8F, 0F, 12F, 0F), null, null));
+                this.summary.layoutOptions(cell(2, 0, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                        padding(8F, 0F, 12F, 0F), null, null));
             }
             super.computeLayout(size);
         }
@@ -1570,7 +1557,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             super(new GridLayout(0, 0));
             ModulePanel.this.configureScroll(this.scroll);
             this.background.layoutOptions(fillCell(0, 0, 1, 2));
-            this.header.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, 86F));
+            this.header.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    Padding.EMPTY, null, INSPECTOR_HEADER_HEIGHT));
             this.scroll.layoutOptions(weightedCell(0, 1, 1F, 1F));
             this.addChild(this.background);
             this.addChild(this.header);
@@ -1591,7 +1579,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     }
                     for (Setting<?> setting : group.settings()) {
                         if (setting.visible()) {
-                            this.settings.addChild(settingRow(setting, this::refreshAfterSettingChange, ModulePanel.this.config::save));
+                            this.settings.addChild(settingRow(module, setting, this::refreshAfterSettingChange, ModulePanel.this.config::save));
                         }
                     }
                 }
@@ -1623,10 +1611,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
+        private final IconNode moduleIcon = iconNode(this::moduleIcon, this::moduleIconColor);
         private final TextNode title = textNode(() -> ModulePanel.this.selectedModule == null ? "No module" : ModulePanel.this.selectedModule.name(),
                 () -> ModulePanel.this.selectedModule == null ? MUTED : TEXT);
         private final TextNode category = textNode(
                 () -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.category().displayName(),
+                () -> FAINT
+        );
+        private final TextNode description = textNode(
+                () -> ModulePanel.this.selectedModule == null ? "" : ModulePanel.this.selectedModule.description(),
                 () -> FAINT
         );
         private final TextNode enabledLabel = textNode(this::enabledLabel, this::enabledLabelColor)
@@ -1649,22 +1642,28 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                             ModulePanel.this.toggleModule(ModulePanel.this.selectedModule);
                         }
                     });
-            this.background.layoutOptions(fillCell(0, 0, 4, 3));
-            this.divider.layoutOptions(cell(0, 2, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+            this.background.layoutOptions(fillCell(0, 0, 5, 4));
+            this.divider.layoutOptions(cell(0, 3, 5, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
                     Padding.EMPTY, null, 1F));
-            this.title.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(16F, 0F, 12F, 0F), null, 18F));
-            this.category.layoutOptions(cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(16F, 0F, 12F, 0F), null, 18F));
-            this.star.layoutOptions(fixedCell(1, 0, 1, 2, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
-            this.enabledLabel.layoutOptions(cell(2, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+            this.moduleIcon.layoutOptions(cell(0, 0, 1, 3, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(12F, 0F, 0F, 0F), ICON_BOX, ICON_BOX));
+            this.title.layoutOptions(cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(8F, 8F, 12F, 0F), null, 20F));
+            this.category.layoutOptions(cell(1, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(8F, 0F, 12F, 0F), null, 17F));
+            this.description.layoutOptions(cell(1, 2, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(8F, 0F, 12F, 8F), null, 18F));
+            this.star.layoutOptions(fixedCell(2, 0, 1, 3, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
+            this.enabledLabel.layoutOptions(cell(3, 0, 1, 3, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, 4F, 0F), 30F, null));
-            this.toggle.layoutOptions(cell(3, 0, 1, 2, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
+            this.toggle.layoutOptions(cell(4, 0, 1, 3, 0F, 0F, GridAnchor.CENTER, GridFill.NONE,
                     padding(0F, 0F, 16F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
             this.addChild(this.background);
             this.addChild(this.divider);
+            this.addChild(this.moduleIcon);
             this.addChild(this.title);
             this.addChild(this.category);
+            this.addChild(this.description);
             this.addChild(this.enabledLabel);
             this.addChild(this.star);
             this.addChild(this.toggle);
@@ -1672,7 +1671,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         public Size computeIdealSize(final Size constraints) {
-            return new Size(constraints.width(), 86F);
+            return new Size(constraints.width(), INSPECTOR_HEADER_HEIGHT);
         }
 
         @Override
@@ -1686,6 +1685,19 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 return "";
             }
             return module.enabled() ? "ON" : "OFF";
+        }
+
+        private String moduleIcon() {
+            Module module = ModulePanel.this.selectedModule;
+            return module == null ? "" : module.icon();
+        }
+
+        private Color moduleIconColor() {
+            Module module = ModulePanel.this.selectedModule;
+            if (module == null) {
+                return Color.TRANSPARENT;
+            }
+            return module.enabled() ? ACTIVE : MUTED;
         }
 
         private Color enabledLabelColor() {
@@ -1738,25 +1750,30 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode label;
+        private final TextNode description;
 
-        private SettingLine(final Setting<?> setting, final float height) {
+        private SettingLine(final Module module, final Setting<?> setting, final float height) {
             super(new GridLayout(0, 0));
             this.setting = setting;
             this.height = height;
             this.fixedSize(new Size(-1, height));
             this.label = textNode(setting.name(), MUTED);
+            this.description = textNode(() -> module.settingDescription(setting), () -> FAINT);
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.label);
+            this.addChild(this.description);
         }
 
         @Override
         public void computeLayout(final Size size) {
-            this.background.layoutOptions(fillCell(0, 0, 4, 2));
-            this.divider.layoutOptions(cell(0, 1, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+            this.background.layoutOptions(fillCell(0, 0, 4, 3));
+            this.divider.layoutOptions(cell(0, 2, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
                     Padding.EMPTY, null, 1F));
             this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(12F, 0F, 8F, 0F), null, null));
+                    padding(12F, 4F, 8F, 0F), null, 18F));
+            this.description.layoutOptions(cell(0, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 5F), null, 17F));
             this.layoutControls(size);
             super.computeLayout(size);
         }
@@ -1781,8 +1798,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Runnable onChange;
         private final ToggleSwitch toggle;
 
-        private BooleanSettingRow(final BooleanSetting setting, final Runnable onChange) {
-            super(setting, SETTING_ROW_HEIGHT);
+        private BooleanSettingRow(final Module module, final BooleanSetting setting, final Runnable onChange) {
+            super(module, setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
             this.onChange = onChange;
             this.toggle = new ToggleSwitch(this.setting::value, this::toggle);
@@ -1803,7 +1820,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
         @Override
         protected void layoutControls(final Size size) {
-            this.toggle.layoutOptions(cell(3, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+            this.toggle.layoutOptions(cell(3, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
                     padding(0F, 0F, 14F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
         }
 
@@ -1820,8 +1837,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode value;
         private final IconNode icon = iconNode("chevron-down", FAINT);
 
-        private SelectSettingRow(final SelectSetting setting, final Runnable onChange) {
-            super(setting, SETTING_ROW_HEIGHT);
+        private SelectSettingRow(final Module module, final SelectSetting setting, final Runnable onChange) {
+            super(module, setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
             this.onChange = onChange;
             this.value = textNode(this.setting::value, () -> TEXT)
@@ -1833,9 +1850,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         protected void layoutControls(final Size size) {
             float valueWidth = Math.min(100F, Math.max(0F, size.width() * 0.42F));
-            this.value.layoutOptions(cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+            this.value.layoutOptions(cell(2, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, 2F, 0F), valueWidth, null));
-            this.icon.layoutOptions(cell(3, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+            this.icon.layoutOptions(cell(3, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
                     padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
         }
 
@@ -1855,8 +1872,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Setting<?> setting;
         private final TextNode value;
 
-        private ValueSettingRow(final Setting<?> setting) {
-            super(setting, SETTING_ROW_HEIGHT);
+        private ValueSettingRow(final Module module, final Setting<?> setting) {
+            super(module, setting, SETTING_ROW_HEIGHT);
             this.setting = setting;
             this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
                     .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
@@ -1866,7 +1883,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         protected void layoutControls(final Size size) {
             float valueWidth = Math.min(112F, Math.max(0F, size.width() * 0.44F));
-            this.value.layoutOptions(cell(2, 0, 2, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+            this.value.layoutOptions(cell(2, 0, 2, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, 12F, 0F), valueWidth, null));
         }
     }
@@ -1877,15 +1894,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode label;
+        private final TextNode description;
         private final TextNode value;
         private final Slider slider;
         private final Runnable save;
 
-        private NumberSettingRow(final NumberSetting setting, final Runnable save) {
+        private NumberSettingRow(final Module module, final NumberSetting setting, final Runnable save) {
             super(new GridLayout(0, 0));
             this.setting = setting;
             this.save = save;
             this.label = textNode(setting.name(), MUTED);
+            this.description = textNode(() -> module.settingDescription(setting), () -> FAINT);
             this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
                     .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
             this.slider = slider(setting);
@@ -1897,6 +1916,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.label);
+            this.addChild(this.description);
             this.addChild(this.value);
             this.addChild(this.slider);
         }
@@ -1904,14 +1924,16 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         @Override
         public void computeLayout(final Size size) {
             float valueWidth = Math.min(58F, Math.max(0F, size.width() * 0.25F));
-            this.background.layoutOptions(fillCell(0, 0, 2, 3));
-            this.divider.layoutOptions(cell(0, 2, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+            this.background.layoutOptions(fillCell(0, 0, 2, 4));
+            this.divider.layoutOptions(cell(0, 3, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
                     Padding.EMPTY, null, 1F));
             this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(12F, 4F, 8F, 0F), null, 18F));
             this.value.layoutOptions(cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 4F, 12F, 0F), valueWidth, 18F));
-            this.slider.layoutOptions(cell(0, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.HORIZONTAL,
+            this.description.layoutOptions(cell(0, 1, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 12F, 0F), null, 17F));
+            this.slider.layoutOptions(cell(0, 2, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.HORIZONTAL,
                     padding(12F, 0F, 12F, 0F), null, 16F));
             super.computeLayout(size);
         }
@@ -1934,15 +1956,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final Surface background = surface(SURFACE);
         private final Surface divider = horizontalRule(BORDER_SOFT);
         private final TextNode label;
+        private final TextNode description;
         private final TextField field;
         private final Runnable save;
 
-        private TextSettingRow(final Setting<?> setting, final TextValueSetting textSetting, final Runnable save) {
+        private TextSettingRow(final Module module, final Setting<?> setting, final TextValueSetting textSetting, final Runnable save) {
             super(new GridLayout(0, 0));
             this.setting = setting;
             this.textSetting = textSetting;
             this.save = save;
             this.label = textNode(setting.name(), MUTED);
+            this.description = textNode(() -> module.settingDescription(setting), () -> FAINT);
             this.field = textField(textSetting.valueString());
             this.field.valueChangeListener().add(value -> {
                 try {
@@ -1956,17 +1980,20 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.addChild(this.background);
             this.addChild(this.divider);
             this.addChild(this.label);
+            this.addChild(this.description);
             this.addChild(this.field);
         }
 
         @Override
         public void computeLayout(final Size size) {
-            this.background.layoutOptions(fillCell(0, 0, 2, 2));
-            this.divider.layoutOptions(cell(0, 1, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+            this.background.layoutOptions(fillCell(0, 0, 2, 3));
+            this.divider.layoutOptions(cell(0, 2, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
                     Padding.EMPTY, null, 1F));
             this.label.layoutOptions(cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(12F, 0F, 8F, 0F), null, null));
-            this.field.layoutOptions(cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 4F, 8F, 0F), null, 18F));
+            this.description.layoutOptions(cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(12F, 0F, 8F, 5F), null, 17F));
+            this.field.layoutOptions(cell(1, 0, 1, 2, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 7F, 10F, 7F), null, 24F));
             super.computeLayout(size);
         }

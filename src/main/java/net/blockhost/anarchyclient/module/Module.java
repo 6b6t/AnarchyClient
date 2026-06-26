@@ -71,6 +71,14 @@ public abstract class Module {
         return this.name;
     }
 
+    public final String description() {
+        return ModuleMetadata.description(this);
+    }
+
+    public final String icon() {
+        return ModuleMetadata.icon(this);
+    }
+
     public final ModuleCategory category() {
         return this.category;
     }
@@ -112,6 +120,10 @@ public abstract class Module {
 
     public final List<SettingGroup> settingGroups() {
         return this.settingGroupsView;
+    }
+
+    public final String settingDescription(final Setting<?> setting) {
+        return ModuleMetadata.settingDescription(this, setting);
     }
 
     protected final <T extends Setting<?>> T setting(final T setting) {

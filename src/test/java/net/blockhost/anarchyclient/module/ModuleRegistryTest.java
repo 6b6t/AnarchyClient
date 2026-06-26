@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -251,5 +252,21 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("boat_glitch").orElseThrow());
         assertNotNull(modules.find("lavacast").orElseThrow());
         assertNotNull(modules.find("ore_sim").orElseThrow());
+    }
+
+    @Test
+    void registeredModulesExposeUiMetadata() {
+        ModuleManager modules = new ModuleManager();
+
+        ModuleRegistry.registerDefaults(modules);
+
+        for (Module module : modules.all()) {
+            assertFalse(module.description().isBlank(), module.id() + " should have a module description");
+            assertFalse(module.icon().isBlank(), module.id() + " should have a module icon");
+            for (net.blockhost.anarchyclient.setting.Setting<?> setting : module.settings()) {
+                assertFalse(module.settingDescription(setting).isBlank(),
+                        module.id() + "." + setting.id() + " should have a setting description");
+            }
+        }
     }
 }
