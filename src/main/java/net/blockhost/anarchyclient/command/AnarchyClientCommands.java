@@ -16,6 +16,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
+import net.blockhost.anarchyclient.module.impl.SwarmModule;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -265,7 +266,10 @@ public final class AnarchyClientCommands {
                                         .executes(AnarchyClientCommands::notebotPlayNote))))
                 .then(literal("swarm")
                         .then(literal("status")
-                                .executes(AnarchyClientCommands::swarmStatus)))
+                                .executes(AnarchyClientCommands::swarmStatus))
+                        .then(literal("send")
+                                .then(argument("message", StringArgumentType.greedyString())
+                                        .executes(AnarchyClientCommands::swarmSend))))
                 .then(literal("teleport")
                         .then(argument("x", StringArgumentType.word())
                                 .then(argument("y", StringArgumentType.word())
@@ -1021,7 +1025,7 @@ public final class AnarchyClientCommands {
     }
 
     private static int notebotStatus(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Component.literal("Notebot command bridge is ready. Use /ac notebot play <note> for local preview."));
+        context.getSource().sendFeedback(Component.literal("Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
         return SUCCESS;
     }
 
@@ -1037,8 +1041,29 @@ public final class AnarchyClientCommands {
     }
 
     private static int swarmStatus(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Component.literal("Swarm networking is not connected. Local command stub is registered for module compatibility."));
+        SwarmModule swarm = swarmModule();
+        if (swarm == null) {
+            context.getSource().sendError(Component.literal("Swarm module is not registered."));
+            return 0;
+        }
+        context.getSource().sendFeedback(Component.literal("Swarm " + swarm.status()));
         return SUCCESS;
+    }
+
+    private static int swarmSend(final CommandContext<FabricClientCommandSource> context) {
+        SwarmModule swarm = swarmModule();
+        if (swarm == null) {
+            context.getSource().sendError(Component.literal("Swarm module is not registered."));
+            return 0;
+        }
+        int sent = swarm.broadcast(StringArgumentType.getString(context, "message"));
+        context.getSource().sendFeedback(Component.literal("Sent swarm action to " + sent + " worker(s)."));
+        return sent > 0 ? SUCCESS : 0;
+    }
+
+    private static SwarmModule swarmModule() {
+        Module module = AnarchyClient.MODULES.find("swarm").orElse(null);
+        return module instanceof SwarmModule swarm ? swarm : null;
     }
 
     private static int movePlayer(final CommandContext<FabricClientCommandSource> context, final Vec3 target) {

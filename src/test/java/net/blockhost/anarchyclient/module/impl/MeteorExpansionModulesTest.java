@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -80,9 +81,42 @@ class MeteorExpansionModulesTest {
         assertEquals(0, NotebotModule.parseNote("bad"));
         assertEquals(0, NotebotModule.parseNote("-4"));
         assertEquals(24, NotebotModule.parseNote("32"));
+        assertEquals(12, NotebotModule.parseNote("f#"));
         assertEquals(1.0F, NotebotModule.pitch(12), 1.0E-6F);
         assertEquals(2.0F, NotebotModule.pitch(24), 1.0E-6F);
         assertEquals(0.5F, NotebotModule.pitch(0), 1.0E-6F);
+        assertEquals(24, NotebotModule.pitchToNote(NotebotModule.pitch(24)));
+        assertEquals(3, NotebotModule.tuneClicks(22, 0));
+    }
+
+    @Test
+    void notebotKeepsSongTimingAndDuplicateNotes() {
+        NotebotModule.ParsedSong song = NotebotModule.parseSong("0 2:4+7 2:4 3:4+4");
+
+        assertEquals(Map.of(
+                0, List.of(0),
+                2, List.of(4, 7, 4),
+                3, List.of(4, 4)
+        ), song.notesByTick());
+        assertEquals(3, song.lastTick());
+        assertEquals(Map.of(
+                0, 1,
+                4, 2,
+                7, 1
+        ), song.requiredBlocksByNote());
+    }
+
+    @Test
+    void bookBotKeepsPagesWithSpacesAndLimitsTitle() {
+        assertEquals(List.of("first page", "second page"), BookBotModule.parsePages("first page|second page"));
+        assertEquals(List.of(""), BookBotModule.sanitizePages(List.of()));
+        assertEquals(32, BookBotModule.sanitizeTitle("a".repeat(64)).length());
+    }
+
+    @Test
+    void fakePlayerUsesValidProfileNames() {
+        assertEquals("AnarchyClient", FakePlayerModule.sanitizeName(" "));
+        assertEquals("abcdefghijklmnop", FakePlayerModule.sanitizeName("abcdefghijklmnopqr"));
     }
 
     @Test
@@ -132,7 +166,8 @@ class MeteorExpansionModulesTest {
         assertEquals("Playing AnarchyClient", discord.status());
 
         SwarmModule swarm = new SwarmModule();
-        assertEquals("Worker:local", swarm.status());
+        assertTrue(swarm.status().startsWith("worker 127.0.0.1:51234"));
+        assertTrue(swarm.status().contains("peers=0"));
     }
 
     private static StringSetting stringSetting(final Module module, final String id) {

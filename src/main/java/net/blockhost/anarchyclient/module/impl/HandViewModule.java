@@ -7,6 +7,9 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 
 public final class HandViewModule extends Module {
 
+    private static final HandTransform DEFAULT_TRANSFORM = new HandTransform(false, 1.0, 0.0, 0.0);
+    private static HandTransform activeTransform = DEFAULT_TRANSFORM;
+
     private final BooleanSetting hideHand = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("hide_hand")
             .name("Hide Hand")
@@ -41,10 +44,33 @@ public final class HandViewModule extends Module {
         super("hand_view", "Hand View", ModuleCategory.RENDER);
     }
 
-    HandTransform transform() {
+    @Override
+    public void tick(final net.minecraft.client.Minecraft client) {
+        activeTransform = this.transform();
+    }
+
+    @Override
+    protected void onEnable() {
+        activeTransform = this.transform();
+    }
+
+    @Override
+    protected void onDisable() {
+        activeTransform = DEFAULT_TRANSFORM;
+    }
+
+    public static HandTransform activeTransform() {
+        return activeTransform;
+    }
+
+    private HandTransform transform() {
         return new HandTransform(this.hideHand.value(), this.scale.value(), this.x.value(), this.y.value());
     }
 
-    record HandTransform(boolean hidden, double scale, double x, double y) {
+    public record HandTransform(boolean hidden, double scale, double x, double y) {
+
+        public boolean identity() {
+            return !this.hidden && this.scale == 1.0 && this.x == 0.0 && this.y == 0.0;
+        }
     }
 }
