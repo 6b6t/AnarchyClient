@@ -4,6 +4,10 @@
       <verify-metadata>true</verify-metadata>
       <verify-signatures>false</verify-signatures>
       <trusted-artifacts>
+         <trust file=".*-javadoc[.]jar" regex="true" reason="IDEs may download documentation artifacts during project import; these are not shipped with the mod."/>
+         <trust file=".*-sources[.]jar" regex="true" reason="IDEs may download source artifacts during project import; these are not shipped with the mod."/>
+         <trust group="gradle" name="gradle" file="gradle-.*-src[.]zip" regex="true" reason="IntelliJ may download Gradle distribution sources during project import; these are not shipped with the mod."/>
+         <trust group="org[.]jetbrains[.]kotlin" name="kotlin-.*" file=".*[.](module|pom)" regex="true" reason="IntelliJ may resolve Kotlin metadata from the Gradle Central Plugin Repository during project import; these metadata files are not shipped with the mod."/>
          <trust group="net.minecraft" name="minecraft-merged-.*" version="26.2" regex="true" reason="Fabric Loom generates this local Minecraft classpath artifact; downloaded inputs remain checksum verified."/>
       </trusted-artifacts>
    </configuration>
