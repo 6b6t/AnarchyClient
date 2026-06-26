@@ -16,6 +16,7 @@
     "EntityMixin",
     "GameRendererMixin",
     "GuiMixin",
+    "ItemEntityRendererMixin",
     "ItemStackMixin",
     "ItemInHandRendererMixin",
     "KeyboardInputMixin",

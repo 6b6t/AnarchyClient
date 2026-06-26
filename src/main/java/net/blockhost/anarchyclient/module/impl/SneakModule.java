@@ -19,6 +19,16 @@ public final class SneakModule extends Module {
             .name("Ground Only")
             .defaultValue(false)
             .build()));
+    private final BooleanSetting pauseInLiquid = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("pause_in_liquid")
+            .name("Liquid Pause")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting pauseFallFlying = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("pause_flying")
+            .name("Flight Pause")
+            .defaultValue(true)
+            .build()));
 
     public SneakModule() {
         super("sneak", "Sneak", ModuleCategory.MOVEMENT);
@@ -34,6 +44,12 @@ public final class SneakModule extends Module {
             return;
         }
         if (this.onlyOnGround.value() && !player.onGround()) {
+            return;
+        }
+        if (this.pauseInLiquid.value() && (player.isInWater() || player.isInLava())) {
+            return;
+        }
+        if (this.pauseFallFlying.value() && player.isFallFlying()) {
             return;
         }
         input.keyPresses = InputStates.withShift(input.keyPresses, true);

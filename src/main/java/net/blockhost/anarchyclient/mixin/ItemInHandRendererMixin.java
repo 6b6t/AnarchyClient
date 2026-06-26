@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.blockhost.anarchyclient.module.impl.AnimationsModule;
 import net.blockhost.anarchyclient.module.impl.HandViewModule;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -15,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ItemInHandRendererMixin {
 
     @Unique
-    private boolean anarchyclient$handViewPushed;
+    private boolean anarchyclient$transformPushed;
 
     @Inject(method = "submitHandsWithItems", at = @At("HEAD"), cancellable = true)
     private void anarchyclient$applyHandView(final float partialTick, final PoseStack poseStack,
@@ -26,12 +28,17 @@ public abstract class ItemInHandRendererMixin {
             info.cancel();
             return;
         }
-        if (!transform.identity()) {
+        AnimationsModule.AnimationTransform animation = AnimationsModule.activeTransform();
+        if (!transform.identity() || !animation.identityTransform()) {
             poseStack.pushPose();
             poseStack.translate(transform.x(), transform.y(), 0.0);
+            poseStack.translate(animation.x(), animation.y(), animation.z());
+            poseStack.mulPose(Axis.XP.rotationDegrees((float) animation.pitch()));
+            poseStack.mulPose(Axis.YP.rotationDegrees((float) animation.yaw()));
+            poseStack.mulPose(Axis.ZP.rotationDegrees((float) animation.roll()));
             float scale = (float) transform.scale();
             poseStack.scale(scale, scale, scale);
-            this.anarchyclient$handViewPushed = true;
+            this.anarchyclient$transformPushed = true;
         }
     }
 
@@ -39,9 +46,9 @@ public abstract class ItemInHandRendererMixin {
     private void anarchyclient$restoreHandView(final float partialTick, final PoseStack poseStack,
                                                final SubmitNodeCollector submitNodeCollector,
                                                final LocalPlayer player, final int light, final CallbackInfo info) {
-        if (this.anarchyclient$handViewPushed) {
+        if (this.anarchyclient$transformPushed) {
             poseStack.popPose();
-            this.anarchyclient$handViewPushed = false;
+            this.anarchyclient$transformPushed = false;
         }
     }
 }

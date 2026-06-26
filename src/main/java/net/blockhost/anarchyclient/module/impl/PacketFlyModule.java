@@ -4,13 +4,22 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 public final class PacketFlyModule extends Module {
 
+    private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("mode")
+            .name("Mode")
+            .defaultValue("Normal")
+            .addAllOptions(List.of("Normal", "Clip", "Setback"))
+            .build()));
     private final NumberSetting speed = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("speed")
             .name("Speed")
@@ -32,6 +41,27 @@ public final class PacketFlyModule extends Module {
             .name("No Clip")
             .defaultValue(true)
             .build()));
+    private final NumberSetting antiKickTicks = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("anti_kick_ticks")
+            .name("Anti Kick")
+            .defaultValue(12.0)
+            .min(0.0)
+            .max(60.0)
+            .step(1.0)
+            .build()));
+    private final NumberSetting bounds = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("bounds")
+            .name("Bounds")
+            .defaultValue(1337.0)
+            .min(10.0)
+            .max(4096.0)
+            .step(1.0)
+            .build()));
+    private final BooleanSetting sprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("sprint")
+            .name("Sprint")
+            .defaultValue(false)
+            .build()));
     private int ticks;
 
     public PacketFlyModule() {
@@ -47,16 +77,30 @@ public final class PacketFlyModule extends Module {
         if (this.noClip.value()) {
             player.noPhysics = true;
         }
+        if (this.sprint.value()) {
+            player.setSprinting(true);
+        }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.speed.value());
         double y = client.options.keyJump.isDown() ? this.vertical.value()
                 : client.options.keyShift.isDown() ? -this.vertical.value() : 0.0;
-        if (y == 0.0 && ++this.ticks % 12 == 0) {
+        int antiKick = this.antiKickTicks.value().intValue();
+        if (y == 0.0 && antiKick > 0 && ++this.ticks % antiKick == 0) {
             y = -0.04;
         }
         Vec3 next = player.position().add(horizontal.x, y, horizontal.z);
         player.setDeltaMovement(horizontal.x, y, horizontal.z);
+        if ("Clip".equals(this.mode.value())) {
+            player.setPos(next.x, next.y, next.z);
+        }
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(next, false, false));
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(next.x, next.y - 1337.0, next.z, true, false));
+        if ("Setback".equals(this.mode.value())) {
+            Vec3 current = player.position();
+            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(current, true, player.horizontalCollision));
+        } else {
+            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(next.x, next.y - this.bounds.value(), next.z,
+                    true, player.horizontalCollision));
+        }
+        this.debugValue("mode", this.mode.value());
     }
 
     @Override
@@ -64,5 +108,6 @@ public final class PacketFlyModule extends Module {
         if (Minecraft.getInstance().player != null) {
             Minecraft.getInstance().player.noPhysics = false;
         }
+        this.ticks = 0;
     }
 }

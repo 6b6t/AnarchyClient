@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 
@@ -20,6 +21,11 @@ public final class InventoryMoveModule extends Module {
             .name("Sneak")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting allowChat = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("chat")
+            .name("Chat")
+            .defaultValue(false)
+            .build()));
 
     public InventoryMoveModule() {
         super("inventory_move", "Inventory Move", ModuleCategory.MOVEMENT, java.util.List.of("inv_move"));
@@ -27,7 +33,10 @@ public final class InventoryMoveModule extends Module {
 
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
-        if (client.player == null || client.gui.screen() == null || client.gui.screen() instanceof AnarchyClientScreen) {
+        if (client.player == null
+                || client.gui.screen() == null
+                || client.gui.screen() instanceof AnarchyClientScreen
+                || !this.allowChat.value() && client.gui.screen() instanceof ChatScreen) {
             return;
         }
         input.keyPresses = new Input(

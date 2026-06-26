@@ -3,12 +3,21 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 
+import java.util.List;
+
 public final class AutoWalkModule extends Module {
 
+    private final SelectSetting direction = this.setting(SelectSetting.from(SelectSetting.builder()
+            .id("direction")
+            .name("Direction")
+            .defaultValue("Forward")
+            .addAllOptions(List.of("Forward", "Backward"))
+            .build()));
     private final BooleanSetting pauseInGui = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("pause_in_gui")
             .name("GUI Pause")
@@ -41,11 +50,14 @@ public final class AutoWalkModule extends Module {
         if (this.stopOnCollision.value() && player.horizontalCollision) {
             return;
         }
-        if (input.keyPresses.backward()) {
+        if ("Forward".equals(this.direction.value()) && input.keyPresses.backward()
+                || "Backward".equals(this.direction.value()) && input.keyPresses.forward()) {
             return;
         }
 
-        input.keyPresses = InputStates.withForward(input.keyPresses, true);
+        input.keyPresses = "Backward".equals(this.direction.value())
+                ? InputStates.withBackward(input.keyPresses, true)
+                : InputStates.withForward(input.keyPresses, true);
         if (this.sprint.value()) {
             input.keyPresses = InputStates.withSprint(input.keyPresses, true);
             player.setSprinting(true);

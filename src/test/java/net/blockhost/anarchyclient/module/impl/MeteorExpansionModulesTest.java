@@ -9,6 +9,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -117,6 +119,34 @@ class MeteorExpansionModulesTest {
     void fakePlayerUsesValidProfileNames() {
         assertEquals("AnarchyClient", FakePlayerModule.sanitizeName(" "));
         assertEquals("abcdefghijklmnop", FakePlayerModule.sanitizeName("abcdefghijklmnopqr"));
+    }
+
+    @Test
+    void combatPlacementShapesAreStableAndUnique() {
+        BlockPos base = new BlockPos(10, 64, 10);
+
+        assertEquals(5, SurroundModule.targetPositions(base, false, true, false).size());
+        assertEquals(18, SurroundModule.targetPositions(base, true, true, false).size());
+
+        List<BlockPos> trap = AutoTrapModule.trapPositions(base, true, true, true, true);
+        assertTrue(trap.contains(base.above(2)));
+        assertTrue(trap.contains(base.north()));
+        assertEquals(trap.size(), CombatPlacementPlanner.unique(trap).size());
+
+        List<BlockPos> anvilSupport = AutoAnvilModule.supportPositions(base, 3, true);
+        assertTrue(anvilSupport.contains(base.above(2)));
+        assertTrue(anvilSupport.contains(base.above().relative(Direction.NORTH)));
+    }
+
+    @Test
+    void nukerShapeFiltersMatchConfiguredModes() {
+        BlockPos center = new BlockPos(0, 64, 0);
+
+        assertTrue(NukerModule.passesShape(center.offset(2, 0, 0), center, 2, "Sphere"));
+        assertFalse(NukerModule.passesShape(center.offset(2, 2, 2), center, 2, "Sphere"));
+        assertTrue(NukerModule.passesShape(center.offset(2, 2, 2), center, 2, "Cube"));
+        assertTrue(NukerModule.passesShape(center.offset(2, -1, 0), center, 2, "Floor"));
+        assertFalse(NukerModule.passesShape(center.offset(0, 1, 0), center, 2, "Floor"));
     }
 
     @Test

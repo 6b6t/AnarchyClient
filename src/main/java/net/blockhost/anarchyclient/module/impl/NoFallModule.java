@@ -6,6 +6,8 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 import java.util.List;
@@ -24,7 +26,7 @@ public final class NoFallModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Packet")
-            .addAllOptions(List.of("Packet", "Spoof Ground", "Cancel Motion", "MLG Assist"))
+            .addAllOptions(List.of("Packet", "Spoof Ground", "No Ground", "Cancel Motion", "MLG Assist"))
             .build()));
 
     public NoFallModule() {
@@ -60,6 +62,22 @@ public final class NoFallModule extends Module {
         }
     }
 
+    @Override
+    public Packet<?> replaceSendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        if (!(packet instanceof ServerboundMovePlayerPacket move)
+                || client.player == null
+                || !shouldHandle(client.player, this.minFallDistance.value())) {
+            return packet;
+        }
+        if ("Spoof Ground".equals(this.mode.value())) {
+            return withGround(move, client.player, true);
+        }
+        if ("No Ground".equals(this.mode.value())) {
+            return withGround(move, client.player, false);
+        }
+        return packet;
+    }
+
     static boolean shouldHandle(final LocalPlayer player, final double minFallDistance) {
         return player != null
                 && player.connection != null
@@ -68,5 +86,39 @@ public final class NoFallModule extends Module {
                 && !player.isFallFlying()
                 && !player.isPassenger()
                 && !player.isInWater();
+    }
+
+    private static Packet<?> withGround(final ServerboundMovePlayerPacket packet, final LocalPlayer player,
+                                        final boolean onGround) {
+        boolean horizontalCollision = packet.horizontalCollision();
+        if (packet instanceof ServerboundMovePlayerPacket.PosRot) {
+            return new ServerboundMovePlayerPacket.PosRot(
+                    packet.getX(player.getX()),
+                    packet.getY(player.getY()),
+                    packet.getZ(player.getZ()),
+                    packet.getYRot(player.getYRot()),
+                    packet.getXRot(player.getXRot()),
+                    onGround,
+                    horizontalCollision
+            );
+        }
+        if (packet instanceof ServerboundMovePlayerPacket.Pos) {
+            return new ServerboundMovePlayerPacket.Pos(
+                    packet.getX(player.getX()),
+                    packet.getY(player.getY()),
+                    packet.getZ(player.getZ()),
+                    onGround,
+                    horizontalCollision
+            );
+        }
+        if (packet instanceof ServerboundMovePlayerPacket.Rot) {
+            return new ServerboundMovePlayerPacket.Rot(
+                    packet.getYRot(player.getYRot()),
+                    packet.getXRot(player.getXRot()),
+                    onGround,
+                    horizontalCollision
+            );
+        }
+        return new ServerboundMovePlayerPacket.StatusOnly(onGround, horizontalCollision);
     }
 }

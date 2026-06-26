@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -17,6 +18,34 @@ public final class InventoryHudModule extends HudElementModule {
     @Override
     protected int color() {
         return 0xFF8EEAD5;
+    }
+
+    @Override
+    protected void renderHudElement(final Minecraft client, final GuiGraphicsExtractor graphics) {
+        Inventory inventory = client.player.getInventory();
+        int columns = 9;
+        int rows = 4;
+        int cell = 18;
+        int width = columns * cell + 8;
+        int height = rows * cell + 8;
+        HudPosition position = this.position(graphics, width, height);
+        int x = position.x();
+        int y = position.y();
+        graphics.fill(x, y, x + width, y + height, 0xAA101418);
+        graphics.outline(x, y, width, height, 0x55FFFFFF);
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                int slot = row == rows - 1 ? column : 9 + row * columns + column;
+                ItemStack stack = inventory.getItem(slot);
+                int slotX = x + 4 + column * cell;
+                int slotY = y + 4 + row * cell;
+                graphics.fill(slotX, slotY, slotX + 16, slotY + 16, 0x6621262D);
+                if (!stack.isEmpty()) {
+                    graphics.item(stack, slotX, slotY);
+                    graphics.itemDecorations(client.font, stack, slotX, slotY);
+                }
+            }
+        }
     }
 
     @Override

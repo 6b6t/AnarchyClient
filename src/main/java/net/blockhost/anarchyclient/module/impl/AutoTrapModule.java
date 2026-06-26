@@ -43,10 +43,35 @@ public final class AutoTrapModule extends Module {
             .name("Rotate")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting support = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("support")
+            .name("Support")
+            .defaultValue(true)
+            .build()));
     private final BooleanSetting includeFeet = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("include_feet")
             .name("Feet")
             .defaultValue(false)
+            .build()));
+    private final BooleanSetting face = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("face")
+            .name("Face")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting top = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("top")
+            .name("Top")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting antiStep = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("anti_step")
+            .name("Anti Step")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting selfTrap = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("avoid_self")
+            .name("Avoid Self")
+            .defaultValue(true)
             .build()));
 
     public AutoTrapModule() {
@@ -60,17 +85,19 @@ public final class AutoTrapModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = "Self".equals(this.targetMode.value()) ? player : nearestPlayer(client, player, this.range.value());
+        Player target = "Self".equals(this.targetMode.value()) ? player : CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null) {
             return;
         }
-        int placed = 0;
-        for (BlockPos pos : trapPositions(target.blockPosition(), this.includeFeet.value())) {
-            if (BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F) == BlockPlacement.PlacementResult.PLACED
-                    && ++placed >= this.blocksPerTick.value().intValue()) {
-                return;
-            }
-        }
+        List<BlockPos> targets = trapPositions(target.blockPosition(), this.includeFeet.value(), this.face.value(),
+                this.top.value(), this.antiStep.value());
+        int placed = CombatPlacementPlanner.placeBatch(client, this, targets, CombatPlacementPlanner.HARD_BLOCKS,
+                CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(), 5.5)
+                        .withSupport(this.support.value())
+                        .withAvoidSelf(this.selfTrap.value()));
+        this.debugValue("target", target.getScoreboardName());
+        this.debugValue("positions", targets.size());
+        this.debugValue("placed", placed);
     }
 
     static List<BlockPos> trapPositions(final BlockPos base) {
@@ -78,31 +105,27 @@ public final class AutoTrapModule extends Module {
     }
 
     static List<BlockPos> trapPositions(final BlockPos base, final boolean includeFeet) {
+        return trapPositions(base, includeFeet, true, true, false);
+    }
+
+    static List<BlockPos> trapPositions(final BlockPos base, final boolean includeFeet, final boolean face,
+                                        final boolean top, final boolean antiStep) {
         List<BlockPos> positions = new ArrayList<>();
-        positions.add(base.above(2));
+        if (top) {
+            positions.add(base.above(2));
+        }
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            positions.add(base.above().relative(direction));
+            if (face) {
+                positions.add(base.above().relative(direction));
+            }
             if (includeFeet) {
                 positions.add(base.relative(direction));
             }
+            if (antiStep) {
+                positions.add(base.above(2).relative(direction));
+            }
         }
-        return positions;
+        return CombatPlacementPlanner.unique(positions);
     }
 
-    private static Player nearestPlayer(final Minecraft client, final LocalPlayer player, final double range) {
-        double rangeSqr = range * range;
-        Player best = null;
-        double bestDistance = Double.MAX_VALUE;
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof Player target) || target == player || !target.isAlive()) {
-                continue;
-            }
-            double distance = target.distanceToSqr(player);
-            if (distance <= rangeSqr && distance < bestDistance) {
-                best = target;
-                bestDistance = distance;
-            }
-        }
-        return best;
-    }
 }

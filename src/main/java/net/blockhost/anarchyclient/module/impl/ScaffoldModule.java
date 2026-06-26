@@ -7,9 +7,11 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,26 @@ public final class ScaffoldModule extends Module {
             .name("Tower")
             .defaultValue(false)
             .build()));
+    private final BooleanSetting safeWalk = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("safe_walk")
+            .name("Safe Walk")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting eagle = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("eagle")
+            .name("Eagle")
+            .defaultValue(false)
+            .build()));
+    private final BooleanSetting prediction = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("prediction")
+            .name("Predict")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting sprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("sprint")
+            .name("Sprint")
+            .defaultValue(false)
+            .build()));
     private final SelectSetting technique = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("technique")
             .name("Technique")
@@ -58,6 +80,27 @@ public final class ScaffoldModule extends Module {
     }
 
     @Override
+    public void updateInput(final Minecraft client, final ClientInput input) {
+        LocalPlayer player = client.player;
+        if (player == null || player.input != input || client.gui.screen() != null) {
+            return;
+        }
+        if (this.sprint.value()) {
+            input.keyPresses = InputStates.withSprint(input.keyPresses, true);
+            player.setSprinting(true);
+        }
+        if (this.eagle.value() && client.level != null && client.level.getBlockState(player.blockPosition().below()).canBeReplaced()) {
+            input.keyPresses = InputStates.withShift(input.keyPresses, true);
+        }
+        InputStates.refreshMoveVector(input);
+    }
+
+    @Override
+    public boolean preventEdgeFall(final Minecraft client, final Player player) {
+        return this.safeWalk.value() && client.player == player && client.gui.screen() == null;
+    }
+
+    @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
@@ -74,12 +117,15 @@ public final class ScaffoldModule extends Module {
             }
         }
         int placed = 0;
-        for (BlockPos pos : targets(player)) {
+        List<BlockPos> targets = targets(player);
+        for (BlockPos pos : targets) {
             if (BlockPlacer.place(client, this.id(), pos, this.rotate.value(), 80.0F) == BlockPlacer.PlacementResult.PLACED
                     && ++placed >= this.blocksPerTick.value().intValue()) {
+                this.debugValue("placed", placed);
                 return;
             }
         }
+        this.debugValue("targets", targets.size());
     }
 
     @Override
@@ -106,6 +152,19 @@ public final class ScaffoldModule extends Module {
             targets.add(base.relative(player.getDirection()));
             targets.add(base.relative(player.getDirection()).relative(player.getDirection()));
         }
-        return targets;
+        if (this.prediction.value()) {
+            BlockPos predicted = BlockPos.containing(
+                    player.getX() + player.getDeltaMovement().x,
+                    player.getY(),
+                    player.getZ() + player.getDeltaMovement().z
+            ).below();
+            targets.add(predicted);
+            if (this.expand.value()) {
+                for (Direction direction : Direction.Plane.HORIZONTAL) {
+                    targets.add(predicted.relative(direction));
+                }
+            }
+        }
+        return CombatPlacementPlanner.unique(targets);
     }
 }
