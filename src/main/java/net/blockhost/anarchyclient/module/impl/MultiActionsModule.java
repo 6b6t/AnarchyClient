@@ -17,6 +17,16 @@ public final class MultiActionsModule extends Module {
             .name("Use")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting breakWhileUsing = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("break_while_using")
+            .name("Break")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting placeWhileBreaking = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("place_while_breaking")
+            .name("Place")
+            .defaultValue(true)
+            .build()));
 
     public MultiActionsModule() {
         super("multi_actions", "Multi Actions", ModuleCategory.MISC, java.util.List.of("multitask"));
@@ -29,5 +39,13 @@ public final class MultiActionsModule extends Module {
 
     public static boolean useWhileBusy() {
         return instance != null && instance.enabled() && instance.useWhileBusy.value();
+    }
+
+    public static boolean breakWhileUsing() {
+        return instance != null && instance.enabled() && instance.breakWhileUsing.value();
+    }
+
+    public static boolean placeWhileBreaking() {
+        return instance != null && instance.enabled() && instance.placeWhileBreaking.value();
     }
 }

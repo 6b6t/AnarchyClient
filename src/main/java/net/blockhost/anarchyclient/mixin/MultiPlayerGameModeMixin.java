@@ -2,12 +2,15 @@ package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.AttackEntityEvent;
+import net.blockhost.anarchyclient.event.BlockAttackEvent;
 import net.blockhost.anarchyclient.event.BlockInteractEvent;
 import net.blockhost.anarchyclient.event.EntityInteractEvent;
 import net.blockhost.anarchyclient.event.ItemUseEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -28,6 +31,15 @@ public abstract class MultiPlayerGameModeMixin {
         AttackEntityEvent event = AnarchyClient.MODULES.call(new AttackEntityEvent(Minecraft.getInstance(), player, target));
         if (event.isCancelled()) {
             info.cancel();
+        }
+    }
+
+    @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
+    private void anarchyclient$attackBlock(final BlockPos pos, final Direction direction,
+                                           final CallbackInfoReturnable<Boolean> info) {
+        BlockAttackEvent event = AnarchyClient.MODULES.call(new BlockAttackEvent(Minecraft.getInstance(), pos, direction));
+        if (event.isCancelled()) {
+            info.setReturnValue(false);
         }
     }
 

@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.event.AttackEntityEvent;
+import net.blockhost.anarchyclient.event.BlockAttackEvent;
 import net.blockhost.anarchyclient.event.BlockBreakingProgressEvent;
 import net.blockhost.anarchyclient.event.BlockInteractEvent;
 import net.blockhost.anarchyclient.event.CameraTransformEvent;
@@ -68,6 +69,13 @@ public final class ModuleEventListener {
     @EventHandler
     public void handleAttackEntity(final AttackEntityEvent event) {
         if (this.module.attackEntity(event.client(), event.player(), event.target())) {
+            event.cancel();
+        }
+    }
+
+    @EventHandler
+    public void handleBlockAttack(final BlockAttackEvent event) {
+        if (this.module.attackBlock(event.client(), event.pos(), event.direction())) {
             event.cancel();
         }
     }

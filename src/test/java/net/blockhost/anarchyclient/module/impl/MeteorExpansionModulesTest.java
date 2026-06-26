@@ -155,8 +155,8 @@ class MeteorExpansionModulesTest {
         List<Component> beacon = new java.util.ArrayList<>();
         List<Component> dirt = new java.util.ArrayList<>();
 
-        BetterBeaconsModule.addBeaconTooltip(true, beacon);
-        BetterBeaconsModule.addBeaconTooltip(false, dirt);
+        BetterBeaconsModule.addBeaconTooltip(true, beacon, true, true, false);
+        BetterBeaconsModule.addBeaconTooltip(false, dirt, true, true, true);
 
         assertEquals(2, beacon.size());
         assertTrue(beacon.getFirst().getString().contains("netherite"));

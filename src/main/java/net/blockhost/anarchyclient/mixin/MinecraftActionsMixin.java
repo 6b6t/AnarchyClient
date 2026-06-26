@@ -2,8 +2,9 @@ package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.module.impl.MultiActionsModule;
 import net.blockhost.anarchyclient.module.impl.NoMiningTraceModule;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,11 +25,27 @@ public abstract class MinecraftActionsMixin {
     }
 
     @Redirect(
+            method = "startAttack",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z")
+    )
+    private boolean anarchyclient$allowStartAttackWhileUsing(final LocalPlayer player) {
+        return !MultiActionsModule.attackWhileUsing() && player.isHandsBusy();
+    }
+
+    @Redirect(
             method = "continueAttack",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z")
     )
-    private boolean anarchyclient$allowAttackWhileUsing(final LocalPlayer player) {
-        return !MultiActionsModule.attackWhileUsing() && player.isUsingItem();
+    private boolean anarchyclient$allowBreakWhileUsing(final LocalPlayer player) {
+        return !MultiActionsModule.breakWhileUsing() && player.isUsingItem();
+    }
+
+    @Redirect(
+            method = "startUseItem",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;isDestroying()Z")
+    )
+    private boolean anarchyclient$allowPlaceWhileBreaking(final MultiPlayerGameMode gameMode) {
+        return !MultiActionsModule.placeWhileBreaking() && gameMode.isDestroying();
     }
 
     @Redirect(

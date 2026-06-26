@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.module.impl.NoPushModule;
+import net.blockhost.anarchyclient.module.impl.NoSlowModule;
 import net.blockhost.anarchyclient.module.impl.NoWebModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +17,7 @@ public abstract class EntityMixin {
 
     @Inject(method = "makeStuckInBlock", at = @At("HEAD"), cancellable = true)
     private void anarchyclient$noWeb(final BlockState state, final Vec3 speedMultiplier, final CallbackInfo info) {
-        if (NoWebModule.shouldIgnore(state)) {
+        if (NoWebModule.shouldIgnore(state) || NoSlowModule.shouldIgnoreStuckBlock(state)) {
             info.cancel();
         }
     }

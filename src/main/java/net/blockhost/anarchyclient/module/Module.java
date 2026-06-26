@@ -12,6 +12,7 @@ import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -187,6 +188,10 @@ public abstract class Module {
     }
 
     public boolean attackEntity(final Minecraft client, final Player player, final Entity target) {
+        return false;
+    }
+
+    public boolean attackBlock(final Minecraft client, final BlockPos pos, final Direction direction) {
         return false;
     }
 
