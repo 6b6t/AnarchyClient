@@ -55,6 +55,9 @@ public final class ClientConfig {
     private boolean wideInspector = UiPreferences.DEFAULT.wideInspector();
     private GuiThemePreset guiTheme = UiPreferences.DEFAULT.guiTheme();
     private BackgroundDesign backgroundDesign = UiPreferences.DEFAULT.backgroundDesign();
+    private float glassOpacity = UiPreferences.DEFAULT.glassOpacity();
+    private float cornerRadius = UiPreferences.DEFAULT.cornerRadius();
+    private float glassBlur = UiPreferences.DEFAULT.glassBlur();
 
     public ClientConfig(final ModuleManager modules) {
         this(modules, null, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
@@ -210,7 +213,10 @@ public final class ClientConfig {
                 this.compactRows,
                 this.wideInspector,
                 this.guiTheme,
-                this.backgroundDesign
+                this.backgroundDesign,
+                this.glassOpacity,
+                this.cornerRadius,
+                this.glassBlur
         );
     }
 
@@ -223,6 +229,9 @@ public final class ClientConfig {
         this.wideInspector = value.wideInspector();
         this.guiTheme = value.guiTheme();
         this.backgroundDesign = value.backgroundDesign();
+        this.glassOpacity = value.glassOpacity();
+        this.cornerRadius = value.cornerRadius();
+        this.glassBlur = value.glassBlur();
     }
 
     public void resetUiPreferences() {
@@ -345,6 +354,9 @@ public final class ClientConfig {
         if (backgroundJson != null && backgroundJson.isJsonPrimitive()) {
             this.backgroundDesign = parseBackgroundDesign(backgroundJson.getAsString());
         }
+        this.glassOpacity = readFloat(ui, "glassOpacity", this.glassOpacity);
+        this.cornerRadius = readFloat(ui, "cornerRadius", this.cornerRadius);
+        this.glassBlur = readFloat(ui, "glassBlur", this.glassBlur);
     }
 
     private void saveUi(final JsonObject root) {
@@ -389,10 +401,18 @@ public final class ClientConfig {
         ui.addProperty("wideInspector", preferences.wideInspector());
         ui.addProperty("guiTheme", preferences.guiTheme().key());
         ui.addProperty("backgroundDesign", preferences.backgroundDesign().name().toLowerCase(Locale.ROOT));
+        ui.addProperty("glassOpacity", preferences.glassOpacity());
+        ui.addProperty("cornerRadius", preferences.cornerRadius());
+        ui.addProperty("glassBlur", preferences.glassBlur());
 
         if (ui.size() > 0) {
             root.add("ui", ui);
         }
+    }
+
+    private static float readFloat(final JsonObject json, final String key, final float fallback) {
+        JsonElement element = json.get(key);
+        return element != null && element.isJsonPrimitive() ? element.getAsFloat() : fallback;
     }
 
     private static boolean readBoolean(final JsonObject json, final String key, final boolean fallback) {
@@ -534,16 +554,22 @@ public final class ClientConfig {
                                 boolean compactRows,
                                 boolean wideInspector,
                                 GuiThemePreset guiTheme,
-                                BackgroundDesign backgroundDesign) {
+                                BackgroundDesign backgroundDesign,
+                                float glassOpacity,
+                                float cornerRadius,
+                                float glassBlur) {
 
         public static final UiPreferences DEFAULT = new UiPreferences(
                 true,
                 false,
                 true,
-                false,
+                true,
                 false,
                 GuiThemePreset.EMERALD,
-                BackgroundDesign.NONE
+                BackgroundDesign.NONE,
+                0.55F,
+                14F,
+                2F
         );
 
         public UiPreferences {
@@ -553,6 +579,9 @@ public final class ClientConfig {
             if (backgroundDesign == null) {
                 backgroundDesign = BackgroundDesign.NONE;
             }
+            glassOpacity = Math.min(0.95F, Math.max(0.15F, glassOpacity));
+            cornerRadius = Math.min(24F, Math.max(0F, cornerRadius));
+            glassBlur = Math.min(5F, Math.max(0F, glassBlur));
         }
     }
 

@@ -96,7 +96,8 @@ public final class TntTimerModule extends Module {
     }
 
     static String formatFuse(final int fuseTicks) {
-        return "%.1fs".formatted(Math.max(0, fuseTicks) / 20.0);
+        // Locale.ROOT keeps the decimal point stable regardless of the system locale.
+        return String.format(java.util.Locale.ROOT, "%.1fs", Math.max(0, fuseTicks) / 20.0);
     }
 
     static WorldLineRenderer.Color colorForFuse(final int fuseTicks) {

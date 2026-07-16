@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.blockhost.anarchyclient.render.RenderSuppression;
+import net.blockhost.anarchyclient.rivet.GlassBackdrop;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,5 +27,15 @@ public abstract class GameRendererMixin {
         if (RenderSuppression.suppresses(RenderSuppression.Kind.VIEW_BOB)) {
             info.cancel();
         }
+    }
+
+    @Inject(method = "processBlurEffect", at = @At("HEAD"))
+    private void anarchyclient$glassCaptureSharp(final CallbackInfo info) {
+        GlassBackdrop.onBlurStart(((GameRenderer) (Object) this).mainRenderTarget());
+    }
+
+    @Inject(method = "processBlurEffect", at = @At("RETURN"))
+    private void anarchyclient$glassCaptureBlurred(final CallbackInfo info) {
+        GlassBackdrop.onBlurEnd(((GameRenderer) (Object) this).mainRenderTarget());
     }
 }

@@ -15,6 +15,15 @@ import net.minecraft.resources.Identifier;
 
 public final class AnarchyClientRenderPipelines {
 
+    public static final RenderPipeline GLASS_PANEL = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/glass_panel"))
+                    .withVertexShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/panel"))
+                    .withFragmentShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/glass_panel"))
+                    .build()
+    );
+    public static final RenderPipeline SDF_FILL = panelPipeline("sdf_fill");
+    public static final RenderPipeline SDF_SHADOW = panelPipeline("sdf_shadow");
     public static final RenderPipeline MATRIX_PANEL = panelPipeline("matrix_panel");
     public static final RenderPipeline CAUSTICS_PANEL = panelPipeline("caustics_panel");
     public static final RenderPipeline RETRO_GRID_PANEL = panelPipeline("retro_grid_panel");

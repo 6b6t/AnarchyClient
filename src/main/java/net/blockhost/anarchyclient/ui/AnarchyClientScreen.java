@@ -3,9 +3,9 @@ package net.blockhost.anarchyclient.ui;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.Blaze3DBackend;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
+import net.blockhost.anarchyclient.rivet.GlassBackdrop;
 import net.blockhost.anarchyclient.rivet.RivetInputMapper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lenni0451.rivet.Rivet;
@@ -32,13 +32,17 @@ import java.util.Set;
 
 public final class AnarchyClientScreen extends Screen {
 
-    private static final int BACKDROP_TOP = 0x8A000000;
-    private static final int BACKDROP_BOTTOM = 0xC4000000;
+    // The menu is designed for GUI Scale 2. Countering Minecraft's GUI scale with 2/factor keeps
+    // the menu's real on-screen size constant no matter what GUI Scale the user picks, and gives
+    // it the same virtual room (real pixels / 2) so it always fits the screen. Clamped like the
+    // BleachHack auto-fit so extreme factors cannot shrink the UI into unreadability.
+    private static final float REFERENCE_GUI_SCALE = 2F;
 
     private final ModuleManager modules;
     private final ClientConfig config;
     private final Set<MouseButton> heldMouseButtons = EnumSet.noneOf(MouseButton.class);
     private Rivet rivet;
+    private ModulePanel panel;
 
     public AnarchyClientScreen(final ModuleManager modules, final ClientConfig config) {
         super(Component.literal("AnarchyClient"));
@@ -49,49 +53,69 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     protected void init() {
         Minecraft client = Minecraft.getInstance();
-        this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, new Size(this.width, this.height));
+        GlassBackdrop.activate();
+        this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, this.virtualSize());
         this.rivet.theme(new AnarchyClientTheme(this.config.uiPreferences().guiTheme()));
-        this.rivet.root().addChild(new ModulePanel(this.modules, this.config));
+        this.panel = new ModulePanel(this.modules, this.config);
+        this.rivet.root().addChild(this.panel);
+    }
+
+    private float uiScale() {
+        int factor = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
+        return Math.max(0.5F, Math.min(2F, REFERENCE_GUI_SCALE / factor));
+    }
+
+    private Size virtualSize() {
+        float scale = this.uiScale();
+        return new Size(this.width / scale, this.height / scale);
     }
 
     @Override
     public void resize(final int width, final int height) {
         super.resize(width, height);
         if (this.rivet != null) {
-            this.rivet.size(new Size(width, height));
+            this.rivet.size(this.virtualSize());
         }
     }
 
     @Override
     public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         if (this.rivet != null) {
-            this.rivet.size(new Size(this.width, this.height));
-            this.rivet.onMouseMove(new MouseMoveEvent(mouseX, mouseY, this.heldMouseButtons));
-            this.rivet.render(new SnappedRenderer<>(new Blaze3DRenderer(Minecraft.getInstance(), graphics, this.backgroundDesign())));
+            float scale = this.uiScale();
+            this.rivet.size(this.virtualSize());
+            this.rivet.onMouseMove(new MouseMoveEvent(mouseX / scale, mouseY / scale, this.heldMouseButtons));
+            if (this.panel != null) {
+                this.panel.mousePosition(mouseX / scale, mouseY / scale);
+            }
+            graphics.pose().pushMatrix();
+            graphics.pose().scale(scale, scale);
+            try {
+                this.rivet.render(new SnappedRenderer<>(new Blaze3DRenderer(Minecraft.getInstance(), graphics)));
+            } finally {
+                graphics.pose().popMatrix();
+            }
         }
     }
 
     @Override
     public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
+        // Triggers the vanilla blur pass. GlassBackdrop captures the blurred frame for the glass
+        // panels and restores the sharp frame, so the game stays fully visible behind the menu.
         graphics.blurBeforeThisStratum();
-        graphics.fillGradient(0, 0, this.width, this.height, BACKDROP_TOP, BACKDROP_BOTTOM);
-    }
-
-    private BackgroundDesign backgroundDesign() {
-        return this.config.uiPreferences().backgroundDesign();
     }
 
     @Override
     public void mouseMoved(final double mouseX, final double mouseY) {
         if (this.rivet != null) {
-            this.rivet.onMouseMove(new MouseMoveEvent((float) mouseX, (float) mouseY, this.heldMouseButtons));
+            float scale = this.uiScale();
+            this.rivet.onMouseMove(new MouseMoveEvent((float) (mouseX / scale), (float) (mouseY / scale), this.heldMouseButtons));
         }
     }
 
     @Override
     public boolean mouseClicked(final net.minecraft.client.input.MouseButtonEvent event, final boolean doubleClick) {
         if (this.rivet == null) return false;
-        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = RivetInputMapper.mouse(event);
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(RivetInputMapper.mouse(event));
         this.heldMouseButtons.add(mapped.button());
         return this.rivet.onMouseDown(mapped.withHeldButtons(this.heldMouseButtons));
     }
@@ -99,7 +123,7 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public boolean mouseReleased(final net.minecraft.client.input.MouseButtonEvent event) {
         if (this.rivet == null) return false;
-        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = RivetInputMapper.mouse(event);
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(RivetInputMapper.mouse(event));
         try {
             return this.rivet.onMouseUp(mapped.withHeldButtons(this.heldMouseButtons));
         } finally {
@@ -109,7 +133,18 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(final double mouseX, final double mouseY, final double scrollX, final double scrollY) {
-        return this.rivet != null && this.rivet.onMouseScroll(new MouseScrollEvent((float) mouseX, (float) mouseY, (float) scrollX, (float) scrollY));
+        if (this.rivet == null) {
+            return false;
+        }
+        float scale = this.uiScale();
+        return this.rivet.onMouseScroll(new MouseScrollEvent(
+                (float) (mouseX / scale), (float) (mouseY / scale), (float) scrollX, (float) scrollY));
+    }
+
+    /** Rivet lays out and hit-tests in virtual (reference scale) coordinates; convert real clicks. */
+    private net.lenni0451.rivet.input.mouse.MouseButtonEvent toVirtualSpace(final net.lenni0451.rivet.input.mouse.MouseButtonEvent event) {
+        float scale = this.uiScale();
+        return scale == 1F ? event : event.withXBy(x -> x / scale).withYBy(y -> y / scale);
     }
 
     @Override
@@ -138,6 +173,7 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public void onClose() {
+        GlassBackdrop.deactivate();
         this.config.save();
         if (this.rivet != null) {
             this.rivet.dispose();
@@ -145,6 +181,14 @@ public final class AnarchyClientScreen extends Screen {
         }
         this.heldMouseButtons.clear();
         super.onClose();
+    }
+
+    @Override
+    public void removed() {
+        // Screens replaced via setScreen() skip onClose(); the glass capture must still stop so
+        // vanilla menus keep their normal full-screen blur.
+        GlassBackdrop.deactivate();
+        super.removed();
     }
 
     @Override
