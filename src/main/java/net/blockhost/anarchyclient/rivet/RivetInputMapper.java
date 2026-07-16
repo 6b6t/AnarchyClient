@@ -27,7 +27,7 @@ public final class RivetInputMapper {
             case GLFW.GLFW_MOUSE_BUTTON_MIDDLE -> MouseButton.MIDDLE;
             default -> MouseButton.LEFT;
         };
-        return new MouseButtonEvent((float) event.x(), (float) event.y(), button, modifiers(event.modifiers()));
+        return new MouseButtonEvent((float) event.x(), (float) event.y(), button, modifiers(event.modifiers()), Set.of());
     }
 
     public static Set<ModifierKey> modifiers(final int glfwModifiers) {

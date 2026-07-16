@@ -63,6 +63,29 @@ class GuiShapeGeometryTest {
     }
 
     @Test
+    void roundedRectClampsEqualRadiiSymmetrically() {
+        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 4, 4, 4, COLOR);
+
+        assertPartitionedVerticalStrips(vertices);
+        assertContainsVertex(vertices, 0, 2);
+        assertContainsVertex(vertices, 2, 0);
+        assertContainsVertex(vertices, 4, 2);
+        assertContainsVertex(vertices, 2, 4);
+    }
+
+    @Test
+    void roundedRectSupportsIndependentCornerRadii() {
+        List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledRoundedRect(0, 0, 12, 8, 4, 0, 2, 0, COLOR);
+
+        assertPartitionedVerticalStrips(vertices);
+        assertContainsVertex(vertices, 0, 4);
+        assertContainsVertex(vertices, 4, 0);
+        assertContainsVertex(vertices, 0, 8);
+        assertContainsVertex(vertices, 12, 0);
+        assertContainsVertex(vertices, 12, 6);
+    }
+
+    @Test
     void filledCircleUsesVisibleGuiWedges() {
         List<GuiShapeGeometry.Vertex> vertices = GuiShapeGeometry.filledCircle(5, 6, 8, COLOR);
 

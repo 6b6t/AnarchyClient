@@ -3,10 +3,14 @@ package net.blockhost.anarchyclient.rivet;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
-import net.lenni0451.rivet.backend.render.RenderCommand;
-import net.lenni0451.rivet.backend.render.RenderElement;
-import net.lenni0451.rivet.backend.render.RenderList;
-import net.lenni0451.rivet.backend.render.TransformCommand;
+import net.lenni0451.rivet.backend.Texture;
+import net.lenni0451.rivet.backend.render.CheckedRenderer;
+import net.lenni0451.rivet.backend.render.Renderer;
+import net.lenni0451.rivet.backend.render.deferred.ModifierCommand;
+import net.lenni0451.rivet.backend.render.deferred.RenderCommand;
+import net.lenni0451.rivet.backend.text.ShapedText;
+import net.lenni0451.rivet.math.Point;
+import net.lenni0451.rivet.text.model.TextOrigin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -15,13 +19,17 @@ import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public final class Blaze3DRenderer {
+public final class Blaze3DRenderer extends CheckedRenderer {
 
     private final Minecraft client;
     private final GuiGraphicsExtractor graphics;
     private final RenderPipeline backgroundPipeline;
+    private float xOffset;
+    private float yOffset;
 
     public Blaze3DRenderer(final Minecraft client, final GuiGraphicsExtractor graphics, final BackgroundDesign background) {
         this.client = client;
@@ -29,179 +37,223 @@ public final class Blaze3DRenderer {
         this.backgroundPipeline = background.pipeline();
     }
 
-    public void render(final RenderList renderList) {
-        this.renderList(renderList);
+    @Override
+    public float xOffset() {
+        return this.xOffset;
     }
 
-    private void renderList(final RenderList renderList) {
+    @Override
+    public float yOffset() {
+        return this.yOffset;
+    }
+
+    @Override
+    protected void doTranslate(final float x, final float y, final Runnable renderer) {
         Matrix3x2fStack pose = this.graphics.pose();
-        switch (renderList.transform()) {
-            case TransformCommand.Translate translate -> {
-                pose.pushMatrix();
-                pose.translate(translate.x(), translate.y());
-            }
-            case TransformCommand.Scale scale -> {
-                pose.pushMatrix();
-                pose.scale(scale.x(), scale.y());
-            }
-            case TransformCommand.ComponentBounds bounds -> this.enableScissor(bounds.x(), bounds.y(), bounds.width(), bounds.height());
-            case TransformCommand.Scissor scissor -> this.enableScissor(scissor.x(), scissor.y(), scissor.width(), scissor.height());
-            case null -> {
-            }
-        }
-
-        for (RenderElement element : renderList.elements()) {
-            switch (element) {
-                case RenderCommand command -> this.renderCommand(command);
-                case RenderList child -> this.renderList(child);
-            }
-        }
-
-        switch (renderList.transform()) {
-            case TransformCommand.Translate _, TransformCommand.Scale _ -> pose.popMatrix();
-            case TransformCommand.ComponentBounds _, TransformCommand.Scissor _ -> this.graphics.disableScissor();
-            case null -> {
-            }
+        float previousXOffset = this.xOffset;
+        float previousYOffset = this.yOffset;
+        this.xOffset += x;
+        this.yOffset += y;
+        pose.pushMatrix();
+        pose.translate(x, y);
+        try {
+            renderer.run();
+        } finally {
+            pose.popMatrix();
+            this.xOffset = previousXOffset;
+            this.yOffset = previousYOffset;
         }
     }
 
-    private void renderCommand(final RenderCommand command) {
-        switch (command) {
-            case RenderCommand.FillRect rect -> this.fill(rect.x(), rect.y(), rect.width(), rect.height(), rect.color());
-            case RenderCommand.OutlineRect rect -> this.outlineRect(rect.x(), rect.y(), rect.width(), rect.height(), rect.outlineWidth(), rect.color());
-            case RenderCommand.FillRoundedRect rect -> this.fillRoundedRect(rect.x(), rect.y(), rect.width(), rect.height(), rect.cornerRadius(), rect.color());
-            case RenderCommand.OutlineRoundedRect rect -> this.outlineRoundedRect(rect.x(), rect.y(), rect.width(), rect.height(), rect.cornerRadius(), rect.outlineWidth(), rect.color());
-            case RenderCommand.FillCircle circle -> this.fillCircle(circle.x(), circle.y(), circle.radius(), circle.color());
-            case RenderCommand.OutlineCircle circle -> this.outlineCircle(circle.x(), circle.y(), circle.radius(), circle.outlineWidth(), circle.color());
-            case RenderCommand.FillTriangle triangle -> this.fillTriangle(triangle.x1(), triangle.y1(), triangle.x2(), triangle.y2(), triangle.x3(), triangle.y3(), triangle.color());
-            case RenderCommand.Line line -> this.line(line.x1(), line.y1(), line.x2(), line.y2(), line.width(), line.color());
-            case RenderCommand.FillGradientRect rect -> this.fillGradientRect(rect.x(), rect.y(), rect.width(), rect.height(), rect.ctl(), rect.cbl(), rect.cbr(), rect.ctr());
-            case RenderCommand.Text text -> this.text(text);
-            case RenderCommand.Image image -> this.image(image);
-            case RenderCommand.CustomRenderCommand<?> custom -> this.renderCustom(custom);
+    @Override
+    protected void doComponentBounds(final float x, final float y, final float width, final float height, final Runnable renderer) {
+        this.withScissor(x, y, width, height, renderer);
+    }
+
+    @Override
+    protected void doScissor(final float x, final float y, final float width, final float height, final Runnable renderer) {
+        this.withScissor(x, y, width, height, renderer);
+    }
+
+    @Override
+    protected void doScale(final float x, final float y, final Runnable renderer) {
+        Matrix3x2fStack pose = this.graphics.pose();
+        pose.pushMatrix();
+        pose.scale(x, y);
+        try {
+            renderer.run();
+        } finally {
+            pose.popMatrix();
         }
     }
 
-    private void text(final RenderCommand.Text text) {
-        if (!(text.shapedText() instanceof MinecraftShapedText shaped)) {
-            throw new UnsupportedOperationException("Unsupported shaped text: " + text.shapedText().getClass().getName());
+    @Override
+    protected void doStencil(final Consumer<Renderer> maskRenderer, final Runnable renderer) {
+        throw new UnsupportedOperationException("Stencil rendering is not supported by the Blaze3D Rivet backend");
+    }
+
+    @Override
+    protected void doInverseStencil(final Consumer<Renderer> maskRenderer, final Runnable renderer) {
+        throw new UnsupportedOperationException("Inverse stencil rendering is not supported by the Blaze3D Rivet backend");
+    }
+
+    @Override
+    public void custom(final ModifierCommand.Custom command, final Runnable renderer) {
+        throw new UnsupportedOperationException("Unsupported Rivet modifier command: " + command.getClass().getName());
+    }
+
+    @Override
+    protected void doText(final ShapedText shapedText, final float anchorX, final float anchorY,
+                          final TextOrigin.Horizontal horizontalOrigin, final TextOrigin.Vertical verticalOrigin) {
+        if (!(shapedText instanceof MinecraftShapedText shaped)) {
+            throw new UnsupportedOperationException("Unsupported shaped text: " + shapedText.getClass().getName());
         }
-        int x = Math.round(text.x() + shaped.visualBounds().x());
-        int y = Math.round(text.y() + shaped.visualBounds().y());
-        for (int lineIndex = 0; lineIndex < shaped.lines().size(); lineIndex++) {
-            int cursorX = x;
-            int baselineY = y + lineIndex * this.client.font.lineHeight;
-            for (MinecraftShapedText.Segment segment : shaped.lines().get(lineIndex).segments()) {
+        float x = shaped.alignAnchorTo(anchorX, horizontalOrigin, TextOrigin.Horizontal.LOGICAL_LEFT);
+        float baselineY = shaped.alignAnchorTo(anchorY, verticalOrigin, TextOrigin.Vertical.BASELINE);
+        Matrix3x2fStack pose = this.graphics.pose();
+        pose.pushMatrix();
+        pose.translate(x, baselineY - shaped.size());
+        pose.scale(shaped.scale(), shaped.scale());
+        try {
+            int cursorX = 0;
+            for (MinecraftShapedText.Segment segment : shaped.segments()) {
                 if (segment.text().isEmpty()) {
                     continue;
                 }
                 int color = argb(segment.format().color());
-                this.graphics.text(this.client.font, segment.text(), cursorX, baselineY, color, segment.format().shadow());
+                this.graphics.text(this.client.font, segment.text(), cursorX, 0, color, segment.format().shadow());
                 if (segment.format().bold()) {
-                    this.graphics.text(this.client.font, segment.text(), cursorX + 1, baselineY, color, segment.format().shadow());
+                    this.graphics.text(this.client.font, segment.text(), cursorX + 1, 0, color, segment.format().shadow());
                 }
                 int width = this.client.font.width(segment.text());
                 if (segment.format().underlined()) {
-                    this.fill(cursorX, baselineY + this.client.font.lineHeight - 1, width, 1, segment.format().color());
+                    this.fill(cursorX, this.client.font.lineHeight - 1, width, 1, segment.format().color());
                 }
                 if (segment.format().strikethrough()) {
-                    this.fill(cursorX, baselineY + this.client.font.lineHeight / 2F, width, 1, segment.format().color());
+                    this.fill(cursorX, this.client.font.lineHeight / 2F, width, 1, segment.format().color());
                 }
                 cursorX += width;
             }
+        } finally {
+            pose.popMatrix();
         }
     }
 
-    private void image(final RenderCommand.Image image) {
-        if (!(image.texture() instanceof MinecraftTexture texture)) {
-            throw new UnsupportedOperationException("Unsupported texture: " + image.texture().getClass().getName());
+    @Override
+    protected void doImage(final Texture image, final float x, final float y, final float width, final float height, final Color color) {
+        if (!(image instanceof MinecraftTexture texture)) {
+            throw new UnsupportedOperationException("Unsupported texture: " + image.getClass().getName());
         }
         this.graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
                 texture.identifier(),
-                Math.round(image.x()),
-                Math.round(image.y()),
+                Math.round(x),
+                Math.round(y),
                 texture.x(),
                 texture.y(),
-                Math.round(image.width()),
-                Math.round(image.height()),
+                Math.round(width),
+                Math.round(height),
                 texture.textureWidth(),
-                texture.textureHeight()
+                texture.textureHeight(),
+                argb(color)
         );
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    private void renderCustom(final RenderCommand.CustomRenderCommand<?> custom) {
-        ((RenderCommand.CustomRenderCommand) custom).action().accept(this.graphics);
+    @Override
+    public void custom(final RenderCommand.Custom command) {
+        if (command instanceof Blaze3DRenderCommand custom) {
+            custom.action().accept(this.graphics);
+            return;
+        }
+        throw new UnsupportedOperationException("Unsupported Rivet render command: " + command.getClass().getName());
+    }
+
+    private void withScissor(final float x, final float y, final float width, final float height, final Runnable renderer) {
+        this.enableScissor(x, y, width, height);
+        try {
+            renderer.run();
+        } finally {
+            this.graphics.disableScissor();
+        }
     }
 
     private void enableScissor(final float x, final float y, final float width, final float height) {
         this.graphics.enableScissor(MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height));
     }
 
-    private void fillRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final Color color) {
-        if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
-
-        this.submitSurfaceShape(GuiShapeGeometry.filledRoundedRect(x, y, width, height, cornerRadius, argb(color)), width, height, color);
+    @Override
+    protected void doFillRoundedRect(final float x, final float y, final float width, final float height,
+                                     final float rtl, final float rbl, final float rbr, final float rtr, final Color color) {
+        this.submitSurfaceShape(GuiShapeGeometry.filledRoundedRect(x, y, width, height, rtl, rbl, rbr, rtr, argb(color)), width, height, color);
     }
 
-    private void outlineRoundedRect(final float x, final float y, final float width, final float height, final float cornerRadius, final float outlineWidth, final Color color) {
-        if (width <= 0 || height <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
-
-        this.submitShape(GuiShapeGeometry.outlinedRoundedRect(x, y, width, height, cornerRadius, outlineWidth, argb(color)));
+    @Override
+    protected void doOutlineRoundedRect(final float x, final float y, final float width, final float height,
+                                        final float rtl, final float rbl, final float rbr, final float rtr,
+                                        final float outlineWidth, final Color color) {
+        this.submitShape(GuiShapeGeometry.outlinedRoundedRect(x, y, width, height, rtl, rbl, rbr, rtr, outlineWidth, argb(color)));
     }
 
-    private void outlineRect(final float x, final float y, final float width, final float height, final float outlineWidth, final Color color) {
-        if (width <= 0 || height <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
-
+    @Override
+    protected void doOutlineRect(final float x, final float y, final float width, final float height, final float outlineWidth, final Color color) {
         this.fill(x, y, width, outlineWidth, color);
         this.fill(x, y + height - outlineWidth, width, outlineWidth, color);
         this.fill(x, y, outlineWidth, height, color);
         this.fill(x + width - outlineWidth, y, outlineWidth, height, color);
     }
 
-    private void fillCircle(final float x, final float y, final float radius, final Color color) {
-        if (radius <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
+    @Override
+    protected void doFillCircle(final float x, final float y, final float radius, final Color color) {
         this.submitShape(GuiShapeGeometry.filledCircle(x, y, radius, argb(color)));
     }
 
-    private void outlineCircle(final float x, final float y, final float radius, final float outlineWidth, final Color color) {
-        if (radius <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
-            return;
-        }
+    @Override
+    protected void doOutlineCircle(final float x, final float y, final float radius, final float outlineWidth, final Color color) {
         this.outlineArc(x, y, radius, outlineWidth, 0, GuiShapeGeometry.FULL_CIRCLE, color);
     }
 
-    private void fillTriangle(final float x1, final float y1, final float x2, final float y2, final float x3, final float y3, final Color color) {
-        if (color.getAlpha() <= 0) {
-            return;
-        }
+    @Override
+    protected void doFillTriangle(final float x1, final float y1, final float x2, final float y2, final float x3, final float y3, final Color color) {
         this.submitShape(GuiShapeGeometry.filledTriangle(x1, y1, x2, y2, x3, y3, argb(color)));
     }
 
-    private void line(final float x1, final float y1, final float x2, final float y2, final float width, final Color color) {
-        if (width <= 0 || color.getAlpha() <= 0) {
-            return;
+    @Override
+    protected void doFillPolygon(final Point[] points, final Color color) {
+        List<GuiShapeGeometry.Vertex> vertices = new ArrayList<>((points.length - 2) * 4);
+        Point first = points[0];
+        for (int index = 1; index < points.length - 1; index++) {
+            Point second = points[index];
+            Point third = points[index + 1];
+            vertices.addAll(GuiShapeGeometry.filledTriangle(first.x(), first.y(), second.x(), second.y(), third.x(), third.y(), argb(color)));
         }
+        this.submitShape(vertices);
+    }
+
+    @Override
+    protected void doLine(final float x1, final float y1, final float x2, final float y2, final float width, final Color color) {
         this.submitShape(GuiShapeGeometry.line(x1, y1, x2, y2, width, argb(color)));
     }
 
-    private void fillGradientRect(final float x, final float y, final float width, final float height, final Color ctl, final Color cbl, final Color cbr, final Color ctr) {
-        if (width <= 0 || height <= 0) {
-            return;
+    @Override
+    protected void doPolyLine(final Point[] points, final float width, final Color color) {
+        List<GuiShapeGeometry.Vertex> vertices = new ArrayList<>();
+        for (int index = 0; index < points.length - 1; index++) {
+            Point start = points[index];
+            Point end = points[index + 1];
+            vertices.addAll(GuiShapeGeometry.line(start.x(), start.y(), end.x(), end.y(), width, argb(color)));
         }
-        if (ctl.getAlpha() <= 0 && cbl.getAlpha() <= 0 && cbr.getAlpha() <= 0 && ctr.getAlpha() <= 0) {
-            return;
-        }
+        this.submitShape(vertices);
+    }
+
+    @Override
+    protected void doFillGradientRect(final float x, final float y, final float width, final float height,
+                                      final Color ctl, final Color cbl, final Color cbr, final Color ctr) {
         this.submitShape(GuiShapeGeometry.gradientRect(x, y, width, height, argb(ctl), argb(cbl), argb(cbr), argb(ctr)));
+    }
+
+    @Override
+    protected void doFillRect(final float x, final float y, final float width, final float height, final Color color) {
+        this.fill(x, y, width, height, color);
     }
 
     private void fill(final float x, final float y, final float width, final float height, final Color color) {

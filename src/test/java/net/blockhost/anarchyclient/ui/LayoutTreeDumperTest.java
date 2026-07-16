@@ -3,16 +3,16 @@ package net.blockhost.anarchyclient.ui;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.backend.Backend;
+import net.lenni0451.rivet.backend.text.Font;
 import net.lenni0451.rivet.backend.text.ShapedText;
-import net.lenni0451.rivet.backend.text.ShapedTextBlock;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
-import net.lenni0451.rivet.layout.absolute.AbsoluteLayoutOptions;
+import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
+import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
-import net.lenni0451.rivet.text.model.TextBlock;
 import net.lenni0451.rivet.text.model.TextLine;
 import org.junit.jupiter.api.Test;
 
@@ -25,9 +25,9 @@ class LayoutTreeDumperTest {
     void snapshotIncludesLabelsBoundsAndLayoutIssues() {
         Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer panel = new DebugContainer("panel");
-        panel.layoutOptions(new AbsoluteLayoutOptions(10, 5, 100F, 50F));
-        panel.addChild(new DebugComponent("bad").layoutOptions(new AbsoluteLayoutOptions(95, 45, 20F, 20F)));
-        panel.addChild(new DebugComponent("hidden").layoutOptions(new AbsoluteLayoutOptions(0, 0, 0F, 0F)));
+        panel.layoutOptions(new AbsoluteOptions(10, 5, 100F, 50F));
+        panel.addChild(new DebugComponent("bad").layoutOptions(new AbsoluteOptions(95, 45, 20F, 20F)));
+        panel.addChild(new DebugComponent("hidden").layoutOptions(new AbsoluteOptions(0, 0, 0F, 0F)));
         rivet.root().addChild(panel);
 
         String snapshot = LayoutTreeDumper.snapshot(rivet);
@@ -44,8 +44,8 @@ class LayoutTreeDumperTest {
     void snapshotSuppressesIssuesInsideHiddenSubtrees() {
         Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer panel = new DebugContainer("panel");
-        panel.layoutOptions(new AbsoluteLayoutOptions(0, 0, 0F, 0F));
-        panel.addChild(new DebugComponent("child").layoutOptions(new AbsoluteLayoutOptions(0, 28, 62F, 28F)));
+        panel.layoutOptions(new AbsoluteOptions(0, 0, 0F, 0F));
+        panel.addChild(new DebugComponent("child").layoutOptions(new AbsoluteOptions(0, 28, 62F, 28F)));
         rivet.root().addChild(panel);
 
         String snapshot = LayoutTreeDumper.snapshot(rivet);
@@ -62,10 +62,10 @@ class LayoutTreeDumperTest {
     void snapshotIncludesScrollContentChildren() {
         Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer rows = new DebugContainer("rows");
-        rows.addChild(new DebugComponent("visible").layoutOptions(new AbsoluteLayoutOptions(0, 0, 100F, 20F)));
-        rows.addChild(new DebugComponent("below-fold").layoutOptions(new AbsoluteLayoutOptions(0, 60, 100F, 20F)));
+        rows.addChild(new DebugComponent("visible").layoutOptions(new AbsoluteOptions(0, 0, 100F, 20F)));
+        rows.addChild(new DebugComponent("below-fold").layoutOptions(new AbsoluteOptions(0, 60, 100F, 20F)));
         LayoutDebugScrollContainer scroll = new LayoutDebugScrollContainer(rows);
-        scroll.layoutOptions(new AbsoluteLayoutOptions(0, 0, 100F, 50F));
+        scroll.layoutOptions(new AbsoluteOptions(0, 0, 100F, 50F));
         scroll.barType().set(ScrollContainer.ScrollBarType.FLOATING);
         rivet.root().addChild(scroll);
 
@@ -113,24 +113,11 @@ class LayoutTreeDumperTest {
 
     private static final class TestBackend implements Backend {
 
-        @Override
-        public float getTextHeight() {
-            return 9F;
-        }
+        private final Font font = new TestFont();
 
         @Override
-        public ShapedText shapeText(final String text, final Color color) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ShapedText shapeText(final TextLine line) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ShapedTextBlock shapeText(final TextBlock block) {
-            throw new UnsupportedOperationException();
+        public Font font() {
+            return this.font;
         }
 
         @Override
@@ -145,6 +132,57 @@ class LayoutTreeDumperTest {
         @Override
         public boolean isKeyDown(final Key key) {
             return false;
+        }
+    }
+
+    private static final class TestFont implements Font {
+
+        @Override
+        public int size() {
+            return 9;
+        }
+
+        @Override
+        public float height() {
+            return 9F;
+        }
+
+        @Override
+        public Font derive(final int size) {
+            return this;
+        }
+
+        @Override
+        public ShapedText shapeText(final String text, final Color color) {
+            return new TestShapedText();
+        }
+
+        @Override
+        public ShapedText shapeText(final TextLine line) {
+            return new TestShapedText();
+        }
+    }
+
+    private static final class TestShapedText implements ShapedText {
+
+        @Override
+        public Rectangle visualBounds() {
+            return new Rectangle(0, -9, 0, 9);
+        }
+
+        @Override
+        public Rectangle logicalBounds() {
+            return this.visualBounds();
+        }
+
+        @Override
+        public net.lenni0451.rivet.math.Point cursorPosition(final int index) {
+            return new net.lenni0451.rivet.math.Point(0, 0);
+        }
+
+        @Override
+        public int index(final float x, final float y) {
+            return 0;
         }
     }
 }

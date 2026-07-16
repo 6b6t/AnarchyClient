@@ -15,7 +15,7 @@ Main Java code lives in `src/main/java`. Project-owned classes are rooted under 
 
 Resources live in `src/main/resources`. Key files are `fabric.mod.json`, `anarchyclient.mixins.json`, `anarchyclient.accesswidener`, and assets under `assets/anarchyclient`. Tests live in `src/test/java` and mirror the production package layout.
 
-Rivet is consumed through `com.github.Lenni0451.rivet:core:40c6f6c3a7`, with upstream source at `https://github.com/Lenni0451/rivet`. Prefer project-owned bridge changes in `net.blockhost.anarchyclient.rivet` over vendoring or rewriting Rivet internals.
+Rivet is consumed through `com.github.Lenni0451.rivet:core:8dfcc3dd17`, with upstream source at `https://github.com/Lenni0451/rivet`. Prefer project-owned bridge changes in `net.blockhost.anarchyclient.rivet` over vendoring or rewriting Rivet internals.
 
 ## Build, Test, and Development Commands
 

@@ -33,7 +33,7 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:$loaderVersion")
     implementation(include("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion") as Any)
 
-    implementation(include("com.github.Lenni0451.rivet:core:40c6f6c3a7") as Any)
+    implementation(include("com.github.Lenni0451.rivet:core:8dfcc3dd17") as Any)
     implementation(include("net.lenni0451.commons:core:$commonsVersion") as Any)
     implementation(include("net.lenni0451.commons:animation:$commonsVersion") as Any)
     implementation(include("net.lenni0451:LambdaEvents:$lambdaEventsVersion") as Any)

@@ -9,10 +9,12 @@ import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.RivetInputMapper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lenni0451.rivet.Rivet;
+import net.lenni0451.rivet.backend.render.SnappedRenderer;
 import net.lenni0451.rivet.input.keyboard.CharEvent;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.input.keyboard.KeyEvent;
 import net.lenni0451.rivet.input.keyboard.ModifierKey;
+import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseMoveEvent;
 import net.lenni0451.rivet.input.mouse.MouseScrollEvent;
 import net.lenni0451.rivet.layout.fullsize.FullSizeLayout;
@@ -24,7 +26,9 @@ import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 public final class AnarchyClientScreen extends Screen {
 
@@ -33,6 +37,7 @@ public final class AnarchyClientScreen extends Screen {
 
     private final ModuleManager modules;
     private final ClientConfig config;
+    private final Set<MouseButton> heldMouseButtons = EnumSet.noneOf(MouseButton.class);
     private Rivet rivet;
 
     public AnarchyClientScreen(final ModuleManager modules, final ClientConfig config) {
@@ -45,7 +50,7 @@ public final class AnarchyClientScreen extends Screen {
     protected void init() {
         Minecraft client = Minecraft.getInstance();
         this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, new Size(this.width, this.height));
-        this.rivet.theme(new AnarchyClientTheme(this.config.uiPreferences().guiTheme())).snapToInteger(true);
+        this.rivet.theme(new AnarchyClientTheme(this.config.uiPreferences().guiTheme()));
         this.rivet.root().addChild(new ModulePanel(this.modules, this.config));
     }
 
@@ -61,8 +66,8 @@ public final class AnarchyClientScreen extends Screen {
     public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         if (this.rivet != null) {
             this.rivet.size(new Size(this.width, this.height));
-            this.rivet.onMouseMove(new MouseMoveEvent(mouseX, mouseY));
-            new Blaze3DRenderer(Minecraft.getInstance(), graphics, this.backgroundDesign()).render(this.rivet.render());
+            this.rivet.onMouseMove(new MouseMoveEvent(mouseX, mouseY, this.heldMouseButtons));
+            this.rivet.render(new SnappedRenderer<>(new Blaze3DRenderer(Minecraft.getInstance(), graphics, this.backgroundDesign())));
         }
     }
 
@@ -79,18 +84,27 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public void mouseMoved(final double mouseX, final double mouseY) {
         if (this.rivet != null) {
-            this.rivet.onMouseMove(new MouseMoveEvent((float) mouseX, (float) mouseY));
+            this.rivet.onMouseMove(new MouseMoveEvent((float) mouseX, (float) mouseY, this.heldMouseButtons));
         }
     }
 
     @Override
     public boolean mouseClicked(final net.minecraft.client.input.MouseButtonEvent event, final boolean doubleClick) {
-        return this.rivet != null && this.rivet.onMouseDown(RivetInputMapper.mouse(event));
+        if (this.rivet == null) return false;
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = RivetInputMapper.mouse(event);
+        this.heldMouseButtons.add(mapped.button());
+        return this.rivet.onMouseDown(mapped.withHeldButtons(this.heldMouseButtons));
     }
 
     @Override
     public boolean mouseReleased(final net.minecraft.client.input.MouseButtonEvent event) {
-        return this.rivet != null && this.rivet.onMouseUp(RivetInputMapper.mouse(event));
+        if (this.rivet == null) return false;
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = RivetInputMapper.mouse(event);
+        try {
+            return this.rivet.onMouseUp(mapped.withHeldButtons(this.heldMouseButtons));
+        } finally {
+            this.heldMouseButtons.remove(mapped.button());
+        }
     }
 
     @Override
@@ -119,23 +133,17 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public boolean charTyped(final net.minecraft.client.input.CharacterEvent event) {
-        String text = event.codepointAsString();
-        if (text.isEmpty()) {
-            return false;
-        }
-        if (this.rivet == null) {
-            return false;
-        }
-        boolean handled = false;
-        for (int index = 0; index < text.length(); index++) {
-            handled |= this.rivet.onCharTyped(new CharEvent(text.charAt(index)));
-        }
-        return handled;
+        return this.rivet != null && this.rivet.onCharTyped(new CharEvent(event.codepoint()));
     }
 
     @Override
     public void onClose() {
         this.config.save();
+        if (this.rivet != null) {
+            this.rivet.dispose();
+            this.rivet = null;
+        }
+        this.heldMouseButtons.clear();
         super.onClose();
     }
 

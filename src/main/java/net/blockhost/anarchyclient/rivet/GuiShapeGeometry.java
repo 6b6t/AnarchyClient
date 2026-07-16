@@ -34,12 +34,18 @@ final class GuiShapeGeometry {
 
     static List<Vertex> filledRoundedRect(final float x, final float y, final float width, final float height,
                                           final float cornerRadius, final int color) {
-        float radius = clampedCornerRadius(width, height, cornerRadius);
-        if (radius <= EPSILON) {
+        return filledRoundedRect(x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius, color);
+    }
+
+    static List<Vertex> filledRoundedRect(final float x, final float y, final float width, final float height,
+                                          final float topLeftRadius, final float bottomLeftRadius,
+                                          final float bottomRightRadius, final float topRightRadius, final int color) {
+        CornerRadii radii = clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
+        if (radii.isSquare()) {
             return solidRect(x, y, width, height, color);
         }
 
-        List<Float> breakpoints = roundedRectBreakpoints(x, width, radius);
+        List<Float> breakpoints = roundedRectBreakpoints(x, width, radii);
         List<Vertex> vertices = new ArrayList<>(Math.max(0, breakpoints.size() - 1) * 4);
         for (int index = 0; index < breakpoints.size() - 1; index++) {
             float left = breakpoints.get(index);
@@ -47,8 +53,8 @@ final class GuiShapeGeometry {
             if (right - left <= EPSILON) {
                 continue;
             }
-            VerticalSpan leftSpan = roundedRectSpanAtX(left, x, y, width, height, radius);
-            VerticalSpan rightSpan = roundedRectSpanAtX(right, x, y, width, height, radius);
+            VerticalSpan leftSpan = roundedRectSpanAtX(left, x, y, width, height, radii);
+            VerticalSpan rightSpan = roundedRectSpanAtX(right, x, y, width, height, radii);
             addVerticalStrip(vertices, left, leftSpan.top(), leftSpan.bottom(), right, rightSpan.top(), rightSpan.bottom(), color);
         }
         return vertices;
@@ -56,12 +62,19 @@ final class GuiShapeGeometry {
 
     static List<Vertex> outlinedRoundedRect(final float x, final float y, final float width, final float height,
                                             final float cornerRadius, final float outlineWidth, final int color) {
+        return outlinedRoundedRect(x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius, outlineWidth, color);
+    }
+
+    static List<Vertex> outlinedRoundedRect(final float x, final float y, final float width, final float height,
+                                            final float topLeftRadius, final float bottomLeftRadius,
+                                            final float bottomRightRadius, final float topRightRadius,
+                                            final float outlineWidth, final int color) {
         if (outlineWidth <= 0) {
             return List.of();
         }
 
-        float radius = clampedCornerRadius(width, height, cornerRadius);
-        if (radius <= EPSILON) {
+        CornerRadii radii = clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
+        if (radii.isSquare()) {
             return outlinedRect(x, y, width, height, outlineWidth, color);
         }
 
@@ -71,12 +84,19 @@ final class GuiShapeGeometry {
         float innerWidth = width - stroke * 2F;
         float innerHeight = height - stroke * 2F;
         if (innerWidth <= EPSILON || innerHeight <= EPSILON) {
-            return filledRoundedRect(x, y, width, height, radius, color);
+            return filledRoundedRect(x, y, width, height, radii.topLeft(), radii.bottomLeft(), radii.bottomRight(), radii.topRight(), color);
         }
 
-        float innerRadius = Math.max(0, radius - stroke);
-        List<Float> breakpoints = roundedRectBreakpoints(x, width, radius);
-        addRoundedRectBreakpoints(breakpoints, innerX, innerWidth, innerRadius);
+        CornerRadii innerRadii = clampedCornerRadii(
+                innerWidth,
+                innerHeight,
+                radii.topLeft() - stroke,
+                radii.bottomLeft() - stroke,
+                radii.bottomRight() - stroke,
+                radii.topRight() - stroke
+        );
+        List<Float> breakpoints = roundedRectBreakpoints(x, width, radii);
+        addRoundedRectBreakpoints(breakpoints, innerX, innerWidth, innerRadii);
         sortAndDedupe(breakpoints);
 
         List<Vertex> vertices = new ArrayList<>(Math.max(0, breakpoints.size() - 1) * 8);
@@ -87,10 +107,10 @@ final class GuiShapeGeometry {
                 continue;
             }
 
-            VerticalSpan outerLeft = roundedRectSpanAtX(left, x, y, width, height, radius);
-            VerticalSpan outerRight = roundedRectSpanAtX(right, x, y, width, height, radius);
-            VerticalSpan innerLeft = roundedRectSpanAtX(left, innerX, innerY, innerWidth, innerHeight, innerRadius);
-            VerticalSpan innerRight = roundedRectSpanAtX(right, innerX, innerY, innerWidth, innerHeight, innerRadius);
+            VerticalSpan outerLeft = roundedRectSpanAtX(left, x, y, width, height, radii);
+            VerticalSpan outerRight = roundedRectSpanAtX(right, x, y, width, height, radii);
+            VerticalSpan innerLeft = roundedRectSpanAtX(left, innerX, innerY, innerWidth, innerHeight, innerRadii);
+            VerticalSpan innerRight = roundedRectSpanAtX(right, innerX, innerY, innerWidth, innerHeight, innerRadii);
             if (innerLeft == null || innerRight == null) {
                 addVerticalStrip(vertices, left, outerLeft.top(), outerLeft.bottom(), right, outerRight.top(), outerRight.bottom(), color);
                 continue;
@@ -281,62 +301,85 @@ final class GuiShapeGeometry {
         return vertices;
     }
 
-    private static float clampedCornerRadius(final float width, final float height, final float cornerRadius) {
-        if (width <= 0 || height <= 0 || cornerRadius <= 0) {
-            return 0;
+    private static CornerRadii clampedCornerRadii(final float width, final float height,
+                                                  final float topLeftRadius, final float bottomLeftRadius,
+                                                  final float bottomRightRadius, final float topRightRadius) {
+        if (width <= 0 || height <= 0) {
+            return CornerRadii.SQUARE;
         }
-        return Math.max(0, Math.min(cornerRadius, Math.min(width, height) / 2F));
+        if (topLeftRadius == bottomLeftRadius
+                && topLeftRadius == bottomRightRadius
+                && topLeftRadius == topRightRadius) {
+            float radius = Math.max(0, Math.min(topLeftRadius, Math.min(width, height) / 2F));
+            return new CornerRadii(radius, radius, radius, radius);
+        }
+        float topLeft = Math.max(0, Math.min(topLeftRadius, Math.min(width, height)));
+        float topRight = Math.max(0, Math.min(topRightRadius, Math.min(width - topLeft, height)));
+        float bottomLeft = Math.max(0, Math.min(bottomLeftRadius, Math.min(width, height - topLeft)));
+        float bottomRight = Math.max(0, Math.min(bottomRightRadius, Math.min(width - bottomLeft, height - topRight)));
+        return new CornerRadii(topLeft, bottomLeft, bottomRight, topRight);
     }
 
-    private static List<Float> roundedRectBreakpoints(final float x, final float width, final float radius) {
+    private static List<Float> roundedRectBreakpoints(final float x, final float width, final CornerRadii radii) {
         List<Float> breakpoints = new ArrayList<>();
-        addRoundedRectBreakpoints(breakpoints, x, width, radius);
+        addRoundedRectBreakpoints(breakpoints, x, width, radii);
         sortAndDedupe(breakpoints);
         return breakpoints;
     }
 
-    private static void addRoundedRectBreakpoints(final List<Float> breakpoints, final float x, final float width, final float radius) {
+    private static void addRoundedRectBreakpoints(final List<Float> breakpoints, final float x, final float width, final CornerRadii radii) {
         if (width <= 0) {
             return;
         }
 
         breakpoints.add(x);
         breakpoints.add(x + width);
-        if (radius <= EPSILON) {
-            return;
-        }
+        addCornerBreakpoints(breakpoints, x, radii.topLeft(), false);
+        addCornerBreakpoints(breakpoints, x, radii.bottomLeft(), false);
+        addCornerBreakpoints(breakpoints, x + width, radii.topRight(), true);
+        addCornerBreakpoints(breakpoints, x + width, radii.bottomRight(), true);
+    }
 
+    private static void addCornerBreakpoints(final List<Float> breakpoints, final float edge, final float radius,
+                                             final boolean fromRight) {
+        if (radius <= EPSILON) return;
         int segments = segmentsForArc(radius, QUARTER_CIRCLE);
         for (int index = 0; index <= segments; index++) {
-            float progress = (float) index / segments;
-            breakpoints.add(x + radius * progress);
-            breakpoints.add(x + width - radius + radius * progress);
+            float offset = radius * index / segments;
+            breakpoints.add(fromRight ? edge - radius + offset : edge + offset);
         }
     }
 
     private static VerticalSpan roundedRectSpanAtX(final float position, final float x, final float y,
-                                                   final float width, final float height, final float radius) {
+                                                   final float width, final float height, final CornerRadii radii) {
         if (position < x - EPSILON || position > x + width + EPSILON || width <= 0 || height <= 0) {
             return null;
         }
-        if (radius <= EPSILON) {
-            return new VerticalSpan(y, y + height);
+
+        float top = y;
+        if (radii.topLeft() > EPSILON && position < x + radii.topLeft()) {
+            top = roundedTop(position - x - radii.topLeft(), y, radii.topLeft());
+        } else if (radii.topRight() > EPSILON && position > x + width - radii.topRight()) {
+            top = roundedTop(position - x - width + radii.topRight(), y, radii.topRight());
         }
 
-        float leftCenter = x + radius;
-        float rightCenter = x + width - radius;
-        if (position < leftCenter) {
-            return roundedVerticalSpan(position - leftCenter, y, height, radius);
+        float bottom = y + height;
+        if (radii.bottomLeft() > EPSILON && position < x + radii.bottomLeft()) {
+            bottom = roundedBottom(position - x - radii.bottomLeft(), y + height, radii.bottomLeft());
+        } else if (radii.bottomRight() > EPSILON && position > x + width - radii.bottomRight()) {
+            bottom = roundedBottom(position - x - width + radii.bottomRight(), y + height, radii.bottomRight());
         }
-        if (position > rightCenter) {
-            return roundedVerticalSpan(position - rightCenter, y, height, radius);
-        }
-        return new VerticalSpan(y, y + height);
+        return new VerticalSpan(top, bottom);
     }
 
-    private static VerticalSpan roundedVerticalSpan(final float dx, final float y, final float height, final float radius) {
+    private static float roundedTop(final float dx, final float y, final float radius) {
         float extent = (float) Math.sqrt(Math.max(0, radius * radius - dx * dx));
-        return new VerticalSpan(y + radius - extent, y + height - radius + extent);
+        return y + radius - extent;
+    }
+
+    private static float roundedBottom(final float dx, final float bottom, final float radius) {
+        float extent = (float) Math.sqrt(Math.max(0, radius * radius - dx * dx));
+        return bottom - radius + extent;
     }
 
     private static void addVerticalStrip(final List<Vertex> vertices, final float left, final float topLeft, final float bottomLeft,
@@ -385,5 +428,17 @@ final class GuiShapeGeometry {
     }
 
     private record VerticalSpan(float top, float bottom) {
+    }
+
+    private record CornerRadii(float topLeft, float bottomLeft, float bottomRight, float topRight) {
+
+        private static final CornerRadii SQUARE = new CornerRadii(0, 0, 0, 0);
+
+        private boolean isSquare() {
+            return this.topLeft <= EPSILON
+                    && this.bottomLeft <= EPSILON
+                    && this.bottomRight <= EPSILON
+                    && this.topRight <= EPSILON;
+        }
     }
 }

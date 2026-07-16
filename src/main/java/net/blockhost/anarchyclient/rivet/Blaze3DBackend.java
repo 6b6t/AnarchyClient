@@ -1,12 +1,8 @@
 package net.blockhost.anarchyclient.rivet;
 
-import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.Backend;
-import net.lenni0451.rivet.backend.text.ShapedText;
-import net.lenni0451.rivet.backend.text.ShapedTextBlock;
+import net.lenni0451.rivet.backend.text.Font;
 import net.lenni0451.rivet.input.keyboard.Key;
-import net.lenni0451.rivet.text.model.TextBlock;
-import net.lenni0451.rivet.text.model.TextLine;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
 
@@ -15,29 +11,16 @@ import javax.annotation.Nullable;
 public final class Blaze3DBackend implements Backend {
 
     private final Minecraft client;
+    private final Font font;
 
     public Blaze3DBackend(final Minecraft client) {
         this.client = client;
+        this.font = new MinecraftFont(client.font);
     }
 
     @Override
-    public float getTextHeight() {
-        return this.client.font.lineHeight;
-    }
-
-    @Override
-    public ShapedText shapeText(final String text, final Color color) {
-        return new MinecraftShapedText(this.client.font, text, color);
-    }
-
-    @Override
-    public ShapedText shapeText(final TextLine line) {
-        return new MinecraftShapedText(this.client.font, line);
-    }
-
-    @Override
-    public ShapedTextBlock shapeText(final TextBlock block) {
-        return new MinecraftShapedText(this.client.font, block);
+    public Font font() {
+        return this.font;
     }
 
     @Override

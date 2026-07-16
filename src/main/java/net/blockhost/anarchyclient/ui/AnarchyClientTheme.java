@@ -3,14 +3,13 @@ package net.blockhost.anarchyclient.ui;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.Rivet;
-import net.lenni0451.rivet.component.container.Button;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.component.impl.slider.Slider;
+import net.lenni0451.rivet.input.mouse.ClickOn;
 import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.theme.Theme;
-import net.lenni0451.rivet.theme.impl.DefaultDark;
 
-final class AnarchyClientTheme extends DefaultDark {
+final class AnarchyClientTheme extends Theme {
 
     private final GuiThemePalette palette;
 
@@ -24,8 +23,6 @@ final class AnarchyClientTheme extends DefaultDark {
 
     @Override
     protected void addValues(final Rivet rivet, final Values values) {
-        super.addValues(rivet, values);
-
         Color active = this.palette.active();
         values.put(Theme.TEXT_COLOR, Color.fromRGB(236, 232, 224));
 
@@ -38,7 +35,7 @@ final class AnarchyClientTheme extends DefaultDark {
         values.put(Theme.BUTTON_CLICK_COLOR, Color.fromRGBA(12, 12, 14, 120));
         values.put(Theme.BUTTON_CLICK_OUTLINE_COLOR, active);
         values.put(Theme.BUTTON_INNER_PADDING, new Padding(6, 3, 6, 3));
-        values.put(Theme.BUTTON_CLICK_ON, Button.ClickOn.UP);
+        values.put(Theme.BUTTON_CLICK_ON, ClickOn.UP);
 
         values.put(Theme.SLIDER_BAR_COLOR, Color.fromRGBA(50, 50, 56, 210));
         values.put(Theme.SLIDER_ACTIVE_BAR_COLOR, active);

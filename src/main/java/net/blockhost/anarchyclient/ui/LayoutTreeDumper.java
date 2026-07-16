@@ -1,12 +1,13 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.lenni0451.rivet.Rivet;
+import net.lenni0451.rivet.backend.render.deferred.DeferredRenderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.layer.Layer;
 import net.lenni0451.rivet.layout.LayoutOptions;
-import net.lenni0451.rivet.layout.absolute.AbsoluteLayoutOptions;
+import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
 import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
 
@@ -37,7 +38,7 @@ final class LayoutTreeDumper {
 
     static String snapshot(final Rivet rivet) {
         rivet.recalculateNextFrame();
-        rivet.render();
+        rivet.render(new DeferredRenderer()).complete();
 
         StringBuilder builder = new StringBuilder(8192);
         Size scaledSize = rivet.scaledSize();
@@ -45,7 +46,6 @@ final class LayoutTreeDumper {
         builder.append("window=").append(format(rivet.size())).append('\n');
         builder.append("scaled=").append(format(scaledSize)).append('\n');
         builder.append("scale=").append(format(rivet.scale())).append('\n');
-        builder.append("snap=").append(rivet.snapToInteger()).append('\n');
         builder.append("layers=").append(rivet.layers().size()).append("\n\n");
 
         List<LayoutIssue> issues = new ArrayList<>();
@@ -79,7 +79,7 @@ final class LayoutTreeDumper {
                 .append(" abs=").append(format(absoluteBounds))
                 .append(" min=").append(format(component.minSize()))
                 .append(" max=").append(format(component.maxSize()))
-                .append(" interactive=").append(component.interactive());
+                .append(" interactive=").append(component.capabilities().hasAny());
 
         if (component instanceof Container container) {
             builder.append(" layout=").append(simpleName(container.layout()))
@@ -183,7 +183,7 @@ final class LayoutTreeDumper {
         if (bounds.width() != 0F || bounds.height() != 0F) {
             return false;
         }
-        return component.layoutOptions() instanceof AbsoluteLayoutOptions options
+        return component.layoutOptions() instanceof AbsoluteOptions options
                 && options.width() != null
                 && options.height() != null
                 && options.width() == 0F
