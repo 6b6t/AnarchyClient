@@ -24,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 
@@ -61,12 +62,9 @@ public final class AirPlaceModule extends Module {
                 || client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS) {
             return false;
         }
-        BlockPos target = targetPos(player, this.distance.value());
-        if (player.getItemInHand(hand).getItem() instanceof BlockItem) {
-            BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, target, true, 60.0F);
-            return result == BlockPlacement.PlacementResult.PLACED || result == BlockPlacement.PlacementResult.FILLED;
-        }
-        return usePlaceableItem(client, player, hand, target);
+        // Air place cannot go through BlockPlacer: that helper needs a sturdy neighbor face to
+        // click against, and a mid-air target has none. Click the target position directly.
+        return usePlaceableItem(client, player, hand, targetPos(player, this.distance.value()));
     }
 
     @Override
@@ -92,6 +90,12 @@ public final class AirPlaceModule extends Module {
     private static boolean usePlaceableItem(final Minecraft client, final LocalPlayer player, final InteractionHand hand,
                                             final BlockPos target) {
         if (client.gameMode == null || client.level == null || !client.level.getBlockState(target).canBeReplaced()) {
+            return false;
+        }
+        ItemStack stack = player.getItemInHand(hand);
+        if (stack.getItem() instanceof BlockItem blockItem
+                && !client.level.isUnobstructed(blockItem.getBlock().defaultBlockState(), target,
+                CollisionContext.placementContext(player))) {
             return false;
         }
         Direction face = player.getMotionDirection().getOpposite();
