@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -357,6 +358,10 @@ public final class ClientConfig {
         this.glassOpacity = readFloat(ui, "glassOpacity", this.glassOpacity);
         this.cornerRadius = readFloat(ui, "cornerRadius", this.cornerRadius);
         this.glassBlur = readFloat(ui, "glassBlur", this.glassBlur);
+        JsonElement prefixJson = ui.get("commandPrefix");
+        if (prefixJson != null && prefixJson.isJsonPrimitive()) {
+            CommandPrefix.set(prefixJson.getAsString());
+        }
     }
 
     private void saveUi(final JsonObject root) {
@@ -404,6 +409,7 @@ public final class ClientConfig {
         ui.addProperty("glassOpacity", preferences.glassOpacity());
         ui.addProperty("cornerRadius", preferences.cornerRadius());
         ui.addProperty("glassBlur", preferences.glassBlur());
+        ui.addProperty("commandPrefix", CommandPrefix.get());
 
         if (ui.size() > 0) {
             root.add("ui", ui);

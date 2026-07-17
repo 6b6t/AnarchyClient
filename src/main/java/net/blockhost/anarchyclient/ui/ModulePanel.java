@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -2637,6 +2638,13 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     () -> {
                         ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector;
                         ModulePanel.this.saveUiPreferences();
+                    }, this::refresh));
+            this.rows.addChild(new GroupHeader("Commands"));
+            this.rows.addChild(new OptionRow("Command prefix", true, null,
+                    CommandPrefix::get,
+                    () -> {
+                        CommandPrefix.cycle();
+                        ModulePanel.this.config.save();
                     }, this::refresh));
             this.rows.addChild(new OptionRow("Reset UI preferences", false, null,
                     () -> "", ModulePanel.this::resetUiPreferences, this::refresh));
