@@ -82,7 +82,10 @@ class ClientConfigTest {
                 true,
                 true,
                 ClientConfig.GuiThemePreset.ROSE,
-                BackgroundDesign.DEEP
+                BackgroundDesign.DEEP,
+                0.7F,
+                10F,
+                3F
         ));
 
         saved.save();
@@ -114,7 +117,10 @@ class ClientConfigTest {
                 true,
                 true,
                 ClientConfig.GuiThemePreset.ROSE,
-                BackgroundDesign.DEEP
+                BackgroundDesign.DEEP,
+                0.7F,
+                10F,
+                3F
         ), loaded.uiPreferences());
     }
 

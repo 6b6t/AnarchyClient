@@ -18,6 +18,15 @@ final class LayoutDebugScrollContainer extends ScrollContainer implements Layout
     }
 
     @Override
+    public Size computeIdealSize(final Size constraints) {
+        // ScrollContainer reports its content's full ideal size, which makes surrounding grids
+        // grow the scroll row and squeeze fixed rows (like the search bar) once the content gets
+        // long. A scroll viewport has no intrinsic size: it always stretches via its weighted
+        // cell, so report none.
+        return Size.EMPTY;
+    }
+
+    @Override
     public List<LayoutDebugChild> layoutDebugChildren(final Rectangle bounds) {
         Rectangle childBounds = new Rectangle(
                 scrollOffset(this.scrollX()),
