@@ -26,6 +26,7 @@ import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.component.impl.FormattedLabel;
 import net.lenni0451.rivet.component.impl.TextField;
 import net.lenni0451.rivet.component.impl.slider.Slider;
+import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.input.mouse.ClickOn;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
@@ -47,8 +48,10 @@ import net.lenni0451.rivet.text.model.TextSection;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -832,6 +835,17 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return field;
     }
 
+    /** Runs {@code action} when Enter (or numpad Enter) is pressed while the field is focused. */
+    private static void onEnter(final TextField field, final Runnable action) {
+        field.keyDownListener().add(event -> {
+            if (event.key().isEquivalent(Key.ENTER) || event.key().isEquivalent(Key.KP_ENTER)) {
+                action.run();
+                return true;
+            }
+            return false;
+        });
+    }
+
     private static Slider slider(final double min, final double max, final double step, final double value) {
         Slider slider = new Slider(min, max, step, value);
         slider.barColor().set(TRACK);
@@ -997,6 +1011,40 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 this.value = target;
             }
             return this.value;
+        }
+    }
+
+    /**
+     * A player's face (head + hat overlay) drawn from their skin. Resolves the skin asynchronously
+     * through vanilla's skin cache, falling back to the default Steve/Alex skin until it loads.
+     */
+    private static final class FriendHead extends Component {
+
+        private final ResolvableProfile profile;
+        private final int size;
+
+        private FriendHead(final String name, final int size) {
+            this.profile = ResolvableProfile.createUnresolved(name);
+            this.size = size;
+            this.capabilities().all(false);
+        }
+
+        @Override
+        public void render(final Renderer renderer, final Size bounds) {
+            renderer.custom(new Blaze3DRenderCommand(
+                    graphics -> {
+                        try {
+                            PlayerFaceExtractor.extractRenderState(graphics, this.profile, 0, 0, this.size);
+                        } catch (RuntimeException ignored) {
+                            // A skin that fails to resolve must never take down the render pass.
+                        }
+                    },
+                    new Rectangle(0, 0, this.size, this.size)));
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(this.size, this.size);
         }
     }
 
@@ -2302,6 +2350,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private FriendsPanel() {
             super(gridLayout(8, 4));
             ModulePanel.this.configureScroll(this.scroll);
+            onEnter(this.addField, this::addFriend);
             place(this.background, fillCell(0, 0, 2, 3));
             place(this.title, cell(0, 0, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(PADDING + 2F, 8F, PADDING, 0F), null, 26F));
@@ -2351,8 +2400,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private final class FriendRow extends Container implements LayoutDebugLabel {
 
+        private static final int HEAD_SIZE = 20;
+
         private final String friend;
         private final Surface background = new Surface(() -> CARD).cornerRadius(10F);
+        private final FriendHead head;
         private final TextNode name;
         private final TextAction remove;
 
@@ -2360,18 +2412,22 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             super(gridLayout(0, 0));
             this.friend = friend;
             this.fixedSize(-1, 34);
+            this.head = new FriendHead(friend, HEAD_SIZE);
             this.name = textNode(friend, TEXT);
             this.remove = textAction("Remove", MUTED, () -> {
                 if (AnarchyClient.FRIENDS.remove(this.friend)) {
                     ModulePanel.this.friendsPanel.refresh();
                 }
             });
-            place(this.background, fillCell(0, 0, 2, 1));
-            place(this.name, cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(PADDING, 0F, 8F, 0F), null, null));
-            place(this.remove, cell(1, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+            place(this.background, fillCell(0, 0, 3, 1));
+            place(this.head, cell(0, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
+                    padding(PADDING, 0F, 0F, 0F), (float) HEAD_SIZE, (float) HEAD_SIZE));
+            place(this.name, cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(10F, 0F, 8F, 0F), null, null));
+            place(this.remove, cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, PADDING, 0F), 76F, null));
             this.addChild(this.background);
+            this.addChild(this.head);
             this.addChild(this.name);
             this.addChild(this.remove);
         }
@@ -2399,6 +2455,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private ProfilesPanel() {
             super(gridLayout(8, 4));
             ModulePanel.this.configureScroll(this.scroll);
+            onEnter(this.nameField, this::capture);
             place(this.background, fillCell(0, 0, 2, 3));
             place(this.title, cell(0, 0, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(PADDING + 2F, 8F, PADDING, 0F), null, 26F));
@@ -2536,9 +2593,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     value -> GlassTheme.glassOpacity(value / 100F),
                     () -> Math.round(GlassTheme.glassOpacity() * 100F) + "%"));
             this.rows.addChild(new SliderRow("Blur", "How strongly the panels blur the game behind them.",
-                    0F, 5F, 1F, GlassTheme::glassBlur,
+                    0F, 10F, 1F, GlassTheme::glassBlur,
                     GlassTheme::glassBlur,
-                    () -> "+" + Math.round(GlassTheme.glassBlur())));
+                    () -> Integer.toString(Math.round(GlassTheme.glassBlur()))));
             this.rows.addChild(new OptionRow("Background design", true, null,
                     () -> ModulePanel.this.backgroundDesign.displayName(),
                     ModulePanel.this::cycleBackgroundDesign, this::refresh));

@@ -1,8 +1,8 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.config.ClientConfig;
-import net.blockhost.anarchyclient.rivet.GlassBackdrop;
 import net.lenni0451.commons.color.Color;
+import net.minecraft.client.Minecraft;
 
 /**
  * Global design tokens for the liquid glass menu. Every component reads these live, so edits made in
@@ -22,6 +22,8 @@ final class GlassTheme {
     static final Color TRACK = Color.fromRGBA(255, 255, 255, 44);
     static final Color WARNING = Color.fromRGB(240, 173, 78);
     private static final Color GLASS_BASE = Color.fromRGB(13, 17, 26);
+    /** Vanilla {@code GameRenderer.MAX_BLUR_RADIUS}. */
+    private static final int BLUR_MAX = 10;
 
     // Editable globals.
     private static ClientConfig.GuiThemePreset preset = ClientConfig.GuiThemePreset.EMERALD;
@@ -37,15 +39,25 @@ final class GlassTheme {
         accent = GuiThemePalette.of(preset).active();
         glassOpacity = preferences.glassOpacity();
         cornerRadius = preferences.cornerRadius();
-        GlassBackdrop.extraBlurPasses(Math.round(preferences.glassBlur()));
+        glassBlur(preferences.glassBlur());
     }
 
+    /**
+     * The "Blur" control drives vanilla's menu-background blur strength (0..{@value #BLUR_MAX}); our
+     * glass capture samples that blurred frame, so stronger vanilla blur means denser frosting — with
+     * no extra render passes to crash on.
+     */
     static float glassBlur() {
-        return GlassBackdrop.extraBlurPasses();
+        Minecraft client = Minecraft.getInstance();
+        return client == null || client.options == null ? 0F : client.options.getMenuBackgroundBlurriness();
     }
 
-    static void glassBlur(final float passes) {
-        GlassBackdrop.extraBlurPasses(Math.round(passes));
+    static void glassBlur(final float value) {
+        Minecraft client = Minecraft.getInstance();
+        if (client == null || client.options == null) {
+            return;
+        }
+        client.options.menuBackgroundBlurriness().set(Math.max(0, Math.min(BLUR_MAX, Math.round(value))));
     }
 
     static ClientConfig.GuiThemePreset preset() {

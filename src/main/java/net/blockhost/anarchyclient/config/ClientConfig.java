@@ -569,7 +569,7 @@ public final class ClientConfig {
                 BackgroundDesign.NONE,
                 0.55F,
                 14F,
-                2F
+                5F
         );
 
         public UiPreferences {
@@ -581,7 +581,7 @@ public final class ClientConfig {
             }
             glassOpacity = Math.min(0.95F, Math.max(0.15F, glassOpacity));
             cornerRadius = Math.min(24F, Math.max(0F, cornerRadius));
-            glassBlur = Math.min(5F, Math.max(0F, glassBlur));
+            glassBlur = Math.min(10F, Math.max(0F, glassBlur));
         }
     }
 

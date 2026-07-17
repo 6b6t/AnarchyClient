@@ -80,21 +80,27 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
-        if (this.rivet != null) {
-            float scale = this.uiScale();
-            this.rivet.size(this.virtualSize());
-            this.rivet.onMouseMove(new MouseMoveEvent(mouseX / scale, mouseY / scale, this.heldMouseButtons));
-            if (this.panel != null) {
-                this.panel.mousePosition(mouseX / scale, mouseY / scale);
-            }
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(scale, scale);
-            try {
-                this.rivet.render(new SnappedRenderer<>(new Blaze3DRenderer(Minecraft.getInstance(), graphics)));
-            } finally {
-                graphics.pose().popMatrix();
-            }
+        if (this.rivet == null) {
+            return;
         }
+        float scale = this.uiScale();
+        this.rivet.size(this.virtualSize());
+        this.rivet.onMouseMove(new MouseMoveEvent(mouseX / scale, mouseY / scale, this.heldMouseButtons));
+        if (this.panel != null) {
+            this.panel.mousePosition(mouseX / scale, mouseY / scale);
+        }
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(scale, scale);
+        try {
+            this.rivet.render(new SnappedRenderer<>(new Blaze3DRenderer(Minecraft.getInstance(), graphics)));
+        } catch (Throwable throwable) {
+            // Never let a render failure crash the game: log it and close the menu cleanly.
+            AnarchyClient.LOGGER.error("AnarchyClient menu render failed; closing menu", throwable);
+            graphics.pose().popMatrix();
+            this.onClose();
+            return;
+        }
+        graphics.pose().popMatrix();
     }
 
     @Override

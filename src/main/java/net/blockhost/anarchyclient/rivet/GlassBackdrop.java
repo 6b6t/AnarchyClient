@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.GpuTexture;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +19,7 @@ import java.util.List;
  */
 public final class GlassBackdrop {
 
-    /** Extra vanilla blur iterations for the glass copy; user-tunable through the Theme tab. */
-    private static int extraBlurPasses = 2;
-
     private static boolean active;
-    private static boolean rerunningBlur;
     private static GpuTexture sharpTexture;
     private static GpuTexture blurredTexture;
     private static GpuTextureView blurredView;
@@ -37,14 +32,6 @@ public final class GlassBackdrop {
 
     public static void activate() {
         active = true;
-    }
-
-    public static int extraBlurPasses() {
-        return extraBlurPasses;
-    }
-
-    public static void extraBlurPasses(final int passes) {
-        extraBlurPasses = Math.max(0, Math.min(5, passes));
     }
 
     public static void deactivate() {
@@ -76,7 +63,7 @@ public final class GlassBackdrop {
      * Called right before vanilla blurs the main render target. Snapshots the sharp frame.
      */
     public static void onBlurStart(final RenderTarget mainTarget) {
-        if (!active || rerunningBlur || mainTarget.getColorTexture() == null) {
+        if (!active || mainTarget.getColorTexture() == null) {
             return;
         }
         closeRetired();
@@ -90,19 +77,13 @@ public final class GlassBackdrop {
      * and restores the sharp frame so the game stays visible behind the menu.
      */
     public static void onBlurEnd(final RenderTarget mainTarget) {
-        if (!active || rerunningBlur || sharpTexture == null || mainTarget.getColorTexture() == null) {
+        if (!active || sharpTexture == null || mainTarget.getColorTexture() == null) {
             return;
         }
-        // Vanilla ran one blur; stack a few more passes onto the main target before capturing so the
-        // glass reads as dense frosting. The flag keeps our own injections out of the reruns.
-        rerunningBlur = true;
-        try {
-            for (int pass = 0; pass < extraBlurPasses; pass++) {
-                Minecraft.getInstance().gameRenderer.processBlurEffect();
-            }
-        } finally {
-            rerunningBlur = false;
-        }
+        // Vanilla just blurred the main target (strength = the menu-blur video setting, which the
+        // Theme tab drives). Capture that blurred copy for the glass, then restore the sharp frame.
+        // Note: re-running processBlurEffect here to stack passes is unsafe — the blur post chain's
+        // ring buffer cannot be re-submitted within the same frame and trips a GPU fence assert.
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         encoder.copyTextureToTexture(mainTarget.getColorTexture(), blurredTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
         encoder.copyTextureToTexture(sharpTexture, mainTarget.getColorTexture(), 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
