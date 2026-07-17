@@ -225,6 +225,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         this.mouseY = y;
     }
 
+    /** Opens the drag-and-drop HUD editor (no module list; placement only). */
+    private void openHudEditor() {
+        Minecraft.getInstance().gui.setScreen(new HudEditorScreen(this.modules, this.config));
+    }
+
     @Override
     public void render(final Renderer renderer, final Size size) {
         // Soft drop shadows under the floating glass islands; everything else is child components.
@@ -1577,6 +1582,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode count = textNode(this::countText, GlassTheme::accent)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
         private final SearchInput search = new SearchInput("Search all modules...");
+        // HUD editor entry point: shown top-right only on the HUD tab. Positioning moved out of the
+        // per-module settings into a drag editor, so this button is how you reach it.
+        private final IconButton editHud = iconButton("move", GlassTheme::accent,
+                ModulePanel.this::openHudEditor, this::showEditHud);
         private final CardGrid cards = new CardGrid();
         private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.cards);
 
@@ -1592,6 +1601,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     padding(PADDING + 2F, 6F, 8F, 0F), null, HEADER_HEIGHT));
             place(this.count, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 6F, PADDING + 2F, 0F), 52F, HEADER_HEIGHT));
+            place(this.editHud, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.RIGHT, GridFill.NONE,
+                    padding(0F, 6F, PADDING, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
             place(this.search, cell(0, 1, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(PADDING, 0F, PADDING, 6F), null, SEARCH_HEIGHT));
             place(this.scroll, cell(0, 2, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
@@ -1599,8 +1610,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.addChild(this.background);
             this.addChild(this.title);
             this.addChild(this.count);
+            this.addChild(this.editHud);
             this.addChild(this.search);
             this.addChild(this.scroll);
+        }
+
+        private boolean showEditHud() {
+            return ModulePanel.this.selectedTab == Tab.MODULES
+                    && ModulePanel.this.selectedCategory == ModuleCategory.HUD
+                    && ModulePanel.this.searchQuery.isEmpty();
         }
 
         private void refresh() {
@@ -1623,7 +1641,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private String countText() {
-            if (!ModulePanel.this.searchQuery.isEmpty() || ModulePanel.this.selectedCategory == null) {
+            // The HUD tab shows the editor button here instead of a count.
+            if (this.showEditHud() || !ModulePanel.this.searchQuery.isEmpty() || ModulePanel.this.selectedCategory == null) {
                 return "";
             }
             int count = ModulePanel.this.enabledCount(ModulePanel.this.selectedCategory);

@@ -18,6 +18,7 @@ import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
 import net.blockhost.anarchyclient.timer.TimerManager;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.blockhost.anarchyclient.ui.HudLayout;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -57,6 +58,7 @@ public final class AnarchyClient implements ClientModInitializer {
         PROFILES.load();
         WAYPOINTS.load();
         CONFIG.load();
+        HudLayout.load();
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.anarchyclient.open_menu",
