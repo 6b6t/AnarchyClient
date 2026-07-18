@@ -11,6 +11,7 @@ import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.loader.api.FabricLoader;
@@ -362,6 +363,15 @@ public final class ClientConfig {
         if (prefixJson != null && prefixJson.isJsonPrimitive()) {
             CommandPrefix.set(prefixJson.getAsString());
         }
+        ToggleNotifications.enabled(readBoolean(ui, "toggleNotifications", ToggleNotifications.enabled()));
+        JsonElement cornerJson = ui.get("toggleNotificationsCorner");
+        if (cornerJson != null && cornerJson.isJsonPrimitive()) {
+            ToggleNotifications.corner(ToggleNotifications.Corner.fromName(cornerJson.getAsString()));
+        }
+        JsonElement durationJson = ui.get("toggleNotificationsDuration");
+        if (durationJson != null && durationJson.isJsonPrimitive()) {
+            ToggleNotifications.durationMs(durationJson.getAsInt());
+        }
     }
 
     private void saveUi(final JsonObject root) {
@@ -410,6 +420,9 @@ public final class ClientConfig {
         ui.addProperty("cornerRadius", preferences.cornerRadius());
         ui.addProperty("glassBlur", preferences.glassBlur());
         ui.addProperty("commandPrefix", CommandPrefix.get());
+        ui.addProperty("toggleNotifications", ToggleNotifications.enabled());
+        ui.addProperty("toggleNotificationsCorner", ToggleNotifications.corner().name().toLowerCase(Locale.ROOT));
+        ui.addProperty("toggleNotificationsDuration", ToggleNotifications.durationMs());
 
         if (ui.size() > 0) {
             root.add("ui", ui);

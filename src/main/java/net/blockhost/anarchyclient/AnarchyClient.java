@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.render.MarkerManager;
@@ -74,7 +75,10 @@ public final class AnarchyClient implements ClientModInitializer {
             MarkerManager.render(context);
         });
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
-                (graphics, deltaTracker) -> MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics)));
+                (graphics, deltaTracker) -> {
+                    MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics));
+                    ToggleNotifications.render(Minecraft.getInstance(), graphics);
+                });
     }
 
     private void onClientTick(final Minecraft client) {
