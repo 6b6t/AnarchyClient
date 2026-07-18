@@ -3040,24 +3040,32 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private void buildNotifications() {
-            this.addRow(new OptionRow("Toggle popups", false,
+            this.addRow(new OptionRow("Toggle notifications", false,
                     ToggleNotifications::enabled,
                     () -> {
                         ToggleNotifications.enabled(!ToggleNotifications.enabled());
                         ModulePanel.this.config.save();
                     }, this::refresh));
-            this.addRow(new OptionRow("Position", false, null,
-                    () -> ToggleNotifications.corner().displayName(),
+            this.addRow(new OptionRow("Style", false, null,
+                    () -> ToggleNotifications.mode().displayName(),
                     () -> {
-                        ToggleNotifications.corner(ToggleNotifications.corner().next());
+                        ToggleNotifications.mode(ToggleNotifications.mode().next());
                         ModulePanel.this.config.save();
                     }, this::refresh));
-            this.addRow(new OptionRow("Duration", false, null,
-                    () -> (ToggleNotifications.durationMs() / 1000) + "s",
-                    () -> {
-                        ToggleNotifications.cycleDuration();
-                        ModulePanel.this.config.save();
-                    }, this::refresh));
+            if (ToggleNotifications.mode() == ToggleNotifications.Mode.POPUP) {
+                this.addRow(new OptionRow("Position", false, null,
+                        () -> ToggleNotifications.corner().displayName(),
+                        () -> {
+                            ToggleNotifications.corner(ToggleNotifications.corner().next());
+                            ModulePanel.this.config.save();
+                        }, this::refresh));
+                this.addRow(new OptionRow("Duration", false, null,
+                        () -> (ToggleNotifications.durationMs() / 1000) + "s",
+                        () -> {
+                            ToggleNotifications.cycleDuration();
+                            ModulePanel.this.config.save();
+                        }, this::refresh));
+            }
             this.addShortcuts(
                     "notifier",
                     "gamemode_notifier",

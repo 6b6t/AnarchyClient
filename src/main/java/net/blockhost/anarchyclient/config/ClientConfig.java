@@ -364,6 +364,10 @@ public final class ClientConfig {
             CommandPrefix.set(prefixJson.getAsString());
         }
         ToggleNotifications.enabled(readBoolean(ui, "toggleNotifications", ToggleNotifications.enabled()));
+        JsonElement modeJson = ui.get("toggleNotificationsMode");
+        if (modeJson != null && modeJson.isJsonPrimitive()) {
+            ToggleNotifications.mode(ToggleNotifications.Mode.fromName(modeJson.getAsString()));
+        }
         JsonElement cornerJson = ui.get("toggleNotificationsCorner");
         if (cornerJson != null && cornerJson.isJsonPrimitive()) {
             ToggleNotifications.corner(ToggleNotifications.Corner.fromName(cornerJson.getAsString()));
@@ -421,6 +425,7 @@ public final class ClientConfig {
         ui.addProperty("glassBlur", preferences.glassBlur());
         ui.addProperty("commandPrefix", CommandPrefix.get());
         ui.addProperty("toggleNotifications", ToggleNotifications.enabled());
+        ui.addProperty("toggleNotificationsMode", ToggleNotifications.mode().name().toLowerCase(Locale.ROOT));
         ui.addProperty("toggleNotificationsCorner", ToggleNotifications.corner().name().toLowerCase(Locale.ROOT));
         ui.addProperty("toggleNotificationsDuration", ToggleNotifications.durationMs());
 

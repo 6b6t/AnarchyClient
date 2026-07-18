@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.config.ClientConfig;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.lenni0451.commons.color.Color;
 import net.minecraft.client.Minecraft;
 
@@ -40,6 +41,7 @@ final class GlassTheme {
         glassOpacity = preferences.glassOpacity();
         cornerRadius = preferences.cornerRadius();
         glassBlur(preferences.glassBlur());
+        syncTheme();
     }
 
     /**
@@ -67,6 +69,19 @@ final class GlassTheme {
     static void preset(final ClientConfig.GuiThemePreset value) {
         preset = value == null ? ClientConfig.GuiThemePreset.EMERALD : value;
         accent = GuiThemePalette.of(preset).active();
+        syncTheme();
+    }
+
+    /** Mirror the live design tokens to the toggle-notification overlay, which lives outside the menu. */
+    private static void syncTheme() {
+        ToggleNotifications.theme(argb(accent), cornerRadius, argb(glassDeep()));
+    }
+
+    private static int argb(final Color color) {
+        return (color.getAlpha() & 0xFF) << 24
+                | (color.getRed() & 0xFF) << 16
+                | (color.getGreen() & 0xFF) << 8
+                | (color.getBlue() & 0xFF);
     }
 
     static Color accent() {
@@ -83,6 +98,7 @@ final class GlassTheme {
 
     static void glassOpacity(final float value) {
         glassOpacity = clamp(value, 0.15F, 0.95F);
+        syncTheme();
     }
 
     static float cornerRadius() {
@@ -91,6 +107,7 @@ final class GlassTheme {
 
     static void cornerRadius(final float value) {
         cornerRadius = clamp(value, 0F, 24F);
+        syncTheme();
     }
 
     /** Tint of primary glass panels; alpha is the mix strength over the blurred scene. */
