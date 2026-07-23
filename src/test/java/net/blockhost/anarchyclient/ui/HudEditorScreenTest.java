@@ -32,6 +32,12 @@ class HudEditorScreenTest {
     }
 
     @Test
+    void pinsToZeroWhenElementIsLargerThanScreen() {
+        assertEquals(0, HudEditorScreen.snap(0, SCREEN + 20, SCREEN));
+        assertEquals(0, HudEditorScreen.snap(50, SCREEN, SCREEN));
+    }
+
+    @Test
     void clampsWithinScreenBounds() {
         // Dragged past the right edge: clamped to the edge, then snapped to the 6px inset (354).
         assertEquals(354, HudEditorScreen.snap(999, SIZE, SCREEN));

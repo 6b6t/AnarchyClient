@@ -444,8 +444,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     /**
-     * Consumes the next key press for the listening keybind row: Escape (or the menu key) clears the
-     * bind, any other key binds it. Called by the screen before its own Escape handling.
+     * Consumes the next key press for the listening keybind row: Escape clears the bind, any other key
+     * binds it. Called by the screen before its own Escape handling.
      */
     boolean handleKeybindCapture(final int glfwKey) {
         Module module = this.keybindListening;

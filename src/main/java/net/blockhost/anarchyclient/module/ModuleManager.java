@@ -139,8 +139,10 @@ public final class ModuleManager {
         } else {
             this.unregisterEvents(module);
         }
-        // Only toast in-world: config load restores module states before the player exists.
-        if (Minecraft.getInstance().player != null) {
+        // Only toast in-world: config load restores module states before the player exists, and there is
+        // no client at all under tests.
+        Minecraft client = Minecraft.getInstance();
+        if (client != null && client.player != null) {
             ToggleNotifications.push(module.name(), enabled);
         }
     }

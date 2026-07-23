@@ -18,8 +18,12 @@ import net.minecraft.network.chat.Component;
  *
  * <p>Rather than duplicating the (large) command tree, this mirrors Fabric's live client command
  * dispatcher (its {@code getActiveDispatcher()} — the one that actually holds the executable nodes;
- * {@code connection.getCommands()} only keeps suggestion-only copies) by reparenting the
- * children of the {@code anarchyclient} node under a throwaway dispatcher root. The vanilla suggestion
+ * {@code connection.getCommands()} only keeps suggestion-only copies) by listing the
+ * children of the {@code anarchyclient} node under a throwaway dispatcher root. A Brigadier
+ * {@code CommandNode} holds no reference to its parent, so {@code addChild} only writes into the new
+ * root's own child map — the live {@code /ac} tree is never mutated and keeps working. (The merge branch
+ * of {@code addChild} can mutate an existing child, but the mirror root starts empty and {@code /ac}'s
+ * children have distinct names, so it is never taken.) The vanilla suggestion
  * popup is pointed at that mirror (see {@code CommandSuggestionsMixin}) so only these commands autofill,
  * and {@link #execute} runs the same nodes with the real client command source — never touching {@code /}
  * or server commands.</p>
@@ -50,7 +54,7 @@ public final class ClientCommands {
                 for (CommandNode<FabricClientCommandSource> child : root.getChildren()) {
                     // The nodes are generic over the command source; at runtime the source object
                     // (getSuggestionsProvider()) implements both FabricClientCommandSource and
-                    // ClientSuggestionProvider, so reparenting across the erased type is safe.
+                    // ClientSuggestionProvider, so sharing them across the erased type is safe.
                     mirror.getRoot().addChild((CommandNode<ClientSuggestionProvider>) (CommandNode<?>) child);
                 }
             }

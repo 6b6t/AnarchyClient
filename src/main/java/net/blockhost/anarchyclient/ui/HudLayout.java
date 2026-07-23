@@ -57,12 +57,16 @@ public final class HudLayout {
         int x;
         int y;
         if (pos != null) {
-            x = clamp(pos[0], 0, Math.max(0, guiWidth - width));
-            y = clamp(pos[1], 0, Math.max(0, guiHeight - height));
+            x = pos[0];
+            y = pos[1];
         } else {
             x = defaultCorner.endsWith("Right") ? guiWidth - width - MARGIN : MARGIN;
             y = defaultCorner.startsWith("Bottom") ? guiHeight - height - MARGIN : MARGIN;
         }
+        // Clamp both paths: a wide element (long text, small resolution) pushes the default corner
+        // negative just as easily as a stale stored position does.
+        x = clamp(x, 0, Math.max(0, guiWidth - width));
+        y = clamp(y, 0, Math.max(0, guiHeight - height));
         bounds.put(id, new Element(id, name, x, y, width, height));
         return new int[]{x, y};
     }

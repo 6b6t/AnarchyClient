@@ -158,10 +158,13 @@ public final class HudEditorScreen extends Screen {
             return super.mouseDragged(event, dragX, dragY);
         }
         HudLayout.Element element = elementById(this.dragId);
-        int width = element == null ? 0 : element.width();
-        int height = element == null ? 0 : element.height();
-        int x = snap((int) Math.round(event.x()) - this.dragOffsetX, width, this.width);
-        int y = snap((int) Math.round(event.y()) - this.dragOffsetY, height, this.height);
+        if (element == null) {
+            // The element stopped rendering mid-drag; keep its stored position instead of writing a
+            // zero-sized snap over it.
+            return true;
+        }
+        int x = snap((int) Math.round(event.x()) - this.dragOffsetX, element.width(), this.width);
+        int y = snap((int) Math.round(event.y()) - this.dragOffsetY, element.height(), this.height);
         HudLayout.move(this.dragId, x, y);
         this.dirty = true;
         return true;
@@ -219,7 +222,11 @@ public final class HudEditorScreen extends Screen {
 
     /** Snap an axis to the near screen edge (inset {@value #MARGIN}) or center within {@value #SNAP} px. */
     static int snap(final int value, final int size, final int screen) {
-        int clamped = Math.max(0, Math.min(value, Math.max(0, screen - size)));
+        if (size >= screen) {
+            // Does not fit on this axis: 0 is the only position that is not off-screen.
+            return 0;
+        }
+        int clamped = Math.max(0, Math.min(value, screen - size));
         if (Math.abs(clamped - MARGIN) <= SNAP) {
             return MARGIN;
         }
