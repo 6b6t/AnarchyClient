@@ -155,6 +155,10 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public boolean keyPressed(final net.minecraft.client.input.KeyEvent event) {
+        if (this.panel != null && this.panel.isCapturingKeybind()) {
+            // A keybind row is listening: capture this key (Esc clears) instead of closing the menu.
+            return this.panel.handleKeybindCapture(event.key());
+        }
         if (event.isEscape()) {
             this.onClose();
             return true;

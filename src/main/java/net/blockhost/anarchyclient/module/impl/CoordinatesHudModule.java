@@ -3,8 +3,8 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.blockhost.anarchyclient.ui.HudEditorScreen;
+import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -13,12 +13,6 @@ import java.util.List;
 
 public final class CoordinatesHudModule extends Module {
 
-    private final SelectSetting corner = this.setting(SelectSetting.from(SelectSetting.builder()
-            .id("corner")
-            .name("Corner")
-            .defaultValue("Top Left")
-            .addAllOptions(List.of("Top Left", "Top Right", "Bottom Left", "Bottom Right"))
-            .build()));
     private final BooleanSetting showFps = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("show_fps")
             .name("FPS")
@@ -51,10 +45,16 @@ public final class CoordinatesHudModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (client.player == null || client.gui.screen() instanceof AnarchyClientScreen) {
+        if (client.player == null || HudEditorScreen.suppressed(client)) {
             return;
         }
-        HudText.panel(client, graphics, this.lines(client), this.corner.value(), 0xFFECE8E0);
+        List<String> lines = this.lines(client);
+        if (lines.isEmpty()) {
+            return;
+        }
+        int[] size = HudText.size(client, lines);
+        int[] origin = HudLayout.origin(this.id(), this.name(), size[0], size[1], "Top Left", graphics);
+        HudText.panelAt(client, graphics, lines, origin[0], origin[1], 0xFFECE8E0, true);
     }
 
     List<String> lines(final Minecraft client) {

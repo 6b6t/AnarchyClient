@@ -104,6 +104,10 @@ public final class AnarchyClientCommands {
                                 .executes(AnarchyClientCommands::toggleModule)))
                 .then(literal("panic")
                         .executes(AnarchyClientCommands::panic))
+                .then(literal("prefix")
+                        .executes(AnarchyClientCommands::showPrefix)
+                        .then(argument("prefix", StringArgumentType.word())
+                                .executes(AnarchyClientCommands::setPrefix)))
                 .then(literal("center")
                         .then(literal("middle")
                                 .executes(context -> centerPlayer(context, CenterMode.MIDDLE)))
@@ -329,6 +333,18 @@ public final class AnarchyClientCommands {
                 .reduce((left, right) -> left + ", " + right)
                 .orElse("No modules registered.");
         context.getSource().sendFeedback(Component.literal(modules));
+        return SUCCESS;
+    }
+
+    private static int showPrefix(final CommandContext<FabricClientCommandSource> context) {
+        context.getSource().sendFeedback(Component.literal("Command prefix is \"" + CommandPrefix.get() + "\"."));
+        return SUCCESS;
+    }
+
+    private static int setPrefix(final CommandContext<FabricClientCommandSource> context) {
+        CommandPrefix.set(StringArgumentType.getString(context, "prefix"));
+        AnarchyClient.CONFIG.save();
+        context.getSource().sendFeedback(Component.literal("Command prefix set to \"" + CommandPrefix.get() + "\"."));
         return SUCCESS;
     }
 
@@ -1120,7 +1136,7 @@ public final class AnarchyClientCommands {
     }
 
     private static String formatCoordinate(final double value) {
-        return "%.2f".formatted(Locale.ROOT, value);
+        return String.format(Locale.ROOT, "%.2f", value);
     }
 
     private static int teleport(final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {

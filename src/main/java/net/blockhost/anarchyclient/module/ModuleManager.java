@@ -12,6 +12,7 @@ import net.blockhost.anarchyclient.event.SendChatEvent;
 import net.blockhost.anarchyclient.event.TabPlayerNameEvent;
 import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -137,6 +138,12 @@ public final class ModuleManager {
             this.registerEvents(module);
         } else {
             this.unregisterEvents(module);
+        }
+        // Only toast in-world: config load restores module states before the player exists, and there is
+        // no client at all under tests.
+        Minecraft client = Minecraft.getInstance();
+        if (client != null && client.player != null) {
+            ToggleNotifications.push(module.name(), enabled);
         }
     }
 

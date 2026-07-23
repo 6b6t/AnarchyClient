@@ -1,14 +1,17 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderCommand;
 import net.blockhost.anarchyclient.rivet.GlassPanelCommand;
+import net.blockhost.anarchyclient.rivet.RivetInputMapper;
 import net.blockhost.anarchyclient.rivet.SoftShadowCommand;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -52,6 +55,7 @@ import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.component.ResolvableProfile;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -133,6 +137,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     private Tab selectedTab = Tab.MODULES;
     private ModuleCategory selectedCategory;
     private Module inspectedModule;
+    private Module keybindListening;
     private Drawer drawer = Drawer.NONE;
     private String searchQuery = "";
     private boolean showDisabledModules = true;
@@ -223,6 +228,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     public void mousePosition(final float x, final float y) {
         this.mouseX = x;
         this.mouseY = y;
+    }
+
+    /** Opens the drag-and-drop HUD editor (no module list; placement only). */
+    private void openHudEditor() {
+        Minecraft.getInstance().gui.setScreen(new HudEditorScreen(this.modules, this.config));
     }
 
     @Override
@@ -408,6 +418,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private void inspectModule(final Module module) {
         this.inspectedModule = module;
+        this.keybindListening = null;
         if (module != null) {
             this.config.selectedModuleId(module.id());
         }
@@ -417,7 +428,47 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private void closeInspector() {
         this.inspectedModule = null;
+        this.keybindListening = null;
         this.requestFrame();
+    }
+
+    /** True while a keybind row is waiting for the next key press. */
+    boolean isCapturingKeybind() {
+        return this.keybindListening != null;
+    }
+
+    private void startKeybindListening(final Module module) {
+        this.keybindListening = module;
+        this.inspector.refresh();
+        this.requestFrame();
+    }
+
+    /**
+     * Consumes the next key press for the listening keybind row: Escape clears the bind, any other key
+     * binds it. Called by the screen before its own Escape handling.
+     */
+    boolean handleKeybindCapture(final int glfwKey) {
+        Module module = this.keybindListening;
+        this.keybindListening = null;
+        if (module == null) {
+            return false;
+        }
+        module.keybind().key(glfwKey == GLFW.GLFW_KEY_ESCAPE ? GLFW.GLFW_KEY_UNKNOWN : glfwKey);
+        this.config.save();
+        this.inspector.refresh();
+        this.requestFrame();
+        return true;
+    }
+
+    private boolean isListeningFor(final Module module) {
+        return this.keybindListening == module;
+    }
+
+    private static String keyLabel(final int glfwKey) {
+        if (glfwKey == GLFW.GLFW_KEY_UNKNOWN) {
+            return "None";
+        }
+        return RivetInputMapper.fromGlfw(glfwKey).map(Key::name).orElse("Key " + glfwKey);
     }
 
     private void toggleModule(final Module module) {
@@ -1577,6 +1628,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         private final TextNode count = textNode(this::countText, GlassTheme::accent)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
         private final SearchInput search = new SearchInput("Search all modules...");
+        // HUD editor entry point: shown top-right only on the HUD tab. Positioning moved out of the
+        // per-module settings into a drag editor, so this button is how you reach it.
+        private final IconButton editHud = iconButton("move", GlassTheme::accent,
+                ModulePanel.this::openHudEditor, this::showEditHud);
         private final CardGrid cards = new CardGrid();
         private final ScrollContainer scroll = new LayoutDebugScrollContainer(this.cards);
 
@@ -1592,6 +1647,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     padding(PADDING + 2F, 6F, 8F, 0F), null, HEADER_HEIGHT));
             place(this.count, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 6F, PADDING + 2F, 0F), 52F, HEADER_HEIGHT));
+            place(this.editHud, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.RIGHT, GridFill.NONE,
+                    padding(0F, 6F, PADDING, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
             place(this.search, cell(0, 1, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(PADDING, 0F, PADDING, 6F), null, SEARCH_HEIGHT));
             place(this.scroll, cell(0, 2, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
@@ -1599,8 +1656,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.addChild(this.background);
             this.addChild(this.title);
             this.addChild(this.count);
+            this.addChild(this.editHud);
             this.addChild(this.search);
             this.addChild(this.scroll);
+        }
+
+        private boolean showEditHud() {
+            return ModulePanel.this.selectedTab == Tab.MODULES
+                    && ModulePanel.this.selectedCategory == ModuleCategory.HUD
+                    && ModulePanel.this.searchQuery.isEmpty();
         }
 
         private void refresh() {
@@ -1623,7 +1687,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private String countText() {
-            if (!ModulePanel.this.searchQuery.isEmpty() || ModulePanel.this.selectedCategory == null) {
+            // The HUD tab shows the editor button here instead of a count.
+            if (this.showEditHud() || !ModulePanel.this.searchQuery.isEmpty() || ModulePanel.this.selectedCategory == null) {
                 return "";
             }
             int count = ModulePanel.this.enabledCount(ModulePanel.this.selectedCategory);
@@ -1894,6 +1959,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             if (module == null) {
                 this.settings.addChild(new EmptyState("Open a module to edit its settings."));
             } else {
+                this.settings.addChild(new KeybindRow(module));
                 List<SettingGroup> groups = visibleSettingGroups(module);
                 boolean groupHeaders = showGroupHeaders(groups);
                 for (SettingGroup group : groups) {
@@ -2211,6 +2277,79 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             float valueWidth = Math.min(112F, Math.max(0F, size.width() * 0.44F));
             place(this.value, cell(2, 0, 2, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                     padding(0F, 0F, PADDING, 0F), valueWidth, null));
+        }
+    }
+
+    /**
+     * Module-level keybind control: shows the bound key on the right, click to listen for the next
+     * key press. Actual capture happens in the screen (see {@link ModulePanel#handleKeybindCapture}).
+     */
+    private final class KeybindRow extends Container implements LayoutDebugLabel {
+
+        private final Module module;
+        private final Surface divider = surface(DIVIDER);
+        private final TextNode label = textNode("Keybind", MUTED);
+        private final TextNode description;
+        private final TextNode value;
+
+        private KeybindRow(final Module module) {
+            super(gridLayout(0, 0));
+            this.module = module;
+            this.description = textNode(this::descriptionText, () -> FAINT);
+            this.value = textNode(this::valueText, this::valueColor)
+                    .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+            this.addChild(this.divider);
+            this.addChild(this.label);
+            this.addChild(this.description);
+            this.addChild(this.value);
+        }
+
+        @Override
+        public void computeLayout(final Size size) {
+            float valueWidth = Math.min(120F, Math.max(0F, size.width() * 0.45F));
+            place(this.divider, cell(0, 2, 4, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
+                    padding(PADDING, 0F, PADDING, 0F), null, 1F));
+            place(this.label, cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(PADDING, 4F, 8F, 0F), null, 18F));
+            place(this.description, cell(0, 1, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(PADDING, 0F, 8F, 5F), null, 17F));
+            place(this.value, cell(2, 0, 2, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+                    padding(0F, 0F, PADDING, 0F), valueWidth, null));
+            super.computeLayout(size);
+        }
+
+        @Override
+        public Size computeIdealSize(final Size constraints) {
+            return new Size(constraints.width(), SETTING_ROW_HEIGHT);
+        }
+
+        @Override
+        protected boolean onComponentMouseDown(final MouseButtonEvent event, final Size size) {
+            if (event.button() == MouseButton.LEFT) {
+                ModulePanel.this.startKeybindListening(this.module);
+                return true;
+            }
+            return false;
+        }
+
+        private String valueText() {
+            return ModulePanel.this.isListeningFor(this.module) ? "Press a key..." : keyLabel(this.module.keybind().key());
+        }
+
+        private Color valueColor() {
+            if (ModulePanel.this.isListeningFor(this.module)) {
+                return GlassTheme.accent();
+            }
+            return this.module.keybind().bound() ? TEXT : FAINT;
+        }
+
+        private String descriptionText() {
+            return ModulePanel.this.isListeningFor(this.module) ? "Press a key, Esc to clear" : "Click to bind a key";
+        }
+
+        @Override
+        public String layoutDebugLabel() {
+            return "keybind";
         }
     }
 
@@ -2619,6 +2758,13 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                         ModulePanel.this.wideInspector = !ModulePanel.this.wideInspector;
                         ModulePanel.this.saveUiPreferences();
                     }, this::refresh));
+            this.rows.addChild(new GroupHeader("Commands"));
+            this.rows.addChild(new OptionRow("Command prefix", true, null,
+                    CommandPrefix::get,
+                    () -> {
+                        CommandPrefix.cycle();
+                        ModulePanel.this.config.save();
+                    }, this::refresh));
             this.rows.addChild(new OptionRow("Reset UI preferences", false, null,
                     () -> "", ModulePanel.this::resetUiPreferences, this::refresh));
             ModulePanel.this.requestFrame();
@@ -2894,16 +3040,39 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         }
 
         private void buildNotifications() {
-            int rows = this.addShortcuts(
+            this.addRow(new OptionRow("Toggle notifications", false,
+                    ToggleNotifications::enabled,
+                    () -> {
+                        ToggleNotifications.enabled(!ToggleNotifications.enabled());
+                        ModulePanel.this.config.save();
+                    }, this::refresh));
+            this.addRow(new OptionRow("Style", false, null,
+                    () -> ToggleNotifications.mode().displayName(),
+                    () -> {
+                        ToggleNotifications.mode(ToggleNotifications.mode().next());
+                        ModulePanel.this.config.save();
+                    }, this::refresh));
+            if (ToggleNotifications.mode() == ToggleNotifications.Mode.POPUP) {
+                this.addRow(new OptionRow("Position", false, null,
+                        () -> ToggleNotifications.corner().displayName(),
+                        () -> {
+                            ToggleNotifications.corner(ToggleNotifications.corner().next());
+                            ModulePanel.this.config.save();
+                        }, this::refresh));
+                this.addRow(new OptionRow("Duration", false, null,
+                        () -> (ToggleNotifications.durationMs() / 1000) + "s",
+                        () -> {
+                            ToggleNotifications.cycleDuration();
+                            ModulePanel.this.config.save();
+                        }, this::refresh));
+            }
+            this.addShortcuts(
                     "notifier",
                     "gamemode_notifier",
                     "lag_notifier_hud",
                     "staff_alert",
                     "auto_reconnect"
             );
-            if (rows == 0) {
-                this.addBody(new EmptyState("No notification modules are registered."));
-            }
         }
 
         private void addRow(final OptionRow row) {

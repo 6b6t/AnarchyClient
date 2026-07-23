@@ -4,9 +4,9 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.target.TargetClassifier;
-import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.blockhost.anarchyclient.ui.HudEditorScreen;
+import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
@@ -15,16 +15,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.List;
-
 public final class RadarHudModule extends Module {
 
-    private final SelectSetting corner = this.setting(SelectSetting.from(SelectSetting.builder()
-            .id("corner")
-            .name("Corner")
-            .defaultValue("Top Left")
-            .addAllOptions(List.of("Top Left", "Top Right", "Bottom Left", "Bottom Right"))
-            .build()));
     private final NumberSetting size = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("size")
             .name("Size")
@@ -82,13 +74,14 @@ public final class RadarHudModule extends Module {
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gui.screen() instanceof AnarchyClientScreen) {
+        if (player == null || client.level == null || HudEditorScreen.suppressed(client)) {
             return;
         }
 
         int panelSize = this.size.value().intValue();
-        int x = this.corner.value().endsWith("Right") ? graphics.guiWidth() - panelSize - 6 : 6;
-        int y = this.corner.value().startsWith("Bottom") ? graphics.guiHeight() - panelSize - 6 : 6;
+        int[] origin = HudLayout.origin(this.id(), this.name(), panelSize, panelSize, "Top Left", graphics);
+        int x = origin[0];
+        int y = origin[1];
         int centerX = x + panelSize / 2;
         int centerY = y + panelSize / 2;
 

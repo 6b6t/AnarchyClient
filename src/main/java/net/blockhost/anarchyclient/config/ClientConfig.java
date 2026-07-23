@@ -6,10 +6,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.loader.api.FabricLoader;
@@ -357,6 +359,23 @@ public final class ClientConfig {
         this.glassOpacity = readFloat(ui, "glassOpacity", this.glassOpacity);
         this.cornerRadius = readFloat(ui, "cornerRadius", this.cornerRadius);
         this.glassBlur = readFloat(ui, "glassBlur", this.glassBlur);
+        JsonElement prefixJson = ui.get("commandPrefix");
+        if (prefixJson != null && prefixJson.isJsonPrimitive()) {
+            CommandPrefix.set(prefixJson.getAsString());
+        }
+        ToggleNotifications.enabled(readBoolean(ui, "toggleNotifications", ToggleNotifications.enabled()));
+        JsonElement modeJson = ui.get("toggleNotificationsMode");
+        if (modeJson != null && modeJson.isJsonPrimitive()) {
+            ToggleNotifications.mode(ToggleNotifications.Mode.fromName(modeJson.getAsString()));
+        }
+        JsonElement cornerJson = ui.get("toggleNotificationsCorner");
+        if (cornerJson != null && cornerJson.isJsonPrimitive()) {
+            ToggleNotifications.corner(ToggleNotifications.Corner.fromName(cornerJson.getAsString()));
+        }
+        JsonElement durationJson = ui.get("toggleNotificationsDuration");
+        if (durationJson != null && durationJson.isJsonPrimitive()) {
+            ToggleNotifications.durationMs(durationJson.getAsInt());
+        }
     }
 
     private void saveUi(final JsonObject root) {
@@ -404,6 +423,11 @@ public final class ClientConfig {
         ui.addProperty("glassOpacity", preferences.glassOpacity());
         ui.addProperty("cornerRadius", preferences.cornerRadius());
         ui.addProperty("glassBlur", preferences.glassBlur());
+        ui.addProperty("commandPrefix", CommandPrefix.get());
+        ui.addProperty("toggleNotifications", ToggleNotifications.enabled());
+        ui.addProperty("toggleNotificationsMode", ToggleNotifications.mode().name().toLowerCase(Locale.ROOT));
+        ui.addProperty("toggleNotificationsCorner", ToggleNotifications.corner().name().toLowerCase(Locale.ROOT));
+        ui.addProperty("toggleNotificationsDuration", ToggleNotifications.durationMs());
 
         if (ui.size() > 0) {
             root.add("ui", ui);

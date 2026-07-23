@@ -5,9 +5,11 @@
   "client": [
     "CameraMixin",
     "ChatComponentMixin",
+    "ChatScreenMixin",
     "ClientCommonPacketListenerMixin",
     "ClientLevelMixin",
     "ClientPacketListenerMixin",
+    "CommandSuggestionsMixin",
     "ClientInputAccessor",
     "ConnectionMixin",
     "DeltaTrackerTimerMixin",
