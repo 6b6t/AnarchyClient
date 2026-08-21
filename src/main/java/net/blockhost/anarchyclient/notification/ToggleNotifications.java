@@ -1,7 +1,8 @@
 package net.blockhost.anarchyclient.notification;
 
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
-import net.blockhost.anarchyclient.rivet.SoftShadowCommand;
+import net.blockhost.anarchyclient.rivet.GlassPanelCommand;
+import net.blockhost.anarchyclient.ui.GlassTheme;
 import net.lenni0451.commons.color.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,7 +19,10 @@ import java.util.List;
  */
 public final class ToggleNotifications {
 
-    private static final int ROW_HEIGHT = 17;
+    private static final int ROW_HEIGHT = 20;
+    /** Text inset, and therefore the chip's horizontal padding. */
+    private static final float TEXT_INSET = 12F;
+    private static final Color OUTLINE = Color.fromRGBA(255, 255, 255, 70);
     private static final int ROW_GAP = 5;
     private static final int MARGIN = 6;
     private static final int MAX_TOASTS = 8;
@@ -26,22 +30,12 @@ public final class ToggleNotifications {
     private static final int FADE_OUT_MS = 250;
     private static final List<Integer> DURATIONS = List.of(1000, 2000, 3000, 5000);
 
-    // On-brand tokens mirrored from the menu's GlassTheme so the toast reads as the same client.
-    private static final int TEXT_RGB = 0xFFFFFF;
-    private static final int DISABLED_RGB = 0xE05563;
-    private static final int DEFAULT_ACCENT = 0x00BA94;
-    private static final int DEFAULT_GLASS = 0xB00D111A;
-
     private static final List<Toast> TOASTS = new ArrayList<>();
 
     private static boolean enabled = true;
     private static Mode mode = Mode.POPUP;
     private static Corner corner = Corner.TOP_RIGHT;
     private static int durationMs = 2000;
-    private static int accent = DEFAULT_ACCENT;
-    // Corner radius and glass tint mirror the Theme tab globals, pushed from GlassTheme.
-    private static float cornerRadius = 14F;
-    private static int glass = DEFAULT_GLASS;
 
     private ToggleNotifications() {
     }
@@ -84,16 +78,6 @@ public final class ToggleNotifications {
         durationMs = DURATIONS.get((index + 1) % DURATIONS.size());
     }
 
-    /**
-     * Mirror the menu's live design tokens (accent, corner radius, glass tint) so popups match the
-     * Theme tab. Pushed from GlassTheme whenever any of them change.
-     */
-    public static void theme(final int accentArgb, final float radius, final int glassArgb) {
-        accent = accentArgb;
-        cornerRadius = radius;
-        glass = glassArgb;
-    }
-
     /** Emits feedback for a module toggle. No-op while notifications are off. */
     public static void push(final String moduleName, final boolean on) {
         if (!enabled || moduleName == null) {
@@ -116,12 +100,13 @@ public final class ToggleNotifications {
         if (client.player == null) {
             return;
         }
-        int accentRgb = accent & 0xFFFFFF;
+        int accentRgb = GlassTheme.accent().toARGB() & 0xFFFFFF;
+        int offRgb = GlassTheme.OFF.toARGB() & 0xFFFFFF;
         Component message = Component.literal("")
                 .append(Component.literal("[AnarchyClient] ").withStyle(style -> style.withColor(accentRgb).withBold(true)))
                 .append(Component.literal(moduleName + " "))
                 .append(Component.literal(on ? "enabled" : "disabled")
-                        .withStyle(style -> style.withColor(on ? accentRgb : DISABLED_RGB)));
+                        .withStyle(style -> style.withColor(on ? accentRgb : offRgb)));
         client.player.sendSystemMessage(message);
     }
 
@@ -134,9 +119,9 @@ public final class ToggleNotifications {
         Font font = client.font;
         boolean right = corner == Corner.TOP_RIGHT || corner == Corner.BOTTOM_RIGHT;
         boolean bottom = corner == Corner.BOTTOM_LEFT || corner == Corner.BOTTOM_RIGHT;
+        Blaze3DRenderer renderer = new Blaze3DRenderer(client, graphics);
         float guiWidth = graphics.guiWidth();
         float guiHeight = graphics.guiHeight();
-        Blaze3DRenderer renderer = new Blaze3DRenderer(client, graphics);
         List<Toast> snapshot = new ArrayList<>(TOASTS);
         try {
             for (int index = 0; index < snapshot.size(); index++) {
@@ -144,42 +129,32 @@ public final class ToggleNotifications {
                 long elapsed = now - toast.createdAt;
                 float alpha = alpha(elapsed);
                 String text = toast.name + (toast.on ? " enabled" : " disabled");
-                float width = font.width(text) + 20F;
+                float width = font.width(text) + TEXT_INSET * 2F;
                 float offset = slide(elapsed) * (width + MARGIN);
                 float y = bottom
                         ? guiHeight - MARGIN - ROW_HEIGHT - index * (ROW_HEIGHT + ROW_GAP)
                         : MARGIN + index * (ROW_HEIGHT + ROW_GAP);
                 float x = right ? guiWidth - width - MARGIN + offset : MARGIN - offset;
-                // Follow the Theme tab's corner radius, capped so a small toast never becomes a pill.
-                float radius = Math.min(cornerRadius, Math.min(width, ROW_HEIGHT) / 2F);
+                float radius = Math.min(GlassTheme.cornerRadius(), ROW_HEIGHT / 2F);
 
-                // Same soft shadow + anti-aliased glass panel the menu draws for its cards.
-                renderer.custom(new SoftShadowCommand(x, y, width, ROW_HEIGHT, radius, 8F, 2F,
-                        Color.fromRGBA(0, 0, 0, scaleAlpha(alpha, 0.43F))));
-                renderer.optimizedFillRoundedRect(x, y, width, ROW_HEIGHT, radius, glassColor(alpha));
-                renderer.outlineRoundedRect(x, y, width, ROW_HEIGHT, radius, 1F,
-                        Color.fromRGBA(255, 255, 255, scaleAlpha(alpha, 0.11F)));
-                // Accent stripe on the left, matching the menu's active-row highlight.
-                Color stripe = toast.on ? withAlpha(accent, alpha) : Color.fromRGBA(224, 85, 99, scaleAlpha(alpha, 1F));
-                renderer.fillRoundedRect(x + 3F, y + 4F, 2F, ROW_HEIGHT - 8F, 1F, stripe);
-
-                int textArgb = alphaBits(alpha) | TEXT_RGB;
-                graphics.text(font, text, Math.round(x + 9F), Math.round(y + (ROW_HEIGHT - 8F) / 2F), textArgb, false);
+                // The HUD editor's hint chip, minus its drop shadow: in-game the panel has no blurred
+                // scene to sample and stays translucent, so a shadow underneath shows straight through
+                // it — brightest at the rim, darkest at the center. The rim carries the edge instead.
+                renderer.custom(new GlassPanelCommand(x, y, width, ROW_HEIGHT, radius,
+                        fade(GlassTheme.glass(), alpha)));
+                // One 1px ring on the panel's own bounds, at the width sdf_outline renders, so it frames
+                // the fill exactly instead of stacking a second ring inside it.
+                renderer.outlineRoundedRect(x, y, width, ROW_HEIGHT, radius, 1F, fade(OUTLINE, alpha));
+                graphics.text(font, text, Math.round(x + TEXT_INSET), Math.round(y + (ROW_HEIGHT - 8F) / 2F),
+                        fade(GlassTheme.TEXT, alpha).toARGB(), false);
             }
         } catch (RuntimeException ignored) {
             // A render failure must never take down the HUD; the toast simply won't show this frame.
         }
     }
 
-    private static Color withAlpha(final int rgb, final float alpha) {
-        return Color.fromRGBA((rgb >> 16) & 0xFF, (rgb >> 8) & 0xFF, rgb & 0xFF, scaleAlpha(alpha, 1F));
-    }
-
-    /** Glass tint from the Theme tab (its opacity is the base alpha), further scaled by the fade. */
-    private static Color glassColor(final float fade) {
-        int baseAlpha = (glass >> 24) & 0xFF;
-        return Color.fromRGBA((glass >> 16) & 0xFF, (glass >> 8) & 0xFF, glass & 0xFF,
-                Math.round(baseAlpha * clamp01(fade)));
+    private static Color fade(final Color color, final float alpha) {
+        return color.multiplyAlpha(clamp01(alpha));
     }
 
     private static float slide(final long elapsed) {
@@ -200,14 +175,6 @@ public final class ToggleNotifications {
             return clamp01((durationMs - elapsed) / (float) FADE_OUT_MS);
         }
         return 1F;
-    }
-
-    private static int alphaBits(final float alpha) {
-        return scaleAlpha(alpha, 1F) << 24;
-    }
-
-    private static int scaleAlpha(final float alpha, final float scale) {
-        return Math.round(clamp01(alpha) * scale * 255F) & 0xFF;
     }
 
     private static float clamp01(final float value) {

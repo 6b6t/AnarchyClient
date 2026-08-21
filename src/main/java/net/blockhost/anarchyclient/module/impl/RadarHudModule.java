@@ -107,7 +107,7 @@ public final class RadarHudModule extends Module {
         }
 
         String label = this.rotateWithPlayer.value() ? "^" : "N";
-        graphics.text(client.font, label, centerX - client.font.width(label) / 2, y + 3, 0xFFECE8E0, true);
+        graphics.text(client.font, label, centerX - client.font.width(label) / 2, y + 3, HudText.textColor(), true);
     }
 
     private RadarPoint point(final LocalPlayer player, final Entity entity, final int panelSize, final double rangeValue) {
@@ -128,7 +128,7 @@ public final class RadarHudModule extends Module {
 
     private int entityColor(final Entity entity) {
         if (entity instanceof Player) {
-            return this.showPlayers.value() ? 0xFF8EEAD5 : 0;
+            return this.showPlayers.value() ? HudText.accentColor() : 0;
         }
         if (entity instanceof ItemEntity) {
             return this.showItems.value() ? 0xFFE6C76E : 0;

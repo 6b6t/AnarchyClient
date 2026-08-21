@@ -54,7 +54,7 @@ public final class CoordinatesHudModule extends Module {
         }
         int[] size = HudText.size(client, lines);
         int[] origin = HudLayout.origin(this.id(), this.name(), size[0], size[1], "Top Left", graphics);
-        HudText.panelAt(client, graphics, lines, origin[0], origin[1], 0xFFECE8E0, true);
+        HudText.panelAt(client, graphics, lines, origin[0], origin[1], HudText.textColor(), true);
     }
 
     List<String> lines(final Minecraft client) {

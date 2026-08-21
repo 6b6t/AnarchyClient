@@ -45,7 +45,7 @@ abstract class HudElementModule extends Module {
     }
 
     protected int color() {
-        return 0xFFECE8E0;
+        return HudText.textColor();
     }
 
     protected HudPosition position(final GuiGraphicsExtractor graphics, final int width, final int height) {

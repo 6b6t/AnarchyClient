@@ -22,7 +22,7 @@ public final class ModuleInfoHudModule extends HudElementModule {
 
     @Override
     protected int color() {
-        return 0xFF8EEAD5;
+        return HudText.accentColor();
     }
 
     @Override

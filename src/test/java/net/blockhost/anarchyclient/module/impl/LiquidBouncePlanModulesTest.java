@@ -10,6 +10,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,6 +54,25 @@ class LiquidBouncePlanModulesTest {
                 1024, 64));
         assertEquals(List.of(new net.minecraft.core.BlockPos(1, 64, -2), new net.minecraft.core.BlockPos(5, 70, 5)),
                 ProtectionZonesModule.parseZones("1,64,-2; nope; 5,70,5"));
+    }
+
+    @Test
+    void exploitCheckNeverDropsRegistrySync() {
+        // Dropping registry or tag sync leaves the client without biomes, and the next world join dies
+        // with "Missing element minecraft:plains" instead of loading.
+        var registryPacket = new net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket(
+                net.minecraft.core.registries.Registries.BIOME, List.of());
+        var tagsPacket = new net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket(java.util.Map.of());
+        var otherPacket = new net.minecraft.network.protocol.game.ServerboundSwingPacket(net.minecraft.world.InteractionHand.MAIN_HAND);
+
+        assertTrue(AntiExploitModule.isRegistrySync(registryPacket));
+        assertTrue(AntiExploitModule.isRegistrySync(tagsPacket));
+        assertFalse(AntiExploitModule.isRegistrySync(otherPacket));
+
+        // Even at a limit no packet could satisfy, sync survives while everything else is still cut.
+        assertNull(AntiExploitModule.exploitReason(registryPacket, 1, 64));
+        assertNull(AntiExploitModule.exploitReason(tagsPacket, 1, 64));
+        assertNotNull(AntiExploitModule.exploitReason(otherPacket, 1, 64));
     }
 
     @Test

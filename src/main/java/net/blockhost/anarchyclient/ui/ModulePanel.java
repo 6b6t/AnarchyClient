@@ -1780,7 +1780,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             this.background = new Surface(this::backgroundColor).cornerRadius(10F);
             this.hairline = new Surface(() -> this.module.enabled() ? GlassTheme.accent() : Color.TRANSPARENT).cornerRadius(1F);
             this.icon = iconNode(module::icon, () -> this.module.enabled() ? GlassTheme.accent() : MUTED);
-            this.name = textNode(module.name(), () -> this.module.enabled() ? TEXT : MUTED);
+            // The name is the card's primary content, so it stays at full contrast either way; state is
+            // carried by the accent hairline, icon and background tint instead of by dimming the label.
+            this.name = textNode(module.name(), () -> TEXT);
             this.settingsButton = iconButton("sliders", () -> this.inspected() ? GlassTheme.accent() : FAINT,
                     this::toggleInspect);
             place(this.background, fillCell(0, 0, 4, 1));

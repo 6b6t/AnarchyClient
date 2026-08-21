@@ -62,7 +62,7 @@ public final class MapHudModule extends HudElementModule {
         double yaw = Math.toRadians(client.player.getYRot());
         int arrowX = x + center - (int) Math.round(Math.sin(yaw) * 8.0);
         int arrowY = y + center + (int) Math.round(Math.cos(yaw) * 8.0);
-        WorldLineRenderer2D.line(graphics, x + center, y + center, arrowX, arrowY, 0xFFECE8E0);
+        WorldLineRenderer2D.line(graphics, x + center, y + center, arrowX, arrowY, HudText.textColor());
 
         String chunk = "Chunk " + Math.floorDiv(playerPos.getX(), 16) + ", " + Math.floorDiv(playerPos.getZ(), 16);
         String biome = client.level.getBiome(playerPos).unwrapKey()

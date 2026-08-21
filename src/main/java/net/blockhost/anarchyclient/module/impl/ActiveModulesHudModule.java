@@ -35,6 +35,6 @@ public final class ActiveModulesHudModule extends Module {
         }
         int[] size = HudText.size(client, lines);
         int[] origin = HudLayout.origin(this.id(), this.name(), size[0], size[1], "Top Right", graphics);
-        HudText.panelAt(client, graphics, lines, origin[0], origin[1], 0xFF8EEAD5, true);
+        HudText.panelAt(client, graphics, lines, origin[0], origin[1], HudText.accentColor(), true);
     }
 }

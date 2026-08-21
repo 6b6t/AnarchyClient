@@ -23,6 +23,7 @@ public final class AnarchyClientRenderPipelines {
                     .build()
     );
     public static final RenderPipeline SDF_FILL = panelPipeline("sdf_fill");
+    public static final RenderPipeline SDF_OUTLINE = panelPipeline("sdf_outline");
     public static final RenderPipeline SDF_SHADOW = panelPipeline("sdf_shadow");
     public static final RenderPipeline MATRIX_PANEL = panelPipeline("matrix_panel");
     public static final RenderPipeline CAUSTICS_PANEL = panelPipeline("caustics_panel");

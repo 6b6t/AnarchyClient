@@ -91,7 +91,7 @@ public final class NametagsModule extends Module {
                     .limit(this.maxRows.value().longValue())
                     .map(entity -> this.line(client.player, entity))
                     .toList();
-            HudText.panel(client, graphics, lines, this.corner.value(), 0xFFECE8E0);
+            HudText.panel(client, graphics, lines, this.corner.value(), HudText.textColor());
         }
     }
 
@@ -110,7 +110,7 @@ public final class NametagsModule extends Module {
         int screenY = (int) ((1.0 - projected.y) * 0.5 * graphics.guiHeight());
         int halfWidth = client.font.width(text) / 2;
         graphics.fill(screenX - halfWidth - 2, screenY - 2, screenX + halfWidth + 2, screenY + 9, 0x60000000);
-        graphics.text(client.font, text, screenX - halfWidth, screenY, 0xFFECE8E0);
+        graphics.text(client.font, text, screenX - halfWidth, screenY, HudText.textColor());
     }
 
     private String line(final Player player, final LivingEntity entity) {

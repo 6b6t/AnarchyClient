@@ -44,6 +44,12 @@ public final class HudLayout {
         public boolean contains(final double px, final double py) {
             return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height;
         }
+
+        /** True when any part of this element falls inside the given rectangle (box selection). */
+        public boolean intersects(final double left, final double top, final double right, final double bottom) {
+            return this.x <= right && this.x + this.width >= left
+                    && this.y <= bottom && this.y + this.height >= top;
+        }
     }
 
     /**

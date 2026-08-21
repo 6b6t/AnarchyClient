@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.ui.GlassTheme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
@@ -8,6 +9,16 @@ import java.util.List;
 final class HudText {
 
     private HudText() {
+    }
+
+    /** Default HUD text color: the global text token, so every element matches the menu. */
+    static int textColor() {
+        return GlassTheme.TEXT.toARGB();
+    }
+
+    /** Accent HUD text color, for elements that highlight their values. */
+    static int accentColor() {
+        return GlassTheme.accent().toARGB();
     }
 
     /** Text-block size in pixels: {@code [maxLineWidth, lineCount * 10]}. */

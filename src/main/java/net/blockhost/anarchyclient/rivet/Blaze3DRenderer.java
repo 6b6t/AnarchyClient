@@ -28,6 +28,9 @@ import java.util.function.Consumer;
 
 public final class Blaze3DRenderer extends CheckedRenderer {
 
+    /** The single outline width {@code sdf_outline.fsh} renders; must match its {@code WIDTH_PX}. */
+    private static final float HAIRLINE = 1F;
+
     private final Minecraft client;
     private final GuiGraphicsExtractor graphics;
     private float xOffset;
@@ -197,10 +200,11 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         float radius = Math.max(1F, Math.min(glass.cornerRadius(), Math.min(glass.width(), glass.height()) / 2F));
         GpuTextureView scene = GlassBackdrop.blurredView();
         if (scene == null) {
-            // No captured scene yet (first frame, or blur unavailable): draw a plain translucent panel.
-            Color fallback = glass.tint().withAlpha(Math.max(glass.tint().getAlpha(), 224));
-            this.submitShape(GuiShapeGeometry.filledRoundedRect(
-                    glass.x(), glass.y(), glass.width(), glass.height(), radius, radius, radius, radius, argb(fallback)));
+            // No captured scene (first frame, blur turned off, or a panel drawn outside a screen): the
+            // same anti-aliased rounded fill at the theme's own opacity. Tessellated geometry or a
+            // forced alpha here would make those panels read as a different, cruder component.
+            this.submitSdfGrid(glass.x(), glass.y(), glass.width(), glass.height(), radius,
+                    AnarchyClientRenderPipelines.SDF_FILL, glass.tint());
         } else {
             this.submitGlassGrid(glass, radius, scene);
         }
@@ -304,6 +308,14 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     protected void doOutlineRoundedRect(final float x, final float y, final float width, final float height,
                                         final float rtl, final float rbl, final float rbr, final float rtr,
                                         final float outlineWidth, final Color color) {
+        // sdf_outline draws a ring exactly HAIRLINE pixels wide and carries no width channel, so only
+        // that one width may take it; every other width keeps the tessellated path, whose
+        // stair-stepping is far less visible on a thick border anyway.
+        if (rtl == rbl && rbl == rbr && rbr == rtr && rtl >= 1F && outlineWidth == HAIRLINE) {
+            float radius = Math.min(rtl, Math.min(width, height) / 2F);
+            this.submitSdfGrid(x, y, width, height, radius, AnarchyClientRenderPipelines.SDF_OUTLINE, color);
+            return;
+        }
         this.submitShape(GuiShapeGeometry.outlinedRoundedRect(x, y, width, height, rtl, rbl, rbr, rtr, outlineWidth, argb(color)));
     }
 

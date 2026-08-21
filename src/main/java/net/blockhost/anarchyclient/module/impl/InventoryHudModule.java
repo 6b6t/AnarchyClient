@@ -17,7 +17,7 @@ public final class InventoryHudModule extends HudElementModule {
 
     @Override
     protected int color() {
-        return 0xFF8EEAD5;
+        return HudText.accentColor();
     }
 
     @Override
