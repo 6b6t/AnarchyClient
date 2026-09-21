@@ -1,0 +1,33 @@
+name: Commit style
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-commits:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate commit subjects
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([A-Za-z0-9._/ -]+\))?!?: .+'
+          failed=0
+          for sha in $(git rev-list --no-merges "${BASE_SHA}..${HEAD_SHA}"); do
+            subject=$(git log -1 --format=%s "$sha")
+            if ! grep -qE "$pattern" <<< "$subject"; then
+              echo "::error title=Non-conventional commit::$(git rev-parse --short "$sha") '$subject' does not follow Conventional Commits (type(scope): description)"
+              failed=1
+            fi
+          done
+          exit "$failed"
