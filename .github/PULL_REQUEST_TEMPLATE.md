@@ -1,5 +1,5 @@
 <!-- Suggested title: type(scope): one clear change, e.g. feat(NoBedExplosion): cancel bed explosion in end -->
-<!-- PRs that bundle several changes, stack on unmerged PRs, or skip checklist items may be closed without review. Keep it small and reviewable. -->
+<!-- PRs that bundle unrelated changes, stack on unmerged PRs, or skip checklist items may be closed without review. Keep it small and reviewable. -->
 
 ## What
 
@@ -9,7 +9,8 @@ Closes #
 
 ## Scope
 
-- [ ] This PR contains **one** change (a single feature, fix, or plugin). No bundled work. If you have several, open several PRs.
+- [ ] This PR is **one logical change** (a single feature, fix, or plugin). Unrelated changes belong in separate PRs.
+- [ ] Cross-plugin feature grouping (optional): this PR spans several plugins/modules because they implement **one coherent feature**. Name the feature and what each part contributes: <!-- e.g. "PlayerLanguage system: core module adds the API, each plugin consumes it" -->. Remove this line if not applicable.
 - [ ] This PR targets the **default branch** and does not stack on an unmerged PR.
 
 ## Design
@@ -20,6 +21,6 @@ Closes #
 
 ## Evidence
 
-- [ ] Commits follow Conventional Commits (`type(scope): description`).
+- [ ] Commits follow Conventional Commits (`type(scope): description`). CI enforces this.
 - [ ] Built and tested locally with this repo's standard commands. Paste evidence (commands run, logs, screenshots):
 
