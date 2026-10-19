@@ -1,18 +1,18 @@
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 plugins {
-    id("net.fabricmc.fabric-loom") version "1.17.12"
-    id("io.freefair.lombok") version "9.5.0"
+    id("net.fabricmc.fabric-loom") version "1.18.4"
+    id("io.freefair.lombok") version "9.8.2"
     id("maven-publish")
 }
 
 val minecraftVersion = "26.2"
-val loaderVersion = "0.19.3"
+val loaderVersion = "0.20.1"
 val fabricApiVersion = "0.153.0+26.2"
-val immutablesVersion = "2.12.2"
+val immutablesVersion = "2.12.3"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
-val reflectVersion = "1.5.0"
+val reflectVersion = "1.6.4"
 val asmVersion = "9.10.1"
 val javaVersion = 25
 
@@ -46,7 +46,7 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly("org.jetbrains:annotations:26.1.0")
 
-    testImplementation(platform("org.junit:junit-bom:6.1.0"))
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("net.fabricmc:fabric-loader-junit:$loaderVersion")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
