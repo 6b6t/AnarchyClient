@@ -8,7 +8,7 @@ plugins {
 
 val minecraftVersion = "26.2"
 val loaderVersion = "0.20.1"
-val fabricApiVersion = "0.153.0+26.2"
+val fabricApiVersion = "0.164.1+26.4"
 val immutablesVersion = "2.12.3"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
