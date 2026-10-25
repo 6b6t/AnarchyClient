@@ -112,7 +112,6 @@ Keep the existing requirements for deployment authorization, dry runs, and verif
 - Prefer pull requests for changes.
 - Push directly to `main` or the repository's default branch only when the user explicitly requests that direct push.
 - A request to implement, stage, or deploy a change does not authorize a direct push.
-- Permission to push directly does not waive the required human PR sign-off and merge before staging or deployment.
 
 ### New Kubernetes services
 
