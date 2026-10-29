@@ -243,3 +243,7 @@ If the prompter seems unfamiliar with technical work, explain why the PR process
 Explain that a PR makes the exact changes visible and records human review and approval before staging or deployment.
 Explain that a second set of technical eyes can catch mistakes, security issues, and deployment risks before they affect users.
 Keep the explanation respectful and connect it to the proposed change.
+
+## Java conventions
+
+- Import Java types instead of using fully qualified class names in code.
