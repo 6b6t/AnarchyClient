@@ -1,14 +1,14 @@
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 plugins {
-    id("net.fabricmc.fabric-loom") version "1.18.4"
-    id("io.freefair.lombok") version "9.8.2"
+    id("net.fabricmc.fabric-loom") version "1.19.4"
+    id("io.freefair.lombok") version "9.8.3"
     id("maven-publish")
 }
 
 val minecraftVersion = "26.2"
 val loaderVersion = "0.20.1"
-val fabricApiVersion = "0.153.0+26.2"
+val fabricApiVersion = "0.166.2+26.4"
 val immutablesVersion = "2.12.3"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
