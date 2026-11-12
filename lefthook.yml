@@ -1,0 +1,12 @@
+min_version: 1.13.6
+
+pre-commit:
+  commands:
+    whitespace:
+      run: git diff --cached --check
+
+pre-push:
+  commands:
+    verify:
+      use_stdin: true
+      run: python3 scripts/check-push.py

@@ -5,3 +5,6 @@ logs/
 out/
 *.iml
 .idea/
+
+# Python hook test caches
+__pycache__/
