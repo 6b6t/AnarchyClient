@@ -1,8 +1,8 @@
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 plugins {
-    id("net.fabricmc.fabric-loom") version "1.18.4"
-    id("io.freefair.lombok") version "9.8.2"
+    id("net.fabricmc.fabric-loom") version "1.19.4"
+    id("io.freefair.lombok") version "9.8.3"
     id("maven-publish")
 }
 
