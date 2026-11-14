@@ -1,4 +1,6 @@
 title: AnarchyClient
+repository: 6b6t/AnarchyClient
+url: https://client.6b6t.org
 description: Fabric 26.2 utility mod for 6b6t.
 theme: jekyll-theme-hacker
 
@@ -20,3 +22,11 @@ exclude:
   - jitpack.yml
   - AGENTS.md
   - CLAUDE.md
+
+plugins:
+  - jekyll-sitemap
+defaults:
+  - scope:
+      path: ""
+    values:
+      image: /assets/demo.png

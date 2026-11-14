@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://client.6b6t.org/sitemap.xml
