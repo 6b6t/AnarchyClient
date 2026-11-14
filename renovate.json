@@ -1,12 +1,18 @@
 {
-  "extends": ["config:base", "group:allNonMajor", ":semanticCommits"],
+  "extends": [
+    "config:base",
+    "group:allNonMajor",
+    ":semanticCommits"
+  ],
   "baseBranches": [
     "main"
   ],
   "labels": [
     "enhancement"
   ],
-  "reviewers": ["xymb-endcrystalme"],
+  "reviewers": [
+    "xymb-endcrystalme"
+  ],
   "packageRules": [
     {
       "matchUpdateTypes": [
@@ -23,6 +29,13 @@
         "**"
       ],
       "allowedVersions": "!/\\-SNAPSHOT$/"
+    },
+    {
+      "description": "Fabric API must target the Minecraft version supported by the client.",
+      "matchPackageNames": [
+        "net.fabricmc.fabric-api:fabric-api"
+      ],
+      "allowedVersions": "/\\+26\\.2$/"
     }
   ]
 }
