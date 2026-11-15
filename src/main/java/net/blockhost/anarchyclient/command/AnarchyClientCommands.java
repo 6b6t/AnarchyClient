@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -55,7 +56,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -306,7 +307,7 @@ public final class AnarchyClientCommands {
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(AnarchyClientCommands::suggestModules)
-                                .then(argument("key", IntegerArgumentType.integer(GLFW.GLFW_KEY_SPACE))
+                                .then(argument("key", IntegerArgumentType.integer(1, SDLScancode.SDL_SCANCODE_COUNT - 1))
                                         .executes(context -> bindModule(context, ModuleBindAction.TOGGLE))
                                         .then(argument("action", StringArgumentType.word())
                                                 .suggests(AnarchyClientCommands::suggestBindActions)
@@ -972,7 +973,8 @@ public final class AnarchyClientCommands {
         if (client == null) {
             return 0;
         }
-        if (client.player.drop(all)) {
+        if (client.gameMode != null && !client.player.getMainHandItem().isEmpty()) {
+            client.gameMode.dropItem(client.player, all);
             context.getSource().sendFeedback(Component.literal("Dropped selected " + (all ? "stack" : "item") + "."));
             return SUCCESS;
         }
@@ -1263,7 +1265,7 @@ public final class AnarchyClientCommands {
         if (module == null) {
             return 0;
         }
-        module.keybind().key(GLFW.GLFW_KEY_UNKNOWN);
+        module.keybind().key(InputConstants.UNKNOWN.getValue());
         AnarchyClient.CONFIG.save();
         context.getSource().sendFeedback(Component.literal("Unbound " + module.name() + "."));
         return SUCCESS;

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.config.ClientConfig;
@@ -55,7 +56,6 @@ import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.network.chat.FontDescription;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.component.ResolvableProfile;
-import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -447,13 +447,13 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
      * Consumes the next key press for the listening keybind row: Escape clears the bind, any other key
      * binds it. Called by the screen before its own Escape handling.
      */
-    boolean handleKeybindCapture(final int glfwKey) {
+    boolean handleKeybindCapture(final int scancode) {
         Module module = this.keybindListening;
         this.keybindListening = null;
         if (module == null) {
             return false;
         }
-        module.keybind().key(glfwKey == GLFW.GLFW_KEY_ESCAPE ? GLFW.GLFW_KEY_UNKNOWN : glfwKey);
+        module.keybind().key(scancode == InputConstants.KEY_ESCAPE ? InputConstants.UNKNOWN.getValue() : scancode);
         this.config.save();
         this.inspector.refresh();
         this.requestFrame();
@@ -464,11 +464,11 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return this.keybindListening == module;
     }
 
-    private static String keyLabel(final int glfwKey) {
-        if (glfwKey == GLFW.GLFW_KEY_UNKNOWN) {
+    private static String keyLabel(final int scancode) {
+        if (scancode == InputConstants.UNKNOWN.getValue()) {
             return "None";
         }
-        return RivetInputMapper.fromGlfw(glfwKey).map(Key::name).orElse("Key " + glfwKey);
+        return RivetInputMapper.fromScancode(scancode).map(Key::name).orElse("Key " + scancode);
     }
 
     private void toggleModule(final Module module) {

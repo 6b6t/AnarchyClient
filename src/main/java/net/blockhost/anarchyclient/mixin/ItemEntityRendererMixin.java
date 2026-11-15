@@ -32,11 +32,11 @@ public abstract class ItemEntityRendererMixin {
         float scale = (float) transform.scale();
         poseStack.scale(scale, scale, scale);
         switch (transform.mode()) {
-            case "Flat" -> poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
-            case "Spin" -> poseStack.mulPose(Axis.YP.rotationDegrees(state.ageInTicks * (float) transform.spinSpeed()));
+            case "Flat" -> poseStack.rotateDegrees(Axis.XP, 90.0F);
+            case "Spin" -> poseStack.rotateDegrees(Axis.YP, state.ageInTicks * (float) transform.spinSpeed());
             case "Float" -> {
                 poseStack.translate(0.0, Math.sin(state.ageInTicks * 0.08) * 0.08, 0.0);
-                poseStack.mulPose(Axis.YP.rotationDegrees(state.ageInTicks * (float) transform.spinSpeed()));
+                poseStack.rotateDegrees(Axis.YP, state.ageInTicks * (float) transform.spinSpeed());
             }
             default -> {
             }

@@ -6,7 +6,7 @@ import net.blockhost.anarchyclient.module.ModuleMode;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.timer.TimerBalanceService;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -75,7 +75,7 @@ class LiquidBounceDeepPlanModulesTest {
 
     @Test
     void backtrackPacketClassifierIsConservative() {
-        assertFalse(BacktrackModule.isEntityMovementPacket(new ServerboundSwingPacket(InteractionHand.MAIN_HAND)));
+        assertFalse(BacktrackModule.isEntityMovementPacket(ServerboundPunchPacket.INSTANCE));
     }
 
     @Test

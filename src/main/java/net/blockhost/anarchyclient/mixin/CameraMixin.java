@@ -43,7 +43,7 @@ public abstract class CameraMixin {
 
     @Inject(method = "extractRenderState", at = @At("RETURN"))
     private void anarchyclient$suppressBlockingEffects(final CameraRenderState cameraState,
-                                                       final float cameraEntityPartialTicks,
+                                                       final DeltaTracker deltaTracker,
                                                        final CallbackInfo info) {
         if (RenderSuppression.suppresses(RenderSuppression.Kind.BLINDNESS)
                 || RenderSuppression.suppresses(RenderSuppression.Kind.DARKNESS)) {

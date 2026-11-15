@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.BedItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -80,7 +80,7 @@ public final class AntiBedModule extends Module {
 
     @Override
     public boolean itemUse(final Minecraft client, final InteractionHand hand) {
-        return client.player != null && client.player.getItemInHand(hand).getItem() instanceof BedItem;
+        return client.player != null && client.player.getItemInHand(hand).is(ItemTags.BEDS);
     }
 
     private void placeString(final Minecraft client, final BlockPos pos) {

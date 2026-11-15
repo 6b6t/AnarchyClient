@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.HoeItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -128,7 +128,7 @@ public final class AutoFarmModule extends Module {
         return this.till.value()
                 && isTillableBlock(target.state().getBlock())
                 && WorldInteraction.useOnBlock(client, this, target.pos(), Direction.UP,
-                stack -> stack.getItem() instanceof HoeItem, this.rotate.value()) == WorldInteraction.ActionResult.DONE;
+                stack -> stack.is(ItemTags.HOES), this.rotate.value()) == WorldInteraction.ActionResult.DONE;
     }
 
     private boolean plant(final Minecraft client, final BlockPos ground, final Block baseBlock) {

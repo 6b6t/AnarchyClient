@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.NoteBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -202,7 +203,7 @@ public final class NotebotModule extends Module {
             return;
         }
         if (this.swing.value()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         int current = this.currentNote(client, pos);
         this.observedNotes.put(pos, (current + 1) % 25);
@@ -244,7 +245,7 @@ public final class NotebotModule extends Module {
             usedBlocks.add(pos);
         }
         if (!usedBlocks.isEmpty() && this.swing.value()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         this.debugValue("stage", "playing");
         this.debugValue("tick", this.songTick + "/" + this.parsedSong.lastTick());

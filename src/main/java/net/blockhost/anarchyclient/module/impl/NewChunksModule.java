@@ -128,18 +128,14 @@ public final class NewChunksModule extends Module {
         if (client.level == null) {
             return;
         }
-        ChunkPos chunkPos = new ChunkPos(packet.getX(), packet.getZ());
+        ChunkPos chunkPos = new ChunkPos(packet.x(), packet.z());
         long chunk = chunkPos.pack();
         if (this.newChunks.contains(chunk) || this.oldChunks.contains(chunk)) {
             return;
         }
         LevelChunk chunkView = new LevelChunk(client.level, chunkPos);
         try {
-            chunkView.replaceWithPacketData(
-                    packet.getChunkData().getReadBuffer(),
-                    packet.getChunkData().getHeightmaps(),
-                    packet.getChunkData().getBlockEntitiesTagsConsumer(packet.getX(), packet.getZ())
-            );
+            chunkView.replaceWithPacketData(packet.x(), packet.z(), packet.chunkData());
         } catch (RuntimeException exception) {
             return;
         }

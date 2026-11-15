@@ -9,7 +9,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShovelItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -75,7 +75,7 @@ public final class LawnBotModule extends Module {
             return;
         }
         if (WorldInteraction.breakBlock(client, target, Direction.UP,
-                stack -> !this.useShovel.value() || stack.getItem() instanceof ShovelItem)) {
+                stack -> !this.useShovel.value() || stack.is(ItemTags.SHOVELS))) {
             this.pendingGrass.add(target);
             this.delay = this.delayTicks.value().intValue();
         }

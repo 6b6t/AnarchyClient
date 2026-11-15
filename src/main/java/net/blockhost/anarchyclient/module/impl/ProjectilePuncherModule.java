@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.component.SwingAnimation;
 
 public final class ProjectilePuncherModule extends Module {
 
@@ -39,7 +40,7 @@ public final class ProjectilePuncherModule extends Module {
                     && entity.distanceToSqr(client.player) <= rangeSqr
                     && ArrowDodgeModule.approaching(entity.position(), entity.getDeltaMovement(), client.player.position())) {
                 client.gameMode.attack(client.player, entity);
-                client.player.swing(InteractionHand.MAIN_HAND);
+                client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 this.cooldown = 5;
                 return;
             }

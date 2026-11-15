@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.command.AnarchyClientCommands;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
@@ -32,7 +33,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping.Category;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,7 @@ public final class AnarchyClient implements ClientModInitializer {
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.anarchyclient.open_menu",
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                InputConstants.KEY_RSHIFT,
                 Category.MISC
         ));
         AnarchyClientCommands.register();

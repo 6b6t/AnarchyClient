@@ -1,18 +1,19 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
-#moj_import <minecraft:dynamictransforms.glsl>
-#moj_import <minecraft:globals.glsl>
+#include <minecraft:dynamictransforms.glsl>
+#include <minecraft:globals.glsl>
 
 /*
  * Panel fire inspired by Shadertoy "Simple Cinematic Fire (294ch)"
  * (lcGfWW, MIT). Rewritten for a soft low-contrast menu background.
  */
 
-in vec2 panelUv;
-in vec2 panelPosition;
-in vec4 vertexColor;
+layout(location = 0) in vec2 panelUv;
+layout(location = 1) in vec2 panelPosition;
+layout(location = 2) in vec4 vertexColor;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 float hash(vec2 p) {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);

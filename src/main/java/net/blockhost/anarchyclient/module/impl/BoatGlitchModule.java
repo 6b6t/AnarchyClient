@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -45,9 +46,7 @@ public final class BoatGlitchModule extends Module {
         Entity vehicle = client.player.getVehicle();
         Vec3 pos = vehicle.position();
         client.getConnection().send(new ServerboundMoveVehiclePacket(
-                pos.add(0.0, this.offset.value(), 0.0),
-                vehicle.getYRot(),
-                vehicle.getXRot(),
+                PositionAndRotation.of(pos.add(0.0, this.offset.value(), 0.0), vehicle.getYRot(), vehicle.getXRot()),
                 false
         ));
         client.getConnection().send(ServerboundMoveVehiclePacket.fromEntity(vehicle));

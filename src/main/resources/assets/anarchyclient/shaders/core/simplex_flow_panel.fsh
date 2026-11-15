@@ -1,18 +1,19 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
-#moj_import <minecraft:dynamictransforms.glsl>
-#moj_import <minecraft:globals.glsl>
+#include <minecraft:dynamictransforms.glsl>
+#include <minecraft:globals.glsl>
 
 /*
  * CC0 OpenSimplex2S derivative-noise flow adapted from a Shadertoy-style
  * fragment shader pasted into the project issue thread.
  */
 
-in vec2 panelUv;
-in vec2 panelPosition;
-in vec4 vertexColor;
+layout(location = 0) in vec2 panelUv;
+layout(location = 1) in vec2 panelPosition;
+layout(location = 2) in vec4 vertexColor;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 vec4 permute(vec4 t) {
     return t * (t * 34.0 + 133.0);

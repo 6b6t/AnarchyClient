@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.rivet;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.lenni0451.rivet.backend.Backend;
 import net.lenni0451.rivet.backend.text.Font;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 
@@ -26,19 +26,19 @@ public final class Blaze3DBackend implements Backend {
     @Override
     @Nullable
     public String getClipboard() {
-        String clipboard = GLFW.glfwGetClipboardString(this.client.getWindow().handle());
+        String clipboard = this.client.keyboardHandler.getClipboard();
         return clipboard == null || clipboard.isEmpty() ? null : clipboard;
     }
 
     @Override
     public void setClipboard(final String clipboard) {
-        GLFW.glfwSetClipboardString(this.client.getWindow().handle(), clipboard);
+        this.client.keyboardHandler.setClipboard(clipboard);
     }
 
     @Override
     public boolean isKeyDown(final Key key) {
-        return RivetInputMapper.toGlfw(key)
+        return RivetInputMapper.toScancode(key)
                 .stream()
-                .anyMatch(glfwKey -> GLFW.glfwGetKey(this.client.getWindow().handle(), glfwKey) == GLFW.GLFW_PRESS);
+                .anyMatch(InputConstants::isKeyDown);
     }
 }

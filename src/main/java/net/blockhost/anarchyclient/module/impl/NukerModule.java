@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 
 import java.util.List;
 
@@ -126,7 +127,7 @@ public final class NukerModule extends Module {
                 pos,
                 Direction.UP
         ));
-        client.player.swing(InteractionHand.MAIN_HAND);
+        client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         return true;
     }
 

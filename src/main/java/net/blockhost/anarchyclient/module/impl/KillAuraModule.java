@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.SwingAnimation;
 
 import java.util.List;
 import java.util.Optional;
@@ -203,7 +204,7 @@ public final class KillAuraModule extends Module {
             return;
         }
         client.gameMode.attack(player, entity);
-        player.swing(InteractionHand.MAIN_HAND);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         this.timing.markAttack(this.minCps.value(), this.maxCps.value());
     }
 

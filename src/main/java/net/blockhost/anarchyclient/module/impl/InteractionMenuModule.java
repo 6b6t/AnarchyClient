@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,7 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
 import java.util.Locale;
@@ -42,7 +42,7 @@ public final class InteractionMenuModule extends Module {
             this.wasPressed = false;
             return;
         }
-        boolean pressed = InputStates.mousePressed(client, GLFW.GLFW_MOUSE_BUTTON_MIDDLE);
+        boolean pressed = InputStates.mousePressed(client, InputConstants.MOUSE_BUTTON_MIDDLE);
         if (pressed && !this.wasPressed) {
             this.execute(client);
         }

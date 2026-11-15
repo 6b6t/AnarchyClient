@@ -1,11 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.mixin.ClientInputAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec2;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLMouse;
 
 final class InputStates {
 
@@ -13,11 +14,11 @@ final class InputStates {
     }
 
     static boolean keyPressed(final Minecraft client, final int key) {
-        return client.getWindow() != null && GLFW.glfwGetKey(client.getWindow().handle(), key) == GLFW.GLFW_PRESS;
+        return client.getWindow() != null && InputConstants.isKeyDown(key);
     }
 
     static boolean mousePressed(final Minecraft client, final int button) {
-        return client.getWindow() != null && GLFW.glfwGetMouseButton(client.getWindow().handle(), button) == GLFW.GLFW_PRESS;
+        return client.getWindow() != null && (SDLMouse.SDL_GetMouseState(null, null) & (1 << (button - 1))) != 0;
     }
 
     static Input withShift(final Input input, final boolean shift) {

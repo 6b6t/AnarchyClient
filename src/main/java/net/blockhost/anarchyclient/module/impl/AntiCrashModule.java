@@ -111,8 +111,8 @@ public final class AntiCrashModule extends Module {
                 return SuspiciousPacket.EXPLOSION_BLOCKS;
             }
         } else if (packet instanceof ClientboundLevelParticlesPacket particles) {
-            if (particles.getCount() > maxParticles
-                    || outsideLimit(new Vec3(particles.getX(), particles.getY(), particles.getZ()), maxCoordinate)) {
+            if (particles.count() > maxParticles
+                    || outsideLimit(new Vec3(particles.x(), particles.y(), particles.z()), maxCoordinate)) {
                 return SuspiciousPacket.PARTICLES;
             }
         } else if (packet instanceof ClientboundPlayerPositionPacket position) {

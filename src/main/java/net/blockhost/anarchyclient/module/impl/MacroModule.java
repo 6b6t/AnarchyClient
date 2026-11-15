@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
 
 public final class MacroModule extends Module {
 
@@ -36,9 +36,9 @@ public final class MacroModule extends Module {
         if (client.player == null || client.gui.screen() != null) {
             return;
         }
-        this.f6Down = this.handle(client, GLFW.GLFW_KEY_F6, this.f6.value(), this.f6Down);
-        this.f7Down = this.handle(client, GLFW.GLFW_KEY_F7, this.f7.value(), this.f7Down);
-        this.f8Down = this.handle(client, GLFW.GLFW_KEY_F8, this.f8.value(), this.f8Down);
+        this.f6Down = this.handle(client, InputConstants.KEY_F6, this.f6.value(), this.f6Down);
+        this.f7Down = this.handle(client, InputConstants.KEY_F7, this.f7.value(), this.f7Down);
+        this.f8Down = this.handle(client, InputConstants.KEY_F8, this.f8.value(), this.f8Down);
     }
 
     private boolean handle(final Minecraft client, final int key, final String action, final boolean previous) {

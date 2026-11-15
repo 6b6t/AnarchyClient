@@ -1,7 +1,7 @@
 title: AnarchyClient
 repository: 6b6t/AnarchyClient
 url: https://client.6b6t.org
-description: Fabric 26.2 utility mod for 6b6t.
+description: Fabric 26.3 utility mod for 6b6t.
 theme: jekyll-theme-hacker
 
 # The release jar lives on the Releases page, so hide the source zip/tar buttons.

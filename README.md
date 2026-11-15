@@ -3,7 +3,7 @@
 [![Build](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml/badge.svg)](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Fabric `26.2` utility mod for 6b6t.
+Fabric `26.3` utility mod for 6b6t.
 
 > [!NOTE]
 > This is a fun side project by the 6b6t team, not an official product. It comes with no support guarantees. Use it at your own risk.

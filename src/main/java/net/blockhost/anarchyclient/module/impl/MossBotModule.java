@@ -106,7 +106,7 @@ public final class MossBotModule extends Module {
             return 0;
         }
         int count = 0;
-        for (BlockPos candidate : BlockPos.withinManhattan(pos, 3, 4, 3)) {
+        for (BlockPos candidate : BlockPos.withinBoxByManhattanDistance(pos, 3, 4, 3)) {
             if (client.level.getBlockState(candidate).is(BlockTags.MOSS_REPLACEABLE)
                     && client.level.isEmptyBlock(candidate.above())) {
                 count++;

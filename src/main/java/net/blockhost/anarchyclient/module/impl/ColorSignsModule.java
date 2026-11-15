@@ -36,11 +36,10 @@ public final class ColorSignsModule extends Module {
     @Override
     public Packet<?> replaceSendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         if (this.signs.value() && packet instanceof ServerboundSignUpdatePacket signPacket) {
-            String[] lines = signPacket.getLines();
+            String[] lines = signPacket.lines().toArray(String[]::new);
             String[] colored = colorizeLines(lines);
             if (colored != lines) {
-                return new ServerboundSignUpdatePacket(signPacket.getPos(), signPacket.isFrontText(),
-                        colored[0], colored[1], colored[2], colored[3]);
+                return new ServerboundSignUpdatePacket(signPacket.pos(), List.of(colored), signPacket.slot());
             }
         }
         if (this.books.value() && packet instanceof ServerboundEditBookPacket bookPacket) {

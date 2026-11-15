@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 
 import java.util.Comparator;
 
@@ -49,7 +50,7 @@ public final class MaceKillModule extends Module {
                 this.range.value(), Comparator.comparingDouble(player::distanceToSqr))
                 .ifPresent(target -> {
                     client.gameMode.attack(player, target);
-                    player.swing(InteractionHand.MAIN_HAND);
+                    player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 });
     }
 }

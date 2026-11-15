@@ -195,7 +195,7 @@ jobs:
 
             | Platform | Download Link |
             |----------|---------------|
-            | Minecraft 26.2 | [Download](https://github.com/6b6t/AnarchyClient/releases/download/${{ steps.release_version.outputs.version }}/${{ steps.release_file.outputs.name }}) |
+            | Minecraft 26.3 | [Download](https://github.com/6b6t/AnarchyClient/releases/download/${{ steps.release_version.outputs.version }}/${{ steps.release_file.outputs.name }}) |
 
             ## Verify Provenance
 

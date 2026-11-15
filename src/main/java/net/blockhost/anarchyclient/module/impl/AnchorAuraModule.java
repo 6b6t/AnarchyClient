@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.minecraft.world.InteractionHand;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -12,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -106,9 +108,9 @@ public final class AnchorAuraModule extends Module {
             BlockState state = client.level.getBlockState(anchor.pos());
             int charges = state.getValue(RespawnAnchorBlock.CHARGE);
             if (canExplode && charges > 0) {
-                client.gameMode.useItemOn(client.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
                         new BlockHitResult(Vec3.atCenterOf(anchor.pos()), Direction.UP, anchor.pos(), false));
-                client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 this.mark(anchor.pos());
                 this.cooldown = this.delay.value().intValue();
                 this.debugValue("damage", String.format("%.1f/%.1f", anchor.targetDamage(), anchor.selfDamage()));

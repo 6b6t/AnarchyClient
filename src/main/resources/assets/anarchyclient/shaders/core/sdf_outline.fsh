@@ -1,6 +1,7 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
-#moj_import <minecraft:dynamictransforms.glsl>
+#include <minecraft:dynamictransforms.glsl>
 
 /*
  * Anti-aliased hairline outline for the same rounded-rect / circle mesh as sdf_fill: the UVs carry
@@ -9,11 +10,11 @@
  * the first pixel inside the contour leaves a smooth one-pixel ring instead of a tessellated one.
  */
 
-in vec2 panelUv;
-in vec2 panelPosition;
-in vec4 vertexColor;
+layout(location = 0) in vec2 panelUv;
+layout(location = 1) in vec2 panelPosition;
+layout(location = 2) in vec4 vertexColor;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 const float WIDTH_PX = 1.0;
 

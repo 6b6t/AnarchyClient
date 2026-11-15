@@ -9,6 +9,7 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -32,14 +33,14 @@ public final class AntiSpawnpointModule extends Module {
         if (!(packet instanceof ServerboundUseItemOnPacket useItemOn) || client.level == null || client.player == null) {
             return false;
         }
-        BlockPos pos = useItemOn.getHitResult().getBlockPos();
+        BlockPos pos = useItemOn.hitResult().getBlockPos();
         BlockState state = client.level.getBlockState(pos);
         if (!shouldCancelUse(client.level.dimension(), state.getBlock())) {
             return false;
         }
         if (this.fakeSwing.value()) {
-            InteractionHand hand = useItemOn.getHand();
-            client.player.swing(hand);
+            InteractionHand hand = useItemOn.hand();
+            client.player.swing(hand, SwingAnimation.DEFAULT, false);
         }
         return true;
     }

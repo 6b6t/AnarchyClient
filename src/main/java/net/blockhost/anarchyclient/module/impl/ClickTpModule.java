@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,7 +11,6 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
 
 public final class ClickTpModule extends Module {
 
@@ -26,7 +26,7 @@ public final class ClickTpModule extends Module {
 
     @Override
     public boolean mouseClick(final Minecraft client, final MouseButtonInfo buttonInfo, final int action) {
-        if (buttonInfo.button() != GLFW.GLFW_MOUSE_BUTTON_MIDDLE || action != GLFW.GLFW_PRESS) {
+        if (buttonInfo.button() != InputConstants.MOUSE_BUTTON_MIDDLE || action != InputConstants.PRESS) {
             return false;
         }
         LocalPlayer player = client.player;

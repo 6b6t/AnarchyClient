@@ -2,7 +2,7 @@
 layout: default
 ---
 
-AnarchyClient is a Fabric utility mod built for 6b6t on Minecraft `26.2`. It ships
+AnarchyClient is a Fabric utility mod built for 6b6t on Minecraft `26.3`. It ships
 a custom in-game GUI on a tailored Rivet interface, renders through Blaze3D on both
 Vulkan and OpenGL, and bundles combat, movement, and awareness modules behind a
 single Right-Shift menu.
@@ -31,7 +31,7 @@ Release jars are signed with build provenance, so you can confirm a jar was buil
 by this repo's GitHub Actions before you run it:
 
 ```bash
-gh attestation verify anarchyclient-mc-26.2-VERSION.jar --repo 6b6t/AnarchyClient
+gh attestation verify anarchyclient-mc-26.3-VERSION.jar --repo 6b6t/AnarchyClient
 ```
 
 ## Build from source

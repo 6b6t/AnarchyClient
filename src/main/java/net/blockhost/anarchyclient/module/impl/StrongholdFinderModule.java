@@ -34,7 +34,7 @@ public final class StrongholdFinderModule extends Module {
         if (!(packet instanceof ServerboundUseItemPacket use) || client.player == null) {
             return;
         }
-        InteractionHand hand = use.getHand();
+        InteractionHand hand = use.hand();
         if (!client.player.getItemInHand(hand).is(Items.ENDER_EYE)) {
             return;
         }

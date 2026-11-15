@@ -6,7 +6,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 
 public final class NoSwingModule extends Module {
 
@@ -14,7 +14,7 @@ public final class NoSwingModule extends Module {
             .id("server_side")
             .name("Server Side")
             .defaultValue(false)
-            .description("Stops swing animation packets from being sent to the server.")
+            .description("Stops swing packets for missed attacks from reaching the server.")
             .build()));
 
     public NoSwingModule() {
@@ -27,6 +27,6 @@ public final class NoSwingModule extends Module {
     }
 
     static boolean shouldCancel(final Packet<?> packet, final boolean serverSide) {
-        return serverSide && packet instanceof ServerboundSwingPacket;
+        return serverSide && packet instanceof ServerboundPunchPacket;
     }
 }

@@ -2,7 +2,8 @@ package net.blockhost.anarchyclient.module;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.sdl.SDLScancode;
 
 public final class ModuleKeybind {
 
@@ -10,7 +11,7 @@ public final class ModuleKeybind {
     private ModuleBindAction action;
 
     public ModuleKeybind() {
-        this(GLFW.GLFW_KEY_UNKNOWN, ModuleBindAction.TOGGLE);
+        this(InputConstants.UNKNOWN.getValue(), ModuleBindAction.TOGGLE);
     }
 
     public ModuleKeybind(final int key, final ModuleBindAction action) {
@@ -23,7 +24,7 @@ public final class ModuleKeybind {
     }
 
     public boolean bound() {
-        return this.key != GLFW.GLFW_KEY_UNKNOWN;
+        return this.key > InputConstants.UNKNOWN.getValue() && this.key < SDLScancode.SDL_SCANCODE_COUNT;
     }
 
     public int key() {
@@ -45,6 +46,7 @@ public final class ModuleKeybind {
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("key", this.key);
+        json.addProperty("key_format", "sdl_scancode");
         json.addProperty("action", this.action.name().toLowerCase(java.util.Locale.ROOT));
         return json;
     }
@@ -55,7 +57,9 @@ public final class ModuleKeybind {
         }
         JsonElement keyJson = json.get("key");
         if (keyJson != null && keyJson.isJsonPrimitive()) {
-            this.key = keyJson.getAsInt();
+            int savedKey = keyJson.getAsInt();
+            this.key = json.has("key_format") && "sdl_scancode".equals(json.get("key_format").getAsString())
+                    ? savedKey : LegacyKeyCodes.toScancode(savedKey);
         }
         JsonElement actionJson = json.get("action");
         if (actionJson != null && actionJson.isJsonPrimitive()) {

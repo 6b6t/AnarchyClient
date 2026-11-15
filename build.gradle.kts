@@ -6,9 +6,9 @@ plugins {
     id("maven-publish")
 }
 
-val minecraftVersion = "26.2"
+val minecraftVersion = "26.3"
 val loaderVersion = "0.20.1"
-val fabricApiVersion = "0.161.0+26.2"
+val fabricApiVersion = "0.166.2+26.3"
 val immutablesVersion = "2.12.3"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"

@@ -5,7 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.phys.EntityHitResult;
 
 public final class EndermanLookModule extends Module {
@@ -27,7 +27,7 @@ public final class EndermanLookModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || !(client.hitResult instanceof EntityHitResult hit)
-                || !(hit.getEntity() instanceof EnderMan)) {
+                || !(hit.getEntity() instanceof Enderman)) {
             return;
         }
         player.setXRot(this.pitch.value().floatValue());

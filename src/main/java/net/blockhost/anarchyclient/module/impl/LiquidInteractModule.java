@@ -7,6 +7,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -33,7 +34,7 @@ public final class LiquidInteractModule extends Module {
         }
         InteractionResult result = client.gameMode.useItemOn(player, hand, hit);
         if (result.consumesAction()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

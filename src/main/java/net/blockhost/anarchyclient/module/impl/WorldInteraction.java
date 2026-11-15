@@ -13,6 +13,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -42,7 +43,7 @@ final class WorldInteraction {
         InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND,
                 new BlockHitResult(hit, face, pos, false));
         if (result.consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return ActionResult.DONE;
         }
         return ActionResult.WAITING;
@@ -57,7 +58,7 @@ final class WorldInteraction {
         OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), toolPredicate);
         slot.ifPresent(value -> InventoryActions.selectHotbarSlot(player, value));
         if (client.gameMode.continueDestroyBlock(pos, face)) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

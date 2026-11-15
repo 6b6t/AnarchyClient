@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.config;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -166,7 +167,7 @@ class ClientConfigTest {
 
         assertTrue(loadedModule.enabled());
         assertEquals(false, loadedModule.enabledSetting.value());
-        assertEquals(82, loadedModule.keybind().key());
+        assertEquals(InputConstants.KEY_R, loadedModule.keybind().key());
         assertEquals(ModuleBindAction.SMART, loadedModule.keybind().action());
     }
 

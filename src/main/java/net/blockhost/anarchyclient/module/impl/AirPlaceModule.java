@@ -20,6 +20,7 @@ import net.minecraft.world.item.FireworkRocketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -102,7 +103,7 @@ public final class AirPlaceModule extends Module {
         Vec3 hit = Vec3.atCenterOf(target);
         InteractionResult result = client.gameMode.useItemOn(player, hand, new BlockHitResult(hit, face, target, false));
         if (result.consumesAction()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

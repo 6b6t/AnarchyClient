@@ -1,6 +1,6 @@
 package net.blockhost.anarchyclient.rivet;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 import java.util.List;
 import java.util.stream.Stream;

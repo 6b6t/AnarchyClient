@@ -1,8 +1,18 @@
 package net.blockhost.anarchyclient.rivet;
 
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.input.KeyEvent;
 import net.lenni0451.rivet.input.keyboard.Key;
+import net.lenni0451.rivet.input.keyboard.ModifierKey;
+import net.lenni0451.rivet.input.mouse.MouseButton;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import org.junit.jupiter.api.Test;
-import org.lwjgl.glfw.GLFW;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,19 +20,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RivetInputMapperTest {
 
     @Test
-    void mapsKnownGlfwKeys() {
-        assertEquals(Key.A, RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_A).orElseThrow());
-        assertEquals(Key.KP_ENTER, RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_KP_ENTER).orElseThrow());
+    void mapsKnownScancodes() {
+        assertEquals(Key.A, RivetInputMapper.fromScancode(InputConstants.KEY_A).orElseThrow());
+        assertEquals(Key.KP_ENTER, RivetInputMapper.fromScancode(InputConstants.KEY_NUMPADENTER).orElseThrow());
     }
 
     @Test
-    void ignoresUnknownGlfwKeys() {
-        assertTrue(RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_UNKNOWN).isEmpty());
+    void ignoresUnknownScancodes() {
+        assertTrue(RivetInputMapper.fromScancode(InputConstants.UNKNOWN.getValue()).isEmpty());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Key.class)
+    void roundTripsEveryRivetKey(final Key key) {
+        int scancode = RivetInputMapper.toScancode(key).orElseThrow();
+        assertEquals(key, RivetInputMapper.fromScancode(scancode).orElseThrow());
     }
 
     @Test
-    void mapsRivetKeysBackToGlfw() {
-        assertEquals(GLFW.GLFW_KEY_RIGHT_SUPER, RivetInputMapper.toGlfw(Key.RIGHT_SUPER).orElseThrow());
-        assertEquals(GLFW.GLFW_KEY_SPACE, RivetInputMapper.toGlfw(Key.SPACE).orElseThrow());
+    void readsThePhysicalScancodeFromKeyEvents() {
+        var event = new KeyEvent(InputConstants.KEY_A, InputConstants.KEYCODE_A, InputConstants.MOD_CONTROL);
+        var mapped = RivetInputMapper.key(event).orElseThrow();
+
+        assertEquals(Key.A, mapped.key());
+        assertEquals(Set.of(ModifierKey.CONTROL), mapped.modifiers());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"1,SHIFT", "2,SHIFT", "64,CONTROL", "128,CONTROL", "256,ALT", "512,ALT", "1024,SUPER", "2048,SUPER"})
+    void mapsLeftAndRightSdlModifiers(final int mask, final ModifierKey modifier) {
+        assertEquals(Set.of(modifier), RivetInputMapper.modifiers(mask));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"1,LEFT", "2,MIDDLE", "3,RIGHT"})
+    void mapsSdlMouseButtons(final int button, final MouseButton expected) {
+        var event = new MouseButtonEvent(12.0, 34.0, new MouseButtonInfo(button, InputConstants.MOD_SHIFT));
+        var mapped = RivetInputMapper.mouse(event);
+
+        assertEquals(expected, mapped.button());
+        assertEquals(12.0F, mapped.x());
+        assertEquals(34.0F, mapped.y());
+        assertEquals(Set.of(ModifierKey.SHIFT), mapped.modifiers());
     }
 }

@@ -5,7 +5,7 @@ import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
@@ -240,8 +240,8 @@ class AdditionalModulesTest {
     void packetGuardModulesClassifyTheirPackets() {
         assertTrue(NoRotateSetModule.shouldCancel(new ClientboundPlayerRotationPacket(90.0F, false, 30.0F, false), false));
         assertTrue(NoSlotSetModule.shouldCancel(new ClientboundSetHeldSlotPacket(2)));
-        assertTrue(NoSwingModule.shouldCancel(new ServerboundSwingPacket(InteractionHand.MAIN_HAND), true));
-        assertFalse(NoSwingModule.shouldCancel(new ServerboundSwingPacket(InteractionHand.MAIN_HAND), false));
+        assertTrue(NoSwingModule.shouldCancel(ServerboundPunchPacket.INSTANCE, true));
+        assertFalse(NoSwingModule.shouldCancel(ServerboundPunchPacket.INSTANCE, false));
     }
 
     @Test

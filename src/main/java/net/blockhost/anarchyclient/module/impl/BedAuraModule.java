@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.minecraft.world.InteractionHand;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -11,7 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BedItem;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -96,9 +98,9 @@ public final class BedAuraModule extends Module {
         double minDamage = minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value());
         ScoredBed bed = bestBed(client, target, this.range.value().intValue(), this.maxSelfDamage.value(), minDamage);
         if (bed != null) {
-            client.gameMode.useItemOn(client.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+            client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(bed.pos()), Direction.UP, bed.pos(), false));
-            client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.cooldown = this.delay.value().intValue();
             this.mark(bed.pos());
             this.debugValue("damage", String.format("%.1f/%.1f", bed.targetDamage(), bed.selfDamage()));
@@ -111,7 +113,7 @@ public final class BedAuraModule extends Module {
                 this.maxSelfDamage.value(), minDamage);
         if (placement != null) {
             WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, placement.pos().below(), Direction.UP,
-                    stack -> stack.getItem() instanceof BedItem, true);
+                    stack -> stack.is(ItemTags.BEDS), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.cooldown = this.delay.value().intValue();
                 this.mark(placement.pos());
