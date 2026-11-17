@@ -1,20 +1,12 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.Rivet;
-import net.lenni0451.rivet.backend.Backend;
-import net.lenni0451.rivet.backend.text.Font;
-import net.lenni0451.rivet.backend.text.ShapedText;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
-import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
-import net.lenni0451.rivet.math.Point;
-import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
-import net.lenni0451.rivet.text.model.TextLine;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,7 +16,7 @@ class LayoutTreeDumperTest {
 
     @Test
     void snapshotIncludesLabelsBoundsAndLayoutIssues() {
-        Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
+        Rivet rivet = new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer panel = new DebugContainer("panel");
         panel.layoutOptions(new AbsoluteOptions(10, 5, 100F, 50F));
         panel.addChild(new DebugComponent("bad").layoutOptions(new AbsoluteOptions(95, 45, 20F, 20F)));
@@ -43,7 +35,7 @@ class LayoutTreeDumperTest {
 
     @Test
     void snapshotSuppressesIssuesInsideHiddenSubtrees() {
-        Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
+        Rivet rivet = new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer panel = new DebugContainer("panel");
         panel.layoutOptions(new AbsoluteOptions(0, 0, 0F, 0F));
         panel.addChild(new DebugComponent("child").layoutOptions(new AbsoluteOptions(0, 28, 62F, 28F)));
@@ -61,7 +53,7 @@ class LayoutTreeDumperTest {
 
     @Test
     void snapshotIncludesScrollContentChildren() {
-        Rivet rivet = new Rivet(new TestBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
+        Rivet rivet = new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, new Size(200, 100));
         DebugContainer rows = new DebugContainer("rows");
         rows.addChild(new DebugComponent("visible").layoutOptions(new AbsoluteOptions(0, 0, 100F, 20F)));
         rows.addChild(new DebugComponent("below-fold").layoutOptions(new AbsoluteOptions(0, 60, 100F, 20F)));
@@ -109,81 +101,6 @@ class LayoutTreeDumperTest {
         @Override
         public String layoutDebugLabel() {
             return this.label;
-        }
-    }
-
-    private static final class TestBackend implements Backend {
-
-        private final Font font = new TestFont();
-
-        @Override
-        public Font font() {
-            return this.font;
-        }
-
-        @Override
-        public String getClipboard() {
-            return null;
-        }
-
-        @Override
-        public void setClipboard(final String clipboard) {
-        }
-
-        @Override
-        public boolean isKeyDown(final Key key) {
-            return false;
-        }
-    }
-
-    private static final class TestFont implements Font {
-
-        @Override
-        public int size() {
-            return 9;
-        }
-
-        @Override
-        public float height() {
-            return 9F;
-        }
-
-        @Override
-        public Font derive(final int size) {
-            return this;
-        }
-
-        @Override
-        public ShapedText shapeText(final String text, final Color color) {
-            return new TestShapedText();
-        }
-
-        @Override
-        public ShapedText shapeText(final TextLine line) {
-            return new TestShapedText();
-        }
-    }
-
-    private static final class TestShapedText implements ShapedText {
-
-        @Override
-        public Rectangle visualBounds() {
-            return new Rectangle(0, -9, 0, 9);
-        }
-
-        @Override
-        public Rectangle logicalBounds() {
-            return this.visualBounds();
-        }
-
-        @Override
-        public Point cursorPosition(final int index) {
-            return new Point(0, 0);
-        }
-
-        @Override
-        public int index(final float x, final float y) {
-            return 0;
         }
     }
 }
