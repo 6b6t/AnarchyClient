@@ -1071,6 +1071,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
      */
     private static final class FriendHead extends Component {
 
+        private static boolean renderFailureLogged;
+
         private final ResolvableProfile profile;
         private final int size;
 
@@ -1086,8 +1088,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                     graphics -> {
                         try {
                             PlayerFaceExtractor.extractRenderState(graphics, this.profile, 0, 0, this.size);
-                        } catch (RuntimeException ignored) {
+                        } catch (RuntimeException exception) {
                             // A skin that fails to resolve must never take down the render pass.
+                            if (!renderFailureLogged) {
+                                renderFailureLogged = true;
+                                AnarchyClient.LOGGER.warn("Friend head render failed; further failures are not logged", exception);
+                            }
                         }
                     },
                     new Rectangle(0, 0, this.size, this.size)));

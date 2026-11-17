@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import net.blockhost.anarchyclient.AnarchyClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,8 +124,8 @@ public final class GlassBackdrop {
         for (AutoCloseable closeable : retired) {
             try {
                 closeable.close();
-            } catch (Exception ignored) {
-                // GPU resources do not throw on close.
+            } catch (Exception exception) {
+                AnarchyClient.LOGGER.debug("Failed to close retired glass backdrop resource", exception);
             }
         }
         retired.clear();

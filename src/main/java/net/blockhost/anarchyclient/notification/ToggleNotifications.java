@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.notification;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.GlassPanelCommand;
 import net.blockhost.anarchyclient.ui.GlassTheme;
@@ -33,6 +34,7 @@ public final class ToggleNotifications {
     private static final List<Toast> TOASTS = new ArrayList<>();
 
     private static boolean enabled = true;
+    private static boolean renderFailureLogged;
     private static Mode mode = Mode.POPUP;
     private static Corner corner = Corner.TOP_RIGHT;
     private static int durationMs = 2000;
@@ -148,8 +150,12 @@ public final class ToggleNotifications {
                 graphics.text(font, text, Math.round(x + TEXT_INSET), Math.round(y + (ROW_HEIGHT - 8F) / 2F),
                         fade(GlassTheme.TEXT, alpha).toARGB(), false);
             }
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException exception) {
             // A render failure must never take down the HUD; the toast simply won't show this frame.
+            if (!renderFailureLogged) {
+                renderFailureLogged = true;
+                AnarchyClient.LOGGER.warn("Toggle notification render failed; further failures are not logged", exception);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -175,7 +176,8 @@ public final class SwarmModule extends Module {
             while (this.running && reader.readLine() != null) {
                 // Keep the connection open. Host-to-worker is the only command direction for now.
             }
-        } catch (IOException ignored) {
+        } catch (IOException exception) {
+            AnarchyClient.LOGGER.debug("Swarm peer connection closed", exception);
         } finally {
             this.peers.removeIf(peer -> peer.socket() == socket);
             closeQuietly(socket);
@@ -226,7 +228,8 @@ public final class SwarmModule extends Module {
         }
         try {
             closeable.close();
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            AnarchyClient.LOGGER.debug("Failed to close Swarm connection", exception);
         }
     }
 

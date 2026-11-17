@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.google.gson.JsonObject;
+import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.StringSetting;
@@ -122,7 +123,8 @@ public final class DiscordPresenceModule extends Module {
         if (this.ipcClient != null) {
             try {
                 this.ipcClient.close();
-            } catch (IOException ignored) {
+            } catch (IOException exception) {
+                AnarchyClient.LOGGER.debug("Failed to close Discord IPC connection", exception);
             }
         }
         this.ipcClient = null;

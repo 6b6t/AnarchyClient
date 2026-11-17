@@ -165,6 +165,7 @@ public final class WaypointStore {
         for (String token : value.split(";")) {
             String[] parts = token.trim().split(":");
             if (parts.length != 4) {
+                AnarchyClient.LOGGER.warn("Skipping malformed legacy waypoint '{}'", token);
                 continue;
             }
             try {
@@ -173,7 +174,8 @@ public final class WaypointStore {
                         Integer.parseInt(parts[2].trim()),
                         Integer.parseInt(parts[3].trim())
                 ), DEFAULT_COLOR));
-            } catch (NumberFormatException ignored) {
+            } catch (NumberFormatException exception) {
+                AnarchyClient.LOGGER.warn("Skipping legacy waypoint '{}' with invalid coordinates", token);
             }
         }
         return List.copyOf(result);
