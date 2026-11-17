@@ -1,4 +1,4 @@
-package net.blockhost.anarchyclient.module.impl;
+package net.blockhost.anarchyclient.render;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

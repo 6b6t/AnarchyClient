@@ -12,7 +12,7 @@ import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.notification.ToggleNotifications;
-import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
+import net.blockhost.anarchyclient.render.EspOutlineRegistry;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.render.WorldLineRenderer2D;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;

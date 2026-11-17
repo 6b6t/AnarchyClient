@@ -1,14 +1,14 @@
-package net.blockhost.anarchyclient.module.impl;
+package net.blockhost.anarchyclient.render;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 
-final class WorldLineRenderer2D {
+public final class WorldLineRenderer2D {
 
     private WorldLineRenderer2D() {
     }
 
-    static void line(final GuiGraphicsExtractor graphics, final float x0, final float y0, final float x1, final float y1,
+    public static void line(final GuiGraphicsExtractor graphics, final float x0, final float y0, final float x1, final float y1,
                      final int argb) {
         float dx = x1 - x0;
         float dy = y1 - y0;

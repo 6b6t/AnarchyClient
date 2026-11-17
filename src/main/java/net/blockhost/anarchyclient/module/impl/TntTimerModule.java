@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;

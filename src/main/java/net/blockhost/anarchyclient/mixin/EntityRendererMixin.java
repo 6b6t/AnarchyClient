@@ -1,6 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
-import net.blockhost.anarchyclient.module.impl.EspOutlineRegistry;
+import net.blockhost.anarchyclient.render.EspOutlineRegistry;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.world.entity.Entity;

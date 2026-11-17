@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.render;
 
-import net.blockhost.anarchyclient.module.impl.WorldLineRenderer;
 
 public record MarkerStyle(WorldLineRenderer.Color outline, WorldLineRenderer.Color fill) {
 

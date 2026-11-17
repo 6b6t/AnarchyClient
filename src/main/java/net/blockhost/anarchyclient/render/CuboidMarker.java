@@ -1,7 +1,6 @@
 package net.blockhost.anarchyclient.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.blockhost.anarchyclient.module.impl.WorldLineRenderer;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.phys.AABB;

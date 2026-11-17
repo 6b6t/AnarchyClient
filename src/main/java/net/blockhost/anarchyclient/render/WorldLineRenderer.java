@@ -1,4 +1,4 @@
-package net.blockhost.anarchyclient.module.impl;
+package net.blockhost.anarchyclient.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
