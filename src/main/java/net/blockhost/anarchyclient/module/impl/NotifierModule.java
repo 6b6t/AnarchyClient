@@ -51,7 +51,8 @@ public final class NotifierModule extends Module {
     private boolean visibleInitialized;
 
     public NotifierModule() {
-        super("notifier", "Notifier", ModuleCategory.MISC);
+        super("notifier", "Notifier", ModuleCategory.MISC,
+                "Posts chat messages when players join or leave, enter or leave visual range, or pop totems.");
     }
 
     @Override

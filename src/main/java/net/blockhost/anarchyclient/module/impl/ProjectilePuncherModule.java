@@ -22,7 +22,8 @@ public final class ProjectilePuncherModule extends Module {
     private int cooldown;
 
     public ProjectilePuncherModule() {
-        super("projectile_puncher", "Projectile Puncher", ModuleCategory.COMBAT);
+        super("projectile_puncher", "Projectile Puncher", ModuleCategory.COMBAT,
+                "Attacks projectiles that fly toward the player within range to knock them away.");
     }
 
     @Override

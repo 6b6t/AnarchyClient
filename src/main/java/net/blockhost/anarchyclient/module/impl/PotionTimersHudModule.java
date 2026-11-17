@@ -10,7 +10,8 @@ import java.util.List;
 public final class PotionTimersHudModule extends HudElementModule {
 
     public PotionTimersHudModule() {
-        super("potion_timers_hud", "Potion Timers", "Top Left");
+        super("potion_timers_hud", "Potion Timers",
+                "Lists active potion effects with their level and remaining time.", "Top Left");
     }
 
     @Override

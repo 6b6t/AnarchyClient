@@ -43,7 +43,8 @@ public final class AutoCityModule extends Module {
             .build()));
 
     public AutoCityModule() {
-        super("auto_city", "Auto City", ModuleCategory.COMBAT);
+        super("auto_city", "Auto City", ModuleCategory.COMBAT,
+                "Mines the obsidian or ender chest blocks that surround the nearest enemy, including a burrow block.");
     }
 
     @Override

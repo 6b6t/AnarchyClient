@@ -11,7 +11,8 @@ import java.util.List;
 public final class CombatHudModule extends HudElementModule {
 
     public CombatHudModule() {
-        super("combat_hud", "Combat HUD", "Top Right");
+        super("combat_hud", "Combat HUD",
+                "Shows the nearest non-friend player with distance and health, plus your health and totem, crystal, and XP bottle counts.", "Top Right");
     }
 
     @Override

@@ -32,7 +32,8 @@ public final class PacketCancellerModule extends Module {
             .build()));
 
     public PacketCancellerModule() {
-        super("packet_canceller", "Packet Canceller", ModuleCategory.MISC);
+        super("packet_canceller", "Packet Canceller", ModuleCategory.MISC,
+                "Drops incoming or outgoing packets whose names match the configured filters.");
     }
 
     @Override

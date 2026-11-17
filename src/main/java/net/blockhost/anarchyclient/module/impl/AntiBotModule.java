@@ -45,7 +45,8 @@ public final class AntiBotModule extends Module {
             .build()));
 
     public AntiBotModule() {
-        super("anti_bot", "Anti Bot", ModuleCategory.COMBAT);
+        super("anti_bot", "Anti Bot", ModuleCategory.COMBAT,
+                "Removes likely bot players from your world, based on tab list, profile, game mode, ping, or invisibility checks.");
     }
 
     @Override

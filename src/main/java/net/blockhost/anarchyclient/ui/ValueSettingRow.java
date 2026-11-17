@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.lenni0451.rivet.layout.grid.GridAnchor;
 import net.lenni0451.rivet.layout.grid.GridFill;
@@ -20,8 +19,8 @@ final class ValueSettingRow extends SettingLine {
     private final Setting<?> setting;
     private final TextNode value;
 
-    ValueSettingRow(final Module module, final Setting<?> setting) {
-        super(module, setting, SETTING_ROW_HEIGHT);
+    ValueSettingRow(final Setting<?> setting) {
+        super(setting, SETTING_ROW_HEIGHT);
         this.setting = setting;
         this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);

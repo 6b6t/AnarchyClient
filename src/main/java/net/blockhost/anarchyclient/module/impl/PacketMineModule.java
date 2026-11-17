@@ -52,7 +52,8 @@ public final class PacketMineModule extends Module {
     private BlockPos lastTarget;
 
     public PacketMineModule() {
-        super("packet_mine", "Packet Mine", ModuleCategory.WORLD);
+        super("packet_mine", "Packet Mine", ModuleCategory.WORLD,
+                "Breaks the block under the crosshair instantly with start and stop mining packets after a set delay. This can flag anti-cheats.");
     }
 
     @Override

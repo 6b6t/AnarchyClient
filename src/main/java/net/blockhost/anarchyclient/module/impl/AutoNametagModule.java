@@ -31,7 +31,8 @@ public final class AutoNametagModule extends Module {
     private final Set<UUID> tagged = new HashSet<>();
 
     public AutoNametagModule() {
-        super("auto_nametag", "Auto Nametag", ModuleCategory.WORLD);
+        super("auto_nametag", "Auto Nametag", ModuleCategory.WORLD,
+                "Uses a name tag from the hotbar on the nearest unnamed mob within range.");
     }
 
     @Override

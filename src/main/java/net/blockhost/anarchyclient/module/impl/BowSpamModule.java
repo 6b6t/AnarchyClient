@@ -18,7 +18,8 @@ public final class BowSpamModule extends Module {
             .build()));
 
     public BowSpamModule() {
-        super("bow_spam", "Bow Spam", ModuleCategory.COMBAT);
+        super("bow_spam", "Bow Spam", ModuleCategory.COMBAT,
+                "Releases a drawn bow after a set number of charge ticks so you fire arrows rapidly.");
     }
 
     @Override

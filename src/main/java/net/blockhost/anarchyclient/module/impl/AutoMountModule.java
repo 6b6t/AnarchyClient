@@ -38,7 +38,8 @@ public final class AutoMountModule extends Module {
     private int cooldownTicks;
 
     public AutoMountModule() {
-        super("auto_mount", "Auto Mount", ModuleCategory.PLAYER);
+        super("auto_mount", "Auto Mount", ModuleCategory.PLAYER,
+                "Mounts the nearest free horse, camel, boat, minecart, pig, or strider in range.");
     }
 
     @Override

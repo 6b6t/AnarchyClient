@@ -56,7 +56,8 @@ public final class AutoMendModule extends Module {
     private int cooldownTicks;
 
     public AutoMendModule() {
-        super("auto_mend", "Auto Mend", ModuleCategory.PLAYER);
+        super("auto_mend", "Auto Mend", ModuleCategory.PLAYER,
+                "Swaps your most damaged mending item into the offhand so collected XP repairs it, unless a totem is protecting low health.");
     }
 
     @Override

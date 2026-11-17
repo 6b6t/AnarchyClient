@@ -46,7 +46,8 @@ public final class AntiBedModule extends Module {
             .build()));
 
     public AntiBedModule() {
-        super("anti_bed", "Anti Bed", ModuleCategory.COMBAT);
+        super("anti_bed", "Anti Bed", ModuleCategory.COMBAT,
+                "Breaks beds placed in your head space, fills the space around you with string, and stops you from using beds.");
     }
 
     @Override

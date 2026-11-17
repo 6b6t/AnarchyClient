@@ -45,7 +45,7 @@ public final class ChatSpammerModule extends Module {
     private int messageIndex;
 
     public ChatSpammerModule() {
-        super("chat_spammer", "Chat Spammer", ModuleCategory.FUN, List.of("spam"));
+        super("chat_spammer", "Chat Spammer", ModuleCategory.FUN, "Sends configured chat messages on a timer with optional formatting and variation.", List.of("spam"));
     }
 
     @Override

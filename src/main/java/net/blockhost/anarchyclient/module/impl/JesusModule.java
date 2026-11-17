@@ -28,7 +28,8 @@ public final class JesusModule extends Module {
             .build()));
 
     public JesusModule() {
-        super("jesus", "Jesus", ModuleCategory.MOVEMENT);
+        super("jesus", "Jesus", ModuleCategory.MOVEMENT,
+                "Pushes you up out of water and lava so you can float, glide, or bounce across the surface.");
     }
 
     @Override

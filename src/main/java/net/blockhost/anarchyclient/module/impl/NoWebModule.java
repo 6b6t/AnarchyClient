@@ -33,7 +33,8 @@ public final class NoWebModule extends Module {
             .build()));
 
     public NoWebModule() {
-        super("no_web", "No Web", ModuleCategory.MOVEMENT);
+        super("no_web", "No Web", ModuleCategory.MOVEMENT,
+                "Lets the player pass through cobwebs without slowdown, or steer inside them at a set speed.");
     }
 
     @Override

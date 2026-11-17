@@ -36,7 +36,8 @@ public final class AntiHungerModule extends Module {
             .build()));
 
     public AntiHungerModule() {
-        super("anti_hunger", "Anti Hunger", ModuleCategory.PLAYER);
+        super("anti_hunger", "Anti Hunger", ModuleCategory.PLAYER,
+                "Reduces hunger loss by hiding sprinting and other actions from the server. This can flag anti-cheats.");
     }
 
     @Override

@@ -24,7 +24,8 @@ public final class DamageParticlesModule extends Module {
             .build()));
 
     public DamageParticlesModule() {
-        super("damage_particles", "Damage Particles", ModuleCategory.RENDER);
+        super("damage_particles", "Damage Particles", ModuleCategory.RENDER,
+                "Spawns damage indicator particles on any entity that takes damage.");
     }
 
     @Override

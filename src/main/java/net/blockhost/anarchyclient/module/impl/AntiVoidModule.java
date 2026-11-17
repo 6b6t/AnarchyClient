@@ -37,7 +37,8 @@ public final class AntiVoidModule extends Module {
     private boolean warned;
 
     public AntiVoidModule() {
-        super("anti_void", "Anti Void", ModuleCategory.MOVEMENT);
+        super("anti_void", "Anti Void", ModuleCategory.MOVEMENT,
+                "Stops your fall and holds you in place when you drop below a set Y level, optionally boosting you upward.");
     }
 
     @Override

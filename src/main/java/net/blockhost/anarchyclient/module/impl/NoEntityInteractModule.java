@@ -48,7 +48,8 @@ public final class NoEntityInteractModule extends Module {
             .build()));
 
     public NoEntityInteractModule() {
-        super("no_entity_interact", "No Entity Interact", ModuleCategory.PLAYER);
+        super("no_entity_interact", "No Entity Interact", ModuleCategory.PLAYER,
+                "Blocks right-click use on chosen entity types, such as armor stands and item frames, optionally only with certain held items.");
         this.heldItems.visibleWhen(() -> !"Any".equals(this.heldItemMode.value()));
     }
 

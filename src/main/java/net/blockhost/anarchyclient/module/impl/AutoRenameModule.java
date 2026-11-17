@@ -52,7 +52,8 @@ public final class AutoRenameModule extends Module {
     private int cooldown;
 
     public AutoRenameModule() {
-        super("auto_rename", "Auto Rename", ModuleCategory.PLAYER);
+        super("auto_rename", "Auto Rename", ModuleCategory.PLAYER,
+                "Renames items in an open anvil to a set name, or labels shulkers and bundles after their first item, and takes the results.");
     }
 
     @Override

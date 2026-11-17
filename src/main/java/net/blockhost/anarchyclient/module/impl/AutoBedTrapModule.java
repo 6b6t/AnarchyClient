@@ -60,7 +60,8 @@ public final class AutoBedTrapModule extends Module {
     private Set<Block> parsedBlocks = Set.of();
 
     public AutoBedTrapModule() {
-        super("auto_bed_trap", "Auto Bed Trap", ModuleCategory.COMBAT);
+        super("auto_bed_trap", "Auto Bed Trap", ModuleCategory.COMBAT,
+                "Surrounds nearby beds with configured blocks such as obsidian so they cannot be used or reached.");
     }
 
     @Override

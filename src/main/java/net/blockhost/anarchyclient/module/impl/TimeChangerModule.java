@@ -20,7 +20,8 @@ public final class TimeChangerModule extends Module {
             .build()));
 
     public TimeChangerModule() {
-        super("time_changer", "Time Changer", ModuleCategory.RENDER);
+        super("time_changer", "Time Changer", ModuleCategory.RENDER,
+                "Sets a fixed client-side world time and ignores time updates from the server.");
     }
 
     @Override

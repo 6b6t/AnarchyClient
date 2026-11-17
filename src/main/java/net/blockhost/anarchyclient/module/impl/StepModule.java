@@ -24,7 +24,8 @@ public final class StepModule extends Module {
             .build()));
 
     public StepModule() {
-        super("step", "Step", ModuleCategory.MOVEMENT);
+        super("step", "Step", ModuleCategory.MOVEMENT,
+                "Raises your step height so you walk up full blocks or more without jumping.");
     }
 
     @Override

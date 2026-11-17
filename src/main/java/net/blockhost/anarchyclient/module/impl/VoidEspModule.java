@@ -40,7 +40,8 @@ public final class VoidEspModule extends Module {
             .build()));
 
     public VoidEspModule() {
-        super("void_esp", "Void ESP", ModuleCategory.RENDER);
+        super("void_esp", "Void ESP", ModuleCategory.RENDER,
+                "Draws a red plane at a set height around you to mark where the void or a dangerous drop starts.");
     }
 
     @Override

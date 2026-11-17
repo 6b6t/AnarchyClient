@@ -34,7 +34,7 @@ public final class SoundBlockerModule extends Module {
     private Set<Identifier> parsedSounds = Set.of();
 
     public SoundBlockerModule() {
-        super("sound_blocker", "Sound Blocker", ModuleCategory.MISC);
+        super("sound_blocker", "Sound Blocker", ModuleCategory.MISC, "Cancels selected sounds before they play so noisy effects can be filtered out.");
     }
 
     @Override

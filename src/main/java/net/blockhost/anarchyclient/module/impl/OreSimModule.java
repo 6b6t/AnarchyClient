@@ -52,7 +52,7 @@ public final class OreSimModule extends Module {
     private int cooldown;
 
     public OreSimModule() {
-        super("ore_sim", "Ore Sim", ModuleCategory.RENDER);
+        super("ore_sim", "Ore Sim", ModuleCategory.RENDER, "Estimates likely ore locations from terrain patterns and highlights candidates in the world.");
     }
 
     @Override

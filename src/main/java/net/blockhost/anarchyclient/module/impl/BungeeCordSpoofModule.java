@@ -34,7 +34,8 @@ public final class BungeeCordSpoofModule extends Module {
             .build()));
 
     public BungeeCordSpoofModule() {
-        super("bungeecord_spoof", "BungeeCord Spoof", ModuleCategory.MISC);
+        super("bungeecord_spoof", "BungeeCord Spoof", ModuleCategory.MISC,
+                "Adds a forwarded IP and your UUID to the login handshake so BungeeCord-mode backend servers accept a direct connection.");
     }
 
     @Override

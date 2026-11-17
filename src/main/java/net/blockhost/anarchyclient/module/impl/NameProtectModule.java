@@ -48,7 +48,8 @@ public final class NameProtectModule extends Module {
             .build()));
 
     public NameProtectModule() {
-        super("name_protect", "Name Protect", ModuleCategory.MISC);
+        super("name_protect", "Name Protect", ModuleCategory.MISC,
+                "Replaces your name, and optionally friend or listed names, in chat and the tab list.");
     }
 
     @Override

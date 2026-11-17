@@ -69,7 +69,8 @@ public final class AutoExtinguishModule extends Module {
     private int cooldownTicks;
 
     public AutoExtinguishModule() {
-        super("auto_extinguish", "Auto Extinguish", ModuleCategory.PLAYER);
+        super("auto_extinguish", "Auto Extinguish", ModuleCategory.PLAYER,
+                "Breaks fire blocks around you and can use a water bucket when you are burning.");
     }
 
     @Override

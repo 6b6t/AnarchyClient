@@ -10,7 +10,8 @@ import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 public final class AntiReducedDebugInfoModule extends Module {
 
     public AntiReducedDebugInfoModule() {
-        super("anti_reduced_debug_info", "Anti Reduced Debug", ModuleCategory.MISC);
+        super("anti_reduced_debug_info", "Anti Reduced Debug", ModuleCategory.MISC,
+                "Keeps full coordinates and other F3 debug details visible on servers that enable reduced debug info.");
     }
 
     @Override

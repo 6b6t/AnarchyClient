@@ -44,7 +44,8 @@ public final class ItemPhysicsModule extends Module {
             .build()));
 
     public ItemPhysicsModule() {
-        super("item_physics", "Item Physics", ModuleCategory.RENDER);
+        super("item_physics", "Item Physics", ModuleCategory.RENDER,
+                "Renders dropped items flat, spinning, or bobbing, and can stop them falling on your client.");
     }
 
     @Override

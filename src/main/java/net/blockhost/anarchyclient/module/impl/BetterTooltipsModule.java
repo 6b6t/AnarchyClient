@@ -42,7 +42,8 @@ public final class BetterTooltipsModule extends Module {
             .build()));
 
     public BetterTooltipsModule() {
-        super("better_tooltips", "Better Tooltips", ModuleCategory.RENDER);
+        super("better_tooltips", "Better Tooltips", ModuleCategory.RENDER,
+                "Adds durability, container contents, and potion effects to item tooltips.");
     }
 
     @Override

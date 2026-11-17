@@ -34,7 +34,8 @@ public final class ProtectionZonesModule extends Module {
             .build()));
 
     public ProtectionZonesModule() {
-        super("protection_zones", "Protection Zones", ModuleCategory.RENDER);
+        super("protection_zones", "Protection Zones", ModuleCategory.RENDER,
+                "Draws boxes around saved coordinate centers to mark protected areas.");
     }
 
     @Override

@@ -67,7 +67,8 @@ public final class ChestAuraModule extends Module {
     private int delayTicks;
 
     public ChestAuraModule() {
-        super("chest_aura", "Chest Aura", ModuleCategory.WORLD);
+        super("chest_aura", "Chest Aura", ModuleCategory.WORLD,
+                "Opens nearby chests, barrels, and other listed containers automatically, skipping ones already opened and optionally closing them.");
     }
 
     @Override

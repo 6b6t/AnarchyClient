@@ -51,7 +51,8 @@ public final class MossBotModule extends Module {
     private final Map<BlockPos, Integer> cooldowns = new HashMap<>();
 
     public MossBotModule() {
-        super("moss_bot", "Moss Bot", ModuleCategory.WORLD);
+        super("moss_bot", "Moss Bot", ModuleCategory.WORLD,
+                "Bone meals moss blocks with the most moss-replaceable blocks nearby to spread moss.");
     }
 
     @Override

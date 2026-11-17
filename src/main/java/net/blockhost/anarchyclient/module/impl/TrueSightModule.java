@@ -32,7 +32,8 @@ public final class TrueSightModule extends Module {
             .build()));
 
     public TrueSightModule() {
-        super("true_sight", "True Sight", ModuleCategory.RENDER);
+        super("true_sight", "True Sight", ModuleCategory.RENDER,
+                "Outlines invisible players and mobs near you so you can see where they are.");
     }
 
     @Override

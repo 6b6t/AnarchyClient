@@ -17,7 +17,8 @@ public final class WeatherChangerModule extends Module {
             .build()));
 
     public WeatherChangerModule() {
-        super("weather_changer", "Weather Changer", ModuleCategory.RENDER);
+        super("weather_changer", "Weather Changer", ModuleCategory.RENDER,
+                "Sets client-side weather to clear, rain, or thunder regardless of the server weather.");
     }
 
     @Override

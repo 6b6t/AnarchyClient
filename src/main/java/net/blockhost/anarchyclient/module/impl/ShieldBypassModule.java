@@ -40,7 +40,8 @@ public final class ShieldBypassModule extends Module {
             .build()));
 
     public ShieldBypassModule() {
-        super("shield_bypass", "Shield Bypass", ModuleCategory.COMBAT);
+        super("shield_bypass", "Shield Bypass", ModuleCategory.COMBAT,
+                "Hits a shielding target from behind by briefly sending a position past its shield. This can flag anti-cheats.");
     }
 
     @Override

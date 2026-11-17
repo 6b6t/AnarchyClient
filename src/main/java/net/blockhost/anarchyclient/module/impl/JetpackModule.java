@@ -25,7 +25,8 @@ public final class JetpackModule extends Module {
             .build()));
 
     public JetpackModule() {
-        super("jetpack", "Jetpack", ModuleCategory.MOVEMENT);
+        super("jetpack", "Jetpack", ModuleCategory.MOVEMENT,
+                "Lifts you upward at a set speed while you hold jump, and cancels your fall damage.");
     }
 
     @Override

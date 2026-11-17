@@ -27,7 +27,8 @@ public final class FlamethrowerModule extends Module {
             .build()));
 
     public FlamethrowerModule() {
-        super("flamethrower", "Flamethrower", ModuleCategory.WORLD);
+        super("flamethrower", "Flamethrower", ModuleCategory.WORLD,
+                "Sets fire to the tops of nearby blocks with flint and steel or fire charges.");
     }
 
     @Override

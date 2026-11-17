@@ -36,7 +36,7 @@ public final class PacketLoggerModule extends Module {
             .build()));
 
     public PacketLoggerModule() {
-        super("packet_logger", "Packet Logger", ModuleCategory.MISC);
+        super("packet_logger", "Packet Logger", ModuleCategory.MISC, "Records packet traffic for debugging protocol behavior and module interactions.");
     }
 
     @Override

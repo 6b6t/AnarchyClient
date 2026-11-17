@@ -19,7 +19,8 @@ public final class StrafeModule extends Module {
             .build()));
 
     public StrafeModule() {
-        super("strafe", "Strafe", ModuleCategory.MOVEMENT);
+        super("strafe", "Strafe", ModuleCategory.MOVEMENT,
+                "Lets you steer freely in the air by setting your midair velocity toward the keys you hold.");
     }
 
     @Override

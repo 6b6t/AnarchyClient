@@ -16,7 +16,8 @@ public final class ActiveModulesHudModule extends Module {
     private final ModuleManager modules;
 
     public ActiveModulesHudModule(final ModuleManager modules) {
-        super("active_modules_hud", "Active Modules", ModuleCategory.HUD);
+        super("active_modules_hud", "Active Modules", ModuleCategory.HUD,
+                "Lists every enabled module by name in a sorted HUD panel, top right by default.");
         this.modules = modules;
     }
 

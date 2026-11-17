@@ -47,7 +47,8 @@ public final class NoBlockInteractModule extends Module {
             .build()));
 
     public NoBlockInteractModule() {
-        super("no_block_interact", "No Block Interact", ModuleCategory.PLAYER);
+        super("no_block_interact", "No Block Interact", ModuleCategory.PLAYER,
+                "Blocks right-click use on listed or unlisted blocks, such as chests and furnaces, for the chosen hand.");
     }
 
     @Override

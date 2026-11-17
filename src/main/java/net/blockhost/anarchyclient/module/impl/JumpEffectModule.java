@@ -12,7 +12,8 @@ public final class JumpEffectModule extends Module {
     private boolean wasOnGround;
 
     public JumpEffectModule() {
-        super("jump_effect", "Jump Effect", ModuleCategory.RENDER);
+        super("jump_effect", "Jump Effect", ModuleCategory.RENDER,
+                "Shows a brief marker at your feet each time you jump.");
     }
 
     @Override

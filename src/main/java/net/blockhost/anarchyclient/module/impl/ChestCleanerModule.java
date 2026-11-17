@@ -32,7 +32,8 @@ public final class ChestCleanerModule extends Module {
     private int cooldownTicks;
 
     public ChestCleanerModule() {
-        super("chest_cleaner", "Chest Cleaner", ModuleCategory.PLAYER);
+        super("chest_cleaner", "Chest Cleaner", ModuleCategory.PLAYER,
+                "Throws configured junk items out of an open chest one slot at a time with a short delay.");
     }
 
     @Override

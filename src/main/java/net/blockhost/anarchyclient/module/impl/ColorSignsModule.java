@@ -30,7 +30,8 @@ public final class ColorSignsModule extends Module {
             .build()));
 
     public ColorSignsModule() {
-        super("color_signs", "Color Signs", ModuleCategory.MISC);
+        super("color_signs", "Color Signs", ModuleCategory.MISC,
+                "Converts & color codes into formatting codes when you write signs and, optionally, books.");
     }
 
     @Override

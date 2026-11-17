@@ -26,7 +26,8 @@ public final class AntiSpawnpointModule extends Module {
             .build()));
 
     public AntiSpawnpointModule() {
-        super("anti_spawnpoint", "Anti Spawnpoint", ModuleCategory.PLAYER);
+        super("anti_spawnpoint", "Anti Spawnpoint", ModuleCategory.PLAYER,
+                "Cancels right-clicks on beds in the Overworld and respawn anchors in the Nether so your spawn point stays unchanged.");
     }
 
     @Override

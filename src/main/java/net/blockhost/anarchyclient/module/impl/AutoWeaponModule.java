@@ -18,7 +18,7 @@ public final class AutoWeaponModule extends Module {
             .build()));
 
     public AutoWeaponModule() {
-        super("auto_weapon", "Auto Weapon", ModuleCategory.COMBAT);
+        super("auto_weapon", "Auto Weapon", ModuleCategory.COMBAT, "Selects the best available weapon before attacks using damage, enchantment, and item checks.");
     }
 
     @Override

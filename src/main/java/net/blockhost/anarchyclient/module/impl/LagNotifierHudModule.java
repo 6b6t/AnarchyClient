@@ -27,7 +27,8 @@ public final class LagNotifierHudModule extends HudElementModule {
     private long lastPacketNanos = System.nanoTime();
 
     public LagNotifierHudModule() {
-        super("lag_notifier_hud", "Lag Notifier", "Top Left");
+        super("lag_notifier_hud", "Lag Notifier",
+                "Shows how long the server has sent no packets, by default only past a set threshold.", "Top Left");
     }
 
     @Override

@@ -42,7 +42,8 @@ public final class HandViewModule extends Module {
             .build()));
 
     public HandViewModule() {
-        super("hand_view", "Hand View", ModuleCategory.RENDER);
+        super("hand_view", "Hand View", ModuleCategory.RENDER,
+                "Scales, shifts, or hides the first-person held item and hand.");
     }
 
     @Override

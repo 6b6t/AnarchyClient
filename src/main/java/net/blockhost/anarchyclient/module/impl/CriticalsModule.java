@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 public final class CriticalsModule extends Module {
 
     public CriticalsModule() {
-        super("criticals", "Criticals", ModuleCategory.COMBAT);
+        super("criticals", "Criticals", ModuleCategory.COMBAT, "Times attack packets or movement so melee hits can register as critical hits.");
     }
 
     @Override

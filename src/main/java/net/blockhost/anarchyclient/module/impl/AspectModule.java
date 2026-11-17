@@ -17,7 +17,7 @@ public final class AspectModule extends Module {
             .build()));
 
     public AspectModule() {
-        super("aspect", "Aspect", ModuleCategory.RENDER);
+        super("aspect", "Aspect", ModuleCategory.RENDER, "Scales your field of view by a set factor.");
     }
 
     @Override

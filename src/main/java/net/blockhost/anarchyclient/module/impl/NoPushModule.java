@@ -23,7 +23,7 @@ public final class NoPushModule extends Module {
             .build()));
 
     public NoPushModule() {
-        super("no_push", "No Push", ModuleCategory.MOVEMENT);
+        super("no_push", "No Push", ModuleCategory.MOVEMENT, "Stops other entities from pushing the player around.");
     }
 
     @Override

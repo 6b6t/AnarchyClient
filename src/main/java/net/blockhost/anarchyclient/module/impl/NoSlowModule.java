@@ -73,7 +73,8 @@ public final class NoSlowModule extends Module {
             .build()));
 
     public NoSlowModule() {
-        super("no_slow", "No Slow", ModuleCategory.MOVEMENT);
+        super("no_slow", "No Slow", ModuleCategory.MOVEMENT,
+                "Keeps full movement speed while eating, drawing bows, or blocking, and ignores slowdown from webs, honey, soul sand, and similar blocks.");
     }
 
     @Override

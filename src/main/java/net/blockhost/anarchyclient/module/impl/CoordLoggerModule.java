@@ -64,7 +64,8 @@ public final class CoordLoggerModule extends Module {
             .build()));
 
     public CoordLoggerModule() {
-        super("coord_logger", "Coord Logger", ModuleCategory.MISC);
+        super("coord_logger", "Coord Logger", ModuleCategory.MISC,
+                "Logs distant player and tamed wolf teleports, plus global events like wither spawns and end portal openings, to chat.");
     }
 
     @Override

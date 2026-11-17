@@ -39,7 +39,8 @@ public final class AntiVanishModule extends Module {
     private int timer;
 
     public AntiVanishModule() {
-        super("anti_vanish", "Anti Vanish", ModuleCategory.MISC);
+        super("anti_vanish", "Anti Vanish", ModuleCategory.MISC,
+                "Compares the tab list over time and warns in chat when a player disappears without a leave message.");
     }
 
     @Override

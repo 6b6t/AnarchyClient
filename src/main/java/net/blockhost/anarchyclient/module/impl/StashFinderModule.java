@@ -40,7 +40,8 @@ public final class StashFinderModule extends Module {
     private int cooldownTicks;
 
     public StashFinderModule() {
-        super("stash_finder", "Stash Finder", ModuleCategory.WORLD);
+        super("stash_finder", "Stash Finder", ModuleCategory.WORLD,
+                "Scans loaded chunks for clusters of chests and other containers and reports possible stashes in chat.");
     }
 
     @Override

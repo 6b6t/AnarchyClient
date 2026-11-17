@@ -34,7 +34,8 @@ public final class SpeedModule extends Module {
             .build()));
 
     public SpeedModule() {
-        super("speed", "Speed", ModuleCategory.MOVEMENT);
+        super("speed", "Speed", ModuleCategory.MOVEMENT,
+                "Sets your horizontal movement speed, with ground, low hop, bunny hop, and collision safe modes.");
     }
 
     @Override

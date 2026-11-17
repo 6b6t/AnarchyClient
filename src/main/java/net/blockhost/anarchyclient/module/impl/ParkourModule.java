@@ -20,7 +20,8 @@ public final class ParkourModule extends Module {
     private int cooldownTicks;
 
     public ParkourModule() {
-        super("parkour", "Parkour", ModuleCategory.MOVEMENT);
+        super("parkour", "Parkour", ModuleCategory.MOVEMENT,
+                "Jumps automatically when walking forward off the edge of a block.");
     }
 
     @Override

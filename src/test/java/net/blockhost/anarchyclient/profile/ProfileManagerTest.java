@@ -49,7 +49,7 @@ class ProfileManagerTest {
                 .build()));
 
         private TestModule() {
-            super("test_module", "Test Module", ModuleCategory.MISC);
+            super("test_module", "Test Module", ModuleCategory.MISC, "Test module.");
         }
     }
 }

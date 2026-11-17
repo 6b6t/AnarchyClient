@@ -28,7 +28,8 @@ public final class ArrowDodgeModule extends Module {
             .build()));
 
     public ArrowDodgeModule() {
-        super("arrow_dodge", "Arrow Dodge", ModuleCategory.COMBAT);
+        super("arrow_dodge", "Arrow Dodge", ModuleCategory.COMBAT,
+                "Pushes you sideways when a nearby arrow is flying toward you.");
     }
 
     @Override

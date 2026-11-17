@@ -47,7 +47,7 @@ public final class DiscordPresenceModule extends Module {
     private String lastPayload = "";
 
     public DiscordPresenceModule() {
-        super("discord_presence", "Discord Presence", ModuleCategory.MISC);
+        super("discord_presence", "Discord Presence", ModuleCategory.MISC, "Updates Discord Rich Presence with configurable client and server status.");
     }
 
     @Override

@@ -44,7 +44,8 @@ public final class ChestStealerModule extends Module {
     private int cooldownTicks;
 
     public ChestStealerModule() {
-        super("chest_stealer", "Chest Stealer", ModuleCategory.PLAYER);
+        super("chest_stealer", "Chest Stealer", ModuleCategory.PLAYER,
+                "Shift-clicks items out of an open chest into the inventory, skipping ignored items, and closes the chest once it is empty.");
     }
 
     @Override

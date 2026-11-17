@@ -29,7 +29,8 @@ public final class NoGhostBlocksModule extends Module {
     private int timer;
 
     public NoGhostBlocksModule() {
-        super("no_ghost_blocks", "No Ghost Blocks", ModuleCategory.WORLD);
+        super("no_ghost_blocks", "No Ghost Blocks", ModuleCategory.WORLD,
+                "Periodically sends mining abort packets for blocks around the player so the server resends them and clears ghost blocks.");
     }
 
     @Override

@@ -33,7 +33,8 @@ public final class CustomPacketsModule extends Module {
             .build()));
 
     public CustomPacketsModule() {
-        super("custom_packets", "Custom Packets", ModuleCategory.MISC);
+        super("custom_packets", "Custom Packets", ModuleCategory.MISC,
+                "Reports custom payload packets from the server, such as the server brand, in chat and the log with an optional filter.");
     }
 
     @Override

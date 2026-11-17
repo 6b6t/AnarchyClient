@@ -78,7 +78,8 @@ public final class NukerModule extends Module {
             .build()));
 
     public NukerModule() {
-        super("nuker", "Nuker", ModuleCategory.WORLD);
+        super("nuker", "Nuker", ModuleCategory.WORLD,
+                "Breaks blocks around the player in a sphere, cube, or floor shape, with allow and deny lists.");
     }
 
     @Override

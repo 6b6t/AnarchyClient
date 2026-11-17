@@ -13,7 +13,8 @@ import java.util.Map;
 public final class PacketDebugHudModule extends HudElementModule {
 
     public PacketDebugHudModule() {
-        super("packet_debug_hud", "Packet Debug HUD", "Bottom Right");
+        super("packet_debug_hud", "Packet Debug HUD",
+                "Shows packet queue sizes, timer state, balance values, and module debug values.", "Bottom Right");
     }
 
     @Override

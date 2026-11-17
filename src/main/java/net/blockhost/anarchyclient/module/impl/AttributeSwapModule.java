@@ -16,7 +16,7 @@ public final class AttributeSwapModule extends Module {
     private int previousSlot = -1;
 
     public AttributeSwapModule() {
-        super("attribute_swap", "Attribute Swap", ModuleCategory.COMBAT);
+        super("attribute_swap", "Attribute Swap", ModuleCategory.COMBAT, "Chooses stronger equipment when attribute values make one item better than another.");
     }
 
     @Override

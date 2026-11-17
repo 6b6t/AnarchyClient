@@ -67,7 +67,7 @@ public final class StorageEspModule extends Module {
     private int scanCooldownTicks;
 
     public StorageEspModule() {
-        super("storage_esp", "Storage ESP", ModuleCategory.RENDER);
+        super("storage_esp", "Storage ESP", ModuleCategory.RENDER, "Highlights storage blocks in the world so chests, shulkers, and similar containers are easier to find.");
     }
 
     @Override

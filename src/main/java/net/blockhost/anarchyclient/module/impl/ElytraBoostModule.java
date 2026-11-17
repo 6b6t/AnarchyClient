@@ -19,7 +19,8 @@ public final class ElytraBoostModule extends Module {
             .build()));
 
     public ElytraBoostModule() {
-        super("elytra_boost", "Elytra Boost", ModuleCategory.MOVEMENT);
+        super("elytra_boost", "Elytra Boost", ModuleCategory.MOVEMENT,
+                "Pushes you forward in the look direction while gliding with an elytra and holding the forward key.");
     }
 
     @Override

@@ -52,7 +52,8 @@ public final class BreadcrumbsModule extends Module {
     private final List<TrailPoint> points = new ArrayList<>();
 
     public BreadcrumbsModule() {
-        super("breadcrumbs", "Breadcrumbs", ModuleCategory.RENDER);
+        super("breadcrumbs", "Breadcrumbs", ModuleCategory.RENDER,
+                "Draws a line through walls along your recent path, dropping points older than the set lifetime.");
     }
 
     @Override

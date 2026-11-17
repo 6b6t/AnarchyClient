@@ -60,7 +60,8 @@ public final class AutoShootModule extends Module {
     private int cooldownTicks;
 
     public AutoShootModule() {
-        super("auto_shoot", "Auto Shoot", ModuleCategory.COMBAT);
+        super("auto_shoot", "Auto Shoot", ModuleCategory.COMBAT,
+                "Aims at the nearest target in range and throws snowballs, eggs, pearls, experience bottles, or casts a fishing rod.");
     }
 
     @Override

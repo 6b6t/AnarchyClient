@@ -30,7 +30,8 @@ public final class AutoJumpModule extends Module {
     private int cooldownTicks;
 
     public AutoJumpModule() {
-        super("auto_jump", "Auto Jump", ModuleCategory.MOVEMENT);
+        super("auto_jump", "Auto Jump", ModuleCategory.MOVEMENT,
+                "Jumps whenever you are on the ground, optionally only while moving and not in water or lava.");
     }
 
     @Override

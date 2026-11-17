@@ -66,7 +66,8 @@ public final class TreeAuraModule extends Module {
     private int bonemealTimer;
 
     public TreeAuraModule() {
-        super("tree_aura", "Tree Aura", ModuleCategory.WORLD);
+        super("tree_aura", "Tree Aura", ModuleCategory.WORLD,
+                "Plants saplings on open dirt around you and grows them with bone meal from your hotbar.");
     }
 
     @Override

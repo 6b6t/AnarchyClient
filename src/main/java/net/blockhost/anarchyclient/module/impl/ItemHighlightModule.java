@@ -77,7 +77,8 @@ public final class ItemHighlightModule extends Module {
             .build()));
 
     public ItemHighlightModule() {
-        super("item_highlight", "Item Highlight", ModuleCategory.RENDER);
+        super("item_highlight", "Item Highlight", ModuleCategory.RENDER,
+                "Highlights dropped items from your list or a valuable filter, and can mark end crystals.");
         this.items.visibleWhen(() -> "Listed".equals(this.itemMode.value()));
         this.opacity.visibleWhen(() -> "Box".equals(this.renderMode.value()));
         this.crystalRange.visibleWhen(this.crystals::value);

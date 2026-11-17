@@ -26,7 +26,7 @@ public final class RotationModule extends Module {
             .build()));
 
     public RotationModule() {
-        super("rotation", "Rotation", ModuleCategory.PLAYER);
+        super("rotation", "Rotation", ModuleCategory.PLAYER, "Locks the camera view to a fixed yaw and pitch.");
     }
 
     @Override

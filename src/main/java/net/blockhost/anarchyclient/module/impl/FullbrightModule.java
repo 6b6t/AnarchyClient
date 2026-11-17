@@ -18,7 +18,7 @@ public final class FullbrightModule extends Module {
     private Double previousBrightness;
 
     public FullbrightModule() {
-        super("fullbright", "Fullbright", ModuleCategory.RENDER);
+        super("fullbright", "Fullbright", ModuleCategory.RENDER, "Raises scene brightness so caves and night areas stay readable without torches.");
     }
 
     @Override

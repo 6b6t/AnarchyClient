@@ -8,7 +8,8 @@ public final class PortalMenuModule extends Module {
     private static boolean active;
 
     public PortalMenuModule() {
-        super("portal_menu", "Portal Menu", ModuleCategory.MISC);
+        super("portal_menu", "Portal Menu", ModuleCategory.MISC,
+                "Lets you open and use menus and chat while standing in a nether portal.");
     }
 
     @Override

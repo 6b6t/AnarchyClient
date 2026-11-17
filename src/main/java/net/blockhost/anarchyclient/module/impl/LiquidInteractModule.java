@@ -16,7 +16,8 @@ import net.minecraft.world.phys.Vec3;
 public final class LiquidInteractModule extends Module {
 
     public LiquidInteractModule() {
-        super("liquid_interact", "Liquid Interact", ModuleCategory.WORLD);
+        super("liquid_interact", "Liquid Interact", ModuleCategory.WORLD,
+                "Lets you place blocks against water and lava surfaces you are looking at.");
     }
 
     @Override

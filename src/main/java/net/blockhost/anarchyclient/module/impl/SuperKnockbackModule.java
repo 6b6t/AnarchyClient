@@ -16,7 +16,8 @@ public final class SuperKnockbackModule extends Module {
             .build()));
 
     public SuperKnockbackModule() {
-        super("super_knockback", "Super Knockback", ModuleCategory.COMBAT);
+        super("super_knockback", "Super Knockback", ModuleCategory.COMBAT,
+                "Resets your sprint state when you hit an entity so the hit deals sprint knockback.");
     }
 
     @Override

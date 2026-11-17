@@ -37,7 +37,8 @@ public final class AutoWebModule extends Module {
             .build()));
 
     public AutoWebModule() {
-        super("auto_web", "Auto Web", ModuleCategory.COMBAT);
+        super("auto_web", "Auto Web", ModuleCategory.COMBAT,
+                "Places cobwebs at the feet or head of the nearest player in range, or on yourself.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 

@@ -18,7 +18,8 @@ public final class ZoomModule extends Module {
     private Integer previousFov;
 
     public ZoomModule() {
-        super("zoom", "Zoom", ModuleCategory.RENDER);
+        super("zoom", "Zoom", ModuleCategory.RENDER,
+                "Narrows your field of view by a set factor to zoom in, and restores it when turned off.");
     }
 
     @Override

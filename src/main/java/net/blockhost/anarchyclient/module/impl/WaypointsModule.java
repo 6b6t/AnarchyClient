@@ -30,7 +30,7 @@ public final class WaypointsModule extends Module {
     private List<Waypoint> legacy = List.of();
 
     public WaypointsModule() {
-        super("waypoints", "Waypoints", ModuleCategory.RENDER);
+        super("waypoints", "Waypoints", ModuleCategory.RENDER, "Renders saved locations with labels and distance cues so routes are easier to follow.");
     }
 
     @Override

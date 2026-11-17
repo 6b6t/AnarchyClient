@@ -21,7 +21,8 @@ public final class SwordBlockModule extends Module {
     private boolean usingShield;
 
     public SwordBlockModule() {
-        super("sword_block", "Sword Block", ModuleCategory.COMBAT);
+        super("sword_block", "Sword Block", ModuleCategory.COMBAT,
+                "Raises a shield from your offhand or hotbar when you right-click, so you block while holding a weapon.");
     }
 
     @Override

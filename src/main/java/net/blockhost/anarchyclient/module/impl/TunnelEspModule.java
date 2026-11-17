@@ -39,7 +39,8 @@ public final class TunnelEspModule extends Module {
     private int cooldownTicks;
 
     public TunnelEspModule() {
-        super("tunnel_esp", "Tunnel ESP", ModuleCategory.RENDER);
+        super("tunnel_esp", "Tunnel ESP", ModuleCategory.RENDER,
+                "Outlines one-wide, two-tall tunnel spaces near you, such as paths dug by other players.");
     }
 
     @Override

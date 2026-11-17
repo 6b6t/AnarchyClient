@@ -53,7 +53,8 @@ public final class AirPlaceModule extends Module {
             .build()));
 
     public AirPlaceModule() {
-        super("air_place", "Air Place", ModuleCategory.WORLD);
+        super("air_place", "Air Place", ModuleCategory.WORLD,
+                "Places blocks, spawn eggs, armor stands, and rockets in mid-air at a set distance along your view, with a preview box.");
     }
 
     @Override

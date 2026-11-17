@@ -30,7 +30,8 @@ public final class BetterBeaconsModule extends Module {
             .build()));
 
     public BetterBeaconsModule() {
-        super("better_beacons", "Better Beacons", ModuleCategory.RENDER);
+        super("better_beacons", "Better Beacons", ModuleCategory.RENDER,
+                "Adds beacon payment items, range per tier, and unlockable effects to the beacon item tooltip.");
     }
 
     @Override

@@ -28,7 +28,8 @@ public final class LavacastModule extends Module {
     private boolean lava = true;
 
     public LavacastModule() {
-        super("lavacast", "Lavacast", ModuleCategory.WORLD);
+        super("lavacast", "Lavacast", ModuleCategory.WORLD,
+                "Alternates lava and water buckets on the block you look at to build a lavacast.");
     }
 
     @Override

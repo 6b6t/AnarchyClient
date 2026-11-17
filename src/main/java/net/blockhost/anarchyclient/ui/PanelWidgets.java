@@ -41,6 +41,7 @@ import java.util.function.Supplier;
 import static net.blockhost.anarchyclient.ui.PanelStyle.CARD;
 import static net.blockhost.anarchyclient.ui.PanelStyle.CARD_HOVER;
 import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
+import static net.blockhost.anarchyclient.ui.PanelStyle.FAINT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.FIELD;
 import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BOX;
 import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_TEXT_Y_FROM_CENTER;
@@ -74,20 +75,20 @@ final class PanelWidgets {
         return groups.size() > 1 || (!groups.isEmpty() && !"general".equals(groups.getFirst().id()));
     }
 
-    static Component settingRow(final Module module, final Setting<?> setting, final Runnable rebuild, final Runnable save) {
+    static Component settingRow(final Setting<?> setting, final Runnable rebuild, final Runnable save) {
         if (setting instanceof BooleanSetting bool) {
-            return new BooleanSettingRow(module, bool, rebuild);
+            return new BooleanSettingRow(bool, rebuild);
         }
         if (setting instanceof NumberSetting number) {
-            return new NumberSettingRow(module, number, save);
+            return new NumberSettingRow(number, save);
         }
         if (setting instanceof SelectSetting select) {
-            return new SelectSettingRow(module, select, rebuild);
+            return new SelectSettingRow(select, rebuild);
         }
         if (setting instanceof TextValueSetting text) {
-            return new TextSettingRow(module, setting, text, save);
+            return new TextSettingRow(setting, text, save);
         }
-        return new ValueSettingRow(module, setting);
+        return new ValueSettingRow(setting);
     }
 
     static String fitText(final Component component, final String value, final Color color, final float maxWidth) {
@@ -323,6 +324,12 @@ final class PanelWidgets {
         if (!fitted.isEmpty()) {
             drawText(component, renderer, fitted, color, x, y, horizontal, vertical);
         }
+    }
+
+    /** Wrapping description text for a setting row, or {@code null} when the setting has none. */
+    static TextNode settingDescription(final Setting<?> setting) {
+        String description = setting.description().strip();
+        return description.isEmpty() ? null : textNode(description, FAINT).maxLines(Integer.MAX_VALUE);
     }
 
     static TextNode textNode(final String text, final Color color) {

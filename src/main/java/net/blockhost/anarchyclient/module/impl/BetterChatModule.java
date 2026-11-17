@@ -45,7 +45,8 @@ public final class BetterChatModule extends Module {
     private int duplicateCount;
 
     public BetterChatModule() {
-        super("better_chat", "Better Chat", ModuleCategory.MISC);
+        super("better_chat", "Better Chat", ModuleCategory.MISC,
+                "Adds timestamps to chat, counts repeated messages, blocks server chat clears, and can append a suffix to sent messages.");
     }
 
     @Override

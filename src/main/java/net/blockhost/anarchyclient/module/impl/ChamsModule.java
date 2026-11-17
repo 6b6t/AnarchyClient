@@ -38,7 +38,8 @@ public final class ChamsModule extends Module {
             .build()));
 
     public ChamsModule() {
-        super("chams", "Chams", ModuleCategory.RENDER);
+        super("chams", "Chams", ModuleCategory.RENDER,
+                "Draws see-through boxes around players and, optionally, hostile mobs within range.");
     }
 
     @Override

@@ -65,7 +65,8 @@ public final class SpeedMineModule extends Module {
     private int cooldownTicks;
 
     public SpeedMineModule() {
-        super("speed_mine", "Speed Mine", ModuleCategory.WORLD);
+        super("speed_mine", "Speed Mine", ModuleCategory.WORLD,
+                "Mines blocks faster by sending the finish-digging packet early, or by repeated legit breaking.");
     }
 
     @Override

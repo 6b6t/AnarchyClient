@@ -19,7 +19,8 @@ public final class AutoRespawnModule extends Module {
     private int deadTicks;
 
     public AutoRespawnModule() {
-        super("auto_respawn", "Auto Respawn", ModuleCategory.PLAYER);
+        super("auto_respawn", "Auto Respawn", ModuleCategory.PLAYER,
+                "Respawns you automatically after death once the configured delay has passed.");
     }
 
     @Override

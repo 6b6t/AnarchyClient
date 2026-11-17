@@ -20,7 +20,8 @@ public final class BoatPhaseModule extends Module {
     private Entity lastVehicle;
 
     public BoatPhaseModule() {
-        super("boat_phase", "Boat Phase", ModuleCategory.MOVEMENT);
+        super("boat_phase", "Boat Phase", ModuleCategory.MOVEMENT,
+                "Disables collision on your ridden vehicle and steers it with movement, jump, and sneak keys so it passes through blocks.");
     }
 
     @Override

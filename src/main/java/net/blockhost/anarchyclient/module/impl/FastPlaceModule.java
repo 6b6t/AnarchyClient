@@ -38,7 +38,8 @@ public final class FastPlaceModule extends Module {
             .build()));
 
     public FastPlaceModule() {
-        super("fast_place", "Fast Place", ModuleCategory.WORLD);
+        super("fast_place", "Fast Place", ModuleCategory.WORLD,
+                "Removes the delay between block placements and, optionally, XP bottle and crystal uses.");
     }
 
     @Override

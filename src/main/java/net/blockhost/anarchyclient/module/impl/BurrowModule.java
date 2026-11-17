@@ -59,7 +59,8 @@ public final class BurrowModule extends Module {
     private BlockPos target;
 
     public BurrowModule() {
-        super("burrow", "Burrow", ModuleCategory.COMBAT);
+        super("burrow", "Burrow", ModuleCategory.COMBAT,
+                "Centers you, jumps, and places a block in the space you stood in, then sends a raised position to lag you back into it.");
     }
 
     @Override

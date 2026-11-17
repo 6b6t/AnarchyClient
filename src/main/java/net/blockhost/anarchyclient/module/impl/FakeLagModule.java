@@ -42,7 +42,8 @@ public final class FakeLagModule extends Module {
             .build()));
 
     public FakeLagModule() {
-        super("fake_lag", "Fake Lag", ModuleCategory.MISC);
+        super("fake_lag", "Fake Lag", ModuleCategory.MISC,
+                "Holds back outgoing movement packets and releases them after a delay, making you appear to lag to other players.");
     }
 
     @Override

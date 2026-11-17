@@ -22,7 +22,8 @@ public final class AutoSmelterModule extends Module {
     private int cooldownTicks;
 
     public AutoSmelterModule() {
-        super("auto_smelter", "Auto Smelter", ModuleCategory.WORLD);
+        super("auto_smelter", "Auto Smelter", ModuleCategory.WORLD,
+                "Takes furnace output, then loads coal or charcoal as fuel and other inventory items as input in an open furnace.");
     }
 
     @Override

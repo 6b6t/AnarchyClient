@@ -38,7 +38,8 @@ public final class ChestSwapModule extends Module {
             .build()));
 
     public ChestSwapModule() {
-        super("chest_swap", "Chest Swap", ModuleCategory.PLAYER);
+        super("chest_swap", "Chest Swap", ModuleCategory.PLAYER,
+                "Swaps between an elytra and the best chestplate in the chest slot, then turns itself off.");
     }
 
     @Override

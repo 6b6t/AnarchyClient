@@ -9,7 +9,7 @@ import java.util.List;
 public final class ItemHudModule extends HudElementModule {
 
     public ItemHudModule() {
-        super("item_hud", "Item HUD", "Bottom Right");
+        super("item_hud", "Item HUD", "Shows the items in your main hand and offhand on screen.", "Bottom Right");
     }
 
     @Override

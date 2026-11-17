@@ -81,7 +81,7 @@ class ModuleKeybindControllerTest {
     private static final class TestModule extends Module {
 
         private TestModule() {
-            super("test", "Test", ModuleCategory.MISC);
+            super("test", "Test", ModuleCategory.MISC, "Test module.");
         }
     }
 }

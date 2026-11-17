@@ -18,7 +18,8 @@ public final class ArmorHudModule extends HudElementModule {
     );
 
     public ArmorHudModule() {
-        super("armor_hud", "Armor HUD", "Bottom Left");
+        super("armor_hud", "Armor HUD",
+                "Shows your helmet, chestplate, leggings, and boots with durability bars in a movable HUD panel.", "Bottom Left");
     }
 
     @Override

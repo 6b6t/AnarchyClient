@@ -66,7 +66,8 @@ public final class SoundLocatorModule extends Module {
     private Set<Identifier> parsedSounds = Set.of();
 
     public SoundLocatorModule() {
-        super("sound_locator", "Sound Locator", ModuleCategory.RENDER);
+        super("sound_locator", "Sound Locator", ModuleCategory.RENDER,
+                "Marks where server sounds play with boxes, optionally filtered by sound ID and logged to chat.");
     }
 
     @Override

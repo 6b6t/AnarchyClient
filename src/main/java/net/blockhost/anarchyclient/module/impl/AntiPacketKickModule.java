@@ -35,7 +35,8 @@ public final class AntiPacketKickModule extends Module {
     private int movementPacketsThisTick;
 
     public AntiPacketKickModule() {
-        super("anti_packet_kick", "Anti Packet Kick", ModuleCategory.MISC);
+        super("anti_packet_kick", "Anti Packet Kick", ModuleCategory.MISC,
+                "Cancels outgoing movement packets with invalid coordinates or rotations and caps how many are sent per tick.");
     }
 
     @Override

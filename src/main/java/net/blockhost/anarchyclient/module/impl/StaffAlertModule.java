@@ -57,7 +57,8 @@ public final class StaffAlertModule extends Module {
     private final Set<String> alerted = new LinkedHashSet<>();
 
     public StaffAlertModule(final ModuleManager modules) {
-        super("staff_alert", "Staff Alert", ModuleCategory.MISC);
+        super("staff_alert", "Staff Alert", ModuleCategory.MISC,
+                "Warns in chat when a known or staff-like player joins or comes near, and can disable listed modules.");
         this.modules = modules;
     }
 

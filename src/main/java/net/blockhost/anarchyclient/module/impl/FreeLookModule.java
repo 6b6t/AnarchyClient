@@ -21,7 +21,8 @@ public final class FreeLookModule extends Module {
     private float cameraPitch;
 
     public FreeLookModule() {
-        super("free_look", "Free Look", ModuleCategory.RENDER);
+        super("free_look", "Free Look", ModuleCategory.RENDER,
+                "Lets you rotate the camera independently of the player's facing direction.");
     }
 
     @Override

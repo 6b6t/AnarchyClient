@@ -18,7 +18,8 @@ public final class NoSwingModule extends Module {
             .build()));
 
     public NoSwingModule() {
-        super("no_swing", "No Swing", ModuleCategory.RENDER);
+        super("no_swing", "No Swing", ModuleCategory.RENDER,
+                "Stops the swing packet for missed attacks from reaching the server when Server Side is on.");
     }
 
     @Override

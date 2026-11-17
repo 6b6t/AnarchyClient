@@ -44,7 +44,8 @@ public final class LawnBotModule extends Module {
     private int delay;
 
     public LawnBotModule() {
-        super("lawn_bot", "Lawn Bot", ModuleCategory.WORLD);
+        super("lawn_bot", "Lawn Bot", ModuleCategory.WORLD,
+                "Replaces nearby mycelium, podzol, and other dirt variants with grass blocks from your hotbar.");
     }
 
     @Override

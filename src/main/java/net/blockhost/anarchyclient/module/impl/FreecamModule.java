@@ -24,7 +24,7 @@ public final class FreecamModule extends Module {
     private Vec3 position;
 
     public FreecamModule() {
-        super("freecam", "Freecam", ModuleCategory.RENDER);
+        super("freecam", "Freecam", ModuleCategory.RENDER, "Detaches the camera from the player so areas can be inspected without moving the body.");
     }
 
     @Override

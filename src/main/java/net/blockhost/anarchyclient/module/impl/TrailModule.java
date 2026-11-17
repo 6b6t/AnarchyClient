@@ -41,7 +41,8 @@ public final class TrailModule extends Module {
     private final Map<UUID, List<TrailPoint>> trails = new HashMap<>();
 
     public TrailModule() {
-        super("trail", "Trail", ModuleCategory.RENDER);
+        super("trail", "Trail", ModuleCategory.RENDER,
+                "Draws a line along the recent path of each nearby player until the points expire.");
     }
 
     @Override

@@ -60,7 +60,8 @@ public final class VelocityModule extends Module {
     private int jumpResetTicks;
 
     public VelocityModule() {
-        super("velocity", "Velocity", ModuleCategory.MOVEMENT);
+        super("velocity", "Velocity", ModuleCategory.MOVEMENT,
+                "Reduces, cancels, or reverses the knockback you take from the server, with an optional jump reset mode.");
     }
 
     @Override

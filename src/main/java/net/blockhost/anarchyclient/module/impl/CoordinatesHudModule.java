@@ -42,7 +42,8 @@ public final class CoordinatesHudModule extends Module {
             .build()));
 
     public CoordinatesHudModule() {
-        super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD);
+        super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD,
+                "Shows your coordinates, linked Nether or Overworld coordinates, dimension, facing, speed, FPS, and ping.");
     }
 
     @Override

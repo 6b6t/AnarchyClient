@@ -39,7 +39,8 @@ public final class TrajectoriesModule extends Module {
             .build()));
 
     public TrajectoriesModule() {
-        super("trajectories", "Trajectories", ModuleCategory.RENDER);
+        super("trajectories", "Trajectories", ModuleCategory.RENDER,
+                "Draws the predicted flight path of the projectile you hold and of projectiles already in the air.");
     }
 
     @Override

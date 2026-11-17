@@ -23,7 +23,8 @@ public final class RoboWalkModule extends Module {
             .build()));
 
     public RoboWalkModule() {
-        super("robo_walk", "Robo Walk", ModuleCategory.MOVEMENT);
+        super("robo_walk", "Robo Walk", ModuleCategory.MOVEMENT,
+                "Rounds sent player and vehicle positions to a fixed grid on the X and Z axes.");
     }
 
     @Override

@@ -17,7 +17,8 @@ import net.minecraft.world.item.Items;
 public final class ElytraSwapModule extends Module {
 
     public ElytraSwapModule() {
-        super("elytra_swap", "Elytra Swap", ModuleCategory.PLAYER);
+        super("elytra_swap", "Elytra Swap", ModuleCategory.PLAYER,
+                "Equips an elytra from the inventory whenever the chest slot holds something else.");
     }
 
     @Override

@@ -58,7 +58,8 @@ public final class ServerSpoofModule extends Module {
             .build()));
 
     public ServerSpoofModule() {
-        super("server_spoof", "Server Spoof", ModuleCategory.MISC);
+        super("server_spoof", "Server Spoof", ModuleCategory.MISC,
+                "Hides client details from the server by spoofing the handshake host and brand, blocking mod channels, and faking resource pack loading.");
         this.host.visibleWhen(this.spoofHost::value);
         this.brand.visibleWhen(this.spoofBrand::value);
         this.channels.visibleWhen(this.blockChannels::value);

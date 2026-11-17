@@ -33,7 +33,8 @@ public final class InteractionMenuModule extends Module {
     private boolean wasPressed;
 
     public InteractionMenuModule() {
-        super("interaction_menu", "Interaction Menu", ModuleCategory.MISC);
+        super("interaction_menu", "Interaction Menu", ModuleCategory.MISC,
+                "Copies the target's info, sends a command, or adds a friend when you middle click a target.");
     }
 
     @Override

@@ -19,7 +19,8 @@ public final class BounceModule extends Module {
             .build()));
 
     public BounceModule() {
-        super("bounce", "Bounce", ModuleCategory.MOVEMENT);
+        super("bounce", "Bounce", ModuleCategory.MOVEMENT,
+                "Launches you upward again each time you touch the ground, unless you are sneaking.");
     }
 
     @Override

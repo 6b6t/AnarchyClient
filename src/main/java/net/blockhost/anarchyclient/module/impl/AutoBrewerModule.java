@@ -27,7 +27,8 @@ public final class AutoBrewerModule extends Module {
     private int cooldownTicks;
 
     public AutoBrewerModule() {
-        super("auto_brewer", "Auto Brewer", ModuleCategory.WORLD);
+        super("auto_brewer", "Auto Brewer", ModuleCategory.WORLD,
+                "Moves fuel, nether wart, and bottles into an open brewing stand between brews and takes out converted potions.");
     }
 
     @Override

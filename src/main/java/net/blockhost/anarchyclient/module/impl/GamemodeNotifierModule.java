@@ -36,7 +36,8 @@ public final class GamemodeNotifierModule extends Module {
             .build()));
 
     public GamemodeNotifierModule() {
-        super("gamemode_notifier", "Gamemode Notifier", ModuleCategory.MISC);
+        super("gamemode_notifier", "Gamemode Notifier", ModuleCategory.MISC,
+                "Sends a chat message when a player switches to one of the selected gamemodes.");
     }
 
     @Override

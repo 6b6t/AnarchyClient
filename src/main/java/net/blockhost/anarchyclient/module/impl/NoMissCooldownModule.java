@@ -12,7 +12,8 @@ public final class NoMissCooldownModule extends Module {
     private int lastMissTick;
 
     public NoMissCooldownModule() {
-        super("no_miss_cooldown", "No Miss Cooldown", ModuleCategory.COMBAT);
+        super("no_miss_cooldown", "No Miss Cooldown", ModuleCategory.COMBAT,
+                "Records missed attack clicks and shows the last miss tick in the debug values.");
     }
 
     @Override

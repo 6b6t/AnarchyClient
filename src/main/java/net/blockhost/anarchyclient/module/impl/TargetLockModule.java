@@ -35,7 +35,8 @@ public final class TargetLockModule extends Module {
     private UUID locked;
 
     public TargetLockModule() {
-        super("target_lock", "Target Lock", ModuleCategory.COMBAT);
+        super("target_lock", "Target Lock", ModuleCategory.COMBAT,
+                "Keeps combat modules on the same target by locking onto the nearest player until it leaves range.");
     }
 
     @Override

@@ -19,7 +19,8 @@ public final class FastClimbModule extends Module {
             .build()));
 
     public FastClimbModule() {
-        super("fast_climb", "Fast Climb", ModuleCategory.MOVEMENT);
+        super("fast_climb", "Fast Climb", ModuleCategory.MOVEMENT,
+                "Climbs ladders and vines faster while holding the forward key.");
     }
 
     @Override

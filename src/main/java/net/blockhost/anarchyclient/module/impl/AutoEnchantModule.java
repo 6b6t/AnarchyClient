@@ -50,7 +50,8 @@ public final class AutoEnchantModule extends Module {
     private int cooldown;
 
     public AutoEnchantModule() {
-        super("auto_enchant", "Auto Enchant", ModuleCategory.PLAYER);
+        super("auto_enchant", "Auto Enchant", ModuleCategory.PLAYER,
+                "Enchants configured items at the chosen level in an open enchanting table, refilling lapis and collecting results.");
     }
 
     @Override

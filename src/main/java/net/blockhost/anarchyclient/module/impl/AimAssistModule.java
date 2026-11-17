@@ -123,7 +123,7 @@ public final class AimAssistModule extends Module {
             .build()));
 
     public AimAssistModule() {
-        super("aim_assist", "Aim Assist", ModuleCategory.COMBAT);
+        super("aim_assist", "Aim Assist", ModuleCategory.COMBAT, "Smooths view movement toward valid targets without taking complete control away from the player.");
         this.maxTurnDegrees.visibleWhen(() -> !this.instant.value());
         this.rotationMode.visibleWhen(() -> !this.instant.value());
     }

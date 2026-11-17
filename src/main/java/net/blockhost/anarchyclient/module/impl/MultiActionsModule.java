@@ -31,7 +31,8 @@ public final class MultiActionsModule extends Module {
             .build()));
 
     public MultiActionsModule() {
-        super("multi_actions", "Multi Actions", ModuleCategory.MISC, List.of("multitask"));
+        super("multi_actions", "Multi Actions", ModuleCategory.MISC,
+                "Lets you attack, break, and place blocks while eating or using an item.", List.of("multitask"));
         instance = this;
     }
 

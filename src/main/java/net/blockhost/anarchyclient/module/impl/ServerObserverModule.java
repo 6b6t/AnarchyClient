@@ -11,7 +11,7 @@ import net.minecraft.network.protocol.Packet;
 public final class ServerObserverModule extends Module {
 
     public ServerObserverModule() {
-        super("server_observer", "Server Observer", ModuleCategory.MISC);
+        super("server_observer", "Server Observer", ModuleCategory.MISC, "Tracks server identity, brand, and connection details so other modules can adapt to the current server.");
         this.enabled(true);
     }
 

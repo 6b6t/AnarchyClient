@@ -24,7 +24,8 @@ public final class TimerModule extends Module {
             .build()));
 
     public TimerModule() {
-        super("timer", "Timer", ModuleCategory.MOVEMENT);
+        super("timer", "Timer", ModuleCategory.MOVEMENT,
+                "Speeds up or slows down the client game tick rate. This can flag anti-cheats.");
     }
 
     @Override

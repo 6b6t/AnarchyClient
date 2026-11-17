@@ -19,7 +19,8 @@ public final class ServerFingerprintHudModule extends HudElementModule {
     private String lastStored = "";
 
     public ServerFingerprintHudModule() {
-        super("server_fingerprint_hud", "Server Fingerprint HUD", "Top Left");
+        super("server_fingerprint_hud", "Server Fingerprint HUD",
+                "Shows the detected server type, anti-cheat, TPS, safety score, plugins, and payload channels.", "Top Left");
     }
 
     @Override

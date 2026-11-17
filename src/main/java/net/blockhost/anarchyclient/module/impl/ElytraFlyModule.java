@@ -48,7 +48,8 @@ public final class ElytraFlyModule extends Module {
             .build()));
 
     public ElytraFlyModule() {
-        super("elytra_fly", "Elytra Fly", ModuleCategory.MOVEMENT);
+        super("elytra_fly", "Elytra Fly", ModuleCategory.MOVEMENT,
+                "Controls elytra flight speed and height directly from movement keys, with optional auto start when falling.");
     }
 
     @Override

@@ -43,7 +43,8 @@ public final class TargetStrafeModule extends Module {
     private int direction = 1;
 
     public TargetStrafeModule() {
-        super("target_strafe", "Target Strafe", ModuleCategory.MOVEMENT);
+        super("target_strafe", "Target Strafe", ModuleCategory.MOVEMENT,
+                "Circles around the nearest enemy at a set radius while you move, and can jump to keep speed.");
     }
 
     @Override

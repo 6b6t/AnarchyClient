@@ -19,7 +19,8 @@ public final class VehicleBoostModule extends Module {
             .build()));
 
     public VehicleBoostModule() {
-        super("vehicle_boost", "Vehicle Boost", ModuleCategory.MOVEMENT);
+        super("vehicle_boost", "Vehicle Boost", ModuleCategory.MOVEMENT,
+                "Pushes your vehicle forward in your look direction while you hold the forward key.");
     }
 
     @Override

@@ -19,7 +19,8 @@ public final class QuiverModule extends Module {
             .build()));
 
     public QuiverModule() {
-        super("quiver", "Quiver", ModuleCategory.COMBAT);
+        super("quiver", "Quiver", ModuleCategory.COMBAT,
+                "Repeatedly draws and releases a held bow after a set number of ticks.");
     }
 
     @Override

@@ -50,7 +50,7 @@ public final class TickBaseModule extends Module {
             .build()));
 
     public TickBaseModule() {
-        super("tick_base", "Tick Base", ModuleCategory.COMBAT);
+        super("tick_base", "Tick Base", ModuleCategory.COMBAT, "Shifts queued player actions across ticks for burst movement or combat timing.");
     }
 
     @Override

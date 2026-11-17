@@ -65,7 +65,7 @@ public final class PacketFlyModule extends Module {
     private int ticks;
 
     public PacketFlyModule() {
-        super("packet_fly", "Packet Fly", ModuleCategory.MOVEMENT);
+        super("packet_fly", "Packet Fly", ModuleCategory.MOVEMENT, "Uses packet movement to handle flight-like movement on servers where normal movement is restricted.");
     }
 
     @Override

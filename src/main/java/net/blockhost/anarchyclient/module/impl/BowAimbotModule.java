@@ -42,7 +42,8 @@ public final class BowAimbotModule extends Module {
             .build()));
 
     public BowAimbotModule() {
-        super("bow_aimbot", "Bow Aimbot", ModuleCategory.COMBAT);
+        super("bow_aimbot", "Bow Aimbot", ModuleCategory.COMBAT,
+                "Turns you toward the nearest player or hostile in range while you draw a bow or hold a loaded crossbow.");
     }
 
     @Override

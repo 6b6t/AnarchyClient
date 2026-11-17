@@ -65,7 +65,8 @@ public final class LightOverlayModule extends Module {
     private int scanCooldown;
 
     public LightOverlayModule() {
-        super("light_overlay", "Light Overlay", ModuleCategory.RENDER);
+        super("light_overlay", "Light Overlay", ModuleCategory.RENDER,
+                "Marks nearby blocks with a red cross where light is low enough for mobs to spawn.");
     }
 
     @Override

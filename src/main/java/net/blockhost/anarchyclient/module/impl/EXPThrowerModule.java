@@ -50,7 +50,8 @@ public final class EXPThrowerModule extends Module {
     private int cooldownTicks;
 
     public EXPThrowerModule() {
-        super("exp_thrower", "EXP Thrower", ModuleCategory.PLAYER);
+        super("exp_thrower", "EXP Thrower", ModuleCategory.PLAYER,
+                "Throws XP bottles from the hotbar whenever any worn armor piece drops below the durability threshold.");
     }
 
     @Override

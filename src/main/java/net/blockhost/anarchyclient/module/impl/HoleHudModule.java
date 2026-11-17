@@ -8,7 +8,8 @@ import java.util.List;
 public final class HoleHudModule extends HudElementModule {
 
     public HoleHudModule() {
-        super("hole_hud", "Hole HUD", "Top Right");
+        super("hole_hud", "Hole HUD",
+                "Shows whether solid blocks surround you on all four sides and below.", "Top Right");
     }
 
     @Override

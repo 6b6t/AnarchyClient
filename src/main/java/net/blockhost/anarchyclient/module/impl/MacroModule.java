@@ -28,7 +28,7 @@ public final class MacroModule extends Module {
     private boolean f8Down;
 
     public MacroModule() {
-        super("macros", "Macros", ModuleCategory.MISC);
+        super("macros", "Macros", ModuleCategory.MISC, "Runs configured chat or command actions from keybind-style triggers.");
     }
 
     @Override

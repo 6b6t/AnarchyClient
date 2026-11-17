@@ -35,7 +35,8 @@ public final class AutoWalkModule extends Module {
             .build()));
 
     public AutoWalkModule() {
-        super("auto_walk", "Auto Walk", ModuleCategory.MOVEMENT);
+        super("auto_walk", "Auto Walk", ModuleCategory.MOVEMENT,
+                "Holds the forward or backward key for you, with optional sprinting and a stop when you hit a wall.");
     }
 
     @Override

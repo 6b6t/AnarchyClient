@@ -63,7 +63,7 @@ public final class AutoArmorModule extends Module {
             .build()));
 
     public AutoArmorModule() {
-        super("auto_armor", "Auto Armor", ModuleCategory.COMBAT);
+        super("auto_armor", "Auto Armor", ModuleCategory.COMBAT, "Equips stronger armor automatically while respecting delay and replacement settings.");
     }
 
     @Override

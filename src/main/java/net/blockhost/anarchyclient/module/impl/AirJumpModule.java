@@ -26,7 +26,8 @@ public final class AirJumpModule extends Module {
     private boolean jumpDown;
 
     public AirJumpModule() {
-        super("air_jump", "Air Jump", ModuleCategory.MOVEMENT);
+        super("air_jump", "Air Jump", ModuleCategory.MOVEMENT,
+                "Lets you jump again in mid-air each time the jump key is pressed, optionally resetting fall damage.");
     }
 
     @Override

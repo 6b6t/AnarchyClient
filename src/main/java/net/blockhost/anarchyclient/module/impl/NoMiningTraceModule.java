@@ -15,7 +15,8 @@ public final class NoMiningTraceModule extends Module {
     private static boolean active;
 
     public NoMiningTraceModule() {
-        super("no_mining_trace", "No Mining Trace", ModuleCategory.PLAYER);
+        super("no_mining_trace", "No Mining Trace", ModuleCategory.PLAYER,
+                "Lets block clicks pass through entities in the way so the block behind them gets mined or used.");
     }
 
     @Override

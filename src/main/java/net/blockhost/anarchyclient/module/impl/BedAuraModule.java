@@ -80,7 +80,7 @@ public final class BedAuraModule extends Module {
     private int cooldown;
 
     public BedAuraModule() {
-        super("bed_aura", "Bed Aura", ModuleCategory.COMBAT);
+        super("bed_aura", "Bed Aura", ModuleCategory.COMBAT, "Uses beds as explosives in valid dimensions with placement, damage, and safety checks.");
     }
 
     @Override

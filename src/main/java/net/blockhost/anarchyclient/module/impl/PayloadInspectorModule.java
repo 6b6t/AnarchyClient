@@ -14,7 +14,7 @@ public final class PayloadInspectorModule extends Module {
     private int lastPayloadSequence = -1;
 
     public PayloadInspectorModule() {
-        super("payload_inspector", "Payload Inspector", ModuleCategory.MISC);
+        super("payload_inspector", "Payload Inspector", ModuleCategory.MISC, "Shows custom payload traffic so plugin channels and server messages are easier to debug.");
     }
 
     @Override

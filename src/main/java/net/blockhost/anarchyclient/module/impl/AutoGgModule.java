@@ -25,7 +25,8 @@ public final class AutoGgModule extends Module {
     private int cooldownTicks;
 
     public AutoGgModule() {
-        super("auto_gg", "Auto GG", ModuleCategory.FUN);
+        super("auto_gg", "Auto GG", ModuleCategory.FUN,
+                "Sends a configured chat message when you die, with a cooldown between messages.");
     }
 
     @Override

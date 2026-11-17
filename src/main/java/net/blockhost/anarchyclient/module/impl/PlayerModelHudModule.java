@@ -10,7 +10,8 @@ import java.util.Locale;
 public final class PlayerModelHudModule extends HudElementModule {
 
     public PlayerModelHudModule() {
-        super("player_model_hud", "Player Model", "Bottom Left");
+        super("player_model_hud", "Player Model",
+                "Shows a small panel with your player model that follows the mouse.", "Bottom Left");
     }
 
     @Override

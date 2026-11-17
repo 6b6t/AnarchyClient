@@ -42,7 +42,8 @@ public final class TntTimerModule extends Module {
             .build()));
 
     public TntTimerModule() {
-        super("tnt_timer", "TNT Timer", ModuleCategory.RENDER);
+        super("tnt_timer", "TNT Timer", ModuleCategory.RENDER,
+                "Shows the remaining fuse time above primed TNT and outlines it in colors that turn red near explosion.");
     }
 
     @Override

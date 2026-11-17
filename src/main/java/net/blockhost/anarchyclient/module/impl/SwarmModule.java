@@ -64,7 +64,8 @@ public final class SwarmModule extends Module {
     private String lastStatus = "stopped";
 
     public SwarmModule() {
-        super("swarm", "Swarm", ModuleCategory.MISC);
+        super("swarm", "Swarm", ModuleCategory.MISC,
+                "Connects clients over a socket so a host can make workers send the same chat messages or commands.");
     }
 
     @Override

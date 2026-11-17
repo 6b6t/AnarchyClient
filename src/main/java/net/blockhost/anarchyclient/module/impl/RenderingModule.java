@@ -129,7 +129,8 @@ public final class RenderingModule extends Module {
             .build()));
 
     public RenderingModule() {
-        super("rendering", "Rendering", ModuleCategory.RENDER);
+        super("rendering", "Rendering", ModuleCategory.RENDER,
+                "Adjusts FOV and camera offsets and removes hurt camera, view bobbing, blindness, darkness, and chosen status effects.");
         this.fovScale.visibleWhen(() -> "Scale".equals(this.fovMode.value()));
         this.minimumFov.visibleWhen(() -> "Scale".equals(this.fovMode.value()));
         this.maximumFov.visibleWhen(() -> "Scale".equals(this.fovMode.value()));

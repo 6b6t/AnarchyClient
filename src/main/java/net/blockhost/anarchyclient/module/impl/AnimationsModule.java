@@ -36,7 +36,8 @@ public final class AnimationsModule extends Module {
             .build()));
 
     public AnimationsModule() {
-        super("animations", "Animations", ModuleCategory.RENDER);
+        super("animations", "Animations", ModuleCategory.RENDER,
+                "Applies a looping swing, slide, or spin motion to your held item, with adjustable speed and intensity.");
     }
 
     @Override

@@ -61,7 +61,8 @@ public final class BlockInModule extends Module {
             .build()));
 
     public BlockInModule() {
-        super("block_in", "Block In", ModuleCategory.COMBAT);
+        super("block_in", "Block In", ModuleCategory.COMBAT,
+                "Snaps you to the block center and surrounds you with blocks on all sides and overhead, then turns off when done.");
     }
 
     @Override

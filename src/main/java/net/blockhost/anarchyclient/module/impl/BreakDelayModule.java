@@ -18,7 +18,8 @@ public final class BreakDelayModule extends Module {
             .build()));
 
     public BreakDelayModule() {
-        super("break_delay", "Break Delay", ModuleCategory.WORLD);
+        super("break_delay", "Break Delay", ModuleCategory.WORLD,
+                "Sets the vanilla right-click repeat delay, so held use actions such as placing blocks repeat faster.");
     }
 
     @Override

@@ -88,7 +88,8 @@ public final class TracersModule extends Module {
             .build()));
 
     public TracersModule() {
-        super("tracers", "Tracers", ModuleCategory.RENDER);
+        super("tracers", "Tracers", ModuleCategory.RENDER,
+                "Draws lines from your view to nearby players and mobs, colored by entity type and friend status.");
     }
 
     @Override

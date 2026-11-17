@@ -21,7 +21,8 @@ public final class NoRotateSetModule extends Module {
             .build()));
 
     public NoRotateSetModule() {
-        super("no_rotate_set", "No Rotate Set", ModuleCategory.PLAYER);
+        super("no_rotate_set", "No Rotate Set", ModuleCategory.PLAYER,
+                "Ignores server packets that force the camera rotation, and optionally the rotation in position corrections.");
     }
 
     @Override

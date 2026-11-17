@@ -25,7 +25,8 @@ public final class VehicleOneHitModule extends Module {
             .build()));
 
     public VehicleOneHitModule() {
-        super("vehicle_one_hit", "Vehicle One Hit", ModuleCategory.COMBAT);
+        super("vehicle_one_hit", "Vehicle One Hit", ModuleCategory.COMBAT,
+                "Sends extra attack packets when you hit a boat or minecart so it breaks in one hit.");
     }
 
     @Override

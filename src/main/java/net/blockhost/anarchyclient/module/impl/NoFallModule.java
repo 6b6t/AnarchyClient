@@ -30,7 +30,8 @@ public final class NoFallModule extends Module {
             .build()));
 
     public NoFallModule() {
-        super("no_fall", "No Fall", ModuleCategory.MOVEMENT);
+        super("no_fall", "No Fall", ModuleCategory.MOVEMENT,
+                "Prevents fall damage by telling the server the player is on the ground while falling. This can flag anti-cheats.");
     }
 
     @Override

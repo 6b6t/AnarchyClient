@@ -269,7 +269,7 @@ class ClientConfigTest {
                 .build()));
 
         private ConfigModule() {
-            super("config_module", "Config Module", ModuleCategory.FUN);
+            super("config_module", "Config Module", ModuleCategory.FUN, "Test module.");
         }
     }
 
@@ -283,7 +283,7 @@ class ClientConfigTest {
                 .build()));
 
         private AliasModule() {
-            super("alias_module", "Alias Module", ModuleCategory.FUN, List.of("old_alias_module"));
+            super("alias_module", "Alias Module", ModuleCategory.FUN, "Test module.", List.of("old_alias_module"));
         }
     }
 }

@@ -26,7 +26,8 @@ public final class CrosshairModule extends Module {
             .build()));
 
     public CrosshairModule() {
-        super("crosshair", "Crosshair", ModuleCategory.RENDER);
+        super("crosshair", "Crosshair", ModuleCategory.RENDER,
+                "Draws a plus-shaped crosshair at the screen center with adjustable arm size and gap.");
     }
 
     @Override

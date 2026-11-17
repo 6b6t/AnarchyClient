@@ -26,7 +26,8 @@ public final class VeinMinerModule extends Module {
             .build()));
 
     public VeinMinerModule() {
-        super("vein_miner", "Vein Miner", ModuleCategory.WORLD);
+        super("vein_miner", "Vein Miner", ModuleCategory.WORLD,
+                "Breaks connected blocks of the same type as the block you are mining, up to a set limit.");
     }
 
     @Override

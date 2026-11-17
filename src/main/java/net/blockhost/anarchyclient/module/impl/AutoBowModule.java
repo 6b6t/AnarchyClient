@@ -35,7 +35,8 @@ public final class AutoBowModule extends Module {
             .build()));
 
     public AutoBowModule() {
-        super("auto_bow", "Auto Bow", ModuleCategory.COMBAT);
+        super("auto_bow", "Auto Bow", ModuleCategory.COMBAT,
+                "Aims your drawn bow at the closest target with projectile drop compensation and releases it once charged.");
     }
 
     @Override

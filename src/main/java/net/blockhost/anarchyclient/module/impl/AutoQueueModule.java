@@ -39,7 +39,8 @@ public final class AutoQueueModule extends Module {
     private int cooldownTicks;
 
     public AutoQueueModule() {
-        super("auto_queue", "Auto Queue", ModuleCategory.PLAYER, List.of("auto_play"));
+        super("auto_queue", "Auto Queue", ModuleCategory.PLAYER,
+                "Sends a configured command, such as /play, when a chat message contains the trigger text.", List.of("auto_play"));
     }
 
     @Override

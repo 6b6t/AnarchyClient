@@ -43,7 +43,8 @@ public final class FastUseModule extends Module {
             .build()));
 
     public FastUseModule() {
-        super("fast_use", "Fast Use", ModuleCategory.PLAYER);
+        super("fast_use", "Fast Use", ModuleCategory.PLAYER,
+                "Removes the right-click delay for all items or a chosen item list.");
         this.items.visibleWhen(() -> "Some".equals(this.mode.value()));
         this.blocks.visibleWhen(() -> "Some".equals(this.mode.value()));
     }

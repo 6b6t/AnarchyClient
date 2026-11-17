@@ -32,7 +32,8 @@ public final class SilentHotbarModule extends HudElementModule {
             .build()));
 
     public SilentHotbarModule() {
-        super("silent_hotbar", "Silent Hotbar", "Bottom Left");
+        super("silent_hotbar", "Silent Hotbar",
+                "Shows the selected slot and which module holds a silent switch, and can hold a chosen slot.", "Bottom Left");
     }
 
     @Override

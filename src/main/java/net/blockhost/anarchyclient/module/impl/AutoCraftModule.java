@@ -46,7 +46,8 @@ public final class AutoCraftModule extends Module {
     private int cooldown;
 
     public AutoCraftModule() {
-        super("auto_craft", "Auto Craft", ModuleCategory.PLAYER);
+        super("auto_craft", "Auto Craft", ModuleCategory.PLAYER,
+                "Crafts the configured items from your recipe book in an open crafting table and collects or drops the result.");
     }
 
     @Override

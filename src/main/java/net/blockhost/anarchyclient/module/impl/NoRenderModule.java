@@ -61,7 +61,7 @@ public final class NoRenderModule extends Module {
             .build()));
 
     public NoRenderModule() {
-        super("no_render", "No Render", ModuleCategory.RENDER);
+        super("no_render", "No Render", ModuleCategory.RENDER, "Suppresses selected visual effects, overlays, and entities that clutter the screen.");
     }
 
     @Override

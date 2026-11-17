@@ -60,7 +60,8 @@ public final class SurroundModule extends Module {
     private BlockPos startBlock;
 
     public SurroundModule() {
-        super("surround", "Surround", ModuleCategory.COMBAT);
+        super("surround", "Surround", ModuleCategory.COMBAT,
+                "Places obsidian or ender chests around your feet, with optional floor, second layer, and wider ring.");
     }
 
     @Override

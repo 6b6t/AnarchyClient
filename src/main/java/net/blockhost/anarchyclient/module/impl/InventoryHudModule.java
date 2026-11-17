@@ -12,7 +12,8 @@ import java.util.List;
 public final class InventoryHudModule extends HudElementModule {
 
     public InventoryHudModule() {
-        super("inventory_hud", "Inventory HUD", "Bottom Right");
+        super("inventory_hud", "Inventory HUD",
+                "Shows your main inventory and hotbar as an item grid on screen.", "Bottom Right");
     }
 
     @Override

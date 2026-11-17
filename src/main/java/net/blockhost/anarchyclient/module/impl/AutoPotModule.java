@@ -66,7 +66,7 @@ public final class AutoPotModule extends Module {
     private int cooldown;
 
     public AutoPotModule() {
-        super("auto_pot", "Auto Pot", ModuleCategory.COMBAT);
+        super("auto_pot", "Auto Pot", ModuleCategory.COMBAT, "Uses configured potions when health or effect conditions make them useful.");
     }
 
     @Override

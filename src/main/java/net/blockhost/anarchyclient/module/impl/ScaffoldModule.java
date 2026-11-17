@@ -76,7 +76,8 @@ public final class ScaffoldModule extends Module {
     private int startY = Integer.MIN_VALUE;
 
     public ScaffoldModule() {
-        super("scaffold", "Scaffold", ModuleCategory.WORLD);
+        super("scaffold", "Scaffold", ModuleCategory.WORLD,
+                "Places blocks under the player while walking, with optional tower, sprint, and edge protection.");
     }
 
     @Override

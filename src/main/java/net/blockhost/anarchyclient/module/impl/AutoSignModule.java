@@ -28,7 +28,8 @@ public final class AutoSignModule extends Module {
     private BlockPos lastUpdated;
 
     public AutoSignModule() {
-        super("auto_sign", "Auto Sign", ModuleCategory.WORLD);
+        super("auto_sign", "Auto Sign", ModuleCategory.WORLD,
+                "Writes the configured four lines to any sign you look at by sending a sign update packet.");
     }
 
     @Override

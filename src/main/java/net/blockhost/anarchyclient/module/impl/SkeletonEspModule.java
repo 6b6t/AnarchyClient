@@ -50,7 +50,8 @@ public final class SkeletonEspModule extends Module {
             .build()));
 
     public SkeletonEspModule() {
-        super("skeleton_esp", "Skeleton ESP", ModuleCategory.RENDER);
+        super("skeleton_esp", "Skeleton ESP", ModuleCategory.RENDER,
+                "Draws stick-figure skeletons over nearby players through walls, with friends shown in blue.");
     }
 
     @Override

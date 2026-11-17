@@ -36,7 +36,7 @@ public final class ProjectileAimbotModule extends Module {
             .build()));
 
     public ProjectileAimbotModule() {
-        super("projectile_aimbot", "Projectile Aimbot", ModuleCategory.COMBAT);
+        super("projectile_aimbot", "Projectile Aimbot", ModuleCategory.COMBAT, "Leads projectile shots toward selected targets with configurable range and aim rules.");
     }
 
     @Override

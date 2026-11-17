@@ -11,7 +11,8 @@ import net.minecraft.world.item.Items;
 public final class PotionSaverModule extends Module {
 
     public PotionSaverModule() {
-        super("potion_saver", "Potion Saver", ModuleCategory.PLAYER);
+        super("potion_saver", "Potion Saver", ModuleCategory.PLAYER,
+                "Stops drinking a potion one tick before it finishes, so the potion is never used up.");
     }
 
     @Override

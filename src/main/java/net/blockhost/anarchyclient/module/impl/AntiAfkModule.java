@@ -31,7 +31,8 @@ public final class AntiAfkModule extends Module {
     private int cooldownTicks;
 
     public AntiAfkModule() {
-        super("anti_afk", "Anti AFK", ModuleCategory.PLAYER);
+        super("anti_afk", "Anti AFK", ModuleCategory.PLAYER,
+                "Rotates your view and jumps at a set interval so the server does not mark you as idle.");
     }
 
     @Override

@@ -592,7 +592,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         for (Setting<?> setting : module.settings()) {
             if (setting.id().contains(query)
                     || setting.name().toLowerCase(Locale.ROOT).contains(query)
-                    || module.settingDescription(setting).toLowerCase(Locale.ROOT).contains(query)) {
+                    || setting.description().toLowerCase(Locale.ROOT).contains(query)) {
                 return true;
             }
         }

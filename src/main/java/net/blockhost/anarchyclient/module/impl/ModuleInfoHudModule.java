@@ -16,7 +16,8 @@ public final class ModuleInfoHudModule extends HudElementModule {
     private final ModuleManager modules;
 
     public ModuleInfoHudModule(final ModuleManager modules) {
-        super("module_info_hud", "Module Info", "Bottom Left");
+        super("module_info_hud", "Module Info",
+                "Shows how many modules are enabled in total and in each category.", "Bottom Left");
         this.modules = modules;
     }
 

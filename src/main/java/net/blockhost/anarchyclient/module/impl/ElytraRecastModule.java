@@ -21,7 +21,8 @@ public final class ElytraRecastModule extends Module {
     private int cooldownTicks;
 
     public ElytraRecastModule() {
-        super("elytra_recast", "Elytra Recast", ModuleCategory.MOVEMENT);
+        super("elytra_recast", "Elytra Recast", ModuleCategory.MOVEMENT,
+                "Resends the elytra start packet while airborne so gliding restarts after it stops.");
     }
 
     @Override

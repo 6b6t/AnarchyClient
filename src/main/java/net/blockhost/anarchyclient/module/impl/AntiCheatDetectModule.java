@@ -23,7 +23,7 @@ public final class AntiCheatDetectModule extends Module {
     private String lastAlert = "";
 
     public AntiCheatDetectModule() {
-        super("anti_cheat_detect", "AntiCheat Detect", ModuleCategory.MISC);
+        super("anti_cheat_detect", "AntiCheat Detect", ModuleCategory.MISC, "Looks for anti-cheat signals and exposes them to modules that need stricter timing or safer behavior.");
     }
 
     @Override

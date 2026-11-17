@@ -34,7 +34,8 @@ public final class AvoidHazardsModule extends Module {
             .build()));
 
     public AvoidHazardsModule() {
-        super("avoid_hazards", "Avoid Hazards", ModuleCategory.MOVEMENT);
+        super("avoid_hazards", "Avoid Hazards", ModuleCategory.MOVEMENT,
+                "Stops your movement when you are about to walk into lava, fire, cactus, berry bushes, wither roses, or powder snow.");
     }
 
     @Override

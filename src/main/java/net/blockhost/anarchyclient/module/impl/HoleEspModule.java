@@ -57,7 +57,8 @@ public final class HoleEspModule extends Module {
     private int scanCooldown;
 
     public HoleEspModule() {
-        super("hole_esp", "Hole ESP", ModuleCategory.RENDER);
+        super("hole_esp", "Hole ESP", ModuleCategory.RENDER,
+                "Highlights nearby one-block holes fully walled by bedrock, obsidian, or other blast-proof blocks.");
     }
 
     @Override

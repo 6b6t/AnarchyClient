@@ -45,7 +45,8 @@ public final class SpawnProoferModule extends Module {
     private int cooldownTicks;
 
     public SpawnProoferModule() {
-        super("spawn_proofer", "Spawn Proofer", ModuleCategory.WORLD);
+        super("spawn_proofer", "Spawn Proofer", ModuleCategory.WORLD,
+                "Places torches from your hotbar on dark, solid blocks around you so mobs cannot spawn there.");
     }
 
     @Override

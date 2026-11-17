@@ -37,7 +37,8 @@ public final class ArrowDamageModule extends Module {
             .build()));
 
     public ArrowDamageModule() {
-        super("arrow_damage", "Arrow Damage", ModuleCategory.COMBAT);
+        super("arrow_damage", "Arrow Damage", ModuleCategory.COMBAT,
+                "Sends extra sprint and movement packets when you release a bow, crossbow, or trident to boost its damage. This can flag anti-cheats.");
     }
 
     @Override

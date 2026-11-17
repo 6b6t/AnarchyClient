@@ -26,7 +26,8 @@ public final class StrongholdFinderModule extends Module {
     private final List<EyeSample> samples = new ArrayList<>();
 
     public StrongholdFinderModule() {
-        super("stronghold_finder", "Stronghold Finder", ModuleCategory.WORLD);
+        super("stronghold_finder", "Stronghold Finder", ModuleCategory.WORLD,
+                "Estimates the stronghold position from two thrown eyes of ender and prints it in chat.");
     }
 
     @Override

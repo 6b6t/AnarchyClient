@@ -92,7 +92,8 @@ public final class PainterModule extends Module {
     private int cooldownTicks;
 
     public PainterModule() {
-        super("painter", "Painter", ModuleCategory.WORLD);
+        super("painter", "Painter", ModuleCategory.WORLD,
+                "Places a chosen block, such as buttons, on nearby top, side, or bottom surfaces.");
     }
 
     @Override

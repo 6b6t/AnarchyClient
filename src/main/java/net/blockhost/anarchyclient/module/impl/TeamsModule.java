@@ -22,7 +22,7 @@ public final class TeamsModule extends Module {
             .build()));
 
     public TeamsModule() {
-        super("teams", "Teams", ModuleCategory.COMBAT);
+        super("teams", "Teams", ModuleCategory.COMBAT, "Prevents combat modules from targeting players that match configured team checks.");
     }
 
     @Override

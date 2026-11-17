@@ -104,7 +104,7 @@ public final class NotebotModule extends Module {
     private int songTick;
 
     public NotebotModule() {
-        super("notebot", "Notebot", ModuleCategory.MISC);
+        super("notebot", "Notebot", ModuleCategory.MISC, "Plays configured note patterns through note blocks or sound actions.");
         this.legacyNotes.visibleWhen(() -> false);
     }
 

@@ -16,7 +16,8 @@ public final class NoSlowBreakModule extends Module {
             .build()));
 
     public NoSlowBreakModule() {
-        super("no_slow_break", "No Slow Break", ModuleCategory.WORLD);
+        super("no_slow_break", "No Slow Break", ModuleCategory.WORLD,
+                "Removes the Mining Fatigue effect on the client so blocks break at normal speed.");
     }
 
     @Override

@@ -35,7 +35,8 @@ public final class PopChamsModule extends Module {
     private final List<PopGhost> ghosts = new ArrayList<>();
 
     public PopChamsModule() {
-        super("pop_chams", "Pop Chams", ModuleCategory.RENDER);
+        super("pop_chams", "Pop Chams", ModuleCategory.RENDER,
+                "Draws a fading outline that floats up where an entity pops a totem.");
     }
 
     @Override

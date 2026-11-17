@@ -57,7 +57,8 @@ public final class BookBotModule extends Module {
     private int booksWritten;
 
     public BookBotModule() {
-        super("book_bot", "Book Bot", ModuleCategory.MISC);
+        super("book_bot", "Book Bot", ModuleCategory.MISC,
+                "Writes the configured pages into a writable book from your hands or hotbar, optionally signs it, and can repeat.");
     }
 
     @Override

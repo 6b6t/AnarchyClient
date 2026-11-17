@@ -48,7 +48,8 @@ public final class AutoBuffModule extends Module {
     private int cooldownTicks;
 
     public AutoBuffModule() {
-        super("auto_buff", "Auto Buff", ModuleCategory.COMBAT);
+        super("auto_buff", "Auto Buff", ModuleCategory.COMBAT,
+                "Throws strength, speed, or regeneration potions at your feet when the effect is missing.");
     }
 
     @Override

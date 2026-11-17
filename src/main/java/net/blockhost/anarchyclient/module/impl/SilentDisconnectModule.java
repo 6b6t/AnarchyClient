@@ -9,7 +9,8 @@ public final class SilentDisconnectModule extends Module {
     private static boolean active;
 
     public SilentDisconnectModule() {
-        super("silent_disconnect", "Silent Disconnect", ModuleCategory.MISC);
+        super("silent_disconnect", "Silent Disconnect", ModuleCategory.MISC,
+                "Cancels the disconnect screen when kicked and prints the kick reason in chat instead.");
     }
 
     @Override

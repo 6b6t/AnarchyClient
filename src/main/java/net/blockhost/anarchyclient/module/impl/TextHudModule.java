@@ -14,7 +14,8 @@ public final class TextHudModule extends HudElementModule {
             .build()));
 
     public TextHudModule() {
-        super("text_hud", "Text HUD", "Top Left");
+        super("text_hud", "Text HUD",
+                "Shows lines of custom text that you write on the HUD, one entry per line.", "Top Left");
     }
 
     @Override

@@ -19,7 +19,8 @@ public final class KnockbackPlusModule extends Module {
             .build()));
 
     public KnockbackPlusModule() {
-        super("knockback_plus", "Knockback Plus", ModuleCategory.COMBAT);
+        super("knockback_plus", "Knockback Plus", ModuleCategory.COMBAT,
+                "Sends a sprint packet before each attack so your hits deal sprint knockback.");
     }
 
     @Override

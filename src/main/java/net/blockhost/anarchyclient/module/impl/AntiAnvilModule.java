@@ -36,7 +36,8 @@ public final class AntiAnvilModule extends Module {
             .build()));
 
     public AntiAnvilModule() {
-        super("anti_anvil", "Anti Anvil", ModuleCategory.COMBAT);
+        super("anti_anvil", "Anti Anvil", ModuleCategory.COMBAT,
+                "Breaks anvils above your head or places obsidian under them before they land.");
     }
 
     @Override

@@ -52,7 +52,8 @@ public final class LiquidFillerModule extends Module {
             .build()));
 
     public LiquidFillerModule() {
-        super("liquid_filler", "Liquid Filler", ModuleCategory.WORLD);
+        super("liquid_filler", "Liquid Filler", ModuleCategory.WORLD,
+                "Places blocks into nearby water and lava source blocks, preferring sponges when enabled.");
     }
 
     @Override

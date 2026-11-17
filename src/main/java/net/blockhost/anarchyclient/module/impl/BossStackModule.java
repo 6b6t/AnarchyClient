@@ -17,7 +17,8 @@ public final class BossStackModule extends HudElementModule {
     private final Map<UUID, BossInfo> bosses = new LinkedHashMap<>();
 
     public BossStackModule() {
-        super("boss_stack", "Boss Stack", "Top Right");
+        super("boss_stack", "Boss Stack",
+                "Lists active boss bars with their names and progress percentages.", "Top Right");
     }
 
     @Override

@@ -20,7 +20,8 @@ public final class AnchorModule extends Module {
             .build()));
 
     public AnchorModule() {
-        super("anchor", "Anchor", ModuleCategory.MOVEMENT);
+        super("anchor", "Anchor", ModuleCategory.MOVEMENT,
+                "Pulls you straight down and slows sideways motion while airborne above a solid block, helping you drop into holes.");
     }
 
     @Override

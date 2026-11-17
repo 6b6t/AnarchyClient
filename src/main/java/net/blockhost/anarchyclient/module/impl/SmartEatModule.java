@@ -144,7 +144,7 @@ public final class SmartEatModule extends Module {
     private int cooldownTicks;
 
     public SmartEatModule() {
-        super("smart_eat", "Smart Eat", ModuleCategory.PLAYER);
+        super("smart_eat", "Smart Eat", ModuleCategory.PLAYER, "Chooses when to eat based on hunger, health, item quality, and combat pressure.");
         this.healthThreshold.visibleWhen(() -> !"Hunger".equals(this.thresholdMode.value()));
         this.hungerThreshold.visibleWhen(() -> !"Health".equals(this.thresholdMode.value()));
     }

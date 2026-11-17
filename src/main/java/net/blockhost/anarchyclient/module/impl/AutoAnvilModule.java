@@ -64,7 +64,8 @@ public final class AutoAnvilModule extends Module {
             .build()));
 
     public AutoAnvilModule() {
-        super("auto_anvil", "Auto Anvil", ModuleCategory.COMBAT);
+        super("auto_anvil", "Auto Anvil", ModuleCategory.COMBAT,
+                "Places an anvil above the nearest enemy or yourself, with optional support and face trap blocks.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 

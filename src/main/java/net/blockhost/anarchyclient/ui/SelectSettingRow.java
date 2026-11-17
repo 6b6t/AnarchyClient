@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
@@ -26,8 +25,8 @@ final class SelectSettingRow extends SettingLine {
     private final TextNode value;
     private final IconNode icon = iconNode("chevron-down", FAINT);
 
-    SelectSettingRow(final Module module, final SelectSetting setting, final Runnable onChange) {
-        super(module, setting, SETTING_ROW_HEIGHT);
+    SelectSettingRow(final SelectSetting setting, final Runnable onChange) {
+        super(setting, SETTING_ROW_HEIGHT);
         this.setting = setting;
         this.onChange = onChange;
         this.value = textNode(this.setting::value, () -> TEXT)

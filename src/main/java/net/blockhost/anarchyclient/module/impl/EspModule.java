@@ -97,7 +97,8 @@ public final class EspModule extends Module {
             .build()));
 
     public EspModule() {
-        super("esp", "ESP", ModuleCategory.RENDER);
+        super("esp", "ESP", ModuleCategory.RENDER,
+                "Outlines players and mobs through walls with boxes or a shader glow, colored by type or distance.");
     }
 
     @Override

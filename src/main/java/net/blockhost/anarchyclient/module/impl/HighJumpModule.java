@@ -18,7 +18,8 @@ public final class HighJumpModule extends Module {
             .build()));
 
     public HighJumpModule() {
-        super("high_jump", "High Jump", ModuleCategory.MOVEMENT);
+        super("high_jump", "High Jump", ModuleCategory.MOVEMENT,
+                "Sets a higher upward velocity when you jump from the ground so you clear taller obstacles.");
     }
 
     @Override

@@ -44,7 +44,7 @@ public final class PluginScannerModule extends Module {
     private int observedPluginSequence;
 
     public PluginScannerModule() {
-        super("plugin_scanner", "Plugin Scanner", ModuleCategory.MISC);
+        super("plugin_scanner", "Plugin Scanner", ModuleCategory.MISC, "Inspects server plugin hints from available commands, messages, and protocol details.");
     }
 
     @Override

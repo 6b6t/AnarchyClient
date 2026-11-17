@@ -64,7 +64,8 @@ public final class AntiCrashModule extends Module {
     private int logCooldownTicks;
 
     public AntiCrashModule() {
-        super("anti_crash", "Anti Crash", ModuleCategory.MISC);
+        super("anti_crash", "Anti Crash", ModuleCategory.MISC,
+                "Drops incoming explosion, particle, position, and motion packets with extreme values that could crash or freeze the client.");
     }
 
     @Override

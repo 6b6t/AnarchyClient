@@ -28,7 +28,8 @@ public final class SpiderModule extends Module {
             .build()));
 
     public SpiderModule() {
-        super("spider", "Spider", ModuleCategory.MOVEMENT);
+        super("spider", "Spider", ModuleCategory.MOVEMENT,
+                "Lets you climb up walls by pushing you upward whenever you walk into a block.");
     }
 
     @Override

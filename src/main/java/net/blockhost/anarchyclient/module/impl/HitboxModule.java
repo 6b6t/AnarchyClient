@@ -21,7 +21,8 @@ public final class HitboxModule extends Module {
             .build()));
 
     public HitboxModule() {
-        super("hitbox", "Hitbox", ModuleCategory.COMBAT, List.of("hitboxes"));
+        super("hitbox", "Hitbox", ModuleCategory.COMBAT,
+                "Adds extra range to client targeting, as if target hitboxes were larger.", List.of("hitboxes"));
     }
 
     @Override

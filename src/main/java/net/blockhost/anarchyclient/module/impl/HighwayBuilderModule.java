@@ -28,7 +28,8 @@ public final class HighwayBuilderModule extends Module {
             .build()));
 
     public HighwayBuilderModule() {
-        super("highway_builder", "Highway Builder", ModuleCategory.WORLD);
+        super("highway_builder", "Highway Builder", ModuleCategory.WORLD,
+                "Places blocks under the path ahead of you to pave a highway, with optional side rails.");
     }
 
     @Override

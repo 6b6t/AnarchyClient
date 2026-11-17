@@ -35,7 +35,8 @@ public final class CityEspModule extends Module {
     private int cooldownTicks;
 
     public CityEspModule() {
-        super("city_esp", "City ESP", ModuleCategory.RENDER);
+        super("city_esp", "City ESP", ModuleCategory.RENDER,
+                "Outlines obsidian, anchors, and ender chests directly beside nearby players, showing which blocks can be mined to city them.");
     }
 
     @Override

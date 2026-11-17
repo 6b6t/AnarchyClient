@@ -22,7 +22,8 @@ public final class EChestFarmerModule extends Module {
     private int cooldown;
 
     public EChestFarmerModule() {
-        super("echest_farmer", "EChest Farmer", ModuleCategory.WORLD);
+        super("echest_farmer", "EChest Farmer", ModuleCategory.WORLD,
+                "Places an ender chest below you and mines it repeatedly to farm obsidian.");
     }
 
     @Override

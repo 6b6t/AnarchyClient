@@ -21,8 +21,9 @@ abstract class HudElementModule extends Module {
             .defaultValue(true)
             .build()));
 
-    protected HudElementModule(final String id, final String name, final String defaultCorner) {
-        super(id, name, ModuleCategory.HUD);
+    protected HudElementModule(final String id, final String name, final String description,
+                               final String defaultCorner) {
+        super(id, name, ModuleCategory.HUD, description);
         this.defaultCorner = defaultCorner;
     }
 

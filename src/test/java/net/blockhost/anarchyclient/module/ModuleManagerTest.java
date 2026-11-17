@@ -190,7 +190,7 @@ class ModuleManagerTest {
         private boolean cancelPackets;
 
         private TestModule(final String id, final ModuleCategory category) {
-            super(id, id, category);
+            super(id, id, category, "Test module.");
         }
 
         @Override
@@ -286,7 +286,7 @@ class ModuleManagerTest {
                 .build()));
 
         private GroupedModule() {
-            super("grouped", "Grouped", ModuleCategory.COMBAT);
+            super("grouped", "Grouped", ModuleCategory.COMBAT, "Test module.");
         }
     }
 
@@ -295,7 +295,7 @@ class ModuleManagerTest {
         private int ticks;
 
         private SelfDisablingModule() {
-            super("self_disabling", "Self Disabling", ModuleCategory.MISC);
+            super("self_disabling", "Self Disabling", ModuleCategory.MISC, "Test module.");
         }
 
         @Override

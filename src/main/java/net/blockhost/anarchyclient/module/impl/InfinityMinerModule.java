@@ -27,7 +27,8 @@ public final class InfinityMinerModule extends Module {
             .build()));
 
     public InfinityMinerModule() {
-        super("infinity_miner", "Infinity Miner", ModuleCategory.WORLD);
+        super("infinity_miner", "Infinity Miner", ModuleCategory.WORLD,
+                "Mines the closest listed blocks around you automatically, such as stone, deepslate, and netherrack.");
     }
 
     @Override

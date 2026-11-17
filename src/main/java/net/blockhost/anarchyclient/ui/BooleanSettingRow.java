@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
@@ -21,8 +20,8 @@ final class BooleanSettingRow extends SettingLine {
     private final Runnable onChange;
     private final ToggleSwitch toggle;
 
-    BooleanSettingRow(final Module module, final BooleanSetting setting, final Runnable onChange) {
-        super(module, setting, SETTING_ROW_HEIGHT);
+    BooleanSettingRow(final BooleanSetting setting, final Runnable onChange) {
+        super(setting, SETTING_ROW_HEIGHT);
         this.setting = setting;
         this.onChange = onChange;
         this.toggle = new ToggleSwitch(this.setting::value, this::toggle);

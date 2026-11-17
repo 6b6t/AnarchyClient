@@ -28,7 +28,8 @@ public final class PlayerRadarHudModule extends HudElementModule {
             .build()));
 
     public PlayerRadarHudModule() {
-        super("player_radar_hud", "Player Radar", "Top Right");
+        super("player_radar_hud", "Player Radar",
+                "Lists nearby players with their distance and health, closest first, and marks friends.", "Top Right");
     }
 
     @Override

@@ -8,7 +8,8 @@ import java.util.List;
 public final class FlagTimelineHudModule extends HudElementModule {
 
     public FlagTimelineHudModule() {
-        super("flag_timeline_hud", "Flag Timeline HUD", "Top Right");
+        super("flag_timeline_hud", "Flag Timeline HUD",
+                "Shows the anti-cheat flag count, the last flag reason, velocity corrections, and tab list joins and leaves.", "Top Right");
     }
 
     @Override

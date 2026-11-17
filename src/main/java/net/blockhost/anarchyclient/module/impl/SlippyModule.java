@@ -19,7 +19,8 @@ public final class SlippyModule extends Module {
             .build()));
 
     public SlippyModule() {
-        super("slippy", "Slippy", ModuleCategory.MOVEMENT);
+        super("slippy", "Slippy", ModuleCategory.MOVEMENT,
+                "Multiplies your ground speed each tick while you walk, so movement slides like on ice.");
     }
 
     @Override

@@ -44,7 +44,8 @@ public final class MessageAuraModule extends Module {
     private final Map<UUID, Integer> cooldowns = new HashMap<>();
 
     public MessageAuraModule() {
-        super("message_aura", "Message Aura", ModuleCategory.MISC);
+        super("message_aura", "Message Aura", ModuleCategory.MISC,
+                "Sends a chat message to each player who comes within range, with a cooldown per player.");
     }
 
     @Override

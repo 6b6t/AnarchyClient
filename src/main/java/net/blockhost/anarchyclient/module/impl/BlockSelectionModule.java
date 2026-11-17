@@ -22,7 +22,8 @@ public final class BlockSelectionModule extends Module {
             .build()));
 
     public BlockSelectionModule() {
-        super("block_selection", "Block Selection", ModuleCategory.RENDER);
+        super("block_selection", "Block Selection", ModuleCategory.RENDER,
+                "Draws a cyan outline, with optional fill, around the block you are looking at.");
     }
 
     @Override

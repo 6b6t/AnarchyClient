@@ -11,7 +11,8 @@ public final class KeepSprintModule extends Module {
     private int restoreTicks;
 
     public KeepSprintModule() {
-        super("keep_sprint", "Keep Sprint", ModuleCategory.COMBAT);
+        super("keep_sprint", "Keep Sprint", ModuleCategory.COMBAT,
+                "Restores sprinting for a few ticks after you attack so hits do not slow you down.");
     }
 
     @Override

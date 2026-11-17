@@ -37,7 +37,8 @@ public final class AutoBreedModule extends Module {
     private int cooldownTicks;
 
     public AutoBreedModule() {
-        super("auto_breed", "Auto Breed", ModuleCategory.WORLD);
+        super("auto_breed", "Auto Breed", ModuleCategory.WORLD,
+                "Feeds the nearest breedable animal with matching food from your hotbar.");
     }
 
     @Override

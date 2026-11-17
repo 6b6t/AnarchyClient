@@ -25,7 +25,8 @@ public final class VehicleControlModule extends Module {
             .build()));
 
     public VehicleControlModule() {
-        super("vehicle_control", "Vehicle Control", ModuleCategory.MOVEMENT);
+        super("vehicle_control", "Vehicle Control", ModuleCategory.MOVEMENT,
+                "Steers your vehicle with your movement keys at a set speed and can move it up and down with jump and sneak.");
     }
 
     @Override

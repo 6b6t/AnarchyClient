@@ -19,7 +19,8 @@ public final class ReverseStepModule extends Module {
             .build()));
 
     public ReverseStepModule() {
-        super("reverse_step", "Reverse Step", ModuleCategory.MOVEMENT);
+        super("reverse_step", "Reverse Step", ModuleCategory.MOVEMENT,
+                "Pulls the player down faster when falling off ledges.");
     }
 
     @Override

@@ -45,7 +45,8 @@ public final class FakePlayerModule extends Module {
     private RemotePlayer fakePlayer;
 
     public FakePlayerModule() {
-        super("fake_player", "Fake Player", ModuleCategory.MISC);
+        super("fake_player", "Fake Player", ModuleCategory.MISC,
+                "Spawns a client-side copy of your player with your equipment for testing combat modules.");
     }
 
     @Override

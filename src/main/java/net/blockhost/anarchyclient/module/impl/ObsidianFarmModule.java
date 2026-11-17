@@ -44,7 +44,8 @@ public final class ObsidianFarmModule extends Module {
     private boolean lockedUntilNether;
 
     public ObsidianFarmModule() {
-        super("obsidian_farm", "Obsidian Farm", ModuleCategory.WORLD);
+        super("obsidian_farm", "Obsidian Farm", ModuleCategory.WORLD,
+                "Mines nearby obsidian with a diamond or netherite pickaxe and stops after breaking the block underfoot until you reach the Nether.");
     }
 
     @Override

@@ -24,7 +24,8 @@ public final class BetterInventoryModule extends Module {
             .build()));
 
     public BetterInventoryModule() {
-        super("better_inventory", "Better Inventory", ModuleCategory.PLAYER);
+        super("better_inventory", "Better Inventory", ModuleCategory.PLAYER,
+                "Adds stack size and remaining durability percentage lines to item tooltips.");
     }
 
     @Override

@@ -55,7 +55,8 @@ public final class DebugRecorderModule extends Module {
     private int observedFlagSequence;
 
     public DebugRecorderModule() {
-        super("debug_recorder", "Debug Recorder", ModuleCategory.MISC);
+        super("debug_recorder", "Debug Recorder", ModuleCategory.MISC,
+                "Records recent packet names and saves them to a log file when disabled or when the server flags you.");
     }
 
     @Override

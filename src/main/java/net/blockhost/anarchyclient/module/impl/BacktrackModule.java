@@ -47,7 +47,7 @@ public final class BacktrackModule extends Module {
             .build()));
 
     public BacktrackModule() {
-        super("backtrack", "Backtrack", ModuleCategory.COMBAT);
+        super("backtrack", "Backtrack", ModuleCategory.COMBAT, "Tracks recent target positions and uses delayed hit information to improve combat reach decisions.");
     }
 
     @Override

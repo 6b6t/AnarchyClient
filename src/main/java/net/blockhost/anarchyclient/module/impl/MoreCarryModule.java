@@ -17,7 +17,8 @@ public final class MoreCarryModule extends Module {
             .build()));
 
     public MoreCarryModule() {
-        super("more_carry", "More Carry", ModuleCategory.PLAYER);
+        super("more_carry", "More Carry", ModuleCategory.PLAYER,
+                "Keeps items in your crafting grid by not telling the server you closed your inventory.");
     }
 
     @Override

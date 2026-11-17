@@ -19,7 +19,8 @@ public final class EagleModule extends Module {
             .build()));
 
     public EagleModule() {
-        super("eagle", "Eagle", ModuleCategory.MOVEMENT);
+        super("eagle", "Eagle", ModuleCategory.MOVEMENT,
+                "Sneaks automatically at block edges so you do not walk off while bridging.");
     }
 
     @Override

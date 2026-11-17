@@ -36,6 +36,7 @@ public abstract class Module {
     private final String id;
     private final String name;
     private final ModuleCategory category;
+    private final String description;
     private final List<String> aliases;
     private final ModuleKeybind keybind;
     private final List<Setting<?>> settings = new ArrayList<>();
@@ -46,19 +47,21 @@ public abstract class Module {
     private ActivationListener activationListener;
     private boolean enabled;
 
-    protected Module(final String id, final String name, final ModuleCategory category) {
-        this(id, name, category, List.of());
+    protected Module(final String id, final String name, final ModuleCategory category, final String description) {
+        this(id, name, category, description, List.of());
     }
 
-    protected Module(final String id, final String name, final ModuleCategory category, final List<String> aliases) {
-        this(id, name, category, aliases, ModuleKeybind.unbound());
+    protected Module(final String id, final String name, final ModuleCategory category, final String description,
+                     final List<String> aliases) {
+        this(id, name, category, description, aliases, ModuleKeybind.unbound());
     }
 
-    protected Module(final String id, final String name, final ModuleCategory category, final List<String> aliases,
-                     final ModuleKeybind keybind) {
+    protected Module(final String id, final String name, final ModuleCategory category, final String description,
+                     final List<String> aliases, final ModuleKeybind keybind) {
         this.id = id;
         this.name = name;
         this.category = category;
+        this.description = description;
         this.aliases = List.copyOf(aliases);
         this.keybind = keybind == null ? ModuleKeybind.unbound() : keybind;
         this.settingGroups.add(this.defaultSettingGroup);
@@ -73,11 +76,11 @@ public abstract class Module {
     }
 
     public final String description() {
-        return ModuleMetadata.description(this);
+        return this.description;
     }
 
     public final String icon() {
-        return ModuleMetadata.icon(this);
+        return ModuleIcons.icon(this);
     }
 
     public final ModuleCategory category() {
@@ -121,10 +124,6 @@ public abstract class Module {
 
     public final List<SettingGroup> settingGroups() {
         return this.settingGroupsView;
-    }
-
-    public final String settingDescription(final Setting<?> setting) {
-        return ModuleMetadata.settingDescription(this, setting);
     }
 
     protected final <T extends Setting<?>> T setting(final T setting) {

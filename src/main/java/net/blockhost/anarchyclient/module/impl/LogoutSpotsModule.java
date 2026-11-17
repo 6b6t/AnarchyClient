@@ -61,7 +61,8 @@ public final class LogoutSpotsModule extends Module {
     private final Map<UUID, LogoutSpot> spots = new LinkedHashMap<>();
 
     public LogoutSpotsModule() {
-        super("logout_spots", "Logout Spots", ModuleCategory.RENDER);
+        super("logout_spots", "Logout Spots", ModuleCategory.RENDER,
+                "Marks the position where nearby players were standing when they logged out.");
     }
 
     @Override

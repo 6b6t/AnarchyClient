@@ -23,7 +23,8 @@ public final class InstantRebreakModule extends Module {
     private int cooldown;
 
     public InstantRebreakModule() {
-        super("instant_rebreak", "Instant Rebreak", ModuleCategory.WORLD);
+        super("instant_rebreak", "Instant Rebreak", ModuleCategory.WORLD,
+                "Breaks the block you are looking at again as soon as it reappears, after a short configurable delay.");
     }
 
     @Override

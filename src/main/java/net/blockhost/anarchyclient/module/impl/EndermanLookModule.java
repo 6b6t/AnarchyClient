@@ -20,7 +20,8 @@ public final class EndermanLookModule extends Module {
             .build()));
 
     public EndermanLookModule() {
-        super("enderman_look", "Enderman Look", ModuleCategory.PLAYER);
+        super("enderman_look", "Enderman Look", ModuleCategory.PLAYER,
+                "Tilts your view to a set pitch when the crosshair is on an enderman so it does not turn hostile.");
     }
 
     @Override

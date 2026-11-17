@@ -22,7 +22,8 @@ public final class EasyPearlModule extends Module {
     private boolean pending;
 
     public EasyPearlModule() {
-        super("easy_pearl", "Easy Pearl", ModuleCategory.PLAYER);
+        super("easy_pearl", "Easy Pearl", ModuleCategory.PLAYER,
+                "Throws an ender pearl at a set pitch with one keypress, then turns itself off.");
     }
 
     @Override

@@ -36,7 +36,8 @@ public final class AutoShearerModule extends Module {
     private int cooldownTicks;
 
     public AutoShearerModule() {
-        super("auto_shearer", "Auto Shearer", ModuleCategory.WORLD);
+        super("auto_shearer", "Auto Shearer", ModuleCategory.WORLD,
+                "Shears the nearest sheep or other shearable mob in range with shears from the hotbar.");
     }
 
     @Override

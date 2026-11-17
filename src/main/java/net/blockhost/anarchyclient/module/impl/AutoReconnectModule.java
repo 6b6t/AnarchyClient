@@ -32,7 +32,7 @@ public final class AutoReconnectModule extends Module {
     private int reconnectTicks;
 
     public AutoReconnectModule() {
-        super("auto_reconnect", "Auto Reconnect", ModuleCategory.MISC);
+        super("auto_reconnect", "Auto Reconnect", ModuleCategory.MISC, "Reconnects after disconnects using configured delays and notification behavior.");
     }
 
     @Override

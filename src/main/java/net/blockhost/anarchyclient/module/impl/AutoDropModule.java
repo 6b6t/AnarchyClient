@@ -46,7 +46,8 @@ public final class AutoDropModule extends Module {
     private Set<Item> parsedItems = Set.of();
 
     public AutoDropModule() {
-        super("auto_drop", "Auto Drop", ModuleCategory.PLAYER);
+        super("auto_drop", "Auto Drop", ModuleCategory.PLAYER,
+                "Drops configured items from your inventory, with an option to include the hotbar.");
     }
 
     @Override

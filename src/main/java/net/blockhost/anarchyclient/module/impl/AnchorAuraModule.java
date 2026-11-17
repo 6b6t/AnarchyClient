@@ -86,7 +86,7 @@ public final class AnchorAuraModule extends Module {
     private int cooldown;
 
     public AnchorAuraModule() {
-        super("anchor_aura", "Anchor Aura", ModuleCategory.COMBAT);
+        super("anchor_aura", "Anchor Aura", ModuleCategory.COMBAT, "Places, charges, and detonates respawn anchors around targets when the configured checks pass.");
     }
 
     @Override

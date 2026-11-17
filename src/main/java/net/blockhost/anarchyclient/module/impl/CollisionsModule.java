@@ -8,7 +8,8 @@ import net.minecraft.client.player.LocalPlayer;
 public final class CollisionsModule extends Module {
 
     public CollisionsModule() {
-        super("collisions", "Collisions", ModuleCategory.MOVEMENT);
+        super("collisions", "Collisions", ModuleCategory.MOVEMENT,
+                "Turns off client-side block collision so the player can move through blocks the server allows.");
     }
 
     @Override

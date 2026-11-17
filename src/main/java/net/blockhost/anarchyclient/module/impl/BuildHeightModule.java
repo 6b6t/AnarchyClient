@@ -19,7 +19,8 @@ public final class BuildHeightModule extends Module {
     private int cooldown;
 
     public BuildHeightModule() {
-        super("build_height", "Build Height", ModuleCategory.WORLD);
+        super("build_height", "Build Height", ModuleCategory.WORLD,
+                "Warns you in chat when you get within the set distance of the world's build height limit.");
     }
 
     @Override

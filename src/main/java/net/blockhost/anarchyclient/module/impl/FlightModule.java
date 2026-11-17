@@ -39,7 +39,7 @@ public final class FlightModule extends Module {
     private int antiKickTicks;
 
     public FlightModule() {
-        super("flight", "Flight", ModuleCategory.MOVEMENT);
+        super("flight", "Flight", ModuleCategory.MOVEMENT, "Provides configurable flight movement for creative-style travel or server-specific modes.");
     }
 
     @Override

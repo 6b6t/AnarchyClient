@@ -161,7 +161,7 @@ public final class KillAuraModule extends Module {
     private final Random random = new Random();
 
     public KillAuraModule() {
-        super("kill_aura", "Kill Aura", ModuleCategory.COMBAT);
+        super("kill_aura", "Kill Aura", ModuleCategory.COMBAT, "Attacks selected targets automatically with configurable targeting, timing, rotation, and safety checks.");
     }
 
     @Override

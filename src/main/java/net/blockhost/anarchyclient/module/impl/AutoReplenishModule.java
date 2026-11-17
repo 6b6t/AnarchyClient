@@ -36,7 +36,8 @@ public final class AutoReplenishModule extends Module {
             .build()));
 
     public AutoReplenishModule() {
-        super("auto_replenish", "Auto Replenish", ModuleCategory.PLAYER);
+        super("auto_replenish", "Auto Replenish", ModuleCategory.PLAYER,
+                "Refills low hotbar stacks from matching stacks in the main inventory when they drop to the threshold.");
     }
 
     @Override

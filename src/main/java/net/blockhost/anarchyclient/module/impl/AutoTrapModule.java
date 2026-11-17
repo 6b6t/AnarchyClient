@@ -75,7 +75,8 @@ public final class AutoTrapModule extends Module {
             .build()));
 
     public AutoTrapModule() {
-        super("auto_trap", "Auto Trap", ModuleCategory.COMBAT);
+        super("auto_trap", "Auto Trap", ModuleCategory.COMBAT,
+                "Places hard blocks around the nearest enemy's head, or your own, to box them in, with optional feet and anti-step layers.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 

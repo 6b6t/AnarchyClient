@@ -39,7 +39,8 @@ public final class ChatBotModule extends Module {
     private final Queue<QueuedReply> queue = new ArrayDeque<>();
 
     public ChatBotModule() {
-        super("chat_bot", "Chat Bot", ModuleCategory.MISC);
+        super("chat_bot", "Chat Bot", ModuleCategory.MISC,
+                "Replies in chat when a message contains the prefix and a configured keyword, filling in placeholders like player name and coordinates.");
     }
 
     @Override

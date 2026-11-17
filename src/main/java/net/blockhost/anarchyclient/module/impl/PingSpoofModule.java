@@ -32,7 +32,8 @@ public final class PingSpoofModule extends Module {
             .build()));
 
     public PingSpoofModule() {
-        super("ping_spoof", "Ping Spoof", ModuleCategory.MISC);
+        super("ping_spoof", "Ping Spoof", ModuleCategory.MISC,
+                "Delays keep-alive and ping replies to make the connection look slower to the server.");
     }
 
     @Override

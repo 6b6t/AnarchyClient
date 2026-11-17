@@ -17,7 +17,8 @@ public final class GhostModeModule extends Module {
     private boolean ghosted;
 
     public GhostModeModule() {
-        super("ghost_mode", "Ghost Mode", ModuleCategory.PLAYER);
+        super("ghost_mode", "Ghost Mode", ModuleCategory.PLAYER,
+                "Keeps the death screen from closing and holds client health above zero until the module is turned off.");
     }
 
     @Override

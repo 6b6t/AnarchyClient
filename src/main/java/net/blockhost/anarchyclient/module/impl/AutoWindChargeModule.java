@@ -32,7 +32,8 @@ public final class AutoWindChargeModule extends Module {
     private int cooldownTicks;
 
     public AutoWindChargeModule() {
-        super("auto_wind_charge", "Auto Wind Charge", ModuleCategory.MOVEMENT);
+        super("auto_wind_charge", "Auto Wind Charge", ModuleCategory.MOVEMENT,
+                "Looks straight down and fires a wind charge once you fall farther than the set distance, to break the fall.");
     }
 
     @Override

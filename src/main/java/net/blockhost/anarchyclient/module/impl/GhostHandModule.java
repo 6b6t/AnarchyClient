@@ -19,7 +19,8 @@ public final class GhostHandModule extends Module {
             .build()));
 
     public GhostHandModule() {
-        super("ghost_hand", "Ghost Hand", ModuleCategory.PLAYER);
+        super("ghost_hand", "Ghost Hand", ModuleCategory.PLAYER,
+                "Cancels right-clicks on grass, vines, snow, and other listed blocks.");
     }
 
     @Override

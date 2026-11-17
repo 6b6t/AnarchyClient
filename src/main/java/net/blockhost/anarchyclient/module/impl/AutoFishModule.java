@@ -60,7 +60,8 @@ public final class AutoFishModule extends Module {
     private boolean caughtFish;
 
     public AutoFishModule() {
-        super("auto_fish", "Auto Fish", ModuleCategory.PLAYER);
+        super("auto_fish", "Auto Fish", ModuleCategory.PLAYER,
+                "Reels in the fishing rod when a fish bites and casts it again after a short delay.");
     }
 
     @Override

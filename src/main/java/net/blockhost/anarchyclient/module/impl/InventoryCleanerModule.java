@@ -103,7 +103,8 @@ public final class InventoryCleanerModule extends Module {
             .build()));
 
     public InventoryCleanerModule() {
-        super("inventory_cleaner", "Inventory Cleaner", ModuleCategory.PLAYER);
+        super("inventory_cleaner", "Inventory Cleaner", ModuleCategory.PLAYER,
+                "Drops junk items, or in strict mode everything except your best gear and kept item types.");
     }
 
     @Override

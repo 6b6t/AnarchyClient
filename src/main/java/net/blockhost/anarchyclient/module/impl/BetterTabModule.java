@@ -64,7 +64,8 @@ public final class BetterTabModule extends Module {
             .build()));
 
     public BetterTabModule() {
-        super("better_tab", "Better Tab", ModuleCategory.RENDER);
+        super("better_tab", "Better Tab", ModuleCategory.RENDER,
+                "Sorts and filters the player list and marks entries with ping, game mode, and highlights for you, friends, and staff.");
     }
 
     @Override

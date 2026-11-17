@@ -67,7 +67,8 @@ public final class AutoFarmModule extends Module {
             .build()));
 
     public AutoFarmModule() {
-        super("auto_farm", "Auto Farm", ModuleCategory.WORLD);
+        super("auto_farm", "Auto Farm", ModuleCategory.WORLD,
+                "Harvests mature crops and can replant, bone meal, and till soil around you.");
     }
 
     @Override

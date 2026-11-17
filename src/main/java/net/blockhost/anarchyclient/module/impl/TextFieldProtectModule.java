@@ -23,7 +23,8 @@ public final class TextFieldProtectModule extends Module {
             .build()));
 
     public TextFieldProtectModule() {
-        super("text_field_protect", "Text Field Protect", ModuleCategory.MISC);
+        super("text_field_protect", "Text Field Protect", ModuleCategory.MISC,
+                "Masks text fields with asterisks when their label or text matches password, login, or custom patterns.");
     }
 
     @Override

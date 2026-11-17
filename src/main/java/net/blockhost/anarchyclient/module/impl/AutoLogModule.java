@@ -75,7 +75,8 @@ public final class AutoLogModule extends Module {
     private boolean logged;
 
     public AutoLogModule() {
-        super("auto_log", "Auto Log", ModuleCategory.COMBAT);
+        super("auto_log", "Auto Log", ModuleCategory.COMBAT,
+                "Disconnects you when health drops too low, totems pop, an unfriended player comes close, or crystals and TNT gather nearby.");
     }
 
     @Override

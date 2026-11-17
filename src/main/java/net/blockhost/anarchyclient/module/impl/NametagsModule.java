@@ -55,7 +55,8 @@ public final class NametagsModule extends Module {
             .build()));
 
     public NametagsModule() {
-        super("nametags", "Nametags", ModuleCategory.RENDER);
+        super("nametags", "Nametags", ModuleCategory.RENDER,
+                "Shows the name, distance, and health of nearby players above their heads or in a list on screen.");
         this.maxRows.visibleWhen(() -> !this.aboveHead.value());
         this.corner.visibleWhen(() -> !this.aboveHead.value());
     }

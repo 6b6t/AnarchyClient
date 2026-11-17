@@ -68,7 +68,8 @@ public final class RadarHudModule extends Module {
             .build()));
 
     public RadarHudModule() {
-        super("radar_hud", "Radar HUD", ModuleCategory.HUD);
+        super("radar_hud", "Radar HUD", ModuleCategory.HUD,
+                "Shows a top-down radar with dots for nearby players, hostile and passive mobs, and items.");
     }
 
     @Override

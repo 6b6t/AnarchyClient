@@ -82,7 +82,8 @@ public final class AutoWitherModule extends Module {
     private List<BlockPos> previewPositions = List.of();
 
     public AutoWitherModule() {
-        super("auto_wither", "Auto Wither", ModuleCategory.COMBAT);
+        super("auto_wither", "Auto Wither", ModuleCategory.COMBAT,
+                "Finds open space nearby and builds a wither from soul sand or soul soil and wither skeleton skulls, with a build preview.");
     }
 
     @Override

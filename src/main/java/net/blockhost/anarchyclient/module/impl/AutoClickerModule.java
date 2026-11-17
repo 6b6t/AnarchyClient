@@ -61,7 +61,8 @@ public final class AutoClickerModule extends Module {
     private final AttackCadence cadence = new AttackCadence(new Random());
 
     public AutoClickerModule() {
-        super("auto_clicker", "Auto Clicker", ModuleCategory.COMBAT, List.of("trigger_bot"));
+        super("auto_clicker", "Auto Clicker", ModuleCategory.COMBAT,
+                "Attacks or uses items at a randomized CPS, optionally only while the button is held with a weapon.", List.of("trigger_bot"));
     }
 
     @Override

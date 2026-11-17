@@ -42,7 +42,8 @@ public final class AmbienceModule extends Module {
             .build()));
 
     public AmbienceModule() {
-        super("ambience", "Ambience", ModuleCategory.RENDER);
+        super("ambience", "Ambience", ModuleCategory.RENDER,
+                "Tints the whole screen with a configurable color and opacity overlay.");
     }
 
     @Override

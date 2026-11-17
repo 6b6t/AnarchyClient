@@ -63,7 +63,8 @@ public final class AutoTntModule extends Module {
     private int cooldownTicks;
 
     public AutoTntModule() {
-        super("auto_tnt", "Auto TNT", ModuleCategory.COMBAT);
+        super("auto_tnt", "Auto TNT", ModuleCategory.COMBAT,
+                "Ignites nearby TNT with flint and steel or fire charges, skipping lighters that are close to breaking.");
     }
 
     @Override

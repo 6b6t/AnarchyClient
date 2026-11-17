@@ -32,7 +32,8 @@ public final class BlinkModule extends Module {
     private final Queue<QueuedPacket> packets = new ArrayDeque<>();
 
     public BlinkModule() {
-        super("blink", "Blink", ModuleCategory.MOVEMENT);
+        super("blink", "Blink", ModuleCategory.MOVEMENT,
+                "Holds back your movement packets and sends them together when disabled, so the server sees you jump to the new position.");
     }
 
     @Override

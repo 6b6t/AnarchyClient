@@ -20,7 +20,8 @@ public final class TridentBoostModule extends Module {
             .build()));
 
     public TridentBoostModule() {
-        super("trident_boost", "Trident Boost", ModuleCategory.MOVEMENT);
+        super("trident_boost", "Trident Boost", ModuleCategory.MOVEMENT,
+                "Pushes you in your look direction each tick while you charge a trident.");
     }
 
     @Override

@@ -19,7 +19,8 @@ public final class BlurModule extends Module {
             .build()));
 
     public BlurModule() {
-        super("blur", "Blur", ModuleCategory.RENDER);
+        super("blur", "Blur", ModuleCategory.RENDER,
+                "Darkens the background behind open game screens with an overlay of adjustable opacity.");
     }
 
     @Override

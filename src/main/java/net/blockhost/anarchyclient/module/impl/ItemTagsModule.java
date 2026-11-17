@@ -75,7 +75,8 @@ public final class ItemTagsModule extends Module {
             .build()));
 
     public ItemTagsModule() {
-        super("item_tags", "Item Tags", ModuleCategory.RENDER);
+        super("item_tags", "Item Tags", ModuleCategory.RENDER,
+                "Labels dropped items with name, count, and distance, and adds registry IDs to tooltips.");
         this.items.visibleWhen(() -> "Listed".equals(this.itemMode.value()));
     }
 

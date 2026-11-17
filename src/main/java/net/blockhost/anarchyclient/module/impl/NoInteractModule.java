@@ -149,7 +149,8 @@ public final class NoInteractModule extends Module {
             .build()));
 
     public NoInteractModule() {
-        super("no_interact", "No Interact", ModuleCategory.PLAYER);
+        super("no_interact", "No Interact", ModuleCategory.PLAYER,
+                "Cancels selected block use, mining, item use, and entity use or attacks, with extra filters for friends, babies, and named mobs.");
         this.blockList.visibleWhen(() -> !"All".equals(this.blockMode.value()));
         this.mineMode.visibleWhen(this.mineBlocks::value);
         this.mineList.visibleWhen(() -> this.mineBlocks.value() && !"All".equals(this.mineMode.value()));

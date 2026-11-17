@@ -62,7 +62,8 @@ public final class HoleFillerModule extends Module {
             .build()));
 
     public HoleFillerModule() {
-        super("hole_filler", "Hole Filler", ModuleCategory.COMBAT);
+        super("hole_filler", "Hole Filler", ModuleCategory.COMBAT,
+                "Fills nearby safe holes and double holes with hard blocks, by default only near an enemy.");
     }
 
     @Override

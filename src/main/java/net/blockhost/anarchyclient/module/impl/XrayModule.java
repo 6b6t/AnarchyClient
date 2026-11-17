@@ -62,7 +62,7 @@ public final class XrayModule extends Module {
     private int cooldownTicks;
 
     public XrayModule() {
-        super("xray", "Xray", ModuleCategory.RENDER);
+        super("xray", "Xray", ModuleCategory.RENDER, "Filters world rendering to make selected blocks easier to inspect through terrain.");
     }
 
     @Override

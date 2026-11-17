@@ -14,7 +14,8 @@ import net.minecraft.world.phys.Vec3;
 public final class EntityOwnerModule extends Module {
 
     public EntityOwnerModule() {
-        super("entity_owner", "Entity Owner", ModuleCategory.RENDER);
+        super("entity_owner", "Entity Owner", ModuleCategory.RENDER,
+                "Outlines every tamed animal that has an owner, visible through walls.");
     }
 
     @Override

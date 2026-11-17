@@ -28,7 +28,7 @@ public final class YggdrasilSignatureFixModule extends Module {
     private int warnCooldown;
 
     public YggdrasilSignatureFixModule() {
-        super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC,
+        super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC, "Repairs profile signature edge cases that can break joins or authentication on some servers.",
                 List.of("signature_fix"));
     }
 

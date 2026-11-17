@@ -26,7 +26,8 @@ public final class AntiAnchorModule extends Module {
             .build()));
 
     public AntiAnchorModule() {
-        super("anti_anchor", "Anti Anchor", ModuleCategory.COMBAT);
+        super("anti_anchor", "Anti Anchor", ModuleCategory.COMBAT,
+                "Places a slab between you and a respawn anchor above your head, and blocks you from using anchors yourself.");
     }
 
     @Override

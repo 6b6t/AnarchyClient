@@ -38,7 +38,8 @@ public final class AutoShopModule extends Module {
     private int cooldownTicks;
 
     public AutoShopModule() {
-        super("auto_shop", "Auto Shop", ModuleCategory.PLAYER);
+        super("auto_shop", "Auto Shop", ModuleCategory.PLAYER,
+                "Quick-moves configured items out of open container menus, such as server shop GUIs, on a fixed delay.");
     }
 
     @Override

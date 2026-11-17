@@ -66,7 +66,7 @@ public final class FastExpModule extends Module {
     private int throwsThisRun;
 
     public FastExpModule() {
-        super("fast_exp", "Fast EXP", ModuleCategory.PLAYER);
+        super("fast_exp", "Fast EXP", ModuleCategory.PLAYER, "Throws experience bottles for repairs with durability, delay, and safety controls.");
     }
 
     @Override

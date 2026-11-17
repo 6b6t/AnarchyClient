@@ -47,7 +47,8 @@ public final class WallHackModule extends Module {
     private int cooldownTicks;
 
     public WallHackModule() {
-        super("wall_hack", "Wall Hack", ModuleCategory.RENDER);
+        super("wall_hack", "Wall Hack", ModuleCategory.RENDER,
+                "Highlights selected blocks such as diamond ore, ancient debris, and spawners through walls.");
     }
 
     @Override

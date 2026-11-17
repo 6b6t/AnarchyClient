@@ -37,7 +37,8 @@ public final class FlagCheckModule extends Module {
     private int lastInvalidAlertTick;
 
     public FlagCheckModule() {
-        super("flag_check", "Flag Check", ModuleCategory.MISC);
+        super("flag_check", "Flag Check", ModuleCategory.MISC,
+                "Detects server lagbacks and forced rotations, records them, and alerts you in chat.");
     }
 
     @Override

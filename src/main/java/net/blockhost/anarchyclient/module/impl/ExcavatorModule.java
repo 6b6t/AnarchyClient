@@ -35,7 +35,8 @@ public final class ExcavatorModule extends Module {
             .build()));
 
     public ExcavatorModule() {
-        super("excavator", "Excavator", ModuleCategory.WORLD);
+        super("excavator", "Excavator", ModuleCategory.WORLD,
+                "Mines nearby blocks from the configured list automatically within a set radius.");
     }
 
     @Override

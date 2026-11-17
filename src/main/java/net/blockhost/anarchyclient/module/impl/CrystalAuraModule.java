@@ -99,7 +99,7 @@ public final class CrystalAuraModule extends Module {
     private int placeCooldown;
 
     public CrystalAuraModule() {
-        super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT);
+        super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT, "Places and breaks end crystals around targets using damage, range, and self-safety checks.");
     }
 
     @Override

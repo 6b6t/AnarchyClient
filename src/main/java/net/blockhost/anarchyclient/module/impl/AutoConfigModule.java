@@ -56,7 +56,7 @@ public final class AutoConfigModule extends Module {
     private int pendingTicks;
 
     public AutoConfigModule(final ModuleManager modules) {
-        super("auto_config", "Auto Config", ModuleCategory.MISC);
+        super("auto_config", "Auto Config", ModuleCategory.MISC, "Applies safer module presets after server detection and can disable risky modules when checks look unstable.");
         this.modules = modules;
         this.enabled(true);
     }

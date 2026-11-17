@@ -23,7 +23,8 @@ public final class NameCollectorModule extends Module {
     private final Set<String> names = new LinkedHashSet<>();
 
     public NameCollectorModule() {
-        super("name_collector", "Name Collector", ModuleCategory.MISC);
+        super("name_collector", "Name Collector", ModuleCategory.MISC,
+                "Collects the names of online players and saves them to a file for the server when turned off.");
     }
 
     @Override

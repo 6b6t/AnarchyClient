@@ -8,7 +8,8 @@ import java.util.List;
 public final class CompassHudModule extends HudElementModule {
 
     public CompassHudModule() {
-        super("compass_hud", "Compass HUD", "Top Left");
+        super("compass_hud", "Compass HUD",
+                "Shows the facing direction, yaw in degrees, and a small N E S W compass strip.", "Top Left");
     }
 
     @Override

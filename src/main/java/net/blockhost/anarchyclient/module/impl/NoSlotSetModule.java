@@ -10,7 +10,8 @@ import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 public final class NoSlotSetModule extends Module {
 
     public NoSlotSetModule() {
-        super("no_slot_set", "No Slot Set", ModuleCategory.PLAYER);
+        super("no_slot_set", "No Slot Set", ModuleCategory.PLAYER,
+                "Ignores server packets that change the selected hotbar slot.");
     }
 
     @Override

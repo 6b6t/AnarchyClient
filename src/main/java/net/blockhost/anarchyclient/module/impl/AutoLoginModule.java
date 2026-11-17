@@ -31,7 +31,8 @@ public final class AutoLoginModule extends Module {
     private int pendingTicks;
 
     public AutoLoginModule() {
-        super("auto_login", "Auto Login", ModuleCategory.MISC);
+        super("auto_login", "Auto Login", ModuleCategory.MISC,
+                "Sends a configured login command a set time after joining, chosen by server address, name, or a fallback entry.");
     }
 
     @Override

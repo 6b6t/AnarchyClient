@@ -26,7 +26,8 @@ public final class DebugRenderModule extends Module {
             .build()));
 
     public DebugRenderModule() {
-        super("debug_render", "Debug Render", ModuleCategory.RENDER);
+        super("debug_render", "Debug Render", ModuleCategory.RENDER,
+                "Outlines your own hitbox and the current chunk boundary around your height.");
     }
 
     @Override

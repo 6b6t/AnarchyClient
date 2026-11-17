@@ -41,7 +41,8 @@ public final class AutoDisableModule extends Module {
     private int observedFlagSequence;
 
     public AutoDisableModule(final ModuleManager modules) {
-        super("auto_disable", "Auto Disable", ModuleCategory.MISC);
+        super("auto_disable", "Auto Disable", ModuleCategory.MISC,
+                "Turns off a configured list of modules when you die, disconnect, or get a server setback.");
         this.modules = modules;
     }
 

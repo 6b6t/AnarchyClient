@@ -22,7 +22,8 @@ public final class HitFXModule extends Module {
             .build()));
 
     public HitFXModule() {
-        super("hit_fx", "Hit FX", ModuleCategory.RENDER);
+        super("hit_fx", "Hit FX", ModuleCategory.RENDER,
+                "Spawns a burst of critical-hit particles on each entity you attack.");
     }
 
     @Override

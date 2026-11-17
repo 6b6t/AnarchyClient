@@ -27,7 +27,8 @@ public final class BlockOutlineModule extends Module {
             .build()));
 
     public BlockOutlineModule() {
-        super("block_outline", "Block Outline", ModuleCategory.RENDER);
+        super("block_outline", "Block Outline", ModuleCategory.RENDER,
+                "Draws a cyan box with optional fill around the targeted block that stays visible through other blocks.");
     }
 
     @Override

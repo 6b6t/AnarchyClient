@@ -13,7 +13,8 @@ import java.util.List;
 public final class MapHudModule extends HudElementModule {
 
     public MapHudModule() {
-        super("map_hud", "Map HUD", "Top Left");
+        super("map_hud", "Map HUD",
+                "Shows a minimap of nearby entities with your heading, chunk coordinates, and biome.", "Top Left");
     }
 
     @Override

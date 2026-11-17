@@ -21,7 +21,11 @@ final class PanelStyle {
     static final float SETTING_ROW_HEIGHT = 46F;
     static final float NUMBER_ROW_HEIGHT = 64F;
     static final float TEXT_ROW_HEIGHT = 54F;
+    // A text row without a description: the padded 24px field plus the divider.
+    static final float TEXT_FIELD_ROW_HEIGHT = 39F;
     static final float OPTION_ROW_HEIGHT = 34F;
+    // Height of the one-line description under a setting label. Rows without a description drop it.
+    static final float DESCRIPTION_HEIGHT = 17F;
     static final float INSPECTOR_HEADER_HEIGHT = 96F;
     // The switch box is 2px taller than the painted track so the SDF anti-aliased edge and
     // half-pixel snapping can never clip the pill at the bottom.

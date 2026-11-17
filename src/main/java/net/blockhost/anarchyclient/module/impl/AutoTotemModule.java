@@ -95,7 +95,7 @@ public final class AutoTotemModule extends Module {
     private boolean emergencyWasActive;
 
     public AutoTotemModule() {
-        super("auto_totem", "Auto Totem", ModuleCategory.COMBAT);
+        super("auto_totem", "Auto Totem", ModuleCategory.COMBAT, "Keeps a totem ready in the offhand by scoring danger, inventory state, and configured replacement rules.");
     }
 
     @Override

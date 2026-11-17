@@ -30,7 +30,8 @@ public final class BoatGlitchModule extends Module {
     private int ticks;
 
     public BoatGlitchModule() {
-        super("boat_glitch", "Boat Glitch", ModuleCategory.MOVEMENT);
+        super("boat_glitch", "Boat Glitch", ModuleCategory.MOVEMENT,
+                "Periodically sends a raised vehicle position followed by the real one while riding, to glitch the boat on the server.");
     }
 
     @Override

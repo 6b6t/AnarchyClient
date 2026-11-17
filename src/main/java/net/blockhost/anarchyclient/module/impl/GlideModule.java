@@ -28,7 +28,8 @@ public final class GlideModule extends Module {
             .build()));
 
     public GlideModule() {
-        super("glide", "Glide", ModuleCategory.MOVEMENT);
+        super("glide", "Glide", ModuleCategory.MOVEMENT,
+                "Caps your fall speed in the air so you drift down slowly, optionally only above open space.");
     }
 
     @Override

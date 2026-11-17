@@ -65,7 +65,8 @@ public final class NewChunksModule extends Module {
     private final Set<Long> oldChunks = ConcurrentHashMap.newKeySet();
 
     public NewChunksModule() {
-        super("new_chunks", "New Chunks", ModuleCategory.RENDER);
+        super("new_chunks", "New Chunks", ModuleCategory.RENDER,
+                "Marks chunks where flowing liquid updates next to a source block, which suggests freshly generated terrain, in red.");
     }
 
     @Override

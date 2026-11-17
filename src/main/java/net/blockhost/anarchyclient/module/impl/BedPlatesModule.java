@@ -23,7 +23,7 @@ public final class BedPlatesModule extends Module {
             .build()));
 
     public BedPlatesModule() {
-        super("bed_plates", "Bed Plates", ModuleCategory.RENDER);
+        super("bed_plates", "Bed Plates", ModuleCategory.RENDER, "Outlines beds within range with cyan boxes.");
     }
 
     @Override

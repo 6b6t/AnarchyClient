@@ -27,7 +27,7 @@ public final class AutoSprintModule extends Module {
             .build()));
 
     public AutoSprintModule() {
-        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, List.of("sprint"));
+        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, "Keeps sprinting active when movement conditions allow it.", List.of("sprint"));
     }
 
     @Override

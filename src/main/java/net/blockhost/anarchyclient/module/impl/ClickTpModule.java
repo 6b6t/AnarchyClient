@@ -21,7 +21,8 @@ public final class ClickTpModule extends Module {
             .build()));
 
     public ClickTpModule() {
-        super("click_tp", "Click TP", ModuleCategory.MOVEMENT);
+        super("click_tp", "Click TP", ModuleCategory.MOVEMENT,
+                "Teleports to the targeted block when you middle-click, optionally only while sneaking. This can flag anti-cheats.");
     }
 
     @Override

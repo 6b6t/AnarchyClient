@@ -33,7 +33,8 @@ public final class MiddleClickActionModule extends Module {
     private boolean wasPressed;
 
     public MiddleClickActionModule() {
-        super("middle_click_action", "Middle Click", ModuleCategory.MISC, List.of("middle_click_extra"));
+        super("middle_click_action", "Middle Click", ModuleCategory.MISC,
+                "Throws a pearl or XP bottle, runs a command, or adds a friend on middle click.", List.of("middle_click_extra"));
     }
 
     @Override

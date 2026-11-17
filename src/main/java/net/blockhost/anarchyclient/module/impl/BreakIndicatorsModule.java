@@ -29,7 +29,8 @@ public final class BreakIndicatorsModule extends Module {
     private final Map<BlockPos, BreakMarker> markers = new HashMap<>();
 
     public BreakIndicatorsModule() {
-        super("break_indicators", "Break Indicators", ModuleCategory.RENDER);
+        super("break_indicators", "Break Indicators", ModuleCategory.RENDER,
+                "Shows red boxes on blocks being mined that grow with break progress.");
     }
 
     @Override

@@ -33,7 +33,8 @@ public final class MaceKillModule extends Module {
             .build()));
 
     public MaceKillModule() {
-        super("mace_kill", "Mace Kill", ModuleCategory.COMBAT);
+        super("mace_kill", "Mace Kill", ModuleCategory.COMBAT,
+                "Attacks the closest target with your mace after a long enough fall at full attack charge.");
     }
 
     @Override
