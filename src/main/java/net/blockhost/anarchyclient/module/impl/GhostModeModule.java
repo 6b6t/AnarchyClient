@@ -24,8 +24,10 @@ public final class GhostModeModule extends Module {
     @Override
     public boolean openScreen(final Minecraft client, final Screen screen) {
         if (screen == null && client.player != null && client.player.isDeadOrDying()) {
-            this.ghosted = true;
-            client.player.sendSystemMessage(Component.literal("Ghost Mode held the death screen. Disable it to respawn."));
+            if (!this.ghosted) {
+                this.ghosted = true;
+                client.player.sendSystemMessage(Component.literal("Ghost Mode held the death screen. Disable it to respawn."));
+            }
             return true;
         }
         return false;
@@ -41,8 +43,10 @@ public final class GhostModeModule extends Module {
 
     @Override
     protected void onDisable() {
+        // Tick raises client health while ghosted, so isDeadOrDying() is false here even though the server still
+        // considers the player dead. The server ignores the respawn request if the player is alive.
         Minecraft client = Minecraft.getInstance();
-        if (this.ghosted && this.respawnOnDisable.value() && client.player != null && client.player.isDeadOrDying()) {
+        if (this.ghosted && this.respawnOnDisable.value() && client.player != null) {
             client.player.respawn();
         }
         this.ghosted = false;

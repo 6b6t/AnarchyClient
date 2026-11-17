@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -43,10 +44,12 @@ public final class BetterChatModule extends Module {
     private static BetterChatModule active;
     private String lastMessage = "";
     private int duplicateCount;
+    private Component lastShown;
+    private Component replacedMessage;
 
     public BetterChatModule() {
         super("better_chat", "Better Chat", ModuleCategory.MISC,
-                "Adds timestamps to chat, counts repeated messages, blocks server chat clears, and can append a suffix to sent messages.");
+                "Adds timestamps to chat, merges repeated messages into one line with a count, blocks server chat clears, and can append a suffix to sent messages.");
     }
 
     @Override
@@ -54,10 +57,14 @@ public final class BetterChatModule extends Module {
         if (message == null) {
             return message;
         }
-        Component result = this.compactDuplicate(message);
+        Component previous = this.lastShown;
+        boolean duplicate = this.compactDuplicate(message);
+        Component result = duplicate ? withCount(message, this.duplicateCount) : message;
         if (this.timestamps.value()) {
             result = withTimestamp(result, LocalTime.now());
         }
+        this.replacedMessage = duplicate ? previous : null;
+        this.lastShown = result;
         return result;
     }
 
@@ -72,8 +79,7 @@ public final class BetterChatModule extends Module {
     @Override
     protected void onEnable() {
         active = this;
-        this.lastMessage = "";
-        this.duplicateCount = 0;
+        this.reset();
     }
 
     @Override
@@ -81,28 +87,46 @@ public final class BetterChatModule extends Module {
         if (active == this) {
             active = null;
         }
-        this.lastMessage = "";
-        this.duplicateCount = 0;
+        this.reset();
     }
 
     public static boolean shouldPreventClearMessages() {
         return active != null && active.antiClear.value();
     }
 
-    private Component compactDuplicate(final Component message) {
-        if (!this.compactDuplicates.value()) {
-            this.lastMessage = message.getString();
-            this.duplicateCount = 1;
-            return message;
+    /**
+     * Returns the chat line that the latest message repeats, so the chat can remove it. Each call clears it.
+     */
+    public static @Nullable Component takeReplacedMessage() {
+        BetterChatModule module = active;
+        if (module == null) {
+            return null;
         }
+        Component replaced = module.replacedMessage;
+        module.replacedMessage = null;
+        return replaced;
+    }
+
+    private void reset() {
+        this.lastMessage = "";
+        this.duplicateCount = 0;
+        this.lastShown = null;
+        this.replacedMessage = null;
+    }
+
+    private boolean compactDuplicate(final Component message) {
         String raw = message.getString();
-        if (raw.equals(this.lastMessage)) {
+        if (this.compactDuplicates.value() && raw.equals(this.lastMessage)) {
             this.duplicateCount++;
-            return Component.literal(raw + " x" + this.duplicateCount).withStyle(message.getStyle());
+            return true;
         }
         this.lastMessage = raw;
         this.duplicateCount = 1;
-        return message;
+        return false;
+    }
+
+    static Component withCount(final Component message, final int count) {
+        return message.copy().append(Component.literal(" x" + count).withStyle(ChatFormatting.GRAY));
     }
 
     static Component withTimestamp(final Component message, final LocalTime time) {

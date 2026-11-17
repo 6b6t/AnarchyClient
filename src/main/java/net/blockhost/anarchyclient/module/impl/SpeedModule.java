@@ -57,23 +57,16 @@ public final class SpeedModule extends Module {
     }
 
     private Vec3 horizontalVelocity(final Minecraft client, final LocalPlayer player) {
-        double multiplier = switch (this.mode.value()) {
-            case "Ground" -> player.onGround() ? 1.0 : 0.55;
-            case "Low Hop" -> {
-                if (player.onGround()) {
-                    player.setDeltaMovement(player.getDeltaMovement().x, 0.18, player.getDeltaMovement().z);
+        String mode = this.mode.value();
+        if (player.onGround()) {
+            switch (mode) {
+                case "Low Hop" -> player.setDeltaMovement(player.getDeltaMovement().x, 0.18, player.getDeltaMovement().z);
+                case "BHop" -> player.jumpFromGround();
+                default -> {
                 }
-                yield player.onGround() ? 1.08 : 0.92;
             }
-            case "BHop" -> {
-                if (player.onGround()) {
-                    player.jumpFromGround();
-                }
-                yield player.onGround() ? 1.15 : 1.02;
-            }
-            case "Collision Safe" -> player.horizontalCollision ? 0.35 : 0.9;
-            default -> 1.0;
-        };
+        }
+        double multiplier = modeMultiplier(mode, player.onGround(), player.horizontalCollision);
         return MovementVelocity.fromKeys(client, player.getYRot(), this.speed.value() * multiplier);
     }
 

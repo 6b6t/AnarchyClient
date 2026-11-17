@@ -8,8 +8,7 @@ import net.minecraft.world.entity.Entity;
 
 public final class NoPushModule extends Module {
 
-    private static boolean active;
-    private static boolean activeEntities;
+    private static NoPushModule active;
 
     private final BooleanSetting entities = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("entities")
@@ -23,35 +22,33 @@ public final class NoPushModule extends Module {
             .build()));
 
     public NoPushModule() {
-        super("no_push", "No Push", ModuleCategory.MOVEMENT, "Stops other entities from pushing the player around.");
+        super("no_push", "No Push", ModuleCategory.MOVEMENT,
+                "Stops other entities, and optionally water and lava currents, from pushing the player around.");
     }
 
     @Override
     protected void onEnable() {
-        active = true;
-        activeEntities = this.entities.value();
-    }
-
-    @Override
-    public void tick(final Minecraft client) {
-        activeEntities = this.entities.value();
+        active = this;
     }
 
     @Override
     protected void onDisable() {
-        active = false;
-        activeEntities = false;
+        if (active == this) {
+            active = null;
+        }
     }
 
     public static boolean shouldCancelPush(final Minecraft client, final Entity entity) {
-        return active && activeEntities && client != null && client.player != null && entity == client.player;
+        NoPushModule module = active;
+        return module != null && module.entities.value() && isLocalPlayer(client, entity);
     }
 
-    boolean cancelEntities() {
-        return this.entities.value();
+    public static boolean shouldCancelFluidPush(final Minecraft client, final Entity entity) {
+        NoPushModule module = active;
+        return module != null && module.fluids.value() && isLocalPlayer(client, entity);
     }
 
-    boolean cancelFluids() {
-        return this.fluids.value();
+    private static boolean isLocalPlayer(final Minecraft client, final Entity entity) {
+        return client != null && client.player != null && entity == client.player;
     }
 }

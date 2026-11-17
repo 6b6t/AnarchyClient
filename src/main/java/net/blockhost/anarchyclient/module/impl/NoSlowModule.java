@@ -7,8 +7,10 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -100,7 +102,29 @@ public final class NoSlowModule extends Module {
 
     public static boolean shouldIgnoreStuckBlock(final BlockState state) {
         NoSlowModule module = active;
-        return module != null && module.matchesStuckBlock(state);
+        return module != null && module.matchesSlowBlock(state);
+    }
+
+    /**
+     * Honey and soul sand slow movement through {@code Block.getSpeedFactor()}, not {@code makeStuckInBlock}.
+     */
+    public static float blockSpeedFactor(final Entity entity, final Block block) {
+        return speedFactor(block, isLocalPlayer(entity));
+    }
+
+    /**
+     * Slime slows movement in {@code SlimeBlock.stepOn}, so the player skips that call for ignored blocks.
+     */
+    public static boolean shouldIgnoreStepOn(final Entity entity, final BlockState state) {
+        return isLocalPlayer(entity) && shouldIgnoreStuckBlock(state);
+    }
+
+    static float speedFactor(final Block block, final boolean localPlayer) {
+        return localPlayer && shouldIgnoreStuckBlock(block.defaultBlockState()) ? 1.0F : block.getSpeedFactor();
+    }
+
+    private static boolean isLocalPlayer(final Entity entity) {
+        return active != null && entity != null && entity == Minecraft.getInstance().player;
     }
 
     private boolean shouldBypass(final ItemStack stack) {
@@ -117,7 +141,7 @@ public final class NoSlowModule extends Module {
         };
     }
 
-    private boolean matchesStuckBlock(final BlockState state) {
+    private boolean matchesSlowBlock(final BlockState state) {
         return this.cobweb.value() && state.is(Blocks.COBWEB)
                 || this.honey.value() && state.is(Blocks.HONEY_BLOCK)
                 || this.soulSand.value() && state.is(Blocks.SOUL_SAND)

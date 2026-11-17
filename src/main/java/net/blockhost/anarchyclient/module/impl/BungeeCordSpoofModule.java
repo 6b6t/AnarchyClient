@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.mojang.authlib.properties.Property;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,8 +12,10 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -35,7 +40,7 @@ public final class BungeeCordSpoofModule extends Module {
 
     public BungeeCordSpoofModule() {
         super("bungeecord_spoof", "BungeeCord Spoof", ModuleCategory.MISC,
-                "Adds a forwarded IP and your UUID to the login handshake so BungeeCord-mode backend servers accept a direct connection.");
+                "Adds a forwarded IP, your UUID, and optionally your profile properties such as your skin to the login handshake so BungeeCord-mode backend servers accept a direct connection.");
     }
 
     @Override
@@ -44,16 +49,40 @@ public final class BungeeCordSpoofModule extends Module {
                 || !matches(intention.hostName(), this.serverFilter.value())) {
             return packet;
         }
-        UUID profileId = client.getUser().getProfileId();
-        String host = intention.hostName() + "\0" + this.forwardedIp.value().trim() + "\0"
-                + profileId.toString().replace("-", "");
-        if (this.includeProfile.value()) {
-            host += "\0[{\"name\":\"name\",\"value\":\"" + client.getUser().getName() + "\"}]";
-        }
+        String host = forwardedHost(
+                intention.hostName(),
+                this.forwardedIp.value().trim(),
+                client.getUser().getProfileId(),
+                this.includeProfile.value() ? client.getGameProfile().properties().values() : null
+        );
         // Vanilla has no non-deprecated way to build a handshake packet; Connection uses this constructor too.
         @SuppressWarnings("deprecation")
         ClientIntentionPacket forwarded = new ClientIntentionPacket(intention.protocolVersion(), host, intention.port(), intention.intention());
         return forwarded;
+    }
+
+    /**
+     * Builds the BungeeCord IP forwarding host: {@code host\0ip\0uuid[\0properties]}, where the optional
+     * properties are a JSON array of {@code {name, value, signature}} profile properties such as skin textures.
+     */
+    static String forwardedHost(final String host, final String ip, final UUID profileId,
+                                final @Nullable Collection<Property> properties) {
+        String forwarded = host + "\0" + ip + "\0" + profileId.toString().replace("-", "");
+        return properties == null ? forwarded : forwarded + "\0" + propertiesJson(properties);
+    }
+
+    static String propertiesJson(final Collection<Property> properties) {
+        JsonArray array = new JsonArray();
+        for (Property property : properties) {
+            JsonObject json = new JsonObject();
+            json.addProperty("name", property.name());
+            json.addProperty("value", property.value());
+            if (property.hasSignature()) {
+                json.addProperty("signature", property.signature());
+            }
+            array.add(json);
+        }
+        return array.toString();
     }
 
     static boolean matches(final String host, final String filters) {
