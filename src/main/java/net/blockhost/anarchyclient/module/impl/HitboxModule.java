@@ -4,6 +4,8 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ public final class HitboxModule extends Module {
 
     public HitboxModule() {
         super("hitbox", "Hitbox", ModuleCategory.COMBAT,
-                "Adds extra range to client targeting, as if target hitboxes were larger.", List.of("hitboxes"));
+                "Enlarges living entity hitboxes for your crosshair and adds the same extra range to client targeting.", List.of("hitboxes"));
     }
 
     @Override
@@ -37,5 +39,14 @@ public final class HitboxModule extends Module {
 
     public static double rangeBonus() {
         return activeExpansion;
+    }
+
+    public static float pickRadiusBonus(final Entity entity) {
+        return pickRadiusBonus(entity instanceof LivingEntity && entity.level().isClientSide(), activeExpansion);
+    }
+
+    // Only client-side living entities grow, so the integrated server's projectile hits stay vanilla.
+    static float pickRadiusBonus(final boolean clientLivingEntity, final double expansion) {
+        return clientLivingEntity && expansion > 0.0 ? (float) expansion : 0.0F;
     }
 }

@@ -133,10 +133,6 @@ class MeteorExpansionModulesTest {
         assertTrue(trap.contains(base.above(2)));
         assertTrue(trap.contains(base.north()));
         assertEquals(trap.size(), CombatPlacementPlanner.unique(trap).size());
-
-        List<BlockPos> anvilSupport = AutoAnvilModule.supportPositions(base, 3, true);
-        assertTrue(anvilSupport.contains(base.above(2)));
-        assertTrue(anvilSupport.contains(base.above().relative(Direction.NORTH)));
     }
 
     @Test

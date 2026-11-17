@@ -8,7 +8,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 
@@ -38,7 +37,7 @@ public final class AutoWebModule extends Module {
 
     public AutoWebModule() {
         super("auto_web", "Auto Web", ModuleCategory.COMBAT,
-                "Places cobwebs at the feet or head of the nearest player in range, or on yourself.");
+                "Places cobwebs at the feet or head of the nearest non-friend player in range, or on yourself.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 
@@ -48,7 +47,7 @@ public final class AutoWebModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = "Self".equals(this.targetMode.value()) ? player : nearestPlayer(client, player, this.range.value());
+        Player target = "Self".equals(this.targetMode.value()) ? player : CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null) {
             return;
         }
@@ -58,22 +57,5 @@ public final class AutoWebModule extends Module {
                 return;
             }
         }
-    }
-
-    private static Player nearestPlayer(final Minecraft client, final LocalPlayer player, final double range) {
-        double rangeSqr = range * range;
-        Player best = null;
-        double bestDistance = Double.MAX_VALUE;
-        for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof Player target) || target == player || !target.isAlive()) {
-                continue;
-            }
-            double distance = target.distanceToSqr(player);
-            if (distance <= rangeSqr && distance < bestDistance) {
-                best = target;
-                bestDistance = distance;
-            }
-        }
-        return best;
     }
 }

@@ -2,7 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.rotation.Rotation;
+import net.blockhost.anarchyclient.projectile.ProjectileAim;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.rotation.RotationRequest;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
@@ -13,6 +13,7 @@ import net.blockhost.anarchyclient.target.TargetQuery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -21,6 +22,10 @@ import java.util.Comparator;
 import java.util.Optional;
 
 public final class BowAimbotModule extends Module {
+
+    // Launch speeds from vanilla BowItem (power * 3.0) and CrossbowItem (3.15 for arrows).
+    private static final double BOW_FULL_VELOCITY = 3.0;
+    private static final double CROSSBOW_ARROW_VELOCITY = 3.15;
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -43,7 +48,7 @@ public final class BowAimbotModule extends Module {
 
     public BowAimbotModule() {
         super("bow_aimbot", "Bow Aimbot", ModuleCategory.COMBAT,
-                "Turns you toward the nearest player or hostile in range while you draw a bow or hold a loaded crossbow.");
+                "Aims at the nearest player or hostile in range while you draw a bow or hold a loaded crossbow, leading the target and compensating for arrow drop.");
     }
 
     @Override
@@ -64,7 +69,8 @@ public final class BowAimbotModule extends Module {
         );
         target.ifPresentOrElse(entity -> RotationManager.request(new RotationRequest(
                 this.id(),
-                Rotation.lookingAt(entity.getBoundingBox().getCenter(), player.getEyePosition()),
+                ProjectileAim.rotationToHit(player.getEyePosition(), entity,
+                        arrowVelocity(player.getMainHandItem(), player.getTicksUsingItem()), ProjectileAim.gravity("bow")),
                 75,
                 30.0F,
                 2,
@@ -72,6 +78,13 @@ public final class BowAimbotModule extends Module {
                 RotationTurnMode.STEPPED,
                 true
         )), () -> RotationManager.clear(this.id()));
+    }
+
+    static double arrowVelocity(final ItemStack stack, final int ticksUsing) {
+        if (stack.is(Items.CROSSBOW)) {
+            return CROSSBOW_ARROW_VELOCITY;
+        }
+        return BowItem.getPowerForTime(ticksUsing) * BOW_FULL_VELOCITY;
     }
 
     static boolean isAiming(final LocalPlayer player) {

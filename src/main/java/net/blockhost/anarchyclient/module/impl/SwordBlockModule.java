@@ -22,12 +22,13 @@ public final class SwordBlockModule extends Module {
 
     public SwordBlockModule() {
         super("sword_block", "Sword Block", ModuleCategory.COMBAT,
-                "Raises a shield from your offhand or hotbar when you right-click, so you block while holding a weapon.");
+                "Raises a shield from your offhand or hotbar when you right-click while holding a weapon.");
     }
 
     @Override
     public boolean itemUse(final Minecraft client, final InteractionHand hand) {
-        if (this.usingShield || !this.preferShield.value() || client.player == null || client.gameMode == null) {
+        if (this.usingShield || !this.preferShield.value() || client.player == null || client.gameMode == null
+                || hand != InteractionHand.MAIN_HAND || !canBlock(client.player.getMainHandItem())) {
             return false;
         }
         Optional<InteractionHand> shield = SilentHotbar.usableHand(client.player, this.id(),
@@ -43,7 +44,8 @@ public final class SwordBlockModule extends Module {
         return false;
     }
 
+    // A shield in the main hand already blocks on its own, so only weapons trigger the offhand or hotbar shield.
     static boolean canBlock(final ItemStack stack) {
-        return !stack.isEmpty() && (AutoClickerModule.isWeapon(stack) || stack.is(Items.SHIELD));
+        return AutoClickerModule.isWeapon(stack);
     }
 }

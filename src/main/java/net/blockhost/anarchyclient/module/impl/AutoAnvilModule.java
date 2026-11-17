@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public final class AutoAnvilModule extends Module {
 
     public AutoAnvilModule() {
         super("auto_anvil", "Auto Anvil", ModuleCategory.COMBAT,
-                "Places an anvil above the nearest enemy or yourself, with optional support and face trap blocks.");
+                "Places an anvil above the nearest enemy or yourself so it falls on them, with an optional side support block and face trap.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 
@@ -76,7 +77,8 @@ public final class AutoAnvilModule extends Module {
             return;
         }
         BlockPos base = target.blockPosition();
-        List<BlockPos> supports = supportPositions(base, this.dropHeight.value().intValue(), this.faceTrap.value());
+        Direction side = supportSide(base, client.player.position());
+        List<BlockPos> supports = supportPositions(base, this.dropHeight.value().intValue(), this.faceTrap.value(), side);
         int placed = 0;
         if (this.support.value()) {
             placed += CombatPlacementPlanner.placeBatch(client, this, supports, CombatPlacementPlanner.HARD_BLOCKS,
@@ -96,15 +98,20 @@ public final class AutoAnvilModule extends Module {
         this.debugValue("placed", placed);
     }
 
-    static List<BlockPos> supportPositions(final BlockPos base, final int dropHeight, final boolean faceTrap) {
+    static List<BlockPos> supportPositions(final BlockPos base, final int dropHeight, final boolean faceTrap,
+                                           final Direction side) {
         List<BlockPos> positions = new ArrayList<>();
-        int supportY = Math.max(1, dropHeight - 1);
-        positions.add(base.above(supportY));
+        // Support the anvil from the side so the column below it stays open and it can fall.
+        positions.add(base.above(dropHeight).relative(side));
         if (faceTrap) {
             for (Direction direction : Direction.Plane.HORIZONTAL) {
                 positions.add(base.above().relative(direction));
             }
         }
         return CombatPlacementPlanner.unique(positions);
+    }
+
+    static Direction supportSide(final BlockPos base, final Vec3 placer) {
+        return Direction.getApproximateNearest(placer.x - (base.getX() + 0.5), 0.0, placer.z - (base.getZ() + 0.5));
     }
 }
