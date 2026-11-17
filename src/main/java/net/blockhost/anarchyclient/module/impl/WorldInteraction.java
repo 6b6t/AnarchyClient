@@ -26,8 +26,6 @@ import java.util.function.Predicate;
 
 final class WorldInteraction {
 
-    private static final String SHARED_MINING_OWNER = "world_interaction";
-
     private WorldInteraction() {
     }
 
@@ -86,14 +84,6 @@ final class WorldInteraction {
         return mine(client, owner.id(), pos, face, null);
     }
 
-    /**
-     * Older form without an owner. {@code tools} limits which hotbar items may be used and the
-     * best of them is selected. Prefer the overloads that take the module.
-     */
-    static boolean breakBlock(final Minecraft client, final BlockPos pos, final Direction face,
-                              final Predicate<ItemStack> tools) {
-        return mine(client, SHARED_MINING_OWNER, pos, face, tools);
-    }
 
     /** Aborts the module's break in progress and gives mining back to vanilla. */
     static void stopBreaking(final Minecraft client, final Module owner) {

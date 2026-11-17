@@ -84,19 +84,6 @@ final class TotemRiskEstimator {
         return predictedDamage >= damageUntilThreshold(health, healthThreshold);
     }
 
-    /**
-     * Generic distance falloff kept for {@code AutoTotemModule.estimateExplosionDamage}. Real
-     * predictions use {@link DamageEstimator}.
-     */
-    static double estimateExplosionDamage(final double distanceSqr, final double range, final double maxDamage) {
-        if (range <= 0.0 || maxDamage <= 0.0) {
-            return 0.0;
-        }
-        double distance = Math.sqrt(Math.max(0.0, distanceSqr));
-        double exposure = Math.max(0.0, 1.0 - distance / range);
-        return ((exposure * exposure + exposure) / 2.0) * maxDamage;
-    }
-
     /** Explosion power vanilla uses when this entity explodes, or 0 if it cannot explode. */
     static double explosionPower(final Entity entity) {
         if (!entity.isAlive()) {

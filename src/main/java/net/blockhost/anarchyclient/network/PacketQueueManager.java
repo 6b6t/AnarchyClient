@@ -24,9 +24,6 @@ import java.util.function.Predicate;
  */
 public final class PacketQueueManager {
 
-    /** Owner used by the older methods that take no owner. */
-    public static final String SHARED_OWNER = "shared";
-
     private static final DirectionQueue INCOMING = new DirectionQueue(PacketQueueManager::deliverIncoming);
     private static final DirectionQueue OUTGOING = new DirectionQueue(PacketQueueManager::deliverOutgoing);
 
@@ -85,50 +82,6 @@ public final class PacketQueueManager {
 
     public static synchronized int outgoingSize(final String owner) {
         return OUTGOING.size(owner);
-    }
-
-    public static synchronized boolean queueIncoming(final Connection connection, final Packet<?> packet, final int maxPackets) {
-        return queueIncoming(SHARED_OWNER, connection, packet, maxPackets);
-    }
-
-    public static synchronized boolean queueOutgoing(final Connection connection, final Packet<?> packet, final int maxPackets) {
-        return queueOutgoing(SHARED_OWNER, connection, packet, maxPackets);
-    }
-
-    public static synchronized int flushOlderThan(final long ageMillis) {
-        return flushOlderThan(SHARED_OWNER, ageMillis);
-    }
-
-    public static synchronized int flushIncomingOlderThan(final long ageMillis) {
-        return flushIncomingOlderThan(SHARED_OWNER, ageMillis);
-    }
-
-    public static synchronized int flushOutgoingOlderThan(final long ageMillis) {
-        return flushOutgoingOlderThan(SHARED_OWNER, ageMillis);
-    }
-
-    public static synchronized int flushAll() {
-        return flushAll(SHARED_OWNER);
-    }
-
-    public static synchronized int flushIncoming() {
-        return flushIncoming(SHARED_OWNER);
-    }
-
-    public static synchronized int flushOutgoing() {
-        return flushOutgoing(SHARED_OWNER);
-    }
-
-    public static synchronized int dropAll() {
-        return dropAll(SHARED_OWNER);
-    }
-
-    public static synchronized int dropIncoming() {
-        return dropIncoming(SHARED_OWNER);
-    }
-
-    public static synchronized int dropOutgoing() {
-        return dropOutgoing(SHARED_OWNER);
     }
 
     /** Total queued incoming packets of all owners. */
