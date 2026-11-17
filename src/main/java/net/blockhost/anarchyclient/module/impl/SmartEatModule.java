@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
 import net.blockhost.anarchyclient.inventory.InventorySlots;
+import net.blockhost.anarchyclient.inventory.ItemUseControl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -142,9 +143,10 @@ public final class SmartEatModule extends Module {
 
     private int previousSlot = -1;
     private int cooldownTicks;
+    private InteractionHand eatingHand;
 
     public SmartEatModule() {
-        super("smart_eat", "Smart Eat", ModuleCategory.PLAYER, "Chooses when to eat based on hunger, health, item quality, and combat pressure.");
+        super("smart_eat", "Smart Eat", ModuleCategory.PLAYER, "Eats until the item is consumed when hunger or health is low, choosing food by quality and combat pressure.");
         this.healthThreshold.visibleWhen(() -> !"Hunger".equals(this.thresholdMode.value()));
         this.hungerThreshold.visibleWhen(() -> !"Health".equals(this.thresholdMode.value()));
     }
@@ -152,14 +154,20 @@ public final class SmartEatModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.gui.screen() != null) {
+        if (player == null || client.gameMode == null) {
             return;
         }
-        if (this.previousSlot >= 0 && !player.isUsingItem()) {
-            if (this.restoreSlot.value()) {
-                InventoryActions.selectHotbarSlot(player, this.previousSlot);
+        if (this.eatingHand != null) {
+            // Keep holding the use until the item is consumed; vanilla would release it next tick.
+            if (client.gui.screen() == null && player.isUsingItem() && player.getUsedItemHand() == this.eatingHand) {
+                ItemUseControl.use(client, this.id(), this.eatingHand);
+                return;
             }
-            this.previousSlot = -1;
+            this.stopEating(client, player);
+            this.cooldownTicks = this.delay.value().intValue();
+        }
+        if (client.gui.screen() != null) {
+            return;
         }
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
@@ -197,16 +205,39 @@ public final class SmartEatModule extends Module {
                 return;
             }
         }
-        if (hand != null) {
-            client.gameMode.useItem(player, hand);
+        if (hand == null) {
+            return;
+        }
+        if (ItemUseControl.use(client, this.id(), hand)) {
+            this.eatingHand = hand;
+        } else {
+            this.restorePreviousSlot(player);
             this.cooldownTicks = this.delay.value().intValue();
         }
     }
 
     @Override
     protected void onDisable() {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            this.stopEating(client, client.player);
+        }
+        this.eatingHand = null;
         this.previousSlot = -1;
         this.cooldownTicks = 0;
+    }
+
+    private void stopEating(final Minecraft client, final LocalPlayer player) {
+        ItemUseControl.release(client, this.id());
+        this.eatingHand = null;
+        this.restorePreviousSlot(player);
+    }
+
+    private void restorePreviousSlot(final LocalPlayer player) {
+        if (this.previousSlot >= 0 && this.restoreSlot.value()) {
+            InventoryActions.selectHotbarSlot(player, this.previousSlot);
+        }
+        this.previousSlot = -1;
     }
 
     private ConsumableChoice pickChoice(final LocalPlayer player, final Set<String> blacklist) {

@@ -27,13 +27,6 @@ class AutoTotemModuleTest {
     }
 
     @Test
-    void estimatesExplosionDamageByDistance() {
-        assertEquals(20.0, AutoTotemModule.estimateExplosionDamage(0.0, 6.0, 20.0));
-        assertEquals(7.5, AutoTotemModule.estimateExplosionDamage(9.0, 6.0, 20.0));
-        assertEquals(0.0, AutoTotemModule.estimateExplosionDamage(36.0, 6.0, 20.0));
-    }
-
-    @Test
     void calculatesDamageUntilThreshold() {
         assertEquals(8.0, AutoTotemModule.damageUntilThreshold(20.0, 12.0));
         assertEquals(0.0, AutoTotemModule.damageUntilThreshold(8.0, 12.0));

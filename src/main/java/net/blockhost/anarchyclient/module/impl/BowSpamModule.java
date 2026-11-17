@@ -25,10 +25,12 @@ public final class BowSpamModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         if (client.player != null
+                && client.gameMode != null
                 && client.player.isUsingItem()
                 && client.player.getUseItem().is(Items.BOW)
                 && client.player.getTicksUsingItem() >= this.chargeTicks.value().intValue()) {
-            client.player.stopUsingItem();
+            // stopUsingItem only stops the client; releaseUsingItem tells the server to fire.
+            client.gameMode.releaseUsingItem(client.player);
         }
     }
 }

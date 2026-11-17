@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.ItemUseControl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -64,22 +65,29 @@ public final class AutoPotModule extends Module {
             .build()));
     private int previousSlot = -1;
     private int cooldown;
+    private boolean drinking;
 
     public AutoPotModule() {
-        super("auto_pot", "Auto Pot", ModuleCategory.COMBAT, "Uses configured potions when health or effect conditions make them useful.");
+        super("auto_pot", "Auto Pot", ModuleCategory.COMBAT, "Drinks or throws healing and strength potions when health or effect conditions make them useful.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.gui.screen() != null) {
+        if (player == null || client.gameMode == null) {
             return;
         }
-        if (this.previousSlot >= 0 && !player.isUsingItem()) {
-            if (this.restoreSlot.value()) {
-                InventoryActions.selectHotbarSlot(player, this.previousSlot);
+        if (this.drinking) {
+            // Keep holding the use until the potion is drunk; vanilla would release it next tick.
+            if (client.gui.screen() == null && player.isUsingItem()
+                    && player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
+                ItemUseControl.use(client, this.id(), InteractionHand.MAIN_HAND);
+                return;
             }
-            this.previousSlot = -1;
+            this.stopDrinking(client, player);
+        }
+        if (client.gui.screen() != null) {
+            return;
         }
         if (this.cooldown > 0) {
             this.cooldown--;
@@ -103,8 +111,26 @@ public final class AutoPotModule extends Module {
 
     @Override
     protected void onDisable() {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            this.stopDrinking(client, client.player);
+        }
+        this.drinking = false;
         this.previousSlot = -1;
         this.cooldown = 0;
+    }
+
+    private void stopDrinking(final Minecraft client, final LocalPlayer player) {
+        ItemUseControl.release(client, this.id());
+        this.drinking = false;
+        this.restorePreviousSlot(player);
+    }
+
+    private void restorePreviousSlot(final LocalPlayer player) {
+        if (this.previousSlot >= 0 && this.restoreSlot.value()) {
+            InventoryActions.selectHotbarSlot(player, this.previousSlot);
+        }
+        this.previousSlot = -1;
     }
 
     private PotionTarget nextTarget(final LocalPlayer player) {
@@ -128,10 +154,21 @@ public final class AutoPotModule extends Module {
             InventoryActions.selectHotbarSlot(player, slot);
         }
         ItemStack stack = player.getInventory().getItem(slot);
-        if (stack.is(Items.SPLASH_POTION) && rotateDown) {
-            player.setXRot(90.0F);
+        if (stack.is(Items.SPLASH_POTION)) {
+            // The use packet carries the rotation, so the pitch can be restored right after the throw.
+            float pitch = player.getXRot();
+            if (rotateDown) {
+                player.setXRot(90.0F);
+            }
+            client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+            player.setXRot(pitch);
+            this.restorePreviousSlot(player);
+            return;
         }
-        client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+        this.drinking = ItemUseControl.use(client, this.id(), InteractionHand.MAIN_HAND);
+        if (!this.drinking) {
+            this.restorePreviousSlot(player);
+        }
     }
 
     static OptionalInt findPotionSlot(final Inventory inventory, final Holder<MobEffect> effect, final boolean allowSplash) {

@@ -18,6 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class FastExpModule extends Module {
 
@@ -66,7 +67,7 @@ public final class FastExpModule extends Module {
     private int throwsThisRun;
 
     public FastExpModule() {
-        super("fast_exp", "Fast EXP", ModuleCategory.PLAYER, "Throws experience bottles for repairs with durability, delay, and safety controls.");
+        super("fast_exp", "Fast EXP", ModuleCategory.PLAYER, "Throws experience bottles at your feet to repair mending armor, up to a set number of throws until the armor is repaired.");
     }
 
     @Override
@@ -75,15 +76,19 @@ public final class FastExpModule extends Module {
         if (player == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        if (this.cooldownTicks-- > 0) {
+        if (this.cooldownTicks > 0) {
+            this.cooldownTicks--;
             return;
         }
         if (this.pauseInCombat.value() && player.getAttackStrengthScale(0.0F) < 1.0F) {
             return;
         }
-        if (!needsRepair(player, this.minDurabilityPercent.value(), this.requireMending.value())
-                || this.throwsThisRun >= this.maxThrows.value().intValue()) {
+        if (!needsRepair(player, this.minDurabilityPercent.value(), this.requireMending.value())) {
+            // The run ends once the armor is repaired; only then does the throw limit reset.
             this.throwsThisRun = 0;
+            return;
+        }
+        if (this.throwsThisRun >= this.maxThrows.value().intValue()) {
             return;
         }
         if (SilentHotbar.selectMatching(player, this.id(), stack -> stack.is(Items.EXPERIENCE_BOTTLE),
@@ -100,7 +105,11 @@ public final class FastExpModule extends Module {
                 RotationTurnMode.STEPPED,
                 true
         ));
-        RotationManager.apply(player);
+        Optional<Rotation> applied = RotationManager.apply(player);
+        // The use packet carries the current rotation, so throw only once the player looks down.
+        if (!RotationManager.isActiveOwner(this.id()) || applied.isEmpty() || applied.orElseThrow().pitch() < 88.0F) {
+            return;
+        }
         client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
         this.throwsThisRun++;
         this.cooldownTicks = this.delay.value().intValue();

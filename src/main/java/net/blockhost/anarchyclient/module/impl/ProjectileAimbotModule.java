@@ -47,12 +47,13 @@ public final class ProjectileAimbotModule extends Module {
             return;
         }
         TargetPolicy policy = TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true);
+        String type = projectileType(player.getMainHandItem());
         Optional<LivingEntity> target = TargetQuery.closest(client.level.entitiesForRendering(), player, policy,
                 this.range.value(), Comparator.comparingDouble(player::distanceToSqr));
         target.ifPresentOrElse(entity -> RotationManager.request(new RotationRequest(
                 this.id(),
-                ProjectileAim.rotationToHit(player.getEyePosition(), entity, ProjectileAim.throwableVelocity(projectileType(player.getMainHandItem())),
-                        ProjectileAim.gravity(projectileType(player.getMainHandItem()))),
+                ProjectileAim.viewForLaunch(ProjectileAim.rotationToHit(player.getEyePosition(), entity,
+                        ProjectileAim.throwableVelocity(type), ProjectileAim.gravity(type)), type),
                 70,
                 35.0F,
                 2,

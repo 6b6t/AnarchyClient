@@ -6,7 +6,9 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.component.SwingAnimation;
 
 public final class ProjectilePuncherModule extends Module {
@@ -23,7 +25,7 @@ public final class ProjectilePuncherModule extends Module {
 
     public ProjectilePuncherModule() {
         super("projectile_puncher", "Projectile Puncher", ModuleCategory.COMBAT,
-                "Attacks projectiles that fly toward the player within range to knock them away.");
+                "Hits fireballs, wind charges, and shulker bullets that fly toward you within range to deflect or destroy them.");
     }
 
     @Override
@@ -35,10 +37,9 @@ public final class ProjectilePuncherModule extends Module {
             this.cooldown--;
             return;
         }
-        double rangeSqr = this.range.value() * this.range.value();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (entity instanceof Projectile
-                    && entity.distanceToSqr(client.player) <= rangeSqr
+            if (isPunchable(entity)
+                    && CombatTargets.canReachEntity(client.player, entity, this.range.value())
                     && ArrowDodgeModule.approaching(entity.position(), entity.getDeltaMovement(), client.player.position())) {
                 client.gameMode.attack(client.player, entity);
                 client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
@@ -46,5 +47,16 @@ public final class ProjectilePuncherModule extends Module {
                 return;
             }
         }
+    }
+
+    /**
+     * Returns whether a hit affects this projectile. Vanilla deflects redirectable projectiles
+     * (fireballs, wind charges) and destroys shulker bullets; the server kicks for attacking
+     * non-attackable arrows and tridents, and other projectiles ignore hits.
+     */
+    static boolean isPunchable(final Entity entity) {
+        return entity instanceof Projectile
+                && entity.isAttackable()
+                && (entity.is(EntityTypeTags.REDIRECTABLE_PROJECTILE) || entity instanceof ShulkerBullet);
     }
 }

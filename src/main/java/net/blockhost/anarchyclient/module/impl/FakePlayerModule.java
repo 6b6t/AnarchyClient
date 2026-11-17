@@ -14,6 +14,8 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -82,7 +84,13 @@ public final class FakePlayerModule extends Module {
         clone.setId(NEXT_ENTITY_ID.getAndDecrement());
         clone.absSnapTo(source.getX(), source.getY(), source.getZ(), source.getYRot(), source.getXRot());
         clone.setOldPosAndRot();
-        clone.setHealth(this.health.value().floatValue());
+        // setHealth clamps to max health, so raise max health first for values above 20.
+        float health = this.health.value().floatValue();
+        AttributeInstance maxHealth = clone.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth != null && maxHealth.getBaseValue() < health) {
+            maxHealth.setBaseValue(health);
+        }
+        clone.setHealth(health);
         clone.setPose(source.getPose());
         clone.setCustomName(Component.literal(profileName));
         clone.setCustomNameVisible(true);

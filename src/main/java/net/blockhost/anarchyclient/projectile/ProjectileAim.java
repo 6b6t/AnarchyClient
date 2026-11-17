@@ -37,19 +37,39 @@ public final class ProjectileAim {
         return movement.lengthSqr() > MAX_TICK_MOVEMENT_SQR ? Vec3.ZERO : movement;
     }
 
+    /** Launch speed in blocks per tick, matching the vanilla item that throws the projectile. */
     public static double throwableVelocity(final String type) {
         return switch (type) {
             case "bow", "crossbow" -> 3.0;
             case "trident" -> 2.5;
-            case "potion" -> 0.9;
+            case "potion" -> 0.5;
+            case "experience_bottle" -> 0.7;
             default -> 1.5;
         };
     }
 
     public static double gravity(final String type) {
         return switch (type) {
-            case "bow", "crossbow", "trident" -> 0.05;
+            case "bow", "crossbow", "trident", "potion" -> 0.05;
+            case "experience_bottle" -> 0.07;
             default -> 0.03;
         };
+    }
+
+    /**
+     * Pitch offset vanilla adds when throwing. Potions and experience bottles leave 20 degrees above the view, so the
+     * view must aim 20 degrees lower than the launch direction.
+     */
+    public static float pitchOffset(final String type) {
+        return switch (type) {
+            case "potion", "experience_bottle" -> -20.0F;
+            default -> 0.0F;
+        };
+    }
+
+    /** View rotation that launches a projectile along {@code launch} once the item's pitch offset is applied. */
+    public static Rotation viewForLaunch(final Rotation launch, final String type) {
+        float pitch = Math.max(-90.0F, Math.min(90.0F, launch.pitch() - pitchOffset(type)));
+        return new Rotation(launch.yaw(), pitch);
     }
 }

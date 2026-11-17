@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -8,14 +9,20 @@ import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.render.MarkerStyle;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.rotation.Rotation;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -38,15 +45,15 @@ public final class BedAuraModule extends Module {
     private final NumberSetting minDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("min_damage")
             .name("Min Damage")
-            .defaultValue(5.0)
+            .defaultValue(6.0)
             .min(0.0)
-            .max(20.0)
+            .max(36.0)
             .step(0.5)
             .build()));
     private final NumberSetting maxSelfDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("max_self_damage")
             .name("Self Damage")
-            .defaultValue(8.0)
+            .defaultValue(12.0)
             .min(0.0)
             .max(36.0)
             .step(1.0)
@@ -77,10 +84,12 @@ public final class BedAuraModule extends Module {
             .name("Render")
             .defaultValue(true)
             .build()));
+    private static final int PLACE_RADIUS = 2;
+    private static final float MAX_FACING_ERROR = 35.0F;
     private int cooldown;
 
     public BedAuraModule() {
-        super("bed_aura", "Bed Aura", ModuleCategory.COMBAT, "Uses beds as explosives in valid dimensions with placement, damage, and safety checks.");
+        super("bed_aura", "Bed Aura", ModuleCategory.COMBAT, "Places and detonates beds within reach near targets outside the Overworld. Damage values are in HP.");
     }
 
     @Override
@@ -99,25 +108,26 @@ public final class BedAuraModule extends Module {
         double minDamage = minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value());
         ScoredBed bed = bestBed(client, target, this.range.value().intValue(), this.maxSelfDamage.value(), minDamage);
         if (bed != null) {
-            client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
-                    new BlockHitResult(Vec3.atCenterOf(bed.pos()), Direction.UP, bed.pos(), false));
-            client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
-            this.cooldown = this.delay.value().intValue();
-            this.mark(bed.pos());
-            this.debugValue("damage", String.format("%.1f/%.1f", bed.targetDamage(), bed.selfDamage()));
+            InteractionResult result = client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(bed.clickPos()), Direction.UP, bed.clickPos(), false));
+            if (result.consumesAction()) {
+                client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+                this.cooldown = this.delay.value().intValue();
+                this.mark(bed.head());
+                this.debugValue("damage", String.format("%.1f/%.1f", bed.targetDamage(), bed.selfDamage()));
+            }
             return;
         }
         if (!this.place.value()) {
             return;
         }
-        ScoredBed placement = bestBedPlacement(client, target, this.range.value().intValue(),
-                this.maxSelfDamage.value(), minDamage);
+        ScoredBed placement = bestBedPlacement(client, target, this.maxSelfDamage.value(), minDamage);
         if (placement != null) {
-            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, placement.pos().below(), Direction.UP,
-                    stack -> stack.is(ItemTags.BEDS), true);
+            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, placement.clickPos().below(),
+                    Direction.UP, stack -> stack.is(ItemTags.BEDS), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.cooldown = this.delay.value().intValue();
-                this.mark(placement.pos());
+                this.mark(placement.head());
             }
         }
     }
@@ -150,8 +160,11 @@ public final class BedAuraModule extends Module {
             for (int y = center.getY() - 1; y <= center.getY() + 2; y++) {
                 for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (client.level.getBlockState(pos).getBlock() instanceof BedBlock) {
-                        score(client, target, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
+                    BlockState state = client.level.getBlockState(pos);
+                    // The explosion happens at the head, whichever half is clicked.
+                    if (state.getBlock() instanceof BedBlock && state.getValue(BedBlock.PART) == BedPart.HEAD
+                            && CombatTargets.canReachBlock(client.player, pos)) {
+                        score(client, target, pos, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
                     }
                 }
             }
@@ -159,36 +172,70 @@ public final class BedAuraModule extends Module {
         return best(scores);
     }
 
-    private static ScoredBed bestBedPlacement(final Minecraft client, final Player target, final int radius,
+    /**
+     * Scores bed placements next to the target. Vanilla puts the foot on the clicked block and the
+     * head one block further in the direction the player faces, so the head position follows from
+     * the rotation the placement will use.
+     */
+    private static ScoredBed bestBedPlacement(final Minecraft client, final Player target,
                                               final double maxSelfDamage, final double minDamage) {
-        if (client.level == null) {
+        LocalPlayer player = client.player;
+        if (client.level == null || player == null) {
             return null;
         }
         List<ScoredBed> scores = new ArrayList<>();
         BlockPos center = target.blockPosition();
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            BlockPos foot = center.relative(direction);
-            BlockPos head = foot.relative(direction);
-            if (center.distSqr(foot) > radius * radius
-                    || !client.level.getBlockState(foot).canBeReplaced()
-                    || !client.level.getBlockState(head).canBeReplaced()
-                    || client.level.getBlockState(foot.below()).canBeReplaced()) {
-                continue;
+        Vec3 eye = player.getEyePosition();
+        for (int x = -PLACE_RADIUS; x <= PLACE_RADIUS; x++) {
+            for (int y = 0; y <= 1; y++) {
+                for (int z = -PLACE_RADIUS; z <= PLACE_RADIUS; z++) {
+                    BlockPos foot = center.offset(x, y, z);
+                    Optional<Direction> facing = placementFacing(eye, foot);
+                    if (facing.isEmpty() || !CombatTargets.canReachBlock(player, foot.below())) {
+                        continue;
+                    }
+                    BlockPos head = foot.relative(facing.orElseThrow());
+                    if (!client.level.getBlockState(foot).canBeReplaced()
+                            || !client.level.getBlockState(head).canBeReplaced()
+                            || client.level.getBlockState(foot.below()).canBeReplaced()
+                            || !client.level.isUnobstructed(null, Shapes.block().move(foot))) {
+                        continue;
+                    }
+                    score(client, target, foot, head, maxSelfDamage, minDamage).ifPresent(scores::add);
+                }
             }
-            score(client, target, foot, maxSelfDamage, minDamage).ifPresent(scores::add);
         }
         return best(scores);
     }
 
-    private static Optional<ScoredBed> score(final Minecraft client, final Player target, final BlockPos pos,
-                                                       final double maxSelfDamage, final double minDamage) {
-        Vec3 explosion = Vec3.atCenterOf(pos);
-        double targetDamage = DamageEstimator.explosionDamage(target, explosion, 5.0);
-        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, 5.0);
-        if (targetDamage < minDamage || selfDamage > maxSelfDamage) {
+    /**
+     * Returns the direction the player faces after rotating to click the top of the block under
+     * {@code foot}, which is the direction vanilla points the bed. Empty when the yaw is too close
+     * to a diagonal for the facing to be reliable.
+     */
+    static Optional<Direction> placementFacing(final Vec3 eye, final BlockPos foot) {
+        Vec3 hit = Vec3.atBottomCenterOf(foot);
+        if (Math.abs(hit.x - eye.x) < 1.0E-3 && Math.abs(hit.z - eye.z) < 1.0E-3) {
             return Optional.empty();
         }
-        return Optional.of(new ScoredBed(pos.immutable(), targetDamage, selfDamage));
+        float yaw = Rotation.lookingAt(hit, eye).yaw();
+        Direction facing = Direction.fromYRot(yaw);
+        if (Math.abs(Mth.wrapDegrees(yaw - facing.toYRot())) > MAX_FACING_ERROR) {
+            return Optional.empty();
+        }
+        return Optional.of(facing);
+    }
+
+    private static Optional<ScoredBed> score(final Minecraft client, final Player target, final BlockPos clickPos,
+                                             final BlockPos head, final double maxSelfDamage, final double minDamage) {
+        Vec3 explosion = DamageEstimator.blockCenter(head);
+        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.BED_POWER);
+        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.BED_POWER);
+        double selfHealth = client.player.getHealth() + client.player.getAbsorptionAmount();
+        if (targetDamage < minDamage || selfDamage > maxSelfDamage || selfDamage >= selfHealth) {
+            return Optional.empty();
+        }
+        return Optional.of(new ScoredBed(clickPos.immutable(), head.immutable(), targetDamage, selfDamage));
     }
 
     private static ScoredBed best(final List<ScoredBed> scores) {
@@ -207,7 +254,7 @@ public final class BedAuraModule extends Module {
         }
     }
 
-    private record ScoredBed(BlockPos pos, double targetDamage, double selfDamage) {
+    private record ScoredBed(BlockPos clickPos, BlockPos head, double targetDamage, double selfDamage) {
 
         double value() {
             return this.targetDamage - this.selfDamage * 0.7;

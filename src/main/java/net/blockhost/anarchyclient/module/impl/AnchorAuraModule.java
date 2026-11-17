@@ -9,8 +9,11 @@ import net.blockhost.anarchyclient.render.MarkerStyle;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
@@ -25,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 public final class AnchorAuraModule extends Module {
 
@@ -39,15 +43,15 @@ public final class AnchorAuraModule extends Module {
     private final NumberSetting minDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("min_damage")
             .name("Min Damage")
-            .defaultValue(5.0)
+            .defaultValue(6.0)
             .min(0.0)
-            .max(20.0)
+            .max(36.0)
             .step(0.5)
             .build()));
     private final NumberSetting maxSelfDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("max_self_damage")
             .name("Self Damage")
-            .defaultValue(8.0)
+            .defaultValue(12.0)
             .min(0.0)
             .max(36.0)
             .step(1.0)
@@ -86,12 +90,17 @@ public final class AnchorAuraModule extends Module {
     private int cooldown;
 
     public AnchorAuraModule() {
-        super("anchor_aura", "Anchor Aura", ModuleCategory.COMBAT, "Places, charges, and detonates respawn anchors around targets when the configured checks pass.");
+        super("anchor_aura", "Anchor Aura", ModuleCategory.COMBAT,
+                "Places, charges with one glowstone, and detonates respawn anchors within reach near targets. Inactive in the Nether.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         if (client.player == null || client.level == null || client.gameMode == null) {
+            return;
+        }
+        // Anchors set the spawn point instead of exploding in the Nether.
+        if (client.level.dimension() == Level.NETHER) {
             return;
         }
         if (this.cooldown > 0) {
@@ -102,22 +111,16 @@ public final class AnchorAuraModule extends Module {
         if (target == null) {
             return;
         }
-        boolean canExplode = client.level.dimension() != Level.NETHER;
         ScoredAnchor anchor = bestAnchor(client, target, this.range.value().intValue(), this.maxSelfDamage.value(),
                 minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value()));
         if (anchor != null) {
             BlockState state = client.level.getBlockState(anchor.pos());
             int charges = state.getValue(RespawnAnchorBlock.CHARGE);
-            if (canExplode && charges > 0) {
-                client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
-                        new BlockHitResult(Vec3.atCenterOf(anchor.pos()), Direction.UP, anchor.pos(), false));
-                client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
-                this.mark(anchor.pos());
-                this.cooldown = this.delay.value().intValue();
-                this.debugValue("damage", String.format("%.1f/%.1f", anchor.targetDamage(), anchor.selfDamage()));
+            if (charges > 0) {
+                this.detonate(client, anchor);
                 return;
             }
-            if (this.charge.value() && charges < RespawnAnchorBlock.MAX_CHARGES) {
+            if (this.charge.value()) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, anchor.pos(), Direction.UP,
                         stack -> stack.is(Items.GLOWSTONE), true);
                 if (result == WorldInteraction.ActionResult.DONE) {
@@ -130,8 +133,7 @@ public final class AnchorAuraModule extends Module {
         if (!this.place.value()) {
             return;
         }
-        ScoredAnchor placement = bestAnchorPlacement(client, target, this.range.value().intValue(),
-                this.maxSelfDamage.value(), minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value()));
+        ScoredAnchor placement = bestAnchorPlacement(client, target, this.maxSelfDamage.value(), minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value()));
         if (placement != null) {
             BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, placement.pos(), true, 70.0F,
                     stack -> stack.is(Items.RESPAWN_ANCHOR));
@@ -140,6 +142,43 @@ public final class AnchorAuraModule extends Module {
                 this.mark(placement.pos());
             }
         }
+    }
+
+    /**
+     * Clicks a charged anchor with a non-glowstone item. Clicking with glowstone would add another
+     * charge instead of detonating, burning up to four glowstone per anchor.
+     */
+    private void detonate(final Minecraft client, final ScoredAnchor anchor) {
+        LocalPlayer player = client.player;
+        OptionalInt slot = detonationSlot(player.getInventory());
+        if (slot.isEmpty() || player.getOffhandItem().is(Items.GLOWSTONE)) {
+            // An offhand glowstone charges the anchor instead of letting the main hand detonate it.
+            return;
+        }
+        InventoryActions.selectHotbarSlot(player, slot.getAsInt());
+        InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(anchor.pos()), Direction.UP, anchor.pos(), false));
+        if (!result.consumesAction()) {
+            return;
+        }
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+        this.mark(anchor.pos());
+        this.cooldown = this.delay.value().intValue();
+        this.debugValue("damage", String.format("%.1f/%.1f", anchor.targetDamage(), anchor.selfDamage()));
+    }
+
+    /** Returns the selected hotbar slot if it holds no glowstone, else the first hotbar slot without glowstone. */
+    static OptionalInt detonationSlot(final Inventory inventory) {
+        int selected = inventory.getSelectedSlot();
+        if (!inventory.getItem(selected).is(Items.GLOWSTONE)) {
+            return OptionalInt.of(selected);
+        }
+        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
+            if (!inventory.getItem(slot).is(Items.GLOWSTONE)) {
+                return OptionalInt.of(slot);
+            }
+        }
+        return OptionalInt.empty();
     }
 
     static BlockPos findAnchor(final Minecraft client, final BlockPos center, final int radius) {
@@ -169,7 +208,8 @@ public final class AnchorAuraModule extends Module {
             for (int y = target.blockPosition().getY() - 1; y <= target.blockPosition().getY() + 2; y++) {
                 for (int z = target.blockPosition().getZ() - radius; z <= target.blockPosition().getZ() + radius; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (client.level.getBlockState(pos).getBlock() instanceof RespawnAnchorBlock) {
+                    if (client.level.getBlockState(pos).getBlock() instanceof RespawnAnchorBlock
+                            && CombatTargets.canReachBlock(client.player, pos)) {
                         score(client, target, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
                     }
                 }
@@ -178,9 +218,9 @@ public final class AnchorAuraModule extends Module {
         return best(scores);
     }
 
-    private static ScoredAnchor bestAnchorPlacement(final Minecraft client, final Player target, final int radius,
+    private static ScoredAnchor bestAnchorPlacement(final Minecraft client, final Player target,
                                                     final double maxSelfDamage, final double minDamage) {
-        if (client.level == null) {
+        if (client.level == null || client.player == null) {
             return null;
         }
         List<ScoredAnchor> scores = new ArrayList<>();
@@ -188,7 +228,7 @@ public final class AnchorAuraModule extends Module {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             for (int y = 0; y <= 1; y++) {
                 BlockPos pos = center.relative(direction).above(y);
-                if (center.distSqr(pos) <= radius * radius && CombatPlacementPlanner.isReplaceable(client.level, pos)) {
+                if (CombatTargets.canReachBlock(client.player, pos) && CombatPlacementPlanner.isReplaceable(client.level, pos)) {
                     score(client, target, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
                 }
             }
@@ -198,10 +238,11 @@ public final class AnchorAuraModule extends Module {
 
     private static Optional<ScoredAnchor> score(final Minecraft client, final Player target, final BlockPos pos,
                                                          final double maxSelfDamage, final double minDamage) {
-        Vec3 explosion = Vec3.atCenterOf(pos);
-        double targetDamage = DamageEstimator.explosionDamage(target, explosion, 5.0);
-        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, 5.0);
-        if (targetDamage < minDamage || selfDamage > maxSelfDamage) {
+        Vec3 explosion = DamageEstimator.blockCenter(pos);
+        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.ANCHOR_POWER);
+        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.ANCHOR_POWER);
+        double selfHealth = client.player.getHealth() + client.player.getAbsorptionAmount();
+        if (targetDamage < minDamage || selfDamage > maxSelfDamage || selfDamage >= selfHealth) {
             return Optional.empty();
         }
         return Optional.of(new ScoredAnchor(pos.immutable(), targetDamage, selfDamage));

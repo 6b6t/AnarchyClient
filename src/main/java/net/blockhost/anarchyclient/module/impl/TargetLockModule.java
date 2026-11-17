@@ -64,6 +64,8 @@ public final class TargetLockModule extends Module {
         if (current != null) {
             return;
         }
+        // Only the module's own range decides when the lock ends; callers may use a smaller range.
+        this.locked = null;
         TargetQuery.closest(client.level.entitiesForRendering(), client.player,
                 TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true),
                 this.range.value(), Comparator.comparingDouble(client.player::distanceToSqr))
@@ -100,7 +102,6 @@ public final class TargetLockModule extends Module {
                 return Optional.of(living);
             }
         }
-        this.locked = null;
         return Optional.empty();
     }
 }

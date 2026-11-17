@@ -43,7 +43,7 @@ public final class CrystalAuraModule extends Module {
     private final NumberSetting maxSelfDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("max_self_damage")
             .name("Self Damage")
-            .defaultValue(8.0)
+            .defaultValue(12.0)
             .min(0.0)
             .max(36.0)
             .step(1.0)
@@ -61,9 +61,9 @@ public final class CrystalAuraModule extends Module {
     private final NumberSetting minDamage = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("min_damage")
             .name("Min Damage")
-            .defaultValue(4.0)
+            .defaultValue(6.0)
             .min(0.0)
-            .max(20.0)
+            .max(36.0)
             .step(0.5)
             .build()));
     private final NumberSetting facePlaceHealth = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -99,7 +99,8 @@ public final class CrystalAuraModule extends Module {
     private int placeCooldown;
 
     public CrystalAuraModule() {
-        super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT, "Places and breaks end crystals around targets using damage, range, and self-safety checks.");
+        super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT,
+                "Places and breaks end crystals within reach near targets. Damage values are in HP and skip crystals that would kill you.");
     }
 
     @Override
@@ -122,8 +123,8 @@ public final class CrystalAuraModule extends Module {
         if (!this.placeCrystals.value() || this.placeCooldown > 0) {
             return;
         }
-        SelfDamagePolicy policy = new SelfDamagePolicy(this.maxSelfDamage.value(), 3.0, 1.1);
-        ExplosionPlacementScorer scorer = new ExplosionPlacementScorer(policy, 6.0);
+        SelfDamagePolicy policy = new SelfDamagePolicy(this.maxSelfDamage.value(), 0.0, 1.1);
+        ExplosionPlacementScorer scorer = new ExplosionPlacementScorer(policy, DamageEstimator.CRYSTAL_POWER);
         List<ExplosionPlacementScorer.PlacementScore> scores = TargetPlacementPlanner.explosionPlacements(
                 client,
                 player,
@@ -133,7 +134,8 @@ public final class CrystalAuraModule extends Module {
         );
         boolean facePlace = targetHealth(target) <= this.facePlaceHealth.value();
         List<ExplosionPlacementScorer.PlacementScore> allowed = scores.stream()
-                .filter(score -> facePlace || score.targetDamage() >= this.minDamage.value())
+                .filter(score -> isSafe(score.selfDamage(), selfHealth(player))
+                        && (facePlace || score.targetDamage() >= this.minDamage.value()))
                 .toList();
         if (!allowed.isEmpty()) {
             ExplosionPlacementScorer.PlacementScore best = allowed.getFirst();
@@ -151,14 +153,20 @@ public final class CrystalAuraModule extends Module {
         Entity best = null;
         double bestScore = Double.NEGATIVE_INFINITY;
         boolean facePlace = targetHealth(target) <= this.facePlaceHealth.value();
+        double health = selfHealth(player);
+        // Break crystals as far as they can be placed; the server accepts attacks up to 3 blocks
+        // beyond the entity interaction range.
+        double breakRange = player.blockInteractionRange();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof EndCrystal) || entity.distanceTo(target) > this.range.value()) {
+            if (!(entity instanceof EndCrystal) || !entity.isAlive()
+                    || !CombatTargets.canReachEntity(player, entity, breakRange)) {
                 continue;
             }
             Vec3 explosion = entity.position();
-            double targetDamage = DamageEstimator.explosionDamage(target, explosion, 6.0);
-            double selfDamage = DamageEstimator.explosionDamage(player, explosion, 6.0);
-            if (selfDamage > this.maxSelfDamage.value() || !facePlace && targetDamage < this.minDamage.value()) {
+            double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.CRYSTAL_POWER);
+            double selfDamage = DamageEstimator.explosionDamage(player, explosion, DamageEstimator.CRYSTAL_POWER);
+            if (selfDamage > this.maxSelfDamage.value() || !isSafe(selfDamage, health)
+                    || !facePlace && targetDamage < this.minDamage.value()) {
                 continue;
             }
             double score = targetDamage - selfDamage * 0.65;
@@ -183,5 +191,14 @@ public final class CrystalAuraModule extends Module {
 
     private static double targetHealth(final Player target) {
         return target.getHealth() + target.getAbsorptionAmount();
+    }
+
+    private static double selfHealth(final LocalPlayer player) {
+        return player.getHealth() + player.getAbsorptionAmount();
+    }
+
+    /** Returns whether an explosion dealing {@code selfDamage} leaves the player alive. */
+    static boolean isSafe(final double selfDamage, final double health) {
+        return selfDamage < health;
     }
 }

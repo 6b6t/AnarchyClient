@@ -13,7 +13,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -73,7 +72,7 @@ public final class AutoTotemModule extends Module {
     private final NumberSetting explosionRange = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("explosion_range")
             .name("Blast Range")
-            .defaultValue(6.0)
+            .defaultValue(12.0)
             .min(2.0)
             .max(12.0)
             .step(0.5)
@@ -185,25 +184,8 @@ public final class AutoTotemModule extends Module {
         );
     }
 
-    static float effectiveHealth(final LocalPlayer player, final boolean includeAbsorption) {
-        return TotemRiskEstimator.effectiveHealth(player, includeAbsorption);
-    }
-
     static double damageUntilThreshold(final double health, final double threshold) {
         return TotemRiskEstimator.damageUntilThreshold(health, threshold);
-    }
-
-    static boolean missingArmor(final LocalPlayer player) {
-        return TotemRiskEstimator.missingArmor(player);
-    }
-
-    static double predictedExplosionDamage(final Iterable<? extends Entity> entities, final LocalPlayer player,
-                                           final double range) {
-        return TotemRiskEstimator.predictedExplosionDamage(entities, player, range);
-    }
-
-    static double estimateExplosionDamage(final double distanceSqr, final double range, final double maxDamage) {
-        return TotemRiskEstimator.estimateExplosionDamage(distanceSqr, range, maxDamage);
     }
 
     private int findItemSlot(final Inventory inventory, final Item item) {

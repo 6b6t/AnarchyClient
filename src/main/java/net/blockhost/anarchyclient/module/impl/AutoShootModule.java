@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.projectile.ProjectileAim;
+import net.blockhost.anarchyclient.rotation.Rotation;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.rotation.RotationRequest;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
@@ -57,11 +58,12 @@ public final class AutoShootModule extends Module {
             .name("Hostiles")
             .defaultValue(false)
             .build()));
+    private static final float AIM_TOLERANCE = 2.0F;
     private int cooldownTicks;
 
     public AutoShootModule() {
         super("auto_shoot", "Auto Shoot", ModuleCategory.COMBAT,
-                "Aims at the nearest target in range and throws snowballs, eggs, pearls, experience bottles, or casts a fishing rod.");
+                "Turns toward the nearest target in range, then throws snowballs, eggs, pearls, experience bottles, or casts a fishing rod once aimed.");
     }
 
     @Override
@@ -70,7 +72,8 @@ public final class AutoShootModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        if (this.cooldownTicks-- > 0) {
+        if (this.cooldownTicks > 0) {
+            this.cooldownTicks--;
             return;
         }
         TargetPolicy policy = TargetPolicy.of(this.players.value(), this.hostiles.value(), false,
@@ -84,19 +87,28 @@ public final class AutoShootModule extends Module {
                 SilentHotbar.PRIORITY_COMBAT, 6, true).isEmpty()) {
             return;
         }
+        Rotation aim = ProjectileAim.rotationToHit(player.getEyePosition(), target.orElseThrow(), 1.5, 0.03);
         RotationManager.request(new RotationRequest(
                 this.id(),
-                ProjectileAim.rotationToHit(player.getEyePosition(), target.orElseThrow(), 1.5, 0.03),
+                aim,
                 80,
                 60.0F,
                 2,
-                2.0F,
+                AIM_TOLERANCE,
                 RotationTurnMode.STEPPED,
                 true
         ));
-        RotationManager.apply(player);
+        Optional<Rotation> applied = RotationManager.apply(player);
+        // The use packet carries the current rotation, so wait until the turn has reached the aim.
+        if (!RotationManager.isActiveOwner(this.id()) || !isAimed(applied.orElse(null), aim)) {
+            return;
+        }
         client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
         this.cooldownTicks = this.cooldown.value().intValue();
+    }
+
+    static boolean isAimed(final Rotation current, final Rotation aim) {
+        return current != null && current.angleTo(aim) <= AIM_TOLERANCE;
     }
 
     static boolean isThrowable(final ItemStack stack) {
