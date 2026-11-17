@@ -19,6 +19,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class CameraMixin {
 
     @Shadow
+    private float fovModifier;
+
+    @Shadow
+    private float oldFovModifier;
+
+    @Shadow
     public abstract Vec3 position();
 
     @Shadow
@@ -33,11 +39,17 @@ public abstract class CameraMixin {
     @Shadow
     protected abstract void setPosition(Vec3 position);
 
+    /** Removes only vanilla's sprint, speed, and item-use FOV changes; module FOV hooks still apply. */
+    @Inject(method = "tickFov", at = @At("TAIL"))
+    private void anarchyclient$suppressDynamicFov(final CallbackInfo info) {
+        if (RenderSuppression.suppresses(RenderSuppression.Kind.DYNAMIC_FOV)) {
+            this.oldFovModifier = 1.0F;
+            this.fovModifier = 1.0F;
+        }
+    }
+
     @Inject(method = "calculateFov", at = @At("RETURN"), cancellable = true)
     private void anarchyclient$modifyFov(final float partialTicks, final CallbackInfoReturnable<Float> info) {
-        if (RenderSuppression.suppresses(RenderSuppression.Kind.DYNAMIC_FOV)) {
-            return;
-        }
         info.setReturnValue(AnarchyClient.MODULES.fov(Minecraft.getInstance(), info.getReturnValue()));
     }
 

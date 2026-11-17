@@ -23,10 +23,15 @@ import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 public final class AutoFarmModule extends Module {
+
+    /** How long a block that refused the item is left alone before it is tried again. */
+    private static final int REFUSED_COOLDOWN_TICKS = 40;
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -71,6 +76,7 @@ public final class AutoFarmModule extends Module {
             .build()));
 
     private final SingleBlockMiner miner = new SingleBlockMiner(this);
+    private final Map<BlockPos, Integer> refused = new HashMap<>();
 
     public AutoFarmModule() {
         super("auto_farm", "Auto Farm", ModuleCategory.WORLD,
@@ -84,6 +90,10 @@ public final class AutoFarmModule extends Module {
             this.miner.stop(client);
             return;
         }
+        this.refused.entrySet().removeIf(entry -> {
+            entry.setValue(entry.getValue() - 1);
+            return entry.getValue() <= 0;
+        });
         if (this.miner.continueCurrent(client, pos -> this.harvest.value() && isMatureCrop(client.level.getBlockState(pos))
                 && CombatTargets.canReachBlock(player, pos))) {
             return;
@@ -109,6 +119,8 @@ public final class AutoFarmModule extends Module {
             }
             if (step == Step.DONE) {
                 actions++;
+            } else if (step == Step.REFUSED) {
+                this.refused.put(target.pos(), REFUSED_COOLDOWN_TICKS);
             }
         }
     }
@@ -116,7 +128,8 @@ public final class AutoFarmModule extends Module {
     private boolean isCandidate(final Minecraft client, final BlockTargetScanner.BlockTarget target) {
         BlockState state = target.state();
         Block block = state.getBlock();
-        if (client.player == null || !CombatTargets.canReachBlock(client.player, target.pos())) {
+        if (client.player == null || this.refused.containsKey(target.pos())
+                || !CombatTargets.canReachBlock(client.player, target.pos())) {
             return false;
         }
         if (this.harvest.value() && isMatureCrop(state)) {
@@ -167,6 +180,7 @@ public final class AutoFarmModule extends Module {
         return switch (WorldInteraction.useOnBlock(client, this, pos, Direction.UP, item, this.rotate.value())) {
             case DONE -> Step.DONE;
             case WAITING -> Step.WAITING;
+            case REFUSED -> Step.REFUSED;
             case MISSING_ITEM -> Step.SKIPPED;
         };
     }
@@ -174,6 +188,7 @@ public final class AutoFarmModule extends Module {
     @Override
     protected void onDisable() {
         this.miner.stop(Minecraft.getInstance());
+        this.refused.clear();
     }
 
     static boolean isMatureCrop(final BlockState state) {
@@ -232,6 +247,8 @@ public final class AutoFarmModule extends Module {
     private enum Step {
         DONE,
         WAITING,
+        /** The block refused the item; it is skipped for a while. */
+        REFUSED,
         SKIPPED
     }
 

@@ -50,6 +50,7 @@ public final class ServerSpoofModule extends Module {
             .id("channels")
             .name("Channels")
             .addAllDefaultValue(List.of("fabric", "minecraft:register"))
+            .splitOnWhitespace(true)
             .build()));
     private final BooleanSetting resourcePack = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("resource_pack")

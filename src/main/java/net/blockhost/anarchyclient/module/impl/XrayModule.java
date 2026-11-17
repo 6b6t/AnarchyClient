@@ -75,6 +75,8 @@ public final class XrayModule extends Module {
     private Set<Block> parsedBlocks = Set.of();
     private @Nullable ScanPass pass;
     private int cooldownTicks;
+    /** The level the cached positions belong to; a dimension change or rejoin replaces it. */
+    private @Nullable Level scannedLevel;
 
     public XrayModule() {
         super("xray", "Xray", ModuleCategory.RENDER,
@@ -85,8 +87,12 @@ public final class XrayModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null) {
-            this.pass = null;
+            this.reset();
             return;
+        }
+        if (this.scannedLevel != client.level) {
+            this.reset();
+            this.scannedLevel = client.level;
         }
         if (!this.lastBlocks.equals(this.blocks.value())) {
             this.parsedBlocks = BlockScan.parseBlocks(this.blocks.value());
@@ -111,9 +117,14 @@ public final class XrayModule extends Module {
 
     @Override
     protected void onDisable() {
+        this.reset();
+    }
+
+    private void reset() {
         this.cachedPositions = List.of();
         this.pass = null;
         this.cooldownTicks = 0;
+        this.scannedLevel = null;
     }
 
     @Override

@@ -32,6 +32,8 @@ final class WorldInteraction {
     /**
      * Right-clicks a face of {@code pos} with a hotbar item. With {@code rotate}, returns
      * {@link ActionResult#WAITING} until the rotation toward the face has reached the server.
+     * Returns {@link ActionResult#REFUSED} when the click was sent but the item and the block did
+     * nothing, so retrying the same block will not help.
      */
     static ActionResult useOnBlock(final Minecraft client, final Module owner, final BlockPos pos, final Direction face,
                                    final Predicate<ItemStack> itemPredicate, final boolean rotate) {
@@ -57,7 +59,7 @@ final class WorldInteraction {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return ActionResult.DONE;
         }
-        return ActionResult.WAITING;
+        return ActionResult.REFUSED;
     }
 
     /**
@@ -124,6 +126,7 @@ final class WorldInteraction {
     enum ActionResult {
         DONE,
         WAITING,
+        REFUSED,
         MISSING_ITEM
     }
 }

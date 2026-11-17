@@ -135,6 +135,7 @@ public final class NukerModule extends Module {
 
     private boolean accepts(final LocalPlayer player, final BlockPos pos, final BlockState state, final BlockPos center) {
         return !state.isAir()
+                && SingleBlockMiner.canEverBreak(player, player.level(), pos, state)
                 && CombatTargets.canReachBlock(player, pos)
                 && passesShape(pos, center, this.radius.value().intValue(), this.shape.value())
                 && (!this.excludeLiquids.value() || state.getFluidState().isEmpty())

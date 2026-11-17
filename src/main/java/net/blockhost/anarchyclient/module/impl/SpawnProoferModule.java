@@ -72,7 +72,8 @@ public final class SpawnProoferModule extends Module {
                 stack -> stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH),
                 this.rotate.value()
         );
-        if (result == WorldInteraction.ActionResult.DONE) {
+        // A refused torch also waits out the delay instead of clicking the same spot every tick.
+        if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
             this.cooldownTicks = this.delay.value().intValue();
         }
     }

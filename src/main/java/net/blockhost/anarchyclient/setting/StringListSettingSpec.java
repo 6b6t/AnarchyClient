@@ -22,4 +22,13 @@ public interface StringListSettingSpec {
     List<String> aliases();
 
     List<String> suggestions();
+
+    /**
+     * Whether whitespace also separates typed entries. Use it for identifier lists, whose entries
+     * never contain spaces; free text lists keep it off so entries may hold spaces.
+     */
+    @Value.Default
+    default boolean splitOnWhitespace() {
+        return false;
+    }
 }

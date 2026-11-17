@@ -31,14 +31,24 @@ final class BlockPlacement {
     /**
      * Places a block with explicit options. Use {@link BlockPlacer.PlacementOptions#NON_FULL} for
      * blocks without a full collision box, such as string, slabs, soul sand, and cobwebs.
+     *
+     * <p>Returns {@link PlacementResult#UNPLACEABLE} when no neighbour can support the block or no
+     * hotbar item fits the spot (for example because an entity or the player is in the way), and
+     * {@link PlacementResult#WAITING} while the placement only needs more time, such as a rotation.
      */
     static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
                                  final boolean rotate, final float maxTurnDegrees,
                                  final Predicate<ItemStack> itemPredicate, final BlockPlacer.PlacementOptions options) {
+        ClientLevel level = client.level;
+        if (level != null && BlockPlacer.needsPlacement(level, target)
+                && BlockPlacer.findPlacementTarget(level, target).isEmpty()) {
+            return PlacementResult.UNPLACEABLE;
+        }
         return switch (BlockPlacer.place(client, owner.id(), target, rotate, maxTurnDegrees, itemPredicate, options)) {
             case FILLED -> PlacementResult.FILLED;
             case PLACED -> PlacementResult.PLACED;
-            case WAITING, MISSING_ITEM -> PlacementResult.WAITING;
+            case WAITING -> PlacementResult.WAITING;
+            case MISSING_ITEM -> PlacementResult.UNPLACEABLE;
         };
     }
 
@@ -65,7 +75,8 @@ final class BlockPlacement {
     enum PlacementResult {
         FILLED,
         PLACED,
-        WAITING
+        WAITING,
+        UNPLACEABLE
     }
 
 }

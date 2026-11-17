@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.util.PlaceholderFormatter;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -40,7 +41,8 @@ class MeteorRejectsPlanModulesTest {
 
     @Test
     void oreSimUsesVanillaGenerationHeights() {
-        assertEquals(new OreSimModule.OreBand(-64, -59, 16), OreSimModule.band("Diamond"));
-        assertEquals(new OreSimModule.OreBand(8, 16, 24), OreSimModule.band("Ancient Debris"));
+        assertEquals(new OreSimModule.OreBand(Level.OVERWORLD, -64, -59, 16), OreSimModule.band("Diamond"));
+        // Small debris veins spread from Y 8 to 119; large veins peak at Y 16.
+        assertEquals(new OreSimModule.OreBand(Level.NETHER, 8, 16, 119), OreSimModule.band("Ancient Debris"));
     }
 }

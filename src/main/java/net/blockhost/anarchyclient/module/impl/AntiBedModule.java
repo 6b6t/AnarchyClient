@@ -93,14 +93,18 @@ public final class AntiBedModule extends Module {
         return client.player != null && client.player.getItemInHand(hand).is(ItemTags.BEDS);
     }
 
-    /** Returns whether this tick was spent placing string or waiting for its rotation. */
+    /**
+     * Returns whether this tick was spent placing string or waiting for its rotation. A spot that
+     * cannot take string, such as one with no supporting block, is skipped so the next spot can go.
+     */
     private boolean placeString(final Minecraft client, final BlockPos pos) {
         if (client.player == null || client.level == null || !client.level.getBlockState(pos).canBeReplaced()
                 || !WorldInteraction.hasHotbarItem(client.player.getInventory(), stack -> stack.is(Items.STRING))) {
             return false;
         }
-        return BlockPlacement.place(client, this, pos, this.rotate.value(), 60.0F, stack -> stack.is(Items.STRING),
-                BlockPlacer.PlacementOptions.NON_FULL) != BlockPlacement.PlacementResult.FILLED;
+        BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, pos, this.rotate.value(), 60.0F,
+                stack -> stack.is(Items.STRING), BlockPlacer.PlacementOptions.NON_FULL);
+        return result == BlockPlacement.PlacementResult.PLACED || result == BlockPlacement.PlacementResult.WAITING;
     }
 
     static boolean isInHole(final Minecraft client, final BlockPos feet) {

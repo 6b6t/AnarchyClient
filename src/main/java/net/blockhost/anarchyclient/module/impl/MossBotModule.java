@@ -73,25 +73,25 @@ public final class MossBotModule extends Module {
         if (!WorldInteraction.hasHotbarItem(player.getInventory(), stack -> stack.is(Items.BONE_MEAL))) {
             return;
         }
-        BlockPos best = bestMossBlock(client, this.range.value().intValue(), this.minReplaceableBlocks.value().intValue(), this.cooldowns);
+        // bestMossBlock only returns reachable moss with air above, which bone meal needs.
+        BlockPos best = bestMossBlock(client, player, this.range.value().intValue(),
+                this.minReplaceableBlocks.value().intValue(), this.cooldowns);
         if (best == null) {
             return;
         }
-        // bestMossBlock only returns moss with air above, which bone meal needs.
-        if (!CombatTargets.canReachBlock(player, best)) {
-            return;
-        }
-        if (WorldInteraction.useOnBlock(client, this, best, Direction.UP, stack -> stack.is(Items.BONE_MEAL), this.rotate.value())
-                == WorldInteraction.ActionResult.DONE) {
+        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, best, Direction.UP,
+                stack -> stack.is(Items.BONE_MEAL), this.rotate.value());
+        if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
             this.cooldowns.put(best, this.cooldownTicks.value().intValue());
         }
     }
 
-    static BlockPos bestMossBlock(final Minecraft client, final int range, final int minReplaceableBlocks,
-                                  final Map<BlockPos, Integer> cooldowns) {
+    static BlockPos bestMossBlock(final Minecraft client, final LocalPlayer player, final int range,
+                                  final int minReplaceableBlocks, final Map<BlockPos, Integer> cooldowns) {
         return BlockTargetScanner.scan(client, range, range, BlockTargetScanner.SortMode.CLOSEST, 64,
                         target -> !cooldowns.containsKey(target.pos())
                                 && isMoss(target.state())
+                                && CombatTargets.canReachBlock(player, target.pos())
                                 && replaceableAround(client, target.pos()) >= minReplaceableBlocks)
                 .stream()
                 .max(Comparator.comparingInt(target -> replaceableAround(client, target.pos())))

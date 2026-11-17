@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -40,7 +42,7 @@ public final class OreSimModule extends Module {
 
     public OreSimModule() {
         super("ore_sim", "Ore Sim", ModuleCategory.RENDER,
-                "Outlines the height band where the selected ore generates and marks its most common layer. "
+                "Outlines the height band where the selected ore generates in its dimension and marks its most common layer. "
                         + "It does not predict exact ore positions.");
     }
 
@@ -49,10 +51,13 @@ public final class OreSimModule extends Module {
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         LocalPlayer player = client.player;
-        if (player == null || matrices == null || submits == null) {
+        if (player == null || client.level == null || matrices == null || submits == null) {
             return;
         }
         OreBand band = band(this.target.value());
+        if (client.level.dimension() != band.dimension()) {
+            return;
+        }
         double size = this.radius.value();
         Vec3 offset = client.gameRenderer.mainCamera().position().scale(-1);
         WorldLineRenderer.Color color = DEBRIS.equals(this.target.value())
@@ -67,13 +72,17 @@ public final class OreSimModule extends Module {
     }
 
     /**
-     * Vanilla generation heights. Diamonds follow a triangle that peaks below the world bottom, so
-     * the lowest layers above bedrock are the richest. Large debris veins peak at Y 16.
+     * Vanilla generation heights. Diamonds generate in the Overworld and follow a triangle that
+     * peaks below the world bottom, so the lowest layers above bedrock are the richest. Ancient
+     * debris generates in the Nether: small veins anywhere from Y 8 to 119, and large veins in a
+     * triangle from Y 8 to 24 that peaks at Y 16.
      */
     static OreBand band(final String target) {
-        return DEBRIS.equals(target) ? new OreBand(8, 16, 24) : new OreBand(-64, -59, 16);
+        return DEBRIS.equals(target)
+                ? new OreBand(Level.NETHER, 8, 16, 119)
+                : new OreBand(Level.OVERWORLD, -64, -59, 16);
     }
 
-    record OreBand(int minY, int peakY, int maxY) {
+    record OreBand(ResourceKey<Level> dimension, int minY, int peakY, int maxY) {
     }
 }

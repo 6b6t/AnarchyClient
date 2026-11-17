@@ -37,6 +37,19 @@ class TextValueSettingsTest {
     }
 
     @Test
+    void stringListsSplitOnWhitespaceWhenAsked() {
+        StringListSetting setting = StringListSetting.from(StringListSetting.builder()
+                .id("channels")
+                .name("Channels")
+                .splitOnWhitespace(true)
+                .build());
+
+        setting.valueFromString("fabric minecraft:register,\tforge");
+
+        assertEquals(List.of("fabric", "minecraft:register", "forge"), setting.value());
+    }
+
+    @Test
     void identifierListsAlsoSplitOnWhitespace() {
         ModuleListSetting setting = ModuleListSetting.from(ModuleListSetting.builder()
                 .id("modules")

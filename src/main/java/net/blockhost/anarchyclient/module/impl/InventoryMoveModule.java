@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 
@@ -39,10 +40,12 @@ public final class InventoryMoveModule extends Module {
 
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
-        if (client.player == null
-                || client.gui.screen() == null
-                || client.gui.screen() instanceof AnarchyClientScreen
-                || !this.allowChat.value() && client.gui.screen() instanceof ChatScreen) {
+        Screen screen = client.gui.screen();
+        if (client.player == null || screen == null || screen instanceof AnarchyClientScreen) {
+            return;
+        }
+        if (screen instanceof ChatScreen ? !this.allowChat.value() : screen.isInputCaptured()) {
+            // A focused text field (anvil name, sign, book, creative search, command block) takes the keys.
             return;
         }
         // Vanilla releases every key mapping while a screen is open, so read the physical key state instead.

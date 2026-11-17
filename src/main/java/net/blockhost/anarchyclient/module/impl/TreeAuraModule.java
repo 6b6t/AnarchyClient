@@ -105,7 +105,7 @@ public final class TreeAuraModule extends Module {
                     this.enabled(false);
                     return;
                 }
-                if (result == WorldInteraction.ActionResult.DONE) {
+                if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
                     this.plantTimer = this.plantDelay.value().intValue();
                 }
             }
@@ -126,7 +126,7 @@ public final class TreeAuraModule extends Module {
                     this.enabled(false);
                     return;
                 }
-                if (result == WorldInteraction.ActionResult.DONE) {
+                if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
                     this.bonemealTimer = this.bonemealDelay.value().intValue();
                 }
             }

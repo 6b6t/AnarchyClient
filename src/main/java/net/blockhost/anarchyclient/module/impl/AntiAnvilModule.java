@@ -11,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AnvilBlock;
+import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
@@ -50,9 +51,11 @@ public final class AntiAnvilModule extends Module {
             BlockPos pos = client.player.blockPosition().above(y);
             if (client.level.getBlockState(pos).getBlock() instanceof AnvilBlock) {
                 if (this.shouldPlace() && y > 1 && this.canPlaceBlocker(client, pos.below())) {
+                    BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, pos.below(),
+                            this.rotate.value(), 60.0F, stack -> stack.is(Items.OBSIDIAN));
                     // Placing (or waiting for the rotation) takes this tick; the anvil is handled next tick.
-                    if (BlockPlacement.place(client, this, pos.below(), this.rotate.value(), 60.0F,
-                            stack -> stack.is(Items.OBSIDIAN)) != BlockPlacement.PlacementResult.FILLED) {
+                    // When the blocker cannot be placed, fall through and break the anvil instead.
+                    if (result == BlockPlacement.PlacementResult.PLACED || result == BlockPlacement.PlacementResult.WAITING) {
                         WorldInteraction.stopBreaking(client, this);
                         return;
                     }
@@ -73,8 +76,10 @@ public final class AntiAnvilModule extends Module {
         WorldInteraction.stopBreaking(Minecraft.getInstance(), this);
     }
 
+    /** The blocker never goes into a cell the player occupies, such as the head cell under a low anvil. */
     private boolean canPlaceBlocker(final Minecraft client, final BlockPos blocker) {
         return client.player != null && client.level != null
+                && !client.player.getBoundingBox().intersects(new AABB(blocker))
                 && client.level.getBlockState(blocker).canBeReplaced()
                 && WorldInteraction.hasHotbarItem(client.player.getInventory(), stack -> stack.is(Items.OBSIDIAN))
                 && BlockPlacer.findPlacementTarget(client.level, blocker).isPresent();

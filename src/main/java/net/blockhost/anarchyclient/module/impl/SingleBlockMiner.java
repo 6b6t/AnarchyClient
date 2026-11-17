@@ -5,7 +5,9 @@ import net.blockhost.anarchyclient.module.Module;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -53,14 +55,16 @@ final class SingleBlockMiner {
     /**
      * Starts breaking {@code pos}. Returns {@link Step#BROKEN} when it broke at once, so the
      * caller may try another block this tick, {@link Step#MINING} when the break takes more
-     * ticks (the caller must stop for this tick), or {@link Step#FAILED}.
+     * ticks (the caller must stop for this tick), or {@link Step#FAILED}. Blocks the player can
+     * never break, such as bedrock or barriers outside creative mode, fail at once.
      */
     Step start(final Minecraft client, final BlockPos pos, final Direction face, final Predicate<ItemStack> tools) {
-        if (client.level == null) {
+        if (client.level == null || client.player == null) {
             return Step.FAILED;
         }
         BlockState before = client.level.getBlockState(pos);
-        if (!WorldInteraction.breakBlock(client, this.owner, pos, face, tools)) {
+        if (!canEverBreak(client.player, client.level, pos, before)
+                || !WorldInteraction.breakBlock(client, this.owner, pos, face, tools)) {
             return Step.FAILED;
         }
         if (client.level.getBlockState(pos) != before) {
@@ -74,6 +78,11 @@ final class SingleBlockMiner {
 
     Step start(final Minecraft client, final BlockPos pos, final Direction face) {
         return this.start(client, pos, face, ToolSelector.ANY);
+    }
+
+    /** Vanilla never finishes a survival break whose destroy progress per tick is zero. */
+    static boolean canEverBreak(final Player player, final BlockGetter level, final BlockPos pos, final BlockState state) {
+        return player.getAbilities().instabuild || state.getDestroyProgress(player, level, pos) > 0.0F;
     }
 
     @Nullable BlockPos current() {
