@@ -1,19 +1,26 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.inventory.InventoryAction;
-import net.blockhost.anarchyclient.inventory.InventoryActionChain;
-import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.rotation.Rotation;
+import net.blockhost.anarchyclient.rotation.RotationManager;
+import net.blockhost.anarchyclient.rotation.RotationRequest;
+import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.OptionalInt;
 
@@ -70,7 +77,7 @@ public final class AutoExtinguishModule extends Module {
 
     public AutoExtinguishModule() {
         super("auto_extinguish", "Auto Extinguish", ModuleCategory.PLAYER,
-                "Breaks fire blocks around you and can use a water bucket when you are burning.");
+                "Puts out fire blocks within reach and can pour a water bucket at your feet when you are burning.");
     }
 
     @Override
@@ -83,8 +90,9 @@ public final class AutoExtinguishModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        if (this.extinguishSelf.value() && player.getRemainingFireTicks() > 0) {
-            this.queueWaterBucket(player);
+        if (this.extinguishSelf.value() && player.getRemainingFireTicks() > 0 && !player.isInWater()
+                && this.pourWaterAtFeet(client, player)) {
+            return;
         }
         if (this.extinguishBlocks.value()) {
             int extinguished = this.extinguishNearbyFire(client, player);
@@ -94,18 +102,34 @@ public final class AutoExtinguishModule extends Module {
         }
     }
 
-    private void queueWaterBucket(final LocalPlayer player) {
+    /**
+     * Looks down at the block under the player and pours the bucket once the server has that
+     * rotation. Returns whether this tick was spent on it.
+     */
+    private boolean pourWaterAtFeet(final Minecraft client, final LocalPlayer player) {
         OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.WATER_BUCKET));
-        if (slot.isEmpty()) {
-            return;
+        BlockPos ground = player.blockPosition().below();
+        if (slot.isEmpty() || client.level.getBlockState(ground).isAir()) {
+            return false;
         }
-        InventoryActionScheduler.schedule(InventoryActionChain.single(
-                this.id(),
-                InventoryActionScheduler.PRIORITY_LIFE,
-                Math.max(5, this.delay.value().intValue()),
-                InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.useHotbarItem(slot.orElseThrow(), Items.WATER_BUCKET, this.restoreSlot.value())
-        ));
+        RotationManager.request(new RotationRequest(this.id(),
+                Rotation.lookingAt(Vec3.atCenterOf(ground).add(0.0, 0.5, 0.0), player.getEyePosition()),
+                InventoryActionScheduler.PRIORITY_LIFE, 90.0F, 2, 2.0F, RotationTurnMode.STEPPED, false));
+        RotationManager.apply(player);
+        if (!RotationManager.serverLookHits(player, new AABB(ground), player.blockInteractionRange())) {
+            return true;
+        }
+        int previous = player.getInventory().getSelectedSlot();
+        InventoryActions.selectHotbarSlot(player, slot.getAsInt());
+        InteractionResult result = client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+        if (result.consumesAction()) {
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+            this.cooldownTicks = Math.max(5, this.delay.value().intValue());
+        }
+        if (this.restoreSlot.value()) {
+            InventoryActions.selectHotbarSlot(player, previous);
+        }
+        return true;
     }
 
     private int extinguishNearbyFire(final Minecraft client, final LocalPlayer player) {
@@ -114,20 +138,30 @@ public final class AutoExtinguishModule extends Module {
         int vertical = this.verticalRadius.value().intValue();
         int max = this.maxBlocksPerTick.value().intValue();
         int count = 0;
-        for (int y = center.getY() - vertical; y <= center.getY() + vertical && count < max; y++) {
-            for (int x = center.getX() - horizontal; x <= center.getX() + horizontal && count < max; x++) {
-                for (int z = center.getZ() - horizontal; z <= center.getZ() + horizontal && count < max; z++) {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    if (!client.level.isLoaded(pos) || !isFireBlock(client.level.getBlockState(pos).getBlock())) {
-                        continue;
-                    }
-                    if (client.gameMode.destroyBlock(pos)) {
-                        count++;
-                    }
-                }
+        for (BlockPos cursor : BlockPos.betweenClosed(center.offset(-horizontal, -vertical, -horizontal),
+                center.offset(horizontal, vertical, horizontal))) {
+            BlockPos pos = cursor.immutable();
+            if (count >= max) {
+                break;
+            }
+            if (!client.level.isLoaded(pos) || !isFireBlock(client.level.getBlockState(pos).getBlock())
+                    || !CombatTargets.canReachBlock(player, pos)) {
+                continue;
+            }
+            // Fire breaks instantly, so a real break packet puts it out on the server too.
+            if (WorldInteraction.breakBlockWithHeldItem(client, this, pos, Direction.UP)
+                    && !isFireBlock(client.level.getBlockState(pos).getBlock())) {
+                count++;
             }
         }
         return count;
+    }
+
+    @Override
+    protected void onDisable() {
+        RotationManager.clear(this.id());
+        WorldInteraction.stopBreaking(Minecraft.getInstance(), this);
+        this.cooldownTicks = 0;
     }
 
     private static boolean isFireBlock(final Block block) {

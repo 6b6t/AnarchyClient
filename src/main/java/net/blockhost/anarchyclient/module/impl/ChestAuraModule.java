@@ -10,6 +10,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.Block;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,10 +67,14 @@ public final class ChestAuraModule extends Module {
     private String lastBlocks = "";
     private Set<Block> parsedBlocks = Set.of();
     private int delayTicks;
+    private int awaitingOpenTicks;
+    private @Nullable AbstractContainerMenu openedMenu;
+
+    private static final int OPEN_TIMEOUT_TICKS = 20;
 
     public ChestAuraModule() {
         super("chest_aura", "Chest Aura", ModuleCategory.WORLD,
-                "Opens nearby chests, barrels, and other listed containers automatically, skipping ones already opened and optionally closing them.");
+                "Opens nearby chests, barrels, and other listed containers automatically, skipping ones already opened and optionally closing the ones it opened.");
     }
 
     @Override
@@ -78,6 +84,7 @@ public final class ChestAuraModule extends Module {
             return;
         }
         this.tickOpenedBlocks();
+        this.trackOpenedMenu(player);
         this.closeContainerIfNeeded(player);
         if (this.delayTicks > 0) {
             this.delayTicks--;
@@ -95,6 +102,7 @@ public final class ChestAuraModule extends Module {
             return;
         }
         this.openBlock(client, player, target);
+        this.awaitingOpenTicks = OPEN_TIMEOUT_TICKS;
         this.markOpened(client.level.getBlockState(target), target);
         this.delayTicks = this.delay.value().intValue();
     }
@@ -103,6 +111,22 @@ public final class ChestAuraModule extends Module {
     protected void onDisable() {
         this.openedBlocks.clear();
         this.delayTicks = 0;
+        this.awaitingOpenTicks = 0;
+        this.openedMenu = null;
+    }
+
+    /** Remembers the menu this module opened, so containers the player opens by hand stay open. */
+    private void trackOpenedMenu(final LocalPlayer player) {
+        if (this.openedMenu != null && player.containerMenu != this.openedMenu) {
+            this.openedMenu = null;
+        }
+        if (this.awaitingOpenTicks > 0) {
+            this.awaitingOpenTicks--;
+            if (player.containerMenu != player.inventoryMenu) {
+                this.openedMenu = player.containerMenu;
+                this.awaitingOpenTicks = 0;
+            }
+        }
     }
 
     private void tickOpenedBlocks() {
@@ -115,7 +139,7 @@ public final class ChestAuraModule extends Module {
     }
 
     private void closeContainerIfNeeded(final LocalPlayer player) {
-        if (!(player.containerMenu instanceof ChestMenu chestMenu)) {
+        if (player.containerMenu != this.openedMenu || !(player.containerMenu instanceof ChestMenu chestMenu)) {
             return;
         }
         switch (this.closeMode.value()) {

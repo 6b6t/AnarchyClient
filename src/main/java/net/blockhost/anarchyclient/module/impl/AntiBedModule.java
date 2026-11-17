@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -58,20 +59,28 @@ public final class AntiBedModule extends Module {
         BlockPos feet = client.player.blockPosition();
         BlockPos head = feet.above();
         if (this.breakBeds.value() && client.level.getBlockState(head).getBlock() instanceof BedBlock) {
-            WorldInteraction.breakBlock(client, head, Direction.UP, stack -> true);
+            WorldInteraction.breakBlock(client, this, head, Direction.UP);
+        } else {
+            WorldInteraction.stopBreaking(client, this);
         }
         if (this.onlyInHole.value() && !isInHole(client, feet)) {
             return;
         }
-        if (this.placeStringTop.value()) {
-            this.placeString(client, feet.above(2));
+        // One string per tick: a rotated placement must finish before the next one turns the head away.
+        if (this.placeStringTop.value() && this.placeString(client, feet.above(2))) {
+            return;
         }
-        if (this.placeStringMiddle.value()) {
-            this.placeString(client, head);
+        if (this.placeStringMiddle.value() && this.placeString(client, head)) {
+            return;
         }
         if (this.placeStringBottom.value()) {
             this.placeString(client, feet);
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        WorldInteraction.stopBreaking(Minecraft.getInstance(), this);
     }
 
     @Override
@@ -84,10 +93,14 @@ public final class AntiBedModule extends Module {
         return client.player != null && client.player.getItemInHand(hand).is(ItemTags.BEDS);
     }
 
-    private void placeString(final Minecraft client, final BlockPos pos) {
-        if (client.level != null && client.level.getBlockState(pos).canBeReplaced()) {
-            BlockPlacement.place(client, this, pos, this.rotate.value(), 60.0F, stack -> stack.is(Items.STRING));
+    /** Returns whether this tick was spent placing string or waiting for its rotation. */
+    private boolean placeString(final Minecraft client, final BlockPos pos) {
+        if (client.player == null || client.level == null || !client.level.getBlockState(pos).canBeReplaced()
+                || !WorldInteraction.hasHotbarItem(client.player.getInventory(), stack -> stack.is(Items.STRING))) {
+            return false;
         }
+        return BlockPlacement.place(client, this, pos, this.rotate.value(), 60.0F, stack -> stack.is(Items.STRING),
+                BlockPlacer.PlacementOptions.NON_FULL) != BlockPlacement.PlacementResult.FILLED;
     }
 
     static boolean isInHole(final Minecraft client, final BlockPos feet) {

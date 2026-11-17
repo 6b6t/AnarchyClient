@@ -15,11 +15,13 @@ import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
 public final class SpeedMineModule extends Module {
+
+    /** The server finishes an early stop only when its own progress count reaches this value. */
+    static final float SERVER_BREAK_THRESHOLD = 0.7F;
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
@@ -30,7 +32,7 @@ public final class SpeedMineModule extends Module {
     private final NumberSetting speed = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("speed")
             .name("Speed")
-            .defaultValue(1.8)
+            .defaultValue(1.4)
             .min(1.0)
             .max(8.0)
             .step(0.1)
@@ -66,7 +68,8 @@ public final class SpeedMineModule extends Module {
 
     public SpeedMineModule() {
         super("speed_mine", "Speed Mine", ModuleCategory.WORLD,
-                "Mines blocks faster by sending the finish-digging packet early, or by repeated legit breaking.");
+                "Mines blocks faster by sending the finish-digging packet early, or by repeated legit breaking. "
+                        + "Packet mode never stops before 70% progress, the earliest point the server accepts.");
     }
 
     @Override
@@ -90,7 +93,7 @@ public final class SpeedMineModule extends Module {
         }
         BlockHitResult hit = (BlockHitResult) client.hitResult;
         BlockPos pos = hit.getBlockPos();
-        if (player.distanceToSqr(Vec3.atCenterOf(pos)) > this.range.value() * this.range.value()) {
+        if (!CombatTargets.canReachBlock(player, pos, Math.min(this.range.value(), player.blockInteractionRange()))) {
             this.reset(client);
             return;
         }
@@ -106,7 +109,7 @@ public final class SpeedMineModule extends Module {
             }
         }
         if ("Legit".equals(this.mode.value())) {
-            WorldInteraction.breakBlock(client, pos, hit.getDirection(), stack -> true);
+            WorldInteraction.breakBlockWithHeldItem(client, this, pos, hit.getDirection());
             return;
         }
         if (this.target == null || !this.target.matches(pos, hit.getDirection())) {
@@ -118,11 +121,10 @@ public final class SpeedMineModule extends Module {
                     hit.getDirection()
             ));
         }
-        float progress = this.target.progress()
-                + state.getDestroyProgress(player, client.level, pos) * this.speed.value().floatValue();
+        float progress = this.target.progress() + state.getDestroyProgress(player, client.level, pos);
         this.target = new MiningTarget(pos.immutable(), hit.getDirection(), progress);
         this.debugValue("progress", Math.min(100, Math.round(progress * 100.0F)) + "%");
-        if (progress >= 1.0F) {
+        if (readyToStop(progress, this.speed.value().floatValue())) {
             client.getConnection().send(new ServerboundPlayerActionPacket(
                     ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK,
                     pos,
@@ -140,7 +142,17 @@ public final class SpeedMineModule extends Module {
         this.cooldownTicks = 0;
     }
 
+    /**
+     * Returns whether the real mining progress, counted from the start packet, is enough to send
+     * the stop packet. The speed multiplier shortens the wait, but never below the server's
+     * threshold, where it would reject the stop and keep the block.
+     */
+    static boolean readyToStop(final float realProgress, final float speed) {
+        return realProgress >= SERVER_BREAK_THRESHOLD && realProgress * speed >= 1.0F;
+    }
+
     private void reset(final Minecraft client) {
+        WorldInteraction.stopBreaking(client, this);
         if (this.target != null && client.getConnection() != null) {
             client.getConnection().send(new ServerboundPlayerActionPacket(
                     ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,

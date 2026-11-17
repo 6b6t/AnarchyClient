@@ -42,6 +42,8 @@ public final class AutoCityModule extends Module {
             .defaultValue(true)
             .build()));
 
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
+
     public AutoCityModule() {
         super("auto_city", "Auto City", ModuleCategory.COMBAT,
                 "Mines the obsidian or ender chest blocks that surround the nearest enemy, including a burrow block.");
@@ -51,21 +53,34 @@ public final class AutoCityModule extends Module {
     public void tick(final Minecraft client) {
         Player target = CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null || client.level == null || client.player == null) {
+            this.miner.stop(client);
             return;
         }
-        CityTarget cityTarget = bestCityTarget(client, target, this.includeEnderChests.value(),
+        List<CityTarget> targets = cityTargets(client, target, this.includeEnderChests.value(),
                 this.mineBurrow.value(), this.exposedOnly.value());
-        if (cityTarget != null) {
-            WorldInteraction.breakBlock(client, cityTarget.pos(), cityTarget.face(), stack -> true);
+        // Stay on the block in progress: switching to a closer one would throw the progress away.
+        if (this.miner.continueCurrent(client,
+                pos -> targets.stream().anyMatch(cityTarget -> cityTarget.pos().equals(pos)))) {
+            return;
+        }
+        if (!targets.isEmpty()) {
+            CityTarget cityTarget = targets.getFirst();
+            this.miner.start(client, cityTarget.pos(), cityTarget.face());
             this.debugValue("target", target.getScoreboardName());
             this.debugValue("block", cityTarget.pos().toShortString());
         }
     }
 
-    static CityTarget bestCityTarget(final Minecraft client, final Player target, final boolean includeEnderChests,
-                                     final boolean mineBurrow, final boolean exposedOnly) {
+    @Override
+    protected void onDisable() {
+        this.miner.stop(Minecraft.getInstance());
+    }
+
+    /** Returns the reachable city blocks around {@code target}, closest first. */
+    static List<CityTarget> cityTargets(final Minecraft client, final Player target, final boolean includeEnderChests,
+                                        final boolean mineBurrow, final boolean exposedOnly) {
         if (client.level == null || client.player == null) {
-            return null;
+            return List.of();
         }
         List<CityTarget> targets = new ArrayList<>();
         BlockPos base = target.blockPosition();
@@ -75,8 +90,9 @@ public final class AutoCityModule extends Module {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             addTarget(client, targets, base.relative(direction), direction.getOpposite(), includeEnderChests, exposedOnly);
         }
+        targets.removeIf(cityTarget -> !CombatTargets.canReachBlock(client.player, cityTarget.pos()));
         targets.sort(Comparator.comparingDouble(targetPos -> Vec3.atCenterOf(targetPos.pos()).distanceToSqr(client.player.getEyePosition())));
-        return targets.isEmpty() ? null : targets.getFirst();
+        return targets;
     }
 
     private static void addTarget(final Minecraft client, final List<CityTarget> targets, final BlockPos pos,

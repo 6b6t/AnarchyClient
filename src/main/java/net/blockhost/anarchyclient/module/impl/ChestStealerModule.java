@@ -65,25 +65,53 @@ public final class ChestStealerModule extends Module {
 
         int containerSlots = menu.getRowCount() * 9;
         Set<Item> ignored = ItemScan.parseItems(this.ignoredItems.value());
-        int slot = firstStealableSlot(menu.getItems(), containerSlots, this.filterJunk.value(), ignored);
+        List<ItemStack> stacks = menu.getItems();
+        int slot = firstStealableSlot(stacks, containerSlots, this.filterJunk.value(), ignored);
         if (slot >= 0) {
             client.gameMode.handleContainerInput(menu.containerId, slot, 0, ContainerInput.QUICK_MOVE, player);
             this.cooldownTicks = this.delayTicks.value().intValue();
-        } else if (this.closeWhenEmpty.value()) {
+        } else if (this.closeWhenEmpty.value() && !hasStealable(stacks, containerSlots, this.filterJunk.value(), ignored)) {
+            // Close only when nothing is left to take, not when the inventory is merely full.
             player.closeContainer();
         }
     }
 
+    /**
+     * Returns the first container slot with an item worth taking that still fits in the player's
+     * part of the menu (the slots after {@code containerSlots}), or -1.
+     */
     static int firstStealableSlot(final List<ItemStack> stacks, final int containerSlots, final boolean filterJunk,
                                   final Set<Item> ignoredItems) {
         int limit = Math.min(Math.max(0, containerSlots), stacks.size());
+        List<ItemStack> playerSlots = stacks.subList(limit, stacks.size());
         for (int slot = 0; slot < limit; slot++) {
             ItemStack stack = stacks.get(slot);
-            if (shouldSteal(stack, filterJunk, ignoredItems)) {
+            if (shouldSteal(stack, filterJunk, ignoredItems) && fits(stack, playerSlots)) {
                 return slot;
             }
         }
         return -1;
+    }
+
+    static boolean hasStealable(final List<ItemStack> stacks, final int containerSlots, final boolean filterJunk,
+                                final Set<Item> ignoredItems) {
+        int limit = Math.min(Math.max(0, containerSlots), stacks.size());
+        for (int slot = 0; slot < limit; slot++) {
+            if (shouldSteal(stacks.get(slot), filterJunk, ignoredItems)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean fits(final ItemStack stack, final List<ItemStack> slots) {
+        for (ItemStack target : slots) {
+            if (target.isEmpty() || ItemStack.isSameItemSameComponents(target, stack)
+                    && target.getCount() < target.getMaxStackSize()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean shouldSteal(final ItemStack stack, final boolean filterJunk, final Set<Item> ignoredItems) {

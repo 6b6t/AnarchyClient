@@ -2,12 +2,10 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.util.PlaceholderFormatter;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,12 +39,8 @@ class MeteorRejectsPlanModulesTest {
     }
 
     @Test
-    void oreSimRequiresSeedAndCapsMarkers() {
-        assertTrue(OreSimModule.scan(new BlockPos(0, 64, 0), "", "Diamond", 16, 16).isEmpty());
-
-        List<BlockPos> markers = OreSimModule.scan(new BlockPos(0, 64, 0), "12345", "Diamond", 16, 8);
-
-        assertTrue(markers.size() <= 8);
-        assertEquals(markers, OreSimModule.scan(new BlockPos(0, 64, 0), "12345", "Diamond", 16, 8));
+    void oreSimUsesVanillaGenerationHeights() {
+        assertEquals(new OreSimModule.OreBand(-64, -59, 16), OreSimModule.band("Diamond"));
+        assertEquals(new OreSimModule.OreBand(8, 16, 24), OreSimModule.band("Ancient Debris"));
     }
 }

@@ -41,6 +41,7 @@ public final class ObsidianFarmModule extends Module {
             .name("Protect Eating")
             .defaultValue(true)
             .build()));
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
     private boolean lockedUntilNether;
 
     public ObsidianFarmModule() {
@@ -52,21 +53,27 @@ public final class ObsidianFarmModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
+            this.miner.stop(client);
             return;
         }
         if (client.level.dimension() == Level.NETHER) {
             this.lockedUntilNether = false;
+            this.miner.stop(client);
             return;
         }
-        if (this.lockedUntilNether || this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem())) {
-            return;
-        }
-        if (!WorldInteraction.hasHotbarItem(player.getInventory(), ObsidianFarmModule::isPickaxe)) {
+        if (this.lockedUntilNether || this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem())
+                || !WorldInteraction.hasHotbarItem(player.getInventory(), ObsidianFarmModule::isPickaxe)) {
+            this.miner.stop(client);
             return;
         }
 
-        BlockPos feet = player.blockPosition();
-        BlockPos underFeet = feet.below();
+        BlockPos underFeet = player.blockPosition().below();
+        BlockPos current = this.miner.current();
+        if (this.miner.continueCurrent(client, pos -> client.level.getBlockState(pos).is(Blocks.OBSIDIAN)
+                && CombatTargets.canReachBlock(player, pos), ObsidianFarmModule::isPickaxe)) {
+            this.lockIfBroken(client, current, underFeet);
+            return;
+        }
         BlockPos target = null;
         BlockPos fallback = null;
         for (BlockTargetScanner.BlockTarget candidate : BlockTargetScanner.scan(
@@ -75,7 +82,7 @@ public final class ObsidianFarmModule extends Module {
                 this.verticalRange.value().intValue(),
                 BlockTargetScanner.SortMode.CLOSEST,
                 AutoTntModule.scanLimit(this.range.value().intValue(), this.verticalRange.value().intValue()),
-                block -> block.state().is(Blocks.OBSIDIAN)
+                block -> block.state().is(Blocks.OBSIDIAN) && CombatTargets.canReachBlock(player, block.pos())
         )) {
             if (candidate.pos().equals(underFeet)) {
                 fallback = candidate.pos();
@@ -87,18 +94,25 @@ public final class ObsidianFarmModule extends Module {
         if (target == null) {
             target = fallback;
         }
-        if (target == null) {
-            return;
+        if (target != null) {
+            this.miner.start(client, target, Direction.UP, ObsidianFarmModule::isPickaxe);
+            this.lockIfBroken(client, target, underFeet);
         }
-        if (WorldInteraction.breakBlock(client, target, Direction.UP, ObsidianFarmModule::isPickaxe)
-                && target.equals(underFeet)) {
+    }
+
+    /** Locks only once the block underfoot has actually broken, not when mining it starts. */
+    private void lockIfBroken(final Minecraft client, final BlockPos mined, final BlockPos underFeet) {
+        if (mined != null && mined.equals(underFeet) && client.level != null
+                && !client.level.getBlockState(mined).is(Blocks.OBSIDIAN)) {
             this.lockedUntilNether = true;
+            this.miner.stop(client);
         }
     }
 
     @Override
     protected void onDisable() {
         this.lockedUntilNether = false;
+        this.miner.stop(Minecraft.getInstance());
     }
 
     static boolean isConsuming(final ItemStack useStack, final boolean usingItem) {

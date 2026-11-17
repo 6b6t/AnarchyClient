@@ -8,13 +8,16 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
-import java.util.List;
 import java.util.Set;
 
 public final class AutoCraftModule extends Module {
@@ -65,7 +68,7 @@ public final class AutoCraftModule extends Module {
         if (targets.isEmpty()) {
             return;
         }
-        RecipeDisplayEntry recipe = findRecipe(client, player, targets);
+        RecipeDisplayEntry recipe = findRecipe(client, player, menu, targets);
         if (recipe == null) {
             return;
         }
@@ -78,21 +81,45 @@ public final class AutoCraftModule extends Module {
         this.cooldown = this.delayTicks.value().intValue();
     }
 
-    static RecipeDisplayEntry findRecipe(final Minecraft client, final LocalPlayer player, final Set<Item> targets) {
+    /**
+     * Finds a known recipe for one of the targets that fits the grid and can be crafted from the
+     * inventory and grid now. Craftability is computed here because the recipe book only updates
+     * it while its screen is open.
+     */
+    static RecipeDisplayEntry findRecipe(final Minecraft client, final LocalPlayer player, final CraftingMenu menu,
+                                         final Set<Item> targets) {
         if (client.level == null || targets.isEmpty()) {
             return null;
         }
+        StackedItemContents contents = new StackedItemContents();
+        player.getInventory().fillStackedContents(contents);
+        menu.fillCraftSlotsStackedContents(contents);
         for (RecipeCollection collection : player.getRecipeBook().getCollections()) {
-            List<RecipeDisplayEntry> recipes = collection.getSelectedRecipes(RecipeCollection.CraftableStatus.CRAFTABLE);
-            for (RecipeDisplayEntry recipe : recipes) {
-                List<ItemStack> results = recipe.display().result().resolveForStacks(SlotDisplayContext.fromLevel(client.level));
-                for (ItemStack result : results) {
-                    if (targets.contains(result.getItem())) {
-                        return recipe;
-                    }
+            for (RecipeDisplayEntry recipe : collection.getRecipes()) {
+                if (!fitsGrid(recipe.display(), menu.getGridWidth(), menu.getGridHeight())
+                        || !producesTarget(client, recipe, targets) || !recipe.canCraft(contents)) {
+                    continue;
                 }
+                return recipe;
             }
         }
         return null;
+    }
+
+    private static boolean producesTarget(final Minecraft client, final RecipeDisplayEntry recipe, final Set<Item> targets) {
+        for (ItemStack result : recipe.display().result().resolveForStacks(SlotDisplayContext.fromLevel(client.level))) {
+            if (targets.contains(result.getItem())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean fitsGrid(final RecipeDisplay display, final int gridWidth, final int gridHeight) {
+        return switch (display) {
+            case ShapedCraftingRecipeDisplay shaped -> gridWidth >= shaped.width() && gridHeight >= shaped.height();
+            case ShapelessCraftingRecipeDisplay shapeless -> gridWidth * gridHeight >= shapeless.ingredients().size();
+            default -> false;
+        };
     }
 }

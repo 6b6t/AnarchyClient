@@ -8,6 +8,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.camel.Camel;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.animal.pig.Pig;
@@ -39,7 +41,7 @@ public final class AutoMountModule extends Module {
 
     public AutoMountModule() {
         super("auto_mount", "Auto Mount", ModuleCategory.PLAYER,
-                "Mounts the nearest free horse, camel, boat, minecart, pig, or strider in range.");
+                "Mounts the nearest free horse, camel, boat, minecart, or saddled pig or strider in range.");
     }
 
     @Override
@@ -69,7 +71,10 @@ public final class AutoMountModule extends Module {
         Entity best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!isMountCandidate(entity) || entity.getControllingPassenger() != null || !entity.isAlive()) {
+            if (!isMountCandidate(entity) || entity.getControllingPassenger() != null || !entity.isAlive()
+                    || !canRide(entity) || !CombatTargets.canReachEntity(player, entity)
+                    // Holding the animal's food would feed it instead of mounting it.
+                    || entity instanceof Animal animal && animal.isFood(player.getMainHandItem())) {
                 continue;
             }
             double distance = entity.distanceToSqr(player);
@@ -79,6 +84,17 @@ public final class AutoMountModule extends Module {
             }
         }
         return best;
+    }
+
+    /** Living mounts must be adults without riders; pigs and striders also need a saddle. */
+    static boolean canRide(final Entity entity) {
+        if (!(entity instanceof Mob mob)) {
+            return true;
+        }
+        if (mob.isBaby() || mob.isVehicle()) {
+            return false;
+        }
+        return !(mob instanceof Pig || mob instanceof Strider) || mob.isSaddled();
     }
 
     static boolean isMountCandidate(final Entity entity) {

@@ -104,7 +104,7 @@ public final class NotebotModule extends Module {
     private int songTick;
 
     public NotebotModule() {
-        super("notebot", "Notebot", ModuleCategory.MISC, "Plays configured note patterns through note blocks or sound actions.");
+        super("notebot", "Notebot", ModuleCategory.MISC, "Plays configured note patterns through note blocks or sound actions. Pauses in creative mode, where hitting a note block breaks it.");
         this.legacyNotes.visibleWhen(() -> false);
     }
 
@@ -128,6 +128,11 @@ public final class NotebotModule extends Module {
             return;
         }
         if (this.stage == Stage.PLAY) {
+            if (player.getAbilities().instabuild) {
+                // A creative left click destroys the note block instead of playing it.
+                this.debugStatus("Paused: switch out of creative mode to play");
+                return;
+            }
             this.playSongTick(client, player);
         }
     }

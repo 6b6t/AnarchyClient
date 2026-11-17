@@ -122,7 +122,8 @@ public final class AutoWitherModule extends Module {
                 this.rotate.value(),
                 70.0F,
                 step::matchesItem,
-                step.options()
+                // Soul sand and skulls are shorter than a full block.
+                BlockPlacer.PlacementOptions.NON_FULL
         );
         if (result == BlockPlacer.PlacementResult.PLACED || result == BlockPlacer.PlacementResult.FILLED) {
             this.stage++;
@@ -269,12 +270,6 @@ public final class AutoWitherModule extends Module {
                 case SOUL -> stack.is(Items.SOUL_SAND) || stack.is(Items.SOUL_SOIL);
                 case SKULL -> stack.is(Items.WITHER_SKELETON_SKULL);
             };
-        }
-
-        BlockPlacer.PlacementOptions options() {
-            return this.material == WitherMaterial.SKULL
-                    ? BlockPlacer.PlacementOptions.NON_FULL
-                    : BlockPlacer.PlacementOptions.DEFAULT;
         }
 
         BlockState previewState() {

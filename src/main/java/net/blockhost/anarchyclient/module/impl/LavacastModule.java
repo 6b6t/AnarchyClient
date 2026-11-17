@@ -2,12 +2,17 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.HitResult;
+
+import java.util.OptionalInt;
 
 public final class LavacastModule extends Module {
 
@@ -19,11 +24,6 @@ public final class LavacastModule extends Module {
             .max(100.0)
             .step(1.0)
             .build()));
-    private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("rotate")
-            .name("Rotate")
-            .defaultValue(false)
-            .build()));
     private int ticks;
     private boolean lava = true;
 
@@ -34,23 +34,32 @@ public final class LavacastModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (!(client.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
+        LocalPlayer player = client.player;
+        if (player == null || client.gameMode == null || client.hitResult == null
+                || client.hitResult.getType() != HitResult.Type.BLOCK) {
             return;
         }
         if (++this.ticks < this.interval.value().intValue()) {
             return;
         }
         this.ticks = 0;
-        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
-                client,
-                this,
-                hit.getBlockPos(),
-                hit.getDirection(),
-                stack -> stack.getItem() == (this.lava ? Items.LAVA_BUCKET : Items.WATER_BUCKET),
-                this.rotate.value()
-        );
-        if (result == WorldInteraction.ActionResult.DONE) {
+        Item bucket = this.lava ? Items.LAVA_BUCKET : Items.WATER_BUCKET;
+        OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(bucket));
+        if (slot.isEmpty()) {
+            return;
+        }
+        InventoryActions.selectHotbarSlot(player, slot.getAsInt());
+        // Buckets ignore the clicked block and pour where the player looks, so they need a plain item use.
+        InteractionResult result = client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
+        if (result.consumesAction()) {
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.lava = !this.lava;
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.ticks = 0;
+        this.lava = true;
     }
 }

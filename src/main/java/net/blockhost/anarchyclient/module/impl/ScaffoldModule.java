@@ -107,7 +107,8 @@ public final class ScaffoldModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        if (this.startY == Integer.MIN_VALUE) {
+        // Keep the bridge height while jumping, but follow the player once they land on a new level.
+        if (this.startY == Integer.MIN_VALUE || player.onGround()) {
             this.startY = player.getBlockY();
         }
         if (this.tower.value() && player.input != null && player.input.keyPresses.jump()) {
@@ -117,15 +118,12 @@ public final class ScaffoldModule extends Module {
                 player.setDeltaMovement(player.getDeltaMovement().x, -0.28, player.getDeltaMovement().z);
             }
         }
-        int placed = 0;
         List<BlockPos> targets = targets(player);
-        for (BlockPos pos : targets) {
-            if (BlockPlacer.place(client, this.id(), pos, this.rotate.value(), 80.0F) == BlockPlacer.PlacementResult.PLACED
-                    && ++placed >= this.blocksPerTick.value().intValue()) {
-                this.debugValue("placed", placed);
-                return;
-            }
-        }
+        // The batch stops at a target that is still rotating, so it is retried next tick.
+        int placed = BlockPlacer.placeBatch(client, this.id(),
+                targets.stream().map(pos -> new BlockPlacer.PlacementRequest(pos, stack -> true)).toList(),
+                this.blocksPerTick.value().intValue(), this.rotate.value(), 80.0F);
+        this.debugValue("placed", placed);
         this.debugValue("targets", targets.size());
     }
 

@@ -8,7 +8,9 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -54,6 +56,9 @@ public final class AutoShopModule extends Module {
             return;
         }
         AbstractContainerMenu menu = player.containerMenu;
+        if (menu == player.inventoryMenu) {
+            return;
+        }
         Set<Item> targets = ItemScan.parseItems(this.buyItems.value());
         int slot = firstMatchingSlot(menu, targets);
         if (slot >= 0 && ContainerActions.quickMove(client, menu, slot)) {
@@ -66,8 +71,10 @@ public final class AutoShopModule extends Module {
             return -1;
         }
         for (int slot = 0; slot < menu.slots.size(); slot++) {
-            ItemStack stack = menu.slots.get(slot).getItem();
-            if (!stack.isEmpty() && targets.contains(stack.getItem())) {
+            Slot menuSlot = menu.slots.get(slot);
+            ItemStack stack = menuSlot.getItem();
+            // The player's own inventory slots are part of the menu too; only shop slots are bought from.
+            if (!(menuSlot.container instanceof Inventory) && !stack.isEmpty() && targets.contains(stack.getItem())) {
                 return slot;
             }
         }

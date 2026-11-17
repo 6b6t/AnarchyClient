@@ -84,6 +84,7 @@ public final class SpawnProoferModule extends Module {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockPos above = pos.above();
                     if (!client.level.isLoaded(pos)
+                            || client.player == null || !CombatTargets.canReachBlock(client.player, pos)
                             || client.level.getBlockState(pos).is(Blocks.TORCH)
                             || client.level.getBlockState(pos).is(Blocks.SOUL_TORCH)
                             || !client.level.getBlockState(pos).isFaceSturdy(client.level, pos, Direction.UP)

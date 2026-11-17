@@ -26,6 +26,8 @@ public final class InfinityMinerModule extends Module {
             .step(1.0)
             .build()));
 
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
+
     public InfinityMinerModule() {
         super("infinity_miner", "Infinity Miner", ModuleCategory.WORLD,
                 "Mines the closest listed blocks around you automatically, such as stone, deepslate, and netherrack.");
@@ -34,6 +36,11 @@ public final class InfinityMinerModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         if (client.player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
+            this.miner.stop(client);
+            return;
+        }
+        if (this.miner.continueCurrent(client, pos -> this.blocks.value().contains(client.level.getBlockState(pos).getBlock())
+                && CombatTargets.canReachBlock(client.player, pos))) {
             return;
         }
         for (BlockTargetScanner.BlockTarget target : BlockTargetScanner.scan(
@@ -43,10 +50,16 @@ public final class InfinityMinerModule extends Module {
                 BlockTargetScanner.SortMode.CLOSEST,
                 8,
                 candidate -> this.blocks.value().contains(candidate.state().getBlock())
+                        && CombatTargets.canReachBlock(client.player, candidate.pos())
         )) {
-            if (WorldInteraction.breakBlock(client, target.pos(), Direction.UP, stack -> true)) {
+            if (this.miner.start(client, target.pos(), Direction.UP) == SingleBlockMiner.Step.MINING) {
                 return;
             }
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.miner.stop(Minecraft.getInstance());
     }
 }

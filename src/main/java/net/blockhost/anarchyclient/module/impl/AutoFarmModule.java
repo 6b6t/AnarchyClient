@@ -10,17 +10,21 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.BonemealSource;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.NetherWartBlock;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public final class AutoFarmModule extends Module {
 
@@ -66,6 +70,8 @@ public final class AutoFarmModule extends Module {
             .defaultValue(true)
             .build()));
 
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
+
     public AutoFarmModule() {
         super("auto_farm", "Auto Farm", ModuleCategory.WORLD,
                 "Harvests mature crops and can replant, bone meal, and till soil around you.");
@@ -75,6 +81,11 @@ public final class AutoFarmModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
+            this.miner.stop(client);
+            return;
+        }
+        if (this.miner.continueCurrent(client, pos -> this.harvest.value() && isMatureCrop(client.level.getBlockState(pos))
+                && CombatTargets.canReachBlock(player, pos))) {
             return;
         }
         int radius = this.range.value().intValue();
@@ -91,7 +102,12 @@ public final class AutoFarmModule extends Module {
             if (actions >= maxActions) {
                 break;
             }
-            if (this.handleTarget(client, target)) {
+            Step step = this.handleTarget(client, target);
+            if (step == Step.WAITING) {
+                // A rotated action is still turning; retry it next tick instead of moving on.
+                return;
+            }
+            if (step == Step.DONE) {
                 actions++;
             }
         }
@@ -100,10 +116,13 @@ public final class AutoFarmModule extends Module {
     private boolean isCandidate(final Minecraft client, final BlockTargetScanner.BlockTarget target) {
         BlockState state = target.state();
         Block block = state.getBlock();
+        if (client.player == null || !CombatTargets.canReachBlock(client.player, target.pos())) {
+            return false;
+        }
         if (this.harvest.value() && isMatureCrop(state)) {
             return true;
         }
-        if (this.bonemeal.value() && canBoneMeal(state)) {
+        if (this.bonemeal.value() && canBoneMeal(client, target.pos(), state)) {
             return true;
         }
         if (client.level == null || !client.level.isEmptyBlock(target.pos().above())) {
@@ -115,32 +134,46 @@ public final class AutoFarmModule extends Module {
         return this.till.value() && isTillableBlock(block);
     }
 
-    private boolean handleTarget(final Minecraft client, final BlockTargetScanner.BlockTarget target) {
+    private Step handleTarget(final Minecraft client, final BlockTargetScanner.BlockTarget target) {
         if (this.harvest.value() && isMatureCrop(target.state())) {
-            return WorldInteraction.breakBlock(client, target.pos(), Direction.UP, stack -> true);
+            // Most crops break instantly; cocoa takes a few ticks and must be finished first.
+            return switch (this.miner.start(client, target.pos(), Direction.UP)) {
+                case BROKEN -> Step.DONE;
+                case MINING -> Step.WAITING;
+                case FAILED -> Step.SKIPPED;
+            };
         }
-        if (this.bonemeal.value() && canBoneMeal(target.state())) {
-            return WorldInteraction.useOnBlock(client, this, target.pos(), Direction.UP,
-                    stack -> stack.is(Items.BONE_MEAL), this.rotate.value()) == WorldInteraction.ActionResult.DONE;
-        }
-        if (this.plant.value() && this.plant(client, target.pos(), target.state().getBlock())) {
-            return true;
-        }
-        return this.till.value()
-                && isTillableBlock(target.state().getBlock())
-                && WorldInteraction.useOnBlock(client, this, target.pos(), Direction.UP,
-                stack -> stack.is(ItemTags.HOES), this.rotate.value()) == WorldInteraction.ActionResult.DONE;
-    }
-
-    private boolean plant(final Minecraft client, final BlockPos ground, final Block baseBlock) {
-        for (Item item : plantItems(baseBlock)) {
-            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, ground, Direction.UP,
-                    stack -> stack.is(item), this.rotate.value());
-            if (result == WorldInteraction.ActionResult.DONE) {
-                return true;
+        if (this.bonemeal.value() && canBoneMeal(client, target.pos(), target.state())) {
+            Step step = this.use(client, target.pos(), stack -> stack.is(Items.BONE_MEAL));
+            if (step != Step.SKIPPED) {
+                return step;
             }
         }
-        return false;
+        if (this.plant.value()) {
+            for (Item item : plantItems(target.state().getBlock())) {
+                Step step = this.use(client, target.pos(), stack -> stack.is(item));
+                if (step != Step.SKIPPED) {
+                    return step;
+                }
+            }
+        }
+        if (this.till.value() && isTillableBlock(target.state().getBlock())) {
+            return this.use(client, target.pos(), stack -> stack.is(ItemTags.HOES));
+        }
+        return Step.SKIPPED;
+    }
+
+    private Step use(final Minecraft client, final BlockPos pos, final Predicate<ItemStack> item) {
+        return switch (WorldInteraction.useOnBlock(client, this, pos, Direction.UP, item, this.rotate.value())) {
+            case DONE -> Step.DONE;
+            case WAITING -> Step.WAITING;
+            case MISSING_ITEM -> Step.SKIPPED;
+        };
+    }
+
+    @Override
+    protected void onDisable() {
+        this.miner.stop(Minecraft.getInstance());
     }
 
     static boolean isMatureCrop(final BlockState state) {
@@ -157,8 +190,16 @@ public final class AutoFarmModule extends Module {
         return block instanceof SweetBerryBushBlock && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE;
     }
 
-    static boolean canBoneMeal(final BlockState state) {
-        return state.getBlock() instanceof BonemealableBlock && !isMatureCrop(state);
+    /** Bone meal only goes on growing crops, not on grass, moss, or other spreading blocks. */
+    private static boolean canBoneMeal(final Minecraft client, final BlockPos pos, final BlockState state) {
+        return client.level != null && isBoneMealCrop(state)
+                && ((BonemealableBlock) state.getBlock()).isValidBonemealTarget(client.level, pos, state, BonemealSource.INTERACTION);
+    }
+
+    static boolean isBoneMealCrop(final BlockState state) {
+        Block block = state.getBlock();
+        return (block instanceof CropBlock || block instanceof StemBlock || block instanceof CocoaBlock
+                || block instanceof SweetBerryBushBlock) && !isMatureCrop(state);
     }
 
     static boolean isTillableBlock(final Block block) {
@@ -186,6 +227,12 @@ public final class AutoFarmModule extends Module {
             return List.of(Items.NETHER_WART);
         }
         return List.of();
+    }
+
+    private enum Step {
+        DONE,
+        WAITING,
+        SKIPPED
     }
 
     static List<String> plantItemIds(final String baseBlockId) {

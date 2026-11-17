@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
@@ -34,11 +35,13 @@ public final class HighwayBuilderModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null) {
+        if (client.player == null || client.level == null) {
             return;
         }
         for (BlockPos pos : plan(client.player.blockPosition(), client.player.getDirection(), this.length.value().intValue(), this.rails.value())) {
-            if (BlockPlacement.needsPlacement(client.level, pos)) {
+            if (BlockPlacement.needsPlacement(client.level, pos) && CombatTargets.canReachBlock(client.player, pos)
+                    && BlockPlacer.findPlacementTarget(client.level, pos).isPresent()) {
+                // Placed or still rotating: one block per tick, retried until it is in place.
                 BlockPlacement.place(client, this, pos, true, 70.0F);
                 return;
             }

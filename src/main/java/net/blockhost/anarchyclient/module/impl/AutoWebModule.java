@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -52,10 +53,14 @@ public final class AutoWebModule extends Module {
             return;
         }
         for (BlockPos pos : List.of(target.blockPosition(), target.blockPosition().above())) {
-            if (BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F,
-                    stack -> stack.is(Items.COBWEB)) == BlockPlacement.PlacementResult.PLACED) {
-                return;
+            if (!BlockPlacement.needsPlacement(client.level, pos) || !CombatTargets.canReachBlock(player, pos)
+                    || BlockPlacer.findPlacementTarget(client.level, pos).isEmpty()) {
+                continue;
             }
+            // Placed, or still turning toward the spot: either way this tick is spent on it.
+            BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F,
+                    stack -> stack.is(Items.COBWEB), BlockPlacer.PlacementOptions.NON_FULL);
+            return;
         }
     }
 }

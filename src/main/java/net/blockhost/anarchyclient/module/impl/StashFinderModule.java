@@ -4,15 +4,19 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +41,7 @@ public final class StashFinderModule extends Module {
             .build()));
 
     private final Set<Long> reportedChunks = new HashSet<>();
+    private @Nullable ResourceKey<Level> dimension;
     private int cooldownTicks;
 
     public StashFinderModule() {
@@ -48,8 +53,13 @@ public final class StashFinderModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null) {
-            this.reportedChunks.clear();
+            this.reset();
             return;
+        }
+        if (client.level.dimension() != this.dimension) {
+            // Chunk coordinates repeat across dimensions, so reports from the old one do not apply.
+            this.reset();
+            this.dimension = client.level.dimension();
         }
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
@@ -77,6 +87,22 @@ public final class StashFinderModule extends Module {
                 }
             }
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.reset();
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.reset();
+    }
+
+    private void reset() {
+        this.reportedChunks.clear();
+        this.dimension = null;
+        this.cooldownTicks = 0;
     }
 
     static int storageCount(final LevelChunk chunk) {

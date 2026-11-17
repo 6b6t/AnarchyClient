@@ -77,8 +77,8 @@ public final class MossBotModule extends Module {
         if (best == null) {
             return;
         }
-        if (!client.level.isEmptyBlock(best.above())) {
-            WorldInteraction.breakBlock(client, best.above(), Direction.UP, stack -> true);
+        // bestMossBlock only returns moss with air above, which bone meal needs.
+        if (!CombatTargets.canReachBlock(player, best)) {
             return;
         }
         if (WorldInteraction.useOnBlock(client, this, best, Direction.UP, stack -> stack.is(Items.BONE_MEAL), this.rotate.value())

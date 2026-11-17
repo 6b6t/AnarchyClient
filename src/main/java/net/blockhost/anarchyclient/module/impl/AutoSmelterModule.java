@@ -5,11 +5,22 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.BlastFurnaceMenu;
+import net.minecraft.world.inventory.SmokerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipePropertySet;
+
+import java.util.function.Predicate;
 
 public final class AutoSmelterModule extends Module {
+
+    static final int INPUT_SLOT = 0;
+    static final int FUEL_SLOT = 1;
+    static final int OUTPUT_SLOT = 2;
+    private static final int FIRST_PLAYER_SLOT = 3;
 
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")
@@ -23,45 +34,75 @@ public final class AutoSmelterModule extends Module {
 
     public AutoSmelterModule() {
         super("auto_smelter", "Auto Smelter", ModuleCategory.WORLD,
-                "Takes furnace output, then loads coal or charcoal as fuel and other inventory items as input in an open furnace.");
+                "Takes furnace output, then loads coal or charcoal as fuel and smeltable inventory items as input in an open furnace.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || !(player.containerMenu instanceof AbstractFurnaceMenu menu)) {
+        if (player == null || client.level == null || client.gameMode == null
+                || !(player.containerMenu instanceof AbstractFurnaceMenu menu)) {
             return;
         }
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
             return;
         }
-        if (quickMoveIfPresent(client, menu, 2)
-                || quickMoveMatching(client, menu, 3, menu.slots.size(), slot -> menu.slots.get(slot).getItem().is(Items.COAL)
-                || menu.slots.get(slot).getItem().is(Items.CHARCOAL))
-                || quickMoveMatching(client, menu, 3, menu.slots.size(), slot -> menu.getSlot(0).getItem().isEmpty()
-                && !menu.slots.get(slot).getItem().is(Items.COAL)
-                && !menu.slots.get(slot).getItem().is(Items.CHARCOAL))) {
+        RecipePropertySet inputs = client.level.recipeAccess().propertySet(inputSet(menu));
+        // Each move only happens when its target slot can take the stack, so nothing bounces between
+        // the inventory and the hotbar and a full fuel slot never blocks loading the input.
+        boolean moved = menu.getSlot(OUTPUT_SLOT).hasItem() && hasRoomFor(menu, menu.getSlot(OUTPUT_SLOT).getItem())
+                && ContainerActions.quickMove(client, menu, OUTPUT_SLOT)
+                || this.load(client, menu, FUEL_SLOT, AutoSmelterModule::isFuel)
+                || this.load(client, menu, INPUT_SLOT, stack -> !isFuel(stack) && inputs.test(stack));
+        if (moved) {
             this.cooldownTicks = this.delay.value().intValue();
         }
     }
 
-    private static boolean quickMoveIfPresent(final Minecraft client, final AbstractFurnaceMenu menu, final int slot) {
-        return menu.getSlot(slot).hasItem() && ContainerActions.quickMove(client, menu, slot);
+    @Override
+    protected void onDisable() {
+        this.cooldownTicks = 0;
     }
 
-    private static boolean quickMoveMatching(final Minecraft client, final AbstractFurnaceMenu menu, final int start,
-                                             final int end, final SlotPredicate predicate) {
-        for (int slot = start; slot < end; slot++) {
-            Slot menuSlot = menu.getSlot(slot);
-            if (menuSlot.hasItem() && predicate.test(slot)) {
+    private boolean load(final Minecraft client, final AbstractFurnaceMenu menu, final int target,
+                         final Predicate<ItemStack> accepts) {
+        ItemStack current = menu.getSlot(target).getItem();
+        for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
+            ItemStack stack = menu.getSlot(slot).getItem();
+            if (!stack.isEmpty() && accepts.test(stack) && canStackInto(current, stack)) {
                 return ContainerActions.quickMove(client, menu, slot);
             }
         }
         return false;
     }
 
-    private interface SlotPredicate {
-        boolean test(int slot);
+    static boolean isFuel(final ItemStack stack) {
+        return stack.is(Items.COAL) || stack.is(Items.CHARCOAL);
+    }
+
+    /** Returns whether {@code stack} can be added to a slot that holds {@code current}. */
+    static boolean canStackInto(final ItemStack current, final ItemStack stack) {
+        return current.isEmpty()
+                || ItemStack.isSameItemSameComponents(current, stack) && current.getCount() < current.getMaxStackSize();
+    }
+
+    private static boolean hasRoomFor(final AbstractFurnaceMenu menu, final ItemStack output) {
+        for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
+            if (canStackInto(menu.getSlot(slot).getItem(), output)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ResourceKey<RecipePropertySet> inputSet(final AbstractFurnaceMenu menu) {
+        if (menu instanceof BlastFurnaceMenu) {
+            return RecipePropertySet.BLAST_FURNACE_INPUT;
+        }
+        if (menu instanceof SmokerMenu) {
+            return RecipePropertySet.SMOKER_INPUT;
+        }
+        return RecipePropertySet.FURNACE_INPUT;
     }
 }

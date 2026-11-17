@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,7 @@ public final class AntiAnchorModule extends Module {
         if (client.level.getBlockState(anchor).getBlock() instanceof RespawnAnchorBlock
                 && client.level.getBlockState(middle).canBeReplaced()) {
             BlockPlacement.place(client, this, middle, this.rotate.value(), 60.0F,
-                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock);
+                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock, BlockPlacer.PlacementOptions.NON_FULL);
         }
     }
 

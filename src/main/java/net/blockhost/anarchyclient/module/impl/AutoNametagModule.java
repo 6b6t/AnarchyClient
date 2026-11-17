@@ -4,11 +4,14 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
@@ -32,39 +35,55 @@ public final class AutoNametagModule extends Module {
 
     public AutoNametagModule() {
         super("auto_nametag", "Auto Nametag", ModuleCategory.WORLD,
-                "Uses a name tag from the hotbar on the nearest unnamed mob within range.");
+                "Uses a renamed name tag from the hotbar on the nearest unnamed mob within range.");
+    }
+
+    @Override
+    protected void onDisable() {
+        this.tagged.clear();
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.tagged.clear();
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
-            this.tagged.clear();
             return;
         }
-        OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.NAME_TAG));
+        // Vanilla only applies a name tag that has been renamed in an anvil.
+        OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), AutoNametagModule::isUsableTag);
         if (slot.isEmpty()) {
             return;
         }
-        LivingEntity target = nearestUnnamed(client, player, this.range.value());
+        Mob target = nearestUnnamed(client, player, this.range.value());
         if (target == null) {
             return;
         }
         InventoryActions.selectHotbarSlot(player, slot.orElseThrow());
         InteractionResult result = client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+        // Remember the mob either way, so a refused tag does not retry the same mob forever.
+        this.tagged.add(target.getUUID());
         if (result.consumesAction()) {
-            this.tagged.add(target.getUUID());
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
     }
 
-    private LivingEntity nearestUnnamed(final Minecraft client, final LocalPlayer player, final double range) {
+    static boolean isUsableTag(final ItemStack stack) {
+        return stack.is(Items.NAME_TAG) && stack.has(DataComponents.CUSTOM_NAME);
+    }
+
+    private Mob nearestUnnamed(final Minecraft client, final LocalPlayer player, final double range) {
         double rangeSqr = range * range;
-        LivingEntity best = null;
+        Mob best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof LivingEntity living) || living == player || living.hasCustomName()
-                    || this.tagged.contains(living.getUUID())) {
+            // Name tags work on mobs only, not on players or armor stands.
+            if (!(entity instanceof Mob living) || !living.isAlive() || living.hasCustomName()
+                    || this.tagged.contains(living.getUUID()) || !CombatTargets.canReachEntity(player, living)) {
                 continue;
             }
             double distance = living.distanceToSqr(player);

@@ -13,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.component.SwingAnimation;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 
@@ -77,44 +78,77 @@ public final class NukerModule extends Module {
             .addAllDefaultValue(List.of())
             .build()));
 
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
+
     public NukerModule() {
         super("nuker", "Nuker", ModuleCategory.WORLD,
-                "Breaks blocks around the player in a sphere, cube, or floor shape, with allow and deny lists.");
+                "Breaks blocks around the player in a sphere, cube, or floor shape, with allow and deny lists. "
+                        + "Legit mines one block at a time; Packet only breaks blocks the server accepts in one tick.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
+            this.miner.stop(client);
+            return;
+        }
+        boolean packet = "Packet".equals(this.mode.value());
+        BlockPos center = player.blockPosition();
+        if (packet) {
+            this.miner.stop(client);
+        } else if (this.miner.continueCurrent(client, pos -> this.accepts(player, pos, client.level.getBlockState(pos), center))) {
             return;
         }
         int actions = 0;
-        BlockPos center = player.blockPosition();
         for (BlockTargetScanner.BlockTarget target : BlockTargetScanner.scan(
                 client,
                 this.radius.value().intValue(),
                 this.radius.value().intValue(),
                 BlockTargetScanner.SortMode.fromSetting(this.sort.value()),
                 this.blocksPerTick.value().intValue() * 5,
-                candidate -> !candidate.state().isAir()
-                        && passesShape(candidate.pos(), center, this.radius.value().intValue(), this.shape.value())
-                        && (!this.excludeLiquids.value() || candidate.state().getFluidState().isEmpty())
-                        && (this.allowList.value().isEmpty() || this.allowList.value().contains(candidate.state().getBlock()))
-                        && !this.denyList.value().contains(candidate.state().getBlock())
-                        && (!this.requireTool.value() || player.getMainHandItem().isCorrectToolForDrops(candidate.state()))
+                candidate -> this.accepts(player, candidate.pos(), candidate.state(), center)
+                        && (!packet || breaksInOnePacket(player, candidate.pos(), candidate.state()))
         )) {
-            if (breakTarget(client, target.pos(), "Packet".equals(this.mode.value()))
-                    && ++actions >= this.blocksPerTick.value().intValue()) {
-                this.debugValue("broken", actions);
-                return;
+            if (packet) {
+                if (packetBreak(client, target.pos()) && ++actions >= this.blocksPerTick.value().intValue()) {
+                    break;
+                }
+                continue;
+            }
+            SingleBlockMiner.Step step = this.miner.start(client, target.pos(), Direction.UP);
+            if (step == SingleBlockMiner.Step.MINING) {
+                // Starting another block would abort this one.
+                break;
+            }
+            if (step == SingleBlockMiner.Step.BROKEN && ++actions >= this.blocksPerTick.value().intValue()) {
+                break;
             }
         }
+        this.debugValue("broken", actions);
     }
 
-    private static boolean breakTarget(final Minecraft client, final BlockPos pos, final boolean packet) {
-        if (!packet) {
-            return WorldInteraction.breakBlock(client, pos, Direction.UP, stack -> true);
-        }
+    @Override
+    protected void onDisable() {
+        this.miner.stop(Minecraft.getInstance());
+    }
+
+    private boolean accepts(final LocalPlayer player, final BlockPos pos, final BlockState state, final BlockPos center) {
+        return !state.isAir()
+                && CombatTargets.canReachBlock(player, pos)
+                && passesShape(pos, center, this.radius.value().intValue(), this.shape.value())
+                && (!this.excludeLiquids.value() || state.getFluidState().isEmpty())
+                && (this.allowList.value().isEmpty() || this.allowList.value().contains(state.getBlock()))
+                && !this.denyList.value().contains(state.getBlock())
+                && (!this.requireTool.value() || player.getMainHandItem().isCorrectToolForDrops(state));
+    }
+
+    /** The server accepts a stop right after a start only when one tick of progress reaches 0.7. */
+    private static boolean breaksInOnePacket(final LocalPlayer player, final BlockPos pos, final BlockState state) {
+        return state.getDestroyProgress(player, player.level(), pos) >= SpeedMineModule.SERVER_BREAK_THRESHOLD;
+    }
+
+    private static boolean packetBreak(final Minecraft client, final BlockPos pos) {
         if (client.player == null || client.getConnection() == null) {
             return false;
         }

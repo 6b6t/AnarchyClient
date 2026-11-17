@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BlockListSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 
@@ -34,13 +35,25 @@ public final class ExcavatorModule extends Module {
             .step(1.0)
             .build()));
 
+    private final SingleBlockMiner miner = new SingleBlockMiner(this);
+
     public ExcavatorModule() {
         super("excavator", "Excavator", ModuleCategory.WORLD,
-                "Mines nearby blocks from the configured list automatically within a set radius.");
+                "Mines nearby blocks from the configured list automatically within a set radius, "
+                        + "one block at a time unless they break instantly.");
     }
 
     @Override
     public void tick(final Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null || client.level == null || client.gameMode == null) {
+            this.miner.stop(client);
+            return;
+        }
+        if (this.miner.continueCurrent(client, pos -> this.blocks.value().contains(client.level.getBlockState(pos).getBlock())
+                && CombatTargets.canReachBlock(player, pos))) {
+            return;
+        }
         int actions = 0;
         for (BlockTargetScanner.BlockTarget target : BlockTargetScanner.scan(
                 client,
@@ -49,11 +62,19 @@ public final class ExcavatorModule extends Module {
                 BlockTargetScanner.SortMode.CLOSEST,
                 this.blocksPerTick.value().intValue() * 4,
                 candidate -> this.blocks.value().contains(candidate.state().getBlock())
+                        && CombatTargets.canReachBlock(player, candidate.pos())
         )) {
-            if (WorldInteraction.breakBlock(client, target.pos(), Direction.UP, stack -> true)
-                    && ++actions >= this.blocksPerTick.value().intValue()) {
+            SingleBlockMiner.Step step = this.miner.start(client, target.pos(), Direction.UP);
+            // A block that takes several ticks must be finished before the next one starts.
+            if (step == SingleBlockMiner.Step.MINING
+                    || step == SingleBlockMiner.Step.BROKEN && ++actions >= this.blocksPerTick.value().intValue()) {
                 return;
             }
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.miner.stop(Minecraft.getInstance());
     }
 }
