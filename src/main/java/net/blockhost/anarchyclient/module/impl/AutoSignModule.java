@@ -5,16 +5,26 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.SignBlock;
-
-import java.util.List;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
+
+import java.util.List;
 
 public final class AutoSignModule extends Module {
+
+    static final int PLACEMENT_WINDOW_TICKS = 20;
 
     private final StringSetting line1 = this.setting(StringSetting.from(StringSetting.builder().id("line_1").name("Line 1").defaultValue("AnarchyClient").build()));
     private final StringSetting line2 = this.setting(StringSetting.from(StringSetting.builder().id("line_2").name("Line 2").defaultValue("").build()));
@@ -25,29 +35,85 @@ public final class AutoSignModule extends Module {
             .name("Front")
             .defaultValue(true)
             .build()));
-    private BlockPos lastUpdated;
+    private volatile ClientboundOpenSignEditorPacket pendingEditor;
+    private int placementTicks;
 
     public AutoSignModule() {
         super("auto_sign", "Auto Sign", ModuleCategory.WORLD,
-                "Writes the configured four lines to any sign you look at by sending a sign update packet.");
+                "Writes the configured four lines to each sign you place instead of opening the sign editor.");
+    }
+
+    @Override
+    public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
+        if (client.player != null && isSignItem(client.player.getItemInHand(hand))) {
+            this.placementTicks = PLACEMENT_WINDOW_TICKS;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        // Runs on the network thread, so hand the editor request to the client tick.
+        if (packet instanceof ClientboundOpenSignEditorPacket editor) {
+            this.pendingEditor = editor;
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void tick(final Minecraft client) {
-        if (!(client.hitResult instanceof BlockHitResult hit)
-                || hit.getType() != HitResult.Type.BLOCK
-                || client.level == null
-                || client.getConnection() == null
-                || !(client.level.getBlockState(hit.getBlockPos()).getBlock() instanceof SignBlock)
-                || hit.getBlockPos().equals(this.lastUpdated)) {
+        ClientboundOpenSignEditorPacket editor = this.pendingEditor;
+        this.pendingEditor = null;
+        if (editor != null) {
+            this.handleEditor(client, editor);
+        }
+        if (this.placementTicks > 0) {
+            this.placementTicks--;
+        }
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.pendingEditor = null;
+        this.placementTicks = 0;
+    }
+
+    @Override
+    protected void onDisable() {
+        this.pendingEditor = null;
+        this.placementTicks = 0;
+    }
+
+    private void handleEditor(final Minecraft client, final ClientboundOpenSignEditorPacket editor) {
+        LocalPlayer player = client.player;
+        ClientPacketListener connection = client.getConnection();
+        if (player == null || client.level == null || connection == null
+                || !(client.level.getBlockEntity(editor.pos()) instanceof SignBlockEntity sign)) {
             return;
         }
-        client.getConnection().send(new ServerboundSignUpdatePacket(
-                hit.getBlockPos(),
+        if (!isFreshlyPlaced(this.placementTicks > 0, sign.getText(editor.slot()), client.isTextFilteringEnabled())) {
+            player.openTextEdit(sign, editor.slot());
+            return;
+        }
+        connection.send(new ServerboundSignUpdatePacket(
+                editor.pos(),
                 List.of(trim(this.line1.value()), trim(this.line2.value()), trim(this.line3.value()), trim(this.line4.value())),
                 this.front.value() ? SignTextSlot.FRONT : SignTextSlot.BACK
         ));
-        this.lastUpdated = hit.getBlockPos().immutable();
+        this.placementTicks = 0;
+    }
+
+    static boolean isSignItem(final ItemStack stack) {
+        return stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof SignBlock;
+    }
+
+    /**
+     * The server also opens the editor when you click an existing sign, so only treat it as a new sign
+     * right after placing one and while the edited side is still blank.
+     */
+    static boolean isFreshlyPlaced(final boolean recentlyPlacedSign, final SignText text, final boolean filtered) {
+        return recentlyPlacedSign && !text.hasMessage(filtered);
     }
 
     static String trim(final String value) {

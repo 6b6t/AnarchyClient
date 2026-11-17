@@ -16,16 +16,20 @@ import net.minecraft.world.item.Items;
 
 public final class ElytraSwapModule extends Module {
 
+    static final double MIN_FALL_DISTANCE = 2.0;
+
     public ElytraSwapModule() {
         super("elytra_swap", "Elytra Swap", ModuleCategory.PLAYER,
-                "Equips an elytra from the inventory whenever the chest slot holds something else.");
+                "Equips an elytra from the inventory when you fall more than two blocks while wearing something else in the chest slot.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || !InventoryActionScheduler.canUseInventoryMenu(client, player)
-                || player.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA)) {
+                || player.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA)
+                || !isFalling(player.onGround(), player.fallDistance, player.getAbilities().flying,
+                player.isInLiquid() || player.isPassenger())) {
             return;
         }
         int slot = findElytra(player.getInventory());
@@ -39,6 +43,11 @@ public final class ElytraSwapModule extends Module {
                 6,
                 InventoryAction.pickupSwap(source, InventorySlots.armorSlot(EquipmentSlot.CHEST))
         ));
+    }
+
+    static boolean isFalling(final boolean onGround, final double fallDistance, final boolean flying,
+                             final boolean inLiquidOrRiding) {
+        return !onGround && !flying && !inLiquidOrRiding && fallDistance > MIN_FALL_DISTANCE;
     }
 
     static int findElytra(final Inventory inventory) {

@@ -39,7 +39,7 @@ public final class FastPlaceModule extends Module {
 
     public FastPlaceModule() {
         super("fast_place", "Fast Place", ModuleCategory.WORLD,
-                "Removes the delay between block placements and, optionally, XP bottle and crystal uses.");
+                "Removes the right-click delay for blocks and, optionally, XP bottles and crystals. Turn off Blocks Only to remove it for every item.");
     }
 
     @Override

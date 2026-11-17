@@ -6,9 +6,10 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -28,7 +29,7 @@ public final class AutoBrewerModule extends Module {
 
     public AutoBrewerModule() {
         super("auto_brewer", "Auto Brewer", ModuleCategory.WORLD,
-                "Moves fuel, nether wart, and bottles into an open brewing stand between brews and takes out converted potions.");
+                "Moves fuel, nether wart, and water bottles into an open brewing stand between brews and takes out the brewed potions.");
     }
 
     @Override
@@ -47,7 +48,7 @@ public final class AutoBrewerModule extends Module {
         if (quickMoveFinishedPotions(client, menu)
                 || quickMoveMatching(client, menu, stack -> stack.has(DataComponents.BREWING_FUEL))
                 || quickMoveMatching(client, menu, stack -> stack.is(Items.NETHER_WART))
-                || quickMoveMatching(client, menu, stack -> stack.is(Items.POTION) || stack.is(Items.GLASS_BOTTLE))) {
+                || quickMoveMatching(client, menu, AutoBrewerModule::isWaterBottle)) {
             this.cooldownTicks = this.delay.value().intValue();
         }
     }
@@ -55,11 +56,19 @@ public final class AutoBrewerModule extends Module {
     private static boolean quickMoveFinishedPotions(final Minecraft client, final BrewingStandMenu menu) {
         for (int slot = 0; slot <= 2; slot++) {
             Slot menuSlot = menu.getSlot(slot);
-            if (menuSlot.hasItem() && !menuSlot.getItem().is(Items.POTION)) {
+            if (menuSlot.hasItem() && !isWaterBottle(menuSlot.getItem())) {
                 return ContainerActions.quickMove(client, menu, slot);
             }
         }
         return false;
+    }
+
+    static boolean isWaterBottle(final ItemStack stack) {
+        if (!stack.is(Items.POTION) && !stack.is(Items.SPLASH_POTION) && !stack.is(Items.LINGERING_POTION)) {
+            return false;
+        }
+        PotionContents contents = stack.get(DataComponents.POTION_CONTENTS);
+        return contents != null && contents.is(Potions.WATER);
     }
 
     private static boolean quickMoveMatching(final Minecraft client, final BrewingStandMenu menu,

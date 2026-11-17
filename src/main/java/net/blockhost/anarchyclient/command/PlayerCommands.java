@@ -10,6 +10,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.blockhost.anarchyclient.inventory.InventoryTracker;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -17,6 +18,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.io.IOException;
@@ -28,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
@@ -40,9 +43,12 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 /**
- * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip}, {@code damage}, {@code dismount}, {@code teleport}, and {@code save-skin} subcommands.
+ * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip}, {@code damage},
+ * {@code dismount}, {@code teleport}, {@code save-skin}, and {@code inventory} subcommands.
  */
 final class PlayerCommands {
+
+    private static final int TRACKED_INVENTORY_LIMIT = 10;
 
     private PlayerCommands() {
     }
@@ -77,6 +83,12 @@ final class PlayerCommands {
                                 .executes(context -> damage(context, DoubleArgumentType.getDouble(context, "amount")))))
                 .then(literal("dismount")
                         .executes(PlayerCommands::dismount))
+                .then(literal("inventory")
+                        .executes(PlayerCommands::listTrackedInventories)
+                        .then(argument("player", StringArgumentType.word())
+                                .suggests(CommandSupport::suggestOnlinePlayers)
+                                .executes(context -> showTrackedInventory(context,
+                                        StringArgumentType.getString(context, "player")))))
                 .then(literal("teleport")
                         .then(argument("x", StringArgumentType.word())
                                 .then(argument("y", StringArgumentType.word())
@@ -85,6 +97,60 @@ final class PlayerCommands {
                                                 .then(argument("yaw", FloatArgumentType.floatArg())
                                                         .then(argument("pitch", FloatArgumentType.floatArg())
                                                                 .executes(context -> teleport(context, true))))))));
+    }
+
+    private static int listTrackedInventories(final CommandContext<FabricClientCommandSource> context) {
+        List<InventoryTracker.Snapshot> snapshots = InventoryTracker.newest(TRACKED_INVENTORY_LIMIT);
+        if (snapshots.isEmpty()) {
+            context.getSource().sendError(Component.literal("No tracked players. Enable Inventory Tracker and get near players."));
+            return 0;
+        }
+        long now = System.currentTimeMillis();
+        for (InventoryTracker.Snapshot snapshot : snapshots) {
+            context.getSource().sendFeedback(Component.literal(describeSnapshot(snapshot, now)));
+        }
+        return SUCCESS;
+    }
+
+    private static int showTrackedInventory(final CommandContext<FabricClientCommandSource> context, final String playerName) {
+        return InventoryTracker.snapshots().stream()
+                .filter(snapshot -> snapshot.name().equalsIgnoreCase(playerName))
+                .findFirst()
+                .map(snapshot -> {
+                    context.getSource().sendFeedback(Component.literal(
+                            describeSnapshot(snapshot, System.currentTimeMillis())));
+                    return SUCCESS;
+                })
+                .orElseGet(() -> {
+                    context.getSource().sendError(Component.literal("No tracked inventory for " + playerName + "."));
+                    return 0;
+                });
+    }
+
+    static String describeSnapshot(final InventoryTracker.Snapshot snapshot, final long nowMillis) {
+        long secondsAgo = Math.max(0L, (nowMillis - snapshot.lastSeenMillis()) / 1000L);
+        StringBuilder text = new StringBuilder()
+                .append(snapshot.name())
+                .append(String.format(Locale.ROOT, " (%.1f HP", snapshot.health()));
+        if (snapshot.absorption() > 0F) {
+            text.append(String.format(Locale.ROOT, " +%.1f", snapshot.absorption()));
+        }
+        text.append(String.format(Locale.ROOT, ", %.0fm, %ds ago): main ", snapshot.distance(), secondsAgo))
+                .append(itemName(snapshot.mainHand()))
+                .append(", off ")
+                .append(itemName(snapshot.offhand()))
+                .append(", armor ");
+        List<String> armor = snapshot.armor().stream().map(PlayerCommands::itemName).toList();
+        text.append(String.join(" / ", armor));
+        return text.toString();
+    }
+
+    private static String itemName(final ItemStack stack) {
+        if (stack.isEmpty()) {
+            return "-";
+        }
+        String name = stack.getHoverName().getString();
+        return stack.getCount() > 1 ? stack.getCount() + "x " + name : name;
     }
 
     private static int centerPlayer(final CommandContext<FabricClientCommandSource> context, final CenterMode mode) {

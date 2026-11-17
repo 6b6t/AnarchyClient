@@ -20,7 +20,7 @@ public final class InventoryTrackerModule extends Module {
 
     public InventoryTrackerModule() {
         super("inventory_tracker", "Inventory Tracker", ModuleCategory.MISC,
-                "Records the held items, armor, and health of nearby players and keeps each snapshot for a set time.");
+                "Records the held items, armor, and health of nearby players. View them with /ac inventory [player].");
     }
 
     @Override

@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class ElytraSwapModuleTest {
@@ -24,5 +26,14 @@ class ElytraSwapModuleTest {
     @Test
     void returnsNoSlotWithoutUsableElytra() {
         assertEquals(-1, ElytraSwapModule.findElytra(TestInventories.withSlots(new ItemStack(Items.DIAMOND_CHESTPLATE))));
+    }
+
+    @Test
+    void equipsOnlyWhileFallingFreely() {
+        assertTrue(ElytraSwapModule.isFalling(false, 3.0, false, false));
+        assertFalse(ElytraSwapModule.isFalling(true, 3.0, false, false));
+        assertFalse(ElytraSwapModule.isFalling(false, 1.0, false, false));
+        assertFalse(ElytraSwapModule.isFalling(false, 3.0, true, false));
+        assertFalse(ElytraSwapModule.isFalling(false, 3.0, false, true));
     }
 }

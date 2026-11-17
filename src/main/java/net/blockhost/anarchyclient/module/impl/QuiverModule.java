@@ -20,12 +20,13 @@ public final class QuiverModule extends Module {
 
     public QuiverModule() {
         super("quiver", "Quiver", ModuleCategory.COMBAT,
-                "Repeatedly draws and releases a held bow after a set number of ticks.");
+                "While you hold use with a bow, releases it after a set number of draw ticks and draws it again right away.");
     }
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.gameMode == null || !client.player.getMainHandItem().is(Items.BOW)) {
+        if (client.player == null || client.gameMode == null || client.gui.screen() != null
+                || !client.options.keyUse.isDown() || !client.player.getMainHandItem().is(Items.BOW)) {
             return;
         }
         if (!client.player.isUsingItem()) {
@@ -33,7 +34,7 @@ public final class QuiverModule extends Module {
             return;
         }
         if (client.player.getTicksUsingItem() >= this.releaseTicks.value().intValue()) {
-            client.player.stopUsingItem();
+            client.gameMode.releaseUsingItem(client.player);
         }
     }
 }
