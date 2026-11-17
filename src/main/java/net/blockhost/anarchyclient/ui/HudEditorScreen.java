@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
@@ -174,7 +175,7 @@ public final class HudEditorScreen extends Screen {
     public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick) {
         HudLayout.Element hit = topElementAt(event.x(), event.y());
         if (hit == null) {
-            if (event.button() == 0) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                 // Empty space: start a rubber band. The old selection only clears once the drag ends,
                 // so a plain click keeps feeling like "deselect".
                 this.boxSelecting = true;
@@ -186,7 +187,7 @@ public final class HudEditorScreen extends Screen {
             }
             return super.mouseClicked(event, doubleClick);
         }
-        if (event.button() == 1) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             // Right-clicking a selected element resets the whole selection, otherwise just that one.
             for (String id : this.selection.contains(hit.id()) ? Set.copyOf(this.selection) : Set.of(hit.id())) {
                 HudLayout.reset(id);
@@ -194,7 +195,7 @@ public final class HudEditorScreen extends Screen {
             this.dirty = true;
             return true;
         }
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             if (!this.selection.contains(hit.id())) {
                 this.selection.clear();
                 this.selection.add(hit.id());

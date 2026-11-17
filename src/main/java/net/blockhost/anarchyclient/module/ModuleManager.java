@@ -25,7 +25,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +34,9 @@ public final class ModuleManager {
 
     private final AnarchyEventBus events = new AnarchyEventBus();
     private final Map<String, Module> modules = new LinkedHashMap<>();
-    private final Map<Module, ModuleEventListener> eventListeners = new IdentityHashMap<>();
     private final ModuleKeybindController keybindController = new ModuleKeybindController();
+    private Runnable activationObserver = () -> {
+    };
 
     public void register(final Module module) {
         Module previous = this.modules.putIfAbsent(module.id(), module);
@@ -44,9 +44,18 @@ public final class ModuleManager {
             throw new IllegalArgumentException("Duplicate module id: " + module.id());
         }
         module.activationListener(this::onActivationChanged);
-        if (module.enabled()) {
-            this.registerEvents(module);
-        }
+        // Register every listener once, in registry order. Listeners skip disabled modules, so dispatch
+        // order stays the registry order however modules are toggled.
+        this.events.register(new ModuleEventListener(module));
+    }
+
+    /**
+     * Sets a callback that runs after any module is enabled or disabled, for example to save the config.
+     * It can run on any thread that toggles a module.
+     */
+    public void activationObserver(final Runnable observer) {
+        this.activationObserver = observer == null ? () -> {
+        } : observer;
     }
 
     public Optional<Module> find(final String id) {
@@ -134,31 +143,12 @@ public final class ModuleManager {
     }
 
     private void onActivationChanged(final Module module, final boolean enabled) {
-        if (enabled) {
-            this.registerEvents(module);
-        } else {
-            this.unregisterEvents(module);
-        }
+        this.activationObserver.run();
         // Only toast in-world: config load restores module states before the player exists, and there is
         // no client at all under tests.
         Minecraft client = Minecraft.getInstance();
         if (client != null && client.player != null) {
             ToggleNotifications.push(module.name(), enabled);
-        }
-    }
-
-    private void registerEvents(final Module module) {
-        if (!this.eventListeners.containsKey(module)) {
-            ModuleEventListener listener = new ModuleEventListener(module);
-            this.eventListeners.put(module, listener);
-            this.events.register(listener);
-        }
-    }
-
-    private void unregisterEvents(final Module module) {
-        ModuleEventListener listener = this.eventListeners.remove(module);
-        if (listener != null) {
-            this.events.unregister(listener);
         }
     }
 

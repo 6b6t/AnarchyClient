@@ -22,13 +22,22 @@ public final class RivetInputMapper {
         return fromScancode(event.key()).map(key -> new KeyEvent(key, modifiers(event.modifiers())));
     }
 
-    public static MouseButtonEvent mouse(final net.minecraft.client.input.MouseButtonEvent event) {
+    /**
+     * Maps a vanilla mouse event to Rivet. Side buttons have no Rivet equivalent and map to empty, so
+     * they never act as a left click.
+     */
+    public static Optional<MouseButtonEvent> mouse(final net.minecraft.client.input.MouseButtonEvent event) {
         MouseButton button = switch (event.button()) {
+            case InputConstants.MOUSE_BUTTON_LEFT -> MouseButton.LEFT;
             case InputConstants.MOUSE_BUTTON_RIGHT -> MouseButton.RIGHT;
             case InputConstants.MOUSE_BUTTON_MIDDLE -> MouseButton.MIDDLE;
-            default -> MouseButton.LEFT;
+            default -> null;
         };
-        return new MouseButtonEvent((float) event.x(), (float) event.y(), button, modifiers(event.modifiers()), Set.of());
+        if (button == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new MouseButtonEvent((float) event.x(), (float) event.y(), button,
+                modifiers(event.modifiers()), Set.of()));
     }
 
     public static Set<ModifierKey> modifiers(final int modifiersMask) {

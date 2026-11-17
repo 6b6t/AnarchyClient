@@ -5,12 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,13 +29,18 @@ final class SeedStore {
         return read(path).entrySet().stream()
                 .filter(entry -> entry.getValue().isJsonObject())
                 .map(entry -> record(entry.getKey(), entry.getValue().getAsJsonObject()))
+                .filter(record -> !record.seed().isBlank())
                 .sorted(Comparator.comparing(SeedRecord::world))
                 .toList();
     }
 
     static SeedRecord get(final Path path, final String world) throws IOException {
-        JsonObject entry = read(path).getAsJsonObject(world);
-        return entry == null ? null : record(world, entry);
+        JsonElement entry = read(path).get(world);
+        if (entry == null || !entry.isJsonObject()) {
+            return null;
+        }
+        SeedRecord record = record(world, entry.getAsJsonObject());
+        return record.seed().isBlank() ? null : record;
     }
 
     static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt) throws IOException {
@@ -112,21 +117,24 @@ final class SeedStore {
     }
 
     private static void write(final Path path, final JsonObject root) throws IOException {
-        if (path.getParent() != null) {
-            Files.createDirectories(path.getParent());
-        }
-        try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            GSON.toJson(root, writer);
-        }
+        ConfigFiles.writeAtomically(path, GSON.toJson(root));
     }
 
     private static SeedRecord record(final String world, final JsonObject entry) {
-        String seed = entry.has("seed") ? entry.get("seed").getAsString() : "";
-        String savedAt = entry.has("saved_at") ? entry.get("saved_at").getAsString() : "";
-        String version = entry.has("version") ? entry.get("version").getAsString() : "";
-        String dimension = entry.has("dimension") ? entry.get("dimension").getAsString() : "";
-        String source = entry.has("source") ? entry.get("source").getAsString() : "";
-        return new SeedRecord(world, seed, savedAt, version, dimension, source);
+        return new SeedRecord(
+                world,
+                string(entry, "seed"),
+                string(entry, "saved_at"),
+                string(entry, "version"),
+                string(entry, "dimension"),
+                string(entry, "source")
+        );
+    }
+
+    /** Reads a string field, treating a missing or non-text value (from a hand-edited file) as empty. */
+    private static String string(final JsonObject entry, final String key) {
+        JsonElement value = entry.get(key);
+        return value != null && value.isJsonPrimitive() ? value.getAsString().trim() : "";
     }
 
     record SeedRecord(String world, String seed, String savedAt, String version, String dimension, String source) {

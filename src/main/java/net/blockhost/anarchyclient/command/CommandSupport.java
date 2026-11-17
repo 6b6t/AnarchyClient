@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -15,6 +16,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -77,6 +80,14 @@ final class CommandSupport {
         return parseDouble(token, token);
     }
 
+    static Vec3 parsePosition(final String xToken, final String yToken, final String zToken, final Vec3 origin) {
+        return new Vec3(
+                parseCoordinate(xToken, origin.x),
+                parseCoordinate(yToken, origin.y),
+                parseCoordinate(zToken, origin.z)
+        );
+    }
+
     static BlockPos parseBlockPosition(final String xToken, final String yToken, final String zToken,
                                        final Vec3 origin) {
         return BlockPos.containing(
@@ -84,6 +95,31 @@ final class CommandSupport {
                 parseCoordinate(yToken, origin.y),
                 parseCoordinate(zToken, origin.z)
         );
+    }
+
+    /**
+     * Resolves a user-supplied file path against the game directory and rejects paths that leave it,
+     * such as {@code ../../.ssh/key} or an absolute path elsewhere on disk.
+     */
+    static Path resolveGamePath(final String value) {
+        return resolveInside(FabricLoader.getInstance().getGameDir(), value);
+    }
+
+    static Path resolveInside(final Path base, final String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Expected a file path.");
+        }
+        Path root = base.toAbsolutePath().normalize();
+        Path resolved;
+        try {
+            resolved = root.resolve(value.trim()).normalize();
+        } catch (InvalidPathException exception) {
+            throw new IllegalArgumentException("Invalid path: " + value, exception);
+        }
+        if (!resolved.startsWith(root) || resolved.equals(root)) {
+            throw new IllegalArgumentException("The path must be a file inside the game directory.");
+        }
+        return resolved;
     }
 
     static Block parseBlock(final String id) {

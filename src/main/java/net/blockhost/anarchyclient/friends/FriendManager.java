@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.friends;
 
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,7 +8,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -24,6 +24,8 @@ public final class FriendManager {
 
     private final Map<String, String> friends = new LinkedHashMap<>();
     private final Path path;
+    // Set when an unreadable file could not be backed up. Saving would then destroy the friend list.
+    private boolean saveBlocked;
 
     public FriendManager(final Path path) {
         this.path = path;
@@ -31,6 +33,7 @@ public final class FriendManager {
 
     public void load() {
         this.friends.clear();
+        this.saveBlocked = false;
         if (!Files.exists(this.path)) {
             return;
         }
@@ -40,6 +43,8 @@ public final class FriendManager {
             }
         } catch (IOException exception) {
             LOGGER.warn("Failed to load AnarchyClient friends from {}", this.path, exception);
+            this.friends.clear();
+            this.saveBlocked = !ConfigFiles.backUpUnreadable(this.path);
         }
     }
 
@@ -110,22 +115,16 @@ public final class FriendManager {
     }
 
     private void save() {
+        if (this.saveBlocked) {
+            LOGGER.warn("Not saving AnarchyClient friends: {} could not be read or backed up", this.path);
+            return;
+        }
+        String content = String.join("\n", this.friends.values());
+        if (!content.isEmpty()) {
+            content += "\n";
+        }
         try {
-            Path parent = this.path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Path tempPath = this.path.resolveSibling(this.path.getFileName() + ".tmp");
-            String content = String.join("\n", this.friends.values());
-            if (!content.isEmpty()) {
-                content += "\n";
-            }
-            Files.writeString(tempPath, content, StandardCharsets.UTF_8);
-            try {
-                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (IOException exception) {
-                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING);
-            }
+            ConfigFiles.writeAtomically(this.path, content);
         } catch (IOException exception) {
             LOGGER.warn("Failed to save AnarchyClient friends to {}", this.path, exception);
         }

@@ -28,6 +28,12 @@ import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+/**
+ * Tracks what the client learns about the current server.
+ *
+ * <p>Packets arrive on the Netty thread while ticks and modules read on the render thread, so every
+ * method that touches the shared state synchronizes on this class.
+ */
 public final class ServerObserver {
 
     private static final int REQUIRED_TRANSACTION_IDS = 5;
@@ -78,7 +84,7 @@ public final class ServerObserver {
     private ServerObserver() {
     }
 
-    public static void observeTick(final Minecraft client) {
+    public static synchronized void observeTick(final Minecraft client) {
         ServerData server = client == null ? null : client.getCurrentServer();
         if (server == null) {
             return;
@@ -95,21 +101,22 @@ public final class ServerObserver {
         }
     }
 
-    public static void observeJoined(final Minecraft client) {
-        reset();
+    /**
+     * Called after the game listener handles the login. The login packet already reset the session state
+     * and started transaction capture, so this must not reset again.
+     */
+    public static synchronized void observeJoined(final Minecraft client) {
         observeTick(client);
     }
 
-    public static void observeLeft() {
+    public static synchronized void observeLeft() {
         reset();
     }
 
-    public static void observeReceived(final Minecraft client, final Packet<?> packet) {
+    public static synchronized void observeReceived(final Minecraft client, final Packet<?> packet) {
         observeTick(client);
         if (packet instanceof ClientboundLoginPacket login) {
-            transactionIds.clear();
-            capturingTransactions = true;
-            serverType = login.onlineMode() ? ServerType.PREMIUM : ServerType.CRACKED;
+            observeLogin(client, login.onlineMode());
             return;
         }
         if (packet instanceof ClientboundPingPacket ping && capturingTransactions) {
@@ -153,37 +160,48 @@ public final class ServerObserver {
         }
     }
 
-    public static int beginCommandSuggestionPluginScan(final long timeoutMillis) {
+    /**
+     * Starts a new session. The login packet is the first game packet of a connection, so it resets the
+     * previous server's state before recording the new one.
+     */
+    static synchronized void observeLogin(final Minecraft client, final boolean onlineMode) {
+        reset();
+        observeTick(client);
+        capturingTransactions = true;
+        serverType = onlineMode ? ServerType.PREMIUM : ServerType.CRACKED;
+    }
+
+    public static synchronized int beginCommandSuggestionPluginScan(final long timeoutMillis) {
         plugins = Set.of();
         expectedSuggestionId = ThreadLocalRandom.current().nextInt(1, 32768);
         suggestionDeadlineMillis = System.currentTimeMillis() + Math.max(250L, timeoutMillis);
         return expectedSuggestionId;
     }
 
-    public static void beginPluginChatCapture(final long timeoutMillis) {
+    public static synchronized void beginPluginChatCapture(final long timeoutMillis) {
         plugins = Set.of();
         pluginChatDeadlineMillis = System.currentTimeMillis() + Math.max(250L, timeoutMillis);
     }
 
-    public static boolean pluginScanPending() {
+    public static synchronized boolean pluginScanPending() {
         return expectedSuggestionId >= 0 || pluginChatDeadlineMillis > 0;
     }
 
-    public static void recordFlag(final FlagReason reason, final Vec3 position, final float yaw, final float pitch,
+    public static synchronized void recordFlag(final FlagReason reason, final Vec3 position, final float yaw, final float pitch,
                                   final String detail) {
         flagSequence++;
         lastFlag = new FlagInfo(flagSequence, reason, position, yaw, pitch, normalizeNullable(detail), System.currentTimeMillis());
     }
 
-    public static int flagSequence() {
+    public static synchronized int flagSequence() {
         return flagSequence;
     }
 
-    public static FlagInfo lastFlag() {
+    public static synchronized FlagInfo lastFlag() {
         return lastFlag;
     }
 
-    public static Snapshot snapshot() {
+    public static synchronized Snapshot snapshot() {
         return new Snapshot(
                 serverAddress,
                 serverName,
@@ -204,7 +222,7 @@ public final class ServerObserver {
         );
     }
 
-    public static Fingerprint fingerprint() {
+    public static synchronized Fingerprint fingerprint() {
         Snapshot snapshot = snapshot();
         return new Fingerprint(
                 snapshot.rootDomain(),

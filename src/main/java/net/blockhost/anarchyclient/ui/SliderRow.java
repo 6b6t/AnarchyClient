@@ -48,7 +48,7 @@ final class SliderRow extends Container implements LayoutDebugLabel {
         this.slider = slider(min, max, step, get.get());
         this.slider.valueChangeListener().add(newValue -> {
             set.accept(newValue.floatValue());
-            this.panel.saveUiPreferences();
+            this.panel.saveUiPreferencesLater();
         });
         this.fixedSize(-1, NUMBER_ROW_HEIGHT);
         this.addChild(this.label);

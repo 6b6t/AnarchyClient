@@ -78,6 +78,20 @@ class ModuleKeybindControllerTest {
         assertFalse(module.enabled());
     }
 
+    @Test
+    void holdBindIgnoresReleaseOfKeyTypedWhileInputWasBlocked() {
+        ModuleKeybindController controller = new ModuleKeybindController();
+        TestModule module = new TestModule();
+        module.keybind().key(InputConstants.KEY_K);
+        module.keybind().action(ModuleBindAction.HOLD);
+        module.enabled(true);
+
+        controller.update(module, true, false);
+        controller.update(module, false, true);
+
+        assertTrue(module.enabled());
+    }
+
     private static final class TestModule extends Module {
 
         private TestModule() {

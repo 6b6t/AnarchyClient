@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.setting;
 
+import java.util.regex.Pattern;
+
 public final class ModuleListSetting extends AbstractStringListSetting {
 
     private ModuleListSetting(final ModuleListSettingSpec spec) {
@@ -12,5 +14,10 @@ public final class ModuleListSetting extends AbstractStringListSetting {
 
     public static ModuleListSetting from(final ModuleListSettingSpec spec) {
         return new ModuleListSetting(spec);
+    }
+
+    @Override
+    protected Pattern separator() {
+        return IDENTIFIER_SEPARATOR;
     }
 }

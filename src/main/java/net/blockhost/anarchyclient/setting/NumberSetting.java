@@ -39,6 +39,10 @@ public final class NumberSetting extends Setting<Double> {
 
     @Override
     protected Double sanitize(final Double value) {
+        // NaN slips through clamp, and Gson refuses to save non-finite numbers.
+        if (value == null || !Double.isFinite(value)) {
+            return this.defaultValue();
+        }
         return MathUtils.clamp(value, this.min, this.max);
     }
 

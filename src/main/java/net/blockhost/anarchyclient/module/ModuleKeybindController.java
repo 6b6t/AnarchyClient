@@ -1,7 +1,9 @@
 package net.blockhost.anarchyclient.module;
 
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 final class ModuleKeybindController {
 
@@ -9,13 +11,21 @@ final class ModuleKeybindController {
 
     private final Map<Module, Boolean> previousPressed = new IdentityHashMap<>();
     private final Map<Module, SmartPress> smartPresses = new IdentityHashMap<>();
+    // Presses that started while input was allowed. A key typed into chat is never accepted, so its
+    // release must not turn off a HOLD module.
+    private final Set<Module> acceptedPresses = Collections.newSetFromMap(new IdentityHashMap<>());
 
     void update(final Module module, final boolean pressed, final boolean allowNewPresses) {
         boolean previous = this.previousPressed.getOrDefault(module, false);
-        if (pressed && !previous && allowNewPresses) {
-            this.handlePress(module);
+        if (pressed && !previous) {
+            if (allowNewPresses) {
+                this.acceptedPresses.add(module);
+                this.handlePress(module);
+            }
         } else if (!pressed && previous) {
-            this.handleRelease(module);
+            if (this.acceptedPresses.remove(module)) {
+                this.handleRelease(module);
+            }
         } else if (pressed) {
             SmartPress smartPress = this.smartPresses.get(module);
             if (smartPress != null) {
@@ -28,6 +38,7 @@ final class ModuleKeybindController {
     void clear(final Module module) {
         this.previousPressed.remove(module);
         this.smartPresses.remove(module);
+        this.acceptedPresses.remove(module);
     }
 
     private void handlePress(final Module module) {

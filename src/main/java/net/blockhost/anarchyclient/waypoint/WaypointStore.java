@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
@@ -14,7 +15,6 @@ import net.minecraft.core.BlockPos;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -33,6 +33,8 @@ public final class WaypointStore {
 
     private final Path path;
     private final Map<String, Waypoint> waypoints = new LinkedHashMap<>();
+    // Set when an unreadable file could not be backed up. Saving would then destroy the user's waypoints.
+    private boolean saveBlocked;
 
     public WaypointStore(final Path path) {
         this.path = path;
@@ -46,6 +48,7 @@ public final class WaypointStore {
 
     public synchronized void load() {
         this.waypoints.clear();
+        this.saveBlocked = false;
         if (!Files.exists(this.path)) {
             return;
         }
@@ -63,10 +66,16 @@ public final class WaypointStore {
             }
         } catch (IOException | RuntimeException exception) {
             AnarchyClient.LOGGER.warn("Failed to load AnarchyClient waypoints from {}", this.path, exception);
+            this.waypoints.clear();
+            this.saveBlocked = !ConfigFiles.backUpUnreadable(this.path);
         }
     }
 
     public synchronized void save() {
+        if (this.saveBlocked) {
+            AnarchyClient.LOGGER.warn("Not saving AnarchyClient waypoints: {} could not be read or backed up", this.path);
+            return;
+        }
         JsonObject root = new JsonObject();
         JsonArray entries = new JsonArray();
         for (Waypoint waypoint : this.sorted()) {
@@ -81,13 +90,7 @@ public final class WaypointStore {
         }
         root.add("waypoints", entries);
         try {
-            Path parent = this.path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            try (Writer writer = Files.newBufferedWriter(this.path)) {
-                GSON.toJson(root, writer);
-            }
+            ConfigFiles.writeAtomically(this.path, GSON.toJson(root));
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save AnarchyClient waypoints to {}", this.path, exception);
         }

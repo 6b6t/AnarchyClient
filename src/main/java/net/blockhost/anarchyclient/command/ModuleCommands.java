@@ -52,7 +52,8 @@ final class ModuleCommands {
                         .executes(ModuleCommands::panic))
                 .then(literal("prefix")
                         .executes(ModuleCommands::showPrefix)
-                        .then(argument("prefix", StringArgumentType.word())
+                        // word() only accepts letters, digits and _-.+, which rules out most prefixes.
+                        .then(argument("prefix", StringArgumentType.greedyString())
                                 .executes(ModuleCommands::setPrefix)))
                 .then(literal("notebot")
                         .then(literal("status")
@@ -105,7 +106,12 @@ final class ModuleCommands {
     }
 
     private static int setPrefix(final CommandContext<FabricClientCommandSource> context) {
-        CommandPrefix.set(StringArgumentType.getString(context, "prefix"));
+        String prefix = StringArgumentType.getString(context, "prefix").trim();
+        if (prefix.length() != 1 || prefix.equals("/")) {
+            context.getSource().sendError(Component.literal("The prefix must be a single character other than /."));
+            return 0;
+        }
+        CommandPrefix.set(prefix);
         AnarchyClient.CONFIG.save();
         context.getSource().sendFeedback(Component.literal("Command prefix set to \"" + CommandPrefix.get() + "\"."));
         return SUCCESS;
@@ -244,12 +250,17 @@ final class ModuleCommands {
             return;
         }
         if (setting instanceof NumberSetting number) {
+            double parsed;
             try {
-                number.value(Double.parseDouble(value));
-                return;
+                parsed = Double.parseDouble(value);
             } catch (NumberFormatException exception) {
                 throw new IllegalArgumentException("Expected a number.", exception);
             }
+            if (!Double.isFinite(parsed)) {
+                throw new IllegalArgumentException("Expected a finite number.");
+            }
+            number.value(parsed);
+            return;
         }
         if (setting instanceof SelectSetting select) {
             if (!select.options().contains(value)) {

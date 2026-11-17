@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -29,6 +30,8 @@ public final class ProfileManager {
 
     private final Path path;
     private final Map<String, Profile> profiles = new LinkedHashMap<>();
+    // Set when an unreadable file could not be backed up. Saving would then destroy the user's profiles.
+    private boolean saveBlocked;
 
     public ProfileManager(final Path path) {
         this.path = path;
@@ -42,6 +45,7 @@ public final class ProfileManager {
 
     public synchronized void load() {
         this.profiles.clear();
+        this.saveBlocked = false;
         if (!Files.exists(this.path)) {
             return;
         }
@@ -51,23 +55,27 @@ public final class ProfileManager {
                 return;
             }
             for (Map.Entry<String, Profile> entry : root.profiles.entrySet()) {
-                Profile profile = entry.getValue().normalized(entry.getKey());
-                this.profiles.put(key(profile.name), profile);
+                try {
+                    Profile profile = entry.getValue().normalized(entry.getKey());
+                    this.profiles.put(key(profile.name), profile);
+                } catch (RuntimeException exception) {
+                    AnarchyClient.LOGGER.warn("Skipping invalid AnarchyClient profile '{}'", entry.getKey(), exception);
+                }
             }
         } catch (IOException | RuntimeException exception) {
             AnarchyClient.LOGGER.warn("Failed to load AnarchyClient profiles from {}", this.path, exception);
+            this.profiles.clear();
+            this.saveBlocked = !ConfigFiles.backUpUnreadable(this.path);
         }
     }
 
     public synchronized void save() {
+        if (this.saveBlocked) {
+            AnarchyClient.LOGGER.warn("Not saving AnarchyClient profiles: {} could not be read or backed up", this.path);
+            return;
+        }
         try {
-            Path parent = this.path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            try (Writer writer = Files.newBufferedWriter(this.path)) {
-                GSON.toJson(new ProfileRoot(this.profiles), writer);
-            }
+            ConfigFiles.writeAtomically(this.path, GSON.toJson(new ProfileRoot(this.profiles)));
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save AnarchyClient profiles to {}", this.path, exception);
         }
@@ -144,6 +152,10 @@ public final class ProfileManager {
         }
     }
 
+    /**
+     * Applies a profile. Settings load before modules are enabled, so {@code onEnable} sees the profile's
+     * values. A setting that fails to load is logged and skipped.
+     */
     public synchronized int apply(final String name, final ModuleManager modules) {
         Profile profile = this.profiles.get(key(name));
         if (profile == null) {
@@ -151,20 +163,33 @@ public final class ProfileManager {
         }
         int changed = 0;
         for (Module module : modules.all()) {
-            Boolean enabled = profile.modules.get(module.id());
-            if (enabled != null && module.enabled() != enabled) {
-                module.enabled(enabled);
-                changed++;
-            }
             Map<String, JsonElement> settings = profile.settings.get(module.id());
             if (settings == null) {
                 continue;
             }
             for (Setting<?> setting : module.settings()) {
                 JsonElement value = settings.get(setting.id());
-                if (value != null) {
+                if (value == null) {
+                    continue;
+                }
+                try {
                     setting.fromJson(value.deepCopy());
                     changed++;
+                } catch (RuntimeException exception) {
+                    AnarchyClient.LOGGER.warn("Skipping invalid value for {}.{} in profile '{}'",
+                            module.id(), setting.id(), profile.name, exception);
+                }
+            }
+        }
+        for (Module module : modules.all()) {
+            Boolean enabled = profile.modules.get(module.id());
+            if (enabled != null && module.enabled() != enabled) {
+                try {
+                    module.enabled(enabled);
+                    changed++;
+                } catch (RuntimeException exception) {
+                    AnarchyClient.LOGGER.warn("Failed to toggle {} from profile '{}'", module.id(), profile.name,
+                            exception);
                 }
             }
         }

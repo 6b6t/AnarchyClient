@@ -22,18 +22,30 @@ class TextValueSettingsTest {
                 .addAllSuggestions(List.of("z", "a", "z"))
                 .build());
 
-        setting.valueFromString("one, two;two three");
+        setting.valueFromString("one, two;two\nthree words ");
 
-        assertEquals(List.of("one", "two", "three"), setting.value());
-        assertEquals("one,two,three", setting.valueString());
+        assertEquals(List.of("one", "two", "three words"), setting.value());
+        assertEquals("one,two,three words", setting.valueString());
         assertEquals(List.of("a", "z"), setting.suggestions());
 
         JsonArray array = new JsonArray();
-        array.add("four five");
+        array.add("four, five");
         array.add("six");
         setting.fromJson(array);
 
-        assertEquals(List.of("four", "five", "six"), setting.value());
+        assertEquals(List.of("four, five", "six"), setting.value());
+    }
+
+    @Test
+    void identifierListsAlsoSplitOnWhitespace() {
+        ModuleListSetting setting = ModuleListSetting.from(ModuleListSetting.builder()
+                .id("modules")
+                .name("Modules")
+                .build());
+
+        setting.valueFromString("kill_aura velocity,freecam");
+
+        assertEquals(List.of("kill_aura", "velocity", "freecam"), setting.value());
     }
 
     @Test

@@ -103,7 +103,13 @@ final class ProfileCommands {
 
     private static int exportProfile(final CommandContext<FabricClientCommandSource> context) {
         String name = StringArgumentType.getString(context, "name");
-        Path output = Path.of(StringArgumentType.getString(context, "path"));
+        Path output;
+        try {
+            output = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
         try {
             if (!AnarchyClient.PROFILES.exportProfile(name, output)) {
                 context.getSource().sendError(Component.literal("Unknown profile: " + name));
@@ -118,7 +124,13 @@ final class ProfileCommands {
     }
 
     private static int importProfile(final CommandContext<FabricClientCommandSource> context) {
-        Path input = Path.of(StringArgumentType.getString(context, "path"));
+        Path input;
+        try {
+            input = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
         try {
             ProfileManager.Profile profile = AnarchyClient.PROFILES.importProfile(input);
             context.getSource().sendFeedback(Component.literal("Imported profile " + profile.name + "."));

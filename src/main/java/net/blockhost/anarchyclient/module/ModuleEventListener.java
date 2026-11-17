@@ -34,6 +34,12 @@ import net.lenni0451.lambdaevents.EventHandler;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 
+/**
+ * Forwards events to one module while it is enabled.
+ *
+ * <p>The module manager registers one listener per module at registration time, so dispatch follows
+ * registry order no matter when modules are enabled.
+ */
 public final class ModuleEventListener {
 
     private final Module module;
@@ -44,16 +50,25 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleClientTick(final ClientTickEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.tick(event.client());
     }
 
     @EventHandler
     public void handleClientInput(final ClientInputEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.updateInput(event.client(), event.input());
     }
 
     @EventHandler
     public void handlePreventEdgeFall(final PreventEdgeFallEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.preventEdgeFall(event.client(), event.player())) {
             event.prevent();
         }
@@ -61,6 +76,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleMouseClick(final MouseClickEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.mouseClick(event.client(), event.buttonInfo(), event.action())) {
             event.cancel();
         }
@@ -68,6 +86,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleAttackEntity(final AttackEntityEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.attackEntity(event.client(), event.player(), event.target())) {
             event.cancel();
         }
@@ -75,6 +96,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleBlockAttack(final BlockAttackEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.attackBlock(event.client(), event.pos(), event.direction())) {
             event.cancel();
         }
@@ -82,6 +106,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleChatMessage(final ChatMessageEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         Component message = this.module.chatMessage(event.client(), event.message());
         if (message != null) {
             event.message(message);
@@ -90,6 +117,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleSendChat(final SendChatEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         String message = this.module.sendChatMessage(event.client(), event.message(), event.command());
         if (message != null) {
             event.message(message);
@@ -98,6 +128,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleTabPlayerName(final TabPlayerNameEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         Component name = this.module.tabPlayerName(event.client(), event.playerInfo(), event.name());
         if (name != null) {
             event.name(name);
@@ -106,26 +139,41 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleItemTooltip(final ItemTooltipEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.itemTooltip(event.client(), event.stack(), event.lines());
     }
 
     @EventHandler
     public void handleEntityAdded(final EntityAddedEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.entityAdded(event.client(), event.entity());
     }
 
     @EventHandler
     public void handleEntityRemoved(final EntityRemovedEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.entityRemoved(event.client(), event.entity(), event.reason());
     }
 
     @EventHandler
     public void handleBlockBreakingProgress(final BlockBreakingProgressEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.blockBreakingProgress(event.client(), event.breakerId(), event.pos(), event.progress());
     }
 
     @EventHandler
     public void handleBlockInteract(final BlockInteractEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.blockInteract(event.client(), event.hand(), event.hitResult())) {
             event.cancel();
         }
@@ -133,6 +181,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleEntityInteract(final EntityInteractEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.entityInteract(event.client(), event.player(), event.entity(), event.hitResult(), event.hand())) {
             event.cancel();
         }
@@ -140,6 +191,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleItemUse(final ItemUseEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.itemUse(event.client(), event.hand())) {
             event.cancel();
         }
@@ -147,11 +201,17 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleItemStopUse(final ItemStopUseEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.itemStopUse(event.client(), event.hand(), event.stack(), event.remainingTicks());
     }
 
     @EventHandler
     public void handleOpenScreen(final OpenScreenEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.openScreen(event.client(), event.screen())) {
             event.cancel();
         }
@@ -159,6 +219,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleMouseScroll(final MouseScrollInputEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.mouseScroll(event.client(), event.xOffset(), event.yOffset())) {
             event.cancel();
         }
@@ -166,6 +229,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleParticle(final ParticleEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.particle(event.client(), event.particle(), event.alwaysShow())) {
             event.cancel();
         }
@@ -173,11 +239,17 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleFov(final FovEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         event.fov(this.module.fov(event.client(), event.fov()));
     }
 
     @EventHandler
     public void handleCameraTransform(final CameraTransformEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         Module.CameraTransform transform = this.module.cameraTransform(
                 event.client(),
                 event.position(),
@@ -193,21 +265,33 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleWorldRender(final WorldRenderEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.renderWorld(event.client(), event.context());
     }
 
     @EventHandler
     public void handleHudRender(final HudRenderEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.renderHud(event.client(), event.graphics());
     }
 
     @EventHandler
     public void handleSoundPacket(final SoundPacketEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.soundPacket(event.client(), event.packet());
     }
 
     @EventHandler
     public void handlePacketReceive(final PacketReceiveEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         if (this.module.receivePacket(event.client(), event.connection(), event.packet())) {
             event.cancel();
         }
@@ -215,6 +299,9 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handlePacketSend(final PacketSendEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         Packet<?> replacement = this.module.replaceSendPacket(event.client(), event.connection(), event.packet());
         if (replacement != event.packet()) {
             event.packet(replacement);
@@ -226,16 +313,25 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handlePacketSent(final PacketSentEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.sentPacket(event.client(), event.connection(), event.packet());
     }
 
     @EventHandler
     public void handleGameJoined(final GameJoinedEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.gameJoined(event.client(), event.listener());
     }
 
     @EventHandler
     public void handleGameLeft(final GameLeftEvent event) {
+        if (!this.module.enabled()) {
+            return;
+        }
         this.module.gameLeft(event.client(), event.listener());
     }
 }

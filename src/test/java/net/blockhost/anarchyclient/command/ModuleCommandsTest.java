@@ -42,6 +42,9 @@ class ModuleCommandsTest {
 
         assertEquals(6.0, setting.value());
         assertThrows(IllegalArgumentException.class, () -> ModuleCommands.setSettingValue(setting, "far"));
+        assertThrows(IllegalArgumentException.class, () -> ModuleCommands.setSettingValue(setting, "NaN"));
+        assertThrows(IllegalArgumentException.class, () -> ModuleCommands.setSettingValue(setting, "Infinity"));
+        assertEquals(6.0, setting.value());
     }
 
     @Test

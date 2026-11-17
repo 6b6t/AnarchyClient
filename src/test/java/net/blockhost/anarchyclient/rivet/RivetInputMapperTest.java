@@ -56,11 +56,19 @@ class RivetInputMapperTest {
     @CsvSource({"1,LEFT", "2,MIDDLE", "3,RIGHT"})
     void mapsSdlMouseButtons(final int button, final MouseButton expected) {
         var event = new MouseButtonEvent(12.0, 34.0, new MouseButtonInfo(button, InputConstants.MOD_SHIFT));
-        var mapped = RivetInputMapper.mouse(event);
+        var mapped = RivetInputMapper.mouse(event).orElseThrow();
 
         assertEquals(expected, mapped.button());
         assertEquals(12.0F, mapped.x());
         assertEquals(34.0F, mapped.y());
         assertEquals(Set.of(ModifierKey.SHIFT), mapped.modifiers());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"4", "5", "6", "7", "8"})
+    void ignoresSideMouseButtons(final int button) {
+        var event = new MouseButtonEvent(12.0, 34.0, new MouseButtonInfo(button, 0));
+
+        assertTrue(RivetInputMapper.mouse(event).isEmpty());
     }
 }

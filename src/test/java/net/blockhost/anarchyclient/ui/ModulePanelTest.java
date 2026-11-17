@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
@@ -49,5 +50,21 @@ class ModulePanelTest {
             panel.computeLayout(SIZE);
             assertTrue(panel.layoutDebugLabel().endsWith("drawer=" + drawer.name().toLowerCase(Locale.ROOT)), drawer.name());
         }
+    }
+
+    @Test
+    void switchingTabsCancelsKeybindCapture() {
+        ModuleManager modules = new ModuleManager();
+        ModuleRegistry.registerDefaults(modules);
+        ModulePanel panel = new ModulePanel(modules, new ClientConfig(modules, this.tempDir.resolve("config.json")));
+        new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, SIZE).root().addChild(panel);
+        Module module = modules.all().iterator().next();
+        panel.inspectModule(module);
+
+        panel.startKeybindListening(module);
+        assertTrue(panel.isCapturingKeybind());
+        panel.selectTab(Tab.FRIENDS);
+
+        assertFalse(panel.isCapturingKeybind());
     }
 }

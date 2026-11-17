@@ -23,6 +23,7 @@ import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.blockhost.anarchyclient.ui.HudLayout;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -60,6 +61,8 @@ public final class AnarchyClient implements ClientModInitializer {
         WAYPOINTS.load();
         CONFIG.load();
         HudLayout.load();
+        // Keybind and command toggles change module state outside the menu, so save them too.
+        MODULES.activationObserver(CONFIG::markDirty);
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.anarchyclient.open_menu",
@@ -69,6 +72,7 @@ public final class AnarchyClient implements ClientModInitializer {
         AnarchyClientCommands.register();
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> CONFIG.save());
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             EspOutlineRegistry.clear();
             MODULES.call(new WorldRenderEvent(Minecraft.getInstance(), context));
@@ -93,5 +97,6 @@ public final class AnarchyClient implements ClientModInitializer {
         MODULES.handleKeybinds(client);
         MODULES.call(new ClientTickEvent(client));
         InventoryActionScheduler.tick(client);
+        CONFIG.saveIfDirty();
     }
 }

@@ -105,6 +105,36 @@ class ModuleManagerTest {
     }
 
     @Test
+    void dispatchesInRegistrationOrderRegardlessOfEnableOrder() {
+        ModuleManager manager = new ModuleManager();
+        SuffixModule first = new SuffixModule("first");
+        SuffixModule second = new SuffixModule("second");
+        manager.register(first);
+        manager.register(second);
+
+        second.enabled(true);
+        first.enabled(true);
+        first.enabled(false);
+        first.enabled(true);
+
+        assertEquals("message first second", manager.sendChatMessage(null, "message", false));
+    }
+
+    @Test
+    void notifiesActivationObserverOnToggle() {
+        ModuleManager manager = new ModuleManager();
+        TestModule module = new TestModule("observed", ModuleCategory.MISC);
+        manager.register(module);
+        int[] changes = new int[1];
+        manager.activationObserver(() -> changes[0]++);
+
+        module.toggle();
+        module.toggle();
+
+        assertEquals(2, changes[0]);
+    }
+
+    @Test
     void returnsTrueWhenEnabledModulePreventsEdgeFall() {
         ModuleManager manager = new ModuleManager();
         TestModule enabled = new TestModule("enabled", ModuleCategory.MOVEMENT);
@@ -287,6 +317,18 @@ class ModuleManagerTest {
 
         private GroupedModule() {
             super("grouped", "Grouped", ModuleCategory.COMBAT, "Test module.");
+        }
+    }
+
+    private static final class SuffixModule extends Module {
+
+        private SuffixModule(final String id) {
+            super(id, id, ModuleCategory.MISC, "Test module.");
+        }
+
+        @Override
+        public String sendChatMessage(final Minecraft client, final String message, final boolean command) {
+            return message + " " + this.id();
         }
     }
 

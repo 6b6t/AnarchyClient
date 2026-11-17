@@ -15,7 +15,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.item.ItemStack;
@@ -29,16 +28,19 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
-import static net.blockhost.anarchyclient.command.CommandSupport.parseBlockPosition;
+import static net.blockhost.anarchyclient.command.CommandSupport.parsePosition;
 import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
 import static net.blockhost.anarchyclient.command.CommandSupport.sanitizeFileName;
 import static net.blockhost.anarchyclient.command.CommandSupport.suggestOnlinePlayers;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.coordinate;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.getCoordinate;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
@@ -49,6 +51,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 final class PlayerCommands {
 
     private static final int TRACKED_INVENTORY_LIMIT = 10;
+    private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(15);
 
     private PlayerCommands() {
     }
@@ -90,9 +93,9 @@ final class PlayerCommands {
                                 .executes(context -> showTrackedInventory(context,
                                         StringArgumentType.getString(context, "player")))))
                 .then(literal("teleport")
-                        .then(argument("x", StringArgumentType.word())
-                                .then(argument("y", StringArgumentType.word())
-                                        .then(argument("z", StringArgumentType.word())
+                        .then(argument("x", coordinate())
+                                .then(argument("y", coordinate())
+                                        .then(argument("z", coordinate())
                                                 .executes(context -> teleport(context, false))
                                                 .then(argument("yaw", FloatArgumentType.floatArg())
                                                         .then(argument("pitch", FloatArgumentType.floatArg())
@@ -311,21 +314,21 @@ final class PlayerCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        BlockPos pos;
+        Vec3 pos;
         try {
-            pos = parseBlockPosition(
-                    StringArgumentType.getString(context, "x"),
-                    StringArgumentType.getString(context, "y"),
-                    StringArgumentType.getString(context, "z"),
+            pos = parsePosition(
+                    getCoordinate(context, "x"),
+                    getCoordinate(context, "y"),
+                    getCoordinate(context, "z"),
                     client.player.position()
             );
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));
             return 0;
         }
-        double x = pos.getX();
-        double y = pos.getY();
-        double z = pos.getZ();
+        double x = pos.x;
+        double y = pos.y;
+        double z = pos.z;
         if (includeRotation) {
             float yaw = FloatArgumentType.getFloat(context, "yaw");
             float pitch = FloatArgumentType.getFloat(context, "pitch");
@@ -346,9 +349,12 @@ final class PlayerCommands {
                                      final String profileName, final String uuid) {
         CompletableFuture.runAsync(() -> {
             try {
-                HttpClient http = HttpClient.newHttpClient();
+                HttpClient http = HttpClient.newBuilder()
+                        .connectTimeout(HTTP_TIMEOUT)
+                        .build();
                 HttpRequest profileRequest = HttpRequest.newBuilder(URI.create(
                                 "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
+                        .timeout(HTTP_TIMEOUT)
                         .GET()
                         .build();
                 HttpResponse<String> profileResponse = http.send(profileRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -359,7 +365,8 @@ final class PlayerCommands {
                 if (skinUrl == null) {
                     throw new IOException("profile does not contain a skin texture");
                 }
-                HttpResponse<byte[]> skinResponse = http.send(HttpRequest.newBuilder(URI.create(skinUrl)).GET().build(),
+                HttpResponse<byte[]> skinResponse = http.send(
+                        HttpRequest.newBuilder(URI.create(skinUrl)).timeout(HTTP_TIMEOUT).GET().build(),
                         HttpResponse.BodyHandlers.ofByteArray());
                 if (skinResponse.statusCode() != 200) {
                     throw new IOException("skin request returned HTTP " + skinResponse.statusCode());
@@ -368,7 +375,9 @@ final class PlayerCommands {
                 Files.createDirectories(output.getParent());
                 Files.write(output, skinResponse.body());
                 client.execute(() -> source.sendFeedback(Component.literal("Saved skin to " + output)));
-            } catch (IOException exception) {
+            } catch (IOException | RuntimeException exception) {
+                // RuntimeException covers malformed profile JSON, bad Base64, and bad skin URLs, which
+                // the async task would otherwise drop silently.
                 client.execute(() -> source.sendError(Component.literal("Failed to save skin: " + exception.getMessage())));
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();

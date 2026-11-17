@@ -8,8 +8,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 abstract class AbstractStringListSetting extends Setting<List<String>> implements TextValueSetting {
+
+    /** Free text entries may contain spaces, so only commas, semicolons, and line breaks separate them. */
+    protected static final Pattern TEXT_SEPARATOR = Pattern.compile("[,;\\r\\n]+");
+    /** Identifier entries never contain spaces, so whitespace also separates them. */
+    protected static final Pattern IDENTIFIER_SEPARATOR = Pattern.compile("[,;\\s]+");
 
     private final List<String> suggestions;
 
@@ -76,13 +82,21 @@ abstract class AbstractStringListSetting extends Setting<List<String>> implement
         if (!element.isJsonArray()) {
             return;
         }
+        // Saved arrays already hold one entry per element, so keep each element whole.
         List<String> parsed = new ArrayList<>();
         for (JsonElement entry : element.getAsJsonArray()) {
             if (entry != null && entry.isJsonPrimitive()) {
-                parsed.addAll(this.parse(entry.getAsString()));
+                parsed.add(entry.getAsString());
             }
         }
         this.value(parsed);
+    }
+
+    /**
+     * Returns the pattern that splits typed text into entries.
+     */
+    protected Pattern separator() {
+        return TEXT_SEPARATOR;
     }
 
     protected String normalize(final String value) {
@@ -99,7 +113,7 @@ abstract class AbstractStringListSetting extends Setting<List<String>> implement
             return List.of();
         }
         List<String> parsed = new ArrayList<>();
-        for (String token : value.split("[,;\\s]+")) {
+        for (String token : this.separator().split(value)) {
             String normalized = this.normalize(token);
             if (!normalized.isBlank()) {
                 parsed.add(normalized);

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.setting;
 
+import java.util.regex.Pattern;
+
 public final class PacketListSetting extends AbstractStringListSetting {
 
     private PacketListSetting(final PacketListSettingSpec spec) {
@@ -17,5 +19,10 @@ public final class PacketListSetting extends AbstractStringListSetting {
     @Override
     protected String normalize(final String value) {
         return value == null ? "" : value.trim();
+    }
+
+    @Override
+    protected Pattern separator() {
+        return IDENTIFIER_SEPARATOR;
     }
 }

@@ -24,6 +24,8 @@ import java.util.concurrent.CompletableFuture;
 
 import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
 import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
+import static net.blockhost.anarchyclient.command.TokenArgument.getToken;
+import static net.blockhost.anarchyclient.command.TokenArgument.token;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
@@ -52,7 +54,7 @@ final class ServerCommands {
                         .then(literal("list")
                                 .executes(ServerCommands::serverListList))
                         .then(literal("add")
-                                .then(argument("address", StringArgumentType.word())
+                                .then(argument("address", token())
                                         .executes(context -> serverListAdd(context, null))
                                         .then(argument("name", StringArgumentType.greedyString())
                                                 .executes(context -> serverListAdd(context, StringArgumentType.getString(context, "name"))))))
@@ -78,7 +80,10 @@ final class ServerCommands {
             return 0;
         }
         ServerAddress address = ServerAddress.parseString(server.ip);
-        ConnectScreen.startConnecting(new TitleScreen(), client, address, server, false, null);
+        // Run after the command returns: the chat screen closes itself after a submitted command and
+        // would replace the connect screen if it opened now. schedule() always queues the task.
+        client.schedule(client.wrapRunnable(
+                () -> ConnectScreen.startConnecting(new TitleScreen(), client, address, server, false, null)));
         return SUCCESS;
     }
 
@@ -109,7 +114,7 @@ final class ServerCommands {
     private static int serverListAdd(final CommandContext<FabricClientCommandSource> context, final String name) {
         Minecraft client = Minecraft.getInstance();
         ServerList list = ServerListTools.load(client);
-        String address = StringArgumentType.getString(context, "address");
+        String address = getToken(context, "address");
         int added = ServerListTools.addOrUpdate(list, address, name);
         list.save();
         context.getSource().sendFeedback(Component.literal((added == 0 ? "Updated " : "Added ")
@@ -143,7 +148,13 @@ final class ServerCommands {
 
     private static int serverListImport(final CommandContext<FabricClientCommandSource> context) {
         ServerList list = ServerListTools.load(Minecraft.getInstance());
-        Path path = Path.of(StringArgumentType.getString(context, "path"));
+        Path path;
+        try {
+            path = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
         try {
             int added = ServerListTools.importJson(list, path);
             int duplicates = ServerListTools.cleanup(list);

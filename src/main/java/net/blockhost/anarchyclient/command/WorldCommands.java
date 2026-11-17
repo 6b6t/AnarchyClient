@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.command.CommandSupport.BlockArea;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
@@ -19,19 +20,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.coordinate;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.getCoordinate;
+import static net.blockhost.anarchyclient.command.TokenArgument.getToken;
+import static net.blockhost.anarchyclient.command.TokenArgument.token;
 import static net.blockhost.anarchyclient.command.CommandSupport.blockArea;
 import static net.blockhost.anarchyclient.command.CommandSupport.parseBlock;
 import static net.blockhost.anarchyclient.command.CommandSupport.parseBlockPosition;
@@ -45,6 +52,10 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 final class WorldCommands {
 
     private static final int MAX_FILL_BLOCKS = 32_768;
+    private static final long SLIME_CHUNK_SALT = 987234911L;
+    // The block snapshot has to run on the render thread. A 65-block cube (about 275k reads) stays
+    // short enough not to freeze the game; 64 meant 2.1M reads.
+    private static final int MAX_EXPORT_DISTANCE = 32;
 
     private WorldCommands() {
     }
@@ -64,34 +75,34 @@ final class WorldCommands {
                         .then(literal("slime-chunk")
                                 .executes(WorldCommands::locateSlimeChunk)))
                 .then(literal("terrain-export")
-                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                        .then(argument("distance", IntegerArgumentType.integer(1, MAX_EXPORT_DISTANCE))
                                 .executes(WorldCommands::terrainExport)))
                 .then(literal("ghost")
                         .executes(context -> ghostBlocks(context, 4))
                         .then(argument("radius", IntegerArgumentType.integer(1, 16))
                                 .executes(context -> ghostBlocks(context, IntegerArgumentType.getInteger(context, "radius")))))
                 .then(literal("save-map")
-                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                        .then(argument("distance", IntegerArgumentType.integer(1, MAX_EXPORT_DISTANCE))
                                 .executes(WorldCommands::terrainExport)))
                 .then(literal("setblock")
-                        .then(argument("x", StringArgumentType.word())
-                                .then(argument("y", StringArgumentType.word())
-                                        .then(argument("z", StringArgumentType.word())
-                                                .then(argument("block", StringArgumentType.word())
+                        .then(argument("x", coordinate())
+                                .then(argument("y", coordinate())
+                                        .then(argument("z", coordinate())
+                                                .then(argument("block", token())
                                                         .suggests(WorldCommands::suggestBlocks)
                                                         .executes(WorldCommands::setBlock))))))
                 .then(literal("fill")
-                        .then(argument("from_x", StringArgumentType.word())
-                                .then(argument("from_y", StringArgumentType.word())
-                                        .then(argument("from_z", StringArgumentType.word())
-                                                .then(argument("to_x", StringArgumentType.word())
-                                                        .then(argument("to_y", StringArgumentType.word())
-                                                                .then(argument("to_z", StringArgumentType.word())
-                                                                        .then(argument("block", StringArgumentType.word())
+                        .then(argument("from_x", coordinate())
+                                .then(argument("from_y", coordinate())
+                                        .then(argument("from_z", coordinate())
+                                                .then(argument("to_x", coordinate())
+                                                        .then(argument("to_y", coordinate())
+                                                                .then(argument("to_z", coordinate())
+                                                                        .then(argument("block", token())
                                                                                 .suggests(WorldCommands::suggestBlocks)
                                                                                 .executes(context -> fill(context, false))
                                                                                 .then(literal("replace")
-                                                                                        .then(argument("filter", StringArgumentType.word())
+                                                                                        .then(argument("filter", token())
                                                                                                 .suggests(WorldCommands::suggestBlocks)
                                                                                                 .executes(context -> fill(context, true))))))))))));
     }
@@ -201,14 +212,28 @@ final class WorldCommands {
         int distance = IntegerArgumentType.getInteger(context, "distance");
         BlockPos center = client.player.blockPosition();
         Path output = terrainExportPath(center, distance);
-        try {
-            Files.createDirectories(output.getParent());
-            Files.write(output, terrainLines(client, center, distance), StandardCharsets.UTF_8);
-        } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to export terrain: " + exception.getMessage()));
-            return 0;
-        }
-        context.getSource().sendFeedback(Component.literal("Exported terrain to " + output));
+        List<String> lines = terrainLines(client, center, distance);
+        FabricClientCommandSource source = context.getSource();
+        source.sendFeedback(Component.literal("Exporting " + (lines.size() - 1) + " blocks..."));
+        // Write off the render thread, then report back on it.
+        CompletableFuture.runAsync(() -> {
+            try {
+                Files.createDirectories(output.getParent());
+                Files.write(output, lines, StandardCharsets.UTF_8);
+            } catch (IOException exception) {
+                throw new UncheckedIOException(exception);
+            }
+        }, Util.ioPool()).whenCompleteAsync((ignored, error) -> {
+            if (error == null) {
+                source.sendFeedback(Component.literal("Exported terrain to " + output));
+                return;
+            }
+            Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
+            if (cause instanceof UncheckedIOException unchecked) {
+                cause = unchecked.getCause();
+            }
+            source.sendError(Component.literal("Failed to export terrain: " + cause.getMessage()));
+        }, client);
         return SUCCESS;
     }
 
@@ -242,12 +267,12 @@ final class WorldCommands {
         }
         try {
             BlockPos pos = parseBlockPosition(
-                    StringArgumentType.getString(context, "x"),
-                    StringArgumentType.getString(context, "y"),
-                    StringArgumentType.getString(context, "z"),
+                    getCoordinate(context, "x"),
+                    getCoordinate(context, "y"),
+                    getCoordinate(context, "z"),
                     client.player.position()
             );
-            client.level.setBlockAndUpdate(pos, parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState());
+            client.level.setBlockAndUpdate(pos, parseBlock(getToken(context, "block")).defaultBlockState());
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));
@@ -263,21 +288,21 @@ final class WorldCommands {
         try {
             BlockArea area = blockArea(
                     parseBlockPosition(
-                            StringArgumentType.getString(context, "from_x"),
-                            StringArgumentType.getString(context, "from_y"),
-                            StringArgumentType.getString(context, "from_z"),
+                            getCoordinate(context, "from_x"),
+                            getCoordinate(context, "from_y"),
+                            getCoordinate(context, "from_z"),
                             client.player.position()
                     ),
                     parseBlockPosition(
-                            StringArgumentType.getString(context, "to_x"),
-                            StringArgumentType.getString(context, "to_y"),
-                            StringArgumentType.getString(context, "to_z"),
+                            getCoordinate(context, "to_x"),
+                            getCoordinate(context, "to_y"),
+                            getCoordinate(context, "to_z"),
                             client.player.position()
                     ),
                     MAX_FILL_BLOCKS
             );
-            BlockState state = parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState();
-            Block filter = replaceOnly ? parseBlock(StringArgumentType.getString(context, "filter")) : null;
+            BlockState state = parseBlock(getToken(context, "block")).defaultBlockState();
+            Block filter = replaceOnly ? parseBlock(getToken(context, "filter")) : null;
             int changed = 0;
             for (int x = area.minX(); x <= area.maxX(); x++) {
                 for (int y = area.minY(); y <= area.maxY(); y++) {
@@ -370,13 +395,8 @@ final class WorldCommands {
     }
 
     static boolean isSlimeChunk(final long seed, final int chunkX, final int chunkZ) {
-        long randomSeed = seed
-                + (long) (chunkX * chunkX) * 4987142L
-                + (long) chunkX * 5947611L
-                + (long) (chunkZ * chunkZ) * 4392871L
-                + (long) chunkZ * 389711L
-                ^ 987234911L;
-        return new Random(randomSeed).nextInt(10) == 0;
+        // Same call as Slime.checkSlimeSpawnRules, including vanilla's int overflow in the seed mix.
+        return WorldgenRandom.seedSlimeChunk(chunkX, chunkZ, seed, SLIME_CHUNK_SALT).nextInt(10) == 0;
     }
 
     static BlockPos closestSlimeChunk(final long seed, final int centerChunkX, final int centerChunkZ,
@@ -401,9 +421,14 @@ final class WorldCommands {
                     }
                 }
             }
-            if (best != null) {
+            // A later ring can still hold a closer chunk (a ring corner is farther than the next ring's
+            // edge midpoint), so stop only when the next ring cannot beat the best distance.
+            if (best != null && (radius + 1) * (radius + 1) >= bestDistance) {
                 return best;
             }
+        }
+        if (best != null) {
+            return best;
         }
         return new BlockPos(centerChunkX * 16, 0, centerChunkZ * 16);
     }

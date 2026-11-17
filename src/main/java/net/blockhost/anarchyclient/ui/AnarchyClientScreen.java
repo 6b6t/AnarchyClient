@@ -71,12 +71,18 @@ public final class AnarchyClientScreen extends Screen {
         return new Size(this.width / scale, this.height / scale);
     }
 
+    /**
+     * Vanilla rebuilds the screen on resize and when it returns from a child screen. Keep the existing
+     * panel instead, so tabs, scroll positions, search text, and expanded modules survive.
+     */
     @Override
-    public void resize(final int width, final int height) {
-        super.resize(width, height);
-        if (this.rivet != null) {
-            this.rivet.size(this.virtualSize());
+    protected void repositionElements() {
+        if (this.rivet == null) {
+            super.repositionElements();
+            return;
         }
+        GlassBackdrop.activate();
+        this.rivet.size(this.virtualSize());
     }
 
     @Override
@@ -122,7 +128,11 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public boolean mouseClicked(final net.minecraft.client.input.MouseButtonEvent event, final boolean doubleClick) {
         if (this.rivet == null) return false;
-        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(RivetInputMapper.mouse(event));
+        Optional<net.lenni0451.rivet.input.mouse.MouseButtonEvent> rivetEvent = RivetInputMapper.mouse(event);
+        if (rivetEvent.isEmpty()) {
+            return false;
+        }
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(rivetEvent.orElseThrow());
         this.heldMouseButtons.add(mapped.button());
         return this.rivet.onMouseDown(mapped.withHeldButtons(this.heldMouseButtons));
     }
@@ -130,7 +140,11 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     public boolean mouseReleased(final net.minecraft.client.input.MouseButtonEvent event) {
         if (this.rivet == null) return false;
-        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(RivetInputMapper.mouse(event));
+        Optional<net.lenni0451.rivet.input.mouse.MouseButtonEvent> rivetEvent = RivetInputMapper.mouse(event);
+        if (rivetEvent.isEmpty()) {
+            return false;
+        }
+        net.lenni0451.rivet.input.mouse.MouseButtonEvent mapped = this.toVirtualSpace(rivetEvent.orElseThrow());
         try {
             return this.rivet.onMouseUp(mapped.withHeldButtons(this.heldMouseButtons));
         } finally {

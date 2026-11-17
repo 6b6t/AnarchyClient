@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.command;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 
@@ -39,5 +40,24 @@ class SeedStoreTest {
         assertEquals("12345", SeedStore.get(path, world).seed());
         assertTrue(SeedStore.delete(path, world));
         assertFalse(SeedStore.delete(path, world));
+    }
+
+    @Test
+    void skipsMalformedEntries() throws Exception {
+        Path path = this.tempDir.resolve("seeds.json");
+        Files.writeString(path, """
+                {
+                  "server:broken": "not an object",
+                  "server:object_seed": {"seed": {"value": 1}},
+                  "server:good": {"seed": "42", "version": ["bad"]}
+                }
+                """);
+
+        assertNull(SeedStore.get(path, "server:broken"));
+        assertNull(SeedStore.get(path, "server:object_seed"));
+        SeedStore.SeedRecord good = SeedStore.get(path, "server:good");
+        assertEquals("42", good.seed());
+        assertEquals("", good.version());
+        assertEquals(1, SeedStore.list(path).size());
     }
 }

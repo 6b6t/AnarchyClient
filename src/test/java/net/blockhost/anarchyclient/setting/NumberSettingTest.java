@@ -27,6 +27,22 @@ class NumberSettingTest {
         assertEquals(10.0, setting.value());
     }
 
+    @Test
+    void replacesNonFiniteValuesWithDefault() {
+        NumberSetting setting = rangeSetting();
+
+        setting.value(8.0);
+        setting.value(Double.NaN);
+        assertEquals(5.0, setting.value());
+
+        setting.value(8.0);
+        setting.fromJson(new JsonPrimitive("NaN"));
+        assertEquals(5.0, setting.value());
+
+        setting.value(Double.POSITIVE_INFINITY);
+        assertEquals(5.0, setting.value());
+    }
+
     private static NumberSetting rangeSetting() {
         return NumberSetting.from(NumberSetting.builder()
                 .id("range")

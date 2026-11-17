@@ -127,6 +127,20 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     void saveUiPreferences() {
+        this.applyUiPreferences();
+        this.config.save();
+    }
+
+    /**
+     * Applies the preferences now but saves them once input settles. Sliders call this on every drag
+     * step, so an immediate save would write the file every frame.
+     */
+    void saveUiPreferencesLater() {
+        this.applyUiPreferences();
+        this.config.markDirty();
+    }
+
+    private void applyUiPreferences() {
         this.config.uiPreferences(new ClientConfig.UiPreferences(
                 this.showDisabledModules,
                 this.enabledFirst,
@@ -139,7 +153,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 GlassTheme.cornerRadius(),
                 GlassTheme.glassBlur()
         ));
-        this.config.save();
     }
 
     void resetUiPreferences() {
@@ -315,6 +328,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     void selectTab(final Tab tab) {
+        this.stopKeybindListening();
         if (this.selectedTab == tab) {
             // Clicking the open dock entry again closes its panel.
             this.selectedTab = null;
@@ -333,6 +347,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     void selectCategory(final ModuleCategory category) {
+        this.stopKeybindListening();
         if (this.selectedTab == Tab.MODULES && this.selectedCategory == category) {
             // Clicking the open category again closes the modules panel.
             this.selectedTab = null;
@@ -362,6 +377,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         this.inspectedModule = null;
         this.keybindListening = null;
         this.requestFrame();
+    }
+
+    /** Cancels a pending keybind capture, so a key pressed after switching tabs is not bound. */
+    private void stopKeybindListening() {
+        if (this.keybindListening != null) {
+            this.keybindListening = null;
+            this.inspector.refresh();
+        }
     }
 
     /** True while a keybind row is waiting for the next key press. */

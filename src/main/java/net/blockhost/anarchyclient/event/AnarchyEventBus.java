@@ -13,7 +13,8 @@ public final class AnarchyEventBus {
     private final LambdaManager manager;
 
     public AnarchyEventBus() {
-        this.manager = LambdaManager.basic(new ASMGenerator())
+        // Packet events dispatch from the Netty thread while the render thread dispatches everything else.
+        this.manager = LambdaManager.threadSafe(new ASMGenerator())
                 .setEventFilter(AnarchyEventBus::allowEvent)
                 .setExceptionHandler((handler, event, throwable) -> LOGGER.warn(
                         "Exception in AnarchyClient event handler {} for {}",

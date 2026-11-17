@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientConfigTest {
@@ -202,6 +203,60 @@ class ClientConfigTest {
     }
 
     @Test
+    void skipsBadValuesAndAppliesSettingsBeforeEnabling() throws Exception {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        String content = """
+                {
+                  "modules": {
+                    "config_module": {
+                      "enabled": true,
+                      "keybind": "not an object",
+                      "settings": {
+                        "number_setting": "not a number",
+                        "enabled_setting": false,
+                        "string_setting": "kept"
+                      }
+                    }
+                  }
+                }
+                """;
+        Files.writeString(path, content);
+
+        ModuleManager loadedModules = new ModuleManager();
+        ConfigModule loadedModule = new ConfigModule();
+        loadedModules.register(loadedModule);
+        new ClientConfig(loadedModules, path).load();
+
+        assertTrue(loadedModule.enabled());
+        assertEquals(false, loadedModule.enabledSettingOnEnable);
+        assertEquals(false, loadedModule.enabledSetting.value());
+        assertEquals("kept", loadedModule.stringSetting.value());
+        assertEquals(1.0, loadedModule.numberSetting.value());
+        assertEquals(content, Files.readString(path));
+    }
+
+    @Test
+    void debouncesDirtySaves() throws Exception {
+        Path path = this.tempDir.resolve("anarchyclient.json");
+        ClientConfig config = new ClientConfig(new ModuleManager(), path);
+
+        config.saveIfDirty();
+        assertFalse(Files.exists(path));
+
+        config.markDirty();
+        config.saveIfDirty();
+        assertFalse(Files.exists(path), "a fresh change waits for input to settle");
+
+        Thread.sleep(600L);
+        config.saveIfDirty();
+        assertTrue(Files.exists(path));
+
+        Files.delete(path);
+        config.saveIfDirty();
+        assertFalse(Files.exists(path), "a save clears the pending change");
+    }
+
+    @Test
     void backsUpMalformedConfigBeforeSavingFreshConfig() throws Exception {
         Path path = this.tempDir.resolve("anarchyclient.json");
         Files.writeString(path, "{ definitely not json");
@@ -268,8 +323,15 @@ class ClientConfigTest {
                 .addAllOptions(List.of("First", "Second"))
                 .build()));
 
+        private Boolean enabledSettingOnEnable;
+
         private ConfigModule() {
             super("config_module", "Config Module", ModuleCategory.FUN, "Test module.");
+        }
+
+        @Override
+        protected void onEnable() {
+            this.enabledSettingOnEnable = this.enabledSetting.value();
         }
     }
 

@@ -9,7 +9,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -86,12 +88,18 @@ final class ItemCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        int slot = selectedCreativeSlot(client.player);
+        int given = 0;
         for (int index = 0; index < count; index++) {
-            client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(slot, CreativeItemFactory.randomItem(index)));
+            // Each item goes to its own slot; once the inventory is full, stop instead of overwriting.
+            int slot = index == 0 ? targetInventorySlot(client.player.getInventory()) : client.player.getInventory().getFreeSlot();
+            if (slot < 0) {
+                break;
+            }
+            giveToSlot(client, slot, CreativeItemFactory.randomItem(index));
+            given++;
         }
-        context.getSource().sendFeedback(Component.literal("Sent " + count + " creative item packet"
-                + (count == 1 ? "" : "s") + "."));
+        context.getSource().sendFeedback(Component.literal("Gave " + given + " random item"
+                + (given == 1 ? "" : "s") + "."));
         return SUCCESS;
     }
 
@@ -100,10 +108,34 @@ final class ItemCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(selectedCreativeSlot(client.player), stack));
-        context.getSource().sendFeedback(Component.literal("Sent creative item: ")
+        giveToSlot(client, targetInventorySlot(client.player.getInventory()), stack);
+        context.getSource().sendFeedback(Component.literal("Gave creative item: ")
                 .append(stack.getHoverName()));
         return SUCCESS;
+    }
+
+    /**
+     * Picks the selected hotbar slot when it is empty, then the first free slot, and falls back to
+     * replacing the selected item when the inventory is full.
+     */
+    static int targetInventorySlot(final Inventory inventory) {
+        int selected = inventory.getSelectedSlot();
+        if (inventory.getItem(selected).isEmpty()) {
+            return selected;
+        }
+        int free = inventory.getFreeSlot();
+        return free >= 0 ? free : selected;
+    }
+
+    /** Converts an inventory index to the inventory menu slot that the creative slot packet expects. */
+    static int creativeMenuSlot(final int inventorySlot) {
+        return Inventory.isHotbarSlot(inventorySlot) ? InventoryMenu.USE_ROW_SLOT_START + inventorySlot : inventorySlot;
+    }
+
+    /** Updates the client inventory too, so the item shows up without waiting for a server resync. */
+    private static void giveToSlot(final Minecraft client, final int inventorySlot, final ItemStack stack) {
+        client.player.getInventory().setItem(inventorySlot, stack.copy());
+        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(creativeMenuSlot(inventorySlot), stack));
     }
 
     private static int dropSelected(final CommandContext<FabricClientCommandSource> context, final boolean all) {
@@ -194,10 +226,6 @@ final class ItemCommands {
             return "empty";
         }
         return stack.getCount() + "x " + stack.getHoverName().getString();
-    }
-
-    private static int selectedCreativeSlot(final Player player) {
-        return 36 + player.getInventory().getSelectedSlot();
     }
 
     private enum InventoryView {

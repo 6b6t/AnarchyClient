@@ -20,12 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -34,12 +30,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class ClientConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
+    private static final long SAVE_DELAY_NANOS = TimeUnit.MILLISECONDS.toNanos(500);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT);
 
     private final ModuleManager modules;
     private final FriendManager friends;
@@ -48,6 +46,10 @@ public final class ClientConfig {
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
     private final Set<String> expandedModules = new HashSet<>();
     private final Set<String> favoriteModules = new HashSet<>();
+    private final AtomicBoolean dirty = new AtomicBoolean();
+    private volatile long lastChangeNanos;
+    // Set when an unreadable config could not be backed up. Saving would then destroy the user's config.
+    private boolean saveBlocked;
     private ModuleCategory selectedCategory;
     private String selectedModuleId;
     private boolean showDisabledModules = UiPreferences.DEFAULT.showDisabledModules();
@@ -87,6 +89,7 @@ public final class ClientConfig {
         this.selectedCategory = null;
         this.selectedModuleId = null;
         this.uiPreferences(UiPreferences.DEFAULT);
+        this.saveBlocked = false;
         if (!Files.exists(this.path)) {
             this.save();
             return;
@@ -96,7 +99,11 @@ public final class ClientConfig {
             if (root == null) {
                 return;
             }
-            this.loadUi(root);
+            try {
+                this.loadUi(root);
+            } catch (RuntimeException exception) {
+                LOGGER.warn("Failed to load AnarchyClient UI settings from {}", this.path, exception);
+            }
             JsonObject moduleRoot = root.getAsJsonObject("modules");
             if (moduleRoot == null) {
                 return;
@@ -104,23 +111,8 @@ public final class ClientConfig {
             boolean migratedFriends = this.migrateLegacyFriends(moduleRoot);
             for (Module module : this.modules.all()) {
                 JsonObject moduleJson = findObject(moduleRoot, module.id(), module.aliases());
-                if (moduleJson == null) {
-                    continue;
-                }
-                if (module instanceof ModuleConfigMigration migration) {
-                    migration.migrateConfig(moduleJson);
-                }
-                JsonElement enabled = moduleJson.get("enabled");
-                if (enabled != null && enabled.isJsonPrimitive()) {
-                    module.enabled(enabled.getAsBoolean());
-                }
-                module.keybind().fromJson(moduleJson.getAsJsonObject("keybind"));
-                JsonObject settings = moduleJson.getAsJsonObject("settings");
-                if (settings == null) {
-                    continue;
-                }
-                for (Setting<?> setting : module.settings()) {
-                    setting.fromJson(findElement(settings, setting.id(), setting.aliases()));
+                if (moduleJson != null) {
+                    this.loadModule(module, moduleJson);
                 }
             }
             if (migratedFriends) {
@@ -128,9 +120,52 @@ public final class ClientConfig {
             }
         } catch (RuntimeException | IOException exception) {
             LOGGER.warn("Failed to load AnarchyClient config from {}", this.path, exception);
-            if (this.backupFailedConfig()) {
+            if (ConfigFiles.backUpUnreadable(this.path)) {
                 this.save();
+            } else {
+                this.saveBlocked = true;
             }
+        }
+    }
+
+    /**
+     * Loads one module. Settings and the keybind load before the enabled state, so {@code onEnable} sees
+     * the saved settings. A bad value only skips that value and keeps the rest of the config.
+     */
+    private void loadModule(final Module module, final JsonObject moduleJson) {
+        if (module instanceof ModuleConfigMigration migration) {
+            try {
+                migration.migrateConfig(moduleJson);
+            } catch (RuntimeException exception) {
+                LOGGER.warn("Failed to migrate config for module {}", module.id(), exception);
+            }
+        }
+        try {
+            JsonElement keybind = moduleJson.get("keybind");
+            if (keybind != null && keybind.isJsonObject()) {
+                module.keybind().fromJson(keybind.getAsJsonObject());
+            }
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Failed to load keybind for module {}", module.id(), exception);
+        }
+        JsonElement settingsJson = moduleJson.get("settings");
+        if (settingsJson != null && settingsJson.isJsonObject()) {
+            JsonObject settings = settingsJson.getAsJsonObject();
+            for (Setting<?> setting : module.settings()) {
+                try {
+                    setting.fromJson(findElement(settings, setting.id(), setting.aliases()));
+                } catch (RuntimeException exception) {
+                    LOGGER.warn("Failed to load setting {} for module {}", setting.id(), module.id(), exception);
+                }
+            }
+        }
+        try {
+            JsonElement enabled = moduleJson.get("enabled");
+            if (enabled != null && enabled.isJsonPrimitive()) {
+                module.enabled(enabled.getAsBoolean());
+            }
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Failed to restore enabled state for module {}", module.id(), exception);
         }
     }
 
@@ -240,7 +275,31 @@ public final class ClientConfig {
         this.uiPreferences(UiPreferences.DEFAULT);
     }
 
+    /**
+     * Marks the config as changed. Safe to call from any thread; {@link #saveIfDirty()} writes it once
+     * changes have settled.
+     */
+    public void markDirty() {
+        this.lastChangeNanos = System.nanoTime();
+        this.dirty.set(true);
+    }
+
+    /**
+     * Saves pending changes once no change arrived for {@link #SAVE_DELAY_NANOS}, so a slider drag or a
+     * burst of toggles writes the file once.
+     */
+    public void saveIfDirty() {
+        if (this.dirty.get() && System.nanoTime() - this.lastChangeNanos >= SAVE_DELAY_NANOS) {
+            this.save();
+        }
+    }
+
     public void save() {
+        this.dirty.set(false);
+        if (this.saveBlocked) {
+            LOGGER.warn("Not saving AnarchyClient config: {} could not be read or backed up", this.path);
+            return;
+        }
         JsonObject root = new JsonObject();
         JsonObject moduleRoot = new JsonObject();
         root.add("modules", moduleRoot);
@@ -259,19 +318,7 @@ public final class ClientConfig {
         }
 
         try {
-            Path parent = this.path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Path tempPath = this.path.resolveSibling(this.path.getFileName() + ".tmp");
-            try (Writer writer = Files.newBufferedWriter(tempPath)) {
-                GSON.toJson(root, writer);
-            }
-            try {
-                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            } catch (IOException exception) {
-                Files.move(tempPath, this.path, StandardCopyOption.REPLACE_EXISTING);
-            }
+            ConfigFiles.writeAtomically(this.path, GSON.toJson(root));
         } catch (IOException exception) {
             LOGGER.warn("Failed to save AnarchyClient config to {}", this.path, exception);
         }
@@ -468,17 +515,8 @@ public final class ClientConfig {
     }
 
     private static JsonObject findObject(final JsonObject json, final String key, final List<String> aliases) {
-        JsonObject object = json.getAsJsonObject(key);
-        if (object != null) {
-            return object;
-        }
-        for (String alias : aliases) {
-            object = json.getAsJsonObject(alias);
-            if (object != null) {
-                return object;
-            }
-        }
-        return null;
+        JsonElement element = findElement(json, key, aliases);
+        return element != null && element.isJsonObject() ? element.getAsJsonObject() : null;
     }
 
     private static JsonElement findElement(final JsonObject json, final String key, final List<String> aliases) {
@@ -493,40 +531,6 @@ public final class ClientConfig {
             }
         }
         return null;
-    }
-
-    private boolean backupFailedConfig() {
-        if (!Files.exists(this.path)) {
-            return true;
-        }
-        Path backup = this.backupPath();
-        try {
-            Files.move(this.path, backup, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            LOGGER.info("Backed up unreadable AnarchyClient config to {}", backup);
-            return true;
-        } catch (IOException atomicException) {
-            try {
-                Files.move(this.path, backup, StandardCopyOption.REPLACE_EXISTING);
-                LOGGER.info("Backed up unreadable AnarchyClient config to {}", backup);
-                return true;
-            } catch (IOException moveException) {
-                LOGGER.warn("Failed to back up unreadable AnarchyClient config at {}", this.path, moveException);
-                return false;
-            }
-        }
-    }
-
-    private Path backupPath() {
-        Path fileName = this.path.getFileName();
-        String baseName = fileName == null ? AnarchyClient.MOD_ID : fileName.toString();
-        String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
-        Path backup = this.path.resolveSibling(baseName + "." + timestamp + ".backup.json");
-        int copy = 1;
-        while (Files.exists(backup)) {
-            backup = this.path.resolveSibling(baseName + "." + timestamp + "." + copy + ".backup.json");
-            copy++;
-        }
-        return backup;
     }
 
     private boolean migrateLegacyFriends(final JsonObject moduleRoot) {

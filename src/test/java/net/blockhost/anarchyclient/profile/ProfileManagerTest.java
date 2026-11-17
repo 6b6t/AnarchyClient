@@ -4,10 +4,13 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.NumberSetting;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +33,7 @@ class ProfileManagerTest {
         module.enabled(false);
         module.flag.value(true);
 
-        assertEquals(2, manager.apply("main", modules));
+        assertEquals(3, manager.apply("main", modules));
         assertTrue(module.enabled());
         assertEquals(false, module.flag.value());
 
@@ -40,6 +43,55 @@ class ProfileManagerTest {
         assertEquals(1, reloaded.summaries().size());
     }
 
+    @Test
+    void applySkipsBadValuesAndLoadsSettingsBeforeEnabling() throws Exception {
+        Path path = this.tempDir.resolve("profiles.json");
+        Files.writeString(path, """
+                {
+                  "profiles": {
+                    "pvp": {
+                      "name": "pvp",
+                      "modules": {"test_module": true},
+                      "settings": {"test_module": {"range": "far", "flag": false}}
+                    }
+                  }
+                }
+                """);
+        ModuleManager modules = new ModuleManager();
+        TestModule module = new TestModule();
+        modules.register(module);
+        ProfileManager manager = new ProfileManager(path);
+        manager.load();
+
+        assertEquals(2, manager.apply("pvp", modules));
+        assertTrue(module.enabled());
+        assertEquals(false, module.flag.value());
+        assertEquals(false, module.flagOnEnable);
+        assertEquals(3.0, module.range.value());
+    }
+
+    @Test
+    void doesNotOverwriteUnreadableProfiles() throws Exception {
+        Path path = this.tempDir.resolve("profiles.json");
+        Files.writeString(path, "{ broken");
+        ModuleManager modules = new ModuleManager();
+        modules.register(new TestModule());
+
+        ProfileManager manager = new ProfileManager(path);
+        manager.load();
+        manager.capture("fresh", modules);
+
+        try (Stream<Path> files = Files.list(this.tempDir)) {
+            Path backup = files.filter(file -> file.getFileName().toString().endsWith(".backup.json"))
+                    .findFirst()
+                    .orElseThrow();
+            assertEquals("{ broken", Files.readString(backup));
+        }
+        ProfileManager reloaded = new ProfileManager(path);
+        reloaded.load();
+        assertTrue(reloaded.find("fresh").isPresent());
+    }
+
     private static final class TestModule extends Module {
 
         private final BooleanSetting flag = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -47,9 +99,23 @@ class ProfileManagerTest {
                 .name("Flag")
                 .defaultValue(true)
                 .build()));
+        private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
+                .id("range")
+                .name("Range")
+                .defaultValue(3.0)
+                .min(0.0)
+                .max(6.0)
+                .step(0.5)
+                .build()));
+        private Boolean flagOnEnable;
 
         private TestModule() {
             super("test_module", "Test Module", ModuleCategory.MISC, "Test module.");
+        }
+
+        @Override
+        protected void onEnable() {
+            this.flagOnEnable = this.flag.value();
         }
     }
 }

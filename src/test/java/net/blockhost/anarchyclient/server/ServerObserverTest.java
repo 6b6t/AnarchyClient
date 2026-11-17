@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.server;
 
+import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
@@ -78,5 +79,22 @@ class ServerObserverTest {
         assertEquals(Set.of("grim-like", "strict-movement", "strict-rotation", "plugin-leak", "low-tps", "tab-churn"),
                 snapshot.environmentLabels());
         assertEquals(84, snapshot.safetyScore());
+    }
+
+    @Test
+    void keepsLoginStateAndTransactionCaptureAfterJoin() {
+        ServerObserver.observeLeft();
+
+        ServerObserver.observeLogin(null, true);
+        ServerObserver.observeJoined(null);
+        for (int id = -1; id >= -5; id--) {
+            ServerObserver.observeReceived(null, new ClientboundPingPacket(id));
+        }
+
+        ServerObserver.Snapshot snapshot = ServerObserver.snapshot();
+        assertEquals(ServerObserver.ServerType.PREMIUM, snapshot.serverType());
+        assertEquals(List.of(-1, -2, -3, -4, -5), snapshot.transactionIds());
+        assertEquals(Optional.of("Grim"), snapshot.antiCheat());
+        ServerObserver.observeLeft();
     }
 }

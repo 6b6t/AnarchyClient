@@ -66,7 +66,7 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
                 }
                 for (Setting<?> setting : group.settings()) {
                     if (setting.visible()) {
-                        this.settings.addChild(settingRow(setting, this::refreshAfterSettingChange, this.panel.config::save));
+                        this.settings.addChild(settingRow(setting, this::refreshAfterSettingChange, this.panel.config::markDirty));
                     }
                 }
             }
