@@ -464,14 +464,14 @@ public final class NotebotModule extends Module {
         }
     }
 
-    private record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {
+    record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {
     }
 
-    private record NoteBlockPlan(boolean possible, int requiredBlocks, Map<Integer, List<BlockPos>> blocksByNote,
+    record NoteBlockPlan(boolean possible, int requiredBlocks, Map<Integer, List<BlockPos>> blocksByNote,
                                  Map<BlockPos, Integer> targetNotes, Map<BlockPos, Integer> observedNotes,
                                  SequencedMap<BlockPos, Integer> tuneHits) {
 
-        private static NoteBlockPlan create(final ParsedSong song, final List<ScannedNoteBlock> scannedBlocks) {
+        static NoteBlockPlan create(final ParsedSong song, final List<ScannedNoteBlock> scannedBlocks) {
             int requiredBlocks = song.requiredBlocksByNote().values().stream().mapToInt(Integer::intValue).sum();
             if (scannedBlocks.size() < requiredBlocks) {
                 return impossible(requiredBlocks);

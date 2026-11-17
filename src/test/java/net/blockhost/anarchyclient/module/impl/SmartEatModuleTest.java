@@ -1,14 +1,24 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
+import net.blockhost.anarchyclient.test.TestInventories;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.OptionalInt;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MinecraftBootstrapExtension.class)
 class SmartEatModuleTest {
 
     @Test
@@ -42,5 +52,43 @@ class SmartEatModuleTest {
         assertEquals(4.0, SmartEatModule.foodScore(apple, SmartEatModule.FoodPriority.HUNGER));
         assertEquals(2.4, SmartEatModule.foodScore(apple, SmartEatModule.FoodPriority.SATURATION), 0.001);
         assertEquals(6.4, SmartEatModule.foodScore(apple, SmartEatModule.FoodPriority.COMBINED), 0.001);
+    }
+
+    @Test
+    void choosesGappleTypeByPreference() {
+        Inventory inventory = TestInventories.withSlots(new ItemStack(Items.BREAD),
+                new ItemStack(Items.GOLDEN_APPLE), new ItemStack(Items.ENCHANTED_GOLDEN_APPLE));
+
+        assertEquals(OptionalInt.of(2), SmartEatModule.bestGappleSlot(inventory, true));
+        assertEquals(OptionalInt.of(1), SmartEatModule.bestGappleSlot(inventory, false));
+    }
+
+    @Test
+    void fallsBackToTheOtherGappleType() {
+        Inventory enchantedOnly = TestInventories.withSlots(new ItemStack(Items.ENCHANTED_GOLDEN_APPLE));
+        Inventory goldenOnly = TestInventories.withSlots(new ItemStack(Items.GOLDEN_APPLE));
+
+        assertEquals(OptionalInt.of(0), SmartEatModule.bestGappleSlot(enchantedOnly, false));
+        assertEquals(OptionalInt.of(0), SmartEatModule.bestGappleSlot(goldenOnly, true));
+        assertEquals(OptionalInt.empty(), SmartEatModule.bestGappleSlot(TestInventories.withSlots(), true));
+    }
+
+    @Test
+    void findsSoupButNotEmptyBowls() {
+        Inventory inventory = TestInventories.withSlots(new ItemStack(Items.BOWL), new ItemStack(Items.BREAD),
+                new ItemStack(Items.RABBIT_STEW));
+
+        assertEquals(OptionalInt.of(2), SmartEatModule.findSoupSlot(inventory, 0, 8));
+        assertEquals(OptionalInt.empty(), SmartEatModule.findSoupSlot(inventory, 0, 1));
+    }
+
+    @Test
+    void usesTheHandHoldingSoup() {
+        ItemStack stew = new ItemStack(Items.MUSHROOM_STEW);
+        ItemStack sword = new ItemStack(Items.IRON_SWORD);
+
+        assertEquals(InteractionHand.MAIN_HAND, SmartEatModule.soupHand(stew, ItemStack.EMPTY));
+        assertEquals(InteractionHand.OFF_HAND, SmartEatModule.soupHand(sword, stew));
+        assertNull(SmartEatModule.soupHand(sword, ItemStack.EMPTY));
     }
 }
