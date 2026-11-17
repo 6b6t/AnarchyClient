@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -307,7 +308,7 @@ public final class SmartEatModule extends Module {
     }
 
     static boolean isSoup(final ItemStack stack) {
-        return !stack.isEmpty() && isSoupItemId(stack.getItem().builtInRegistryHolder().key().identifier().getPath());
+        return !stack.isEmpty() && isSoupItemId(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
     }
 
     static boolean isSoupItemId(final String itemId) {
@@ -358,7 +359,7 @@ public final class SmartEatModule extends Module {
     }
 
     static boolean isBlacklisted(final ItemStack stack, final Set<String> blacklist) {
-        return isBlacklisted(stack.getItem().builtInRegistryHolder().key().identifier().toString(), blacklist);
+        return isBlacklisted(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), blacklist);
     }
 
     static boolean isBlacklisted(final String itemId, final Set<String> blacklist) {

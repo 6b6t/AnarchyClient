@@ -165,6 +165,7 @@ class MeteorExpansionModulesTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation") // ClientIntentionPacket has only a deprecated constructor.
     void serverSpoofRewritesOnlyLoginHandshakeHost() {
         ServerSpoofModule module = new ServerSpoofModule();
         StringSetting host = stringSetting(module, "host");

@@ -154,7 +154,7 @@ public final class AutoPotModule extends Module {
         }
         PotionContents contents = stack.getComponents().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
         for (MobEffectInstance instance : contents.getAllEffects()) {
-            if (instance.getEffect().is(effect)) {
+            if (instance.is(effect)) {
                 return true;
             }
         }

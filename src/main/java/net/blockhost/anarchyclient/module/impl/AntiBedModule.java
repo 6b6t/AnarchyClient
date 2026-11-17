@@ -94,10 +94,14 @@ public final class AntiBedModule extends Module {
             return false;
         }
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (!client.level.getBlockState(feet.relative(direction)).isSolid()) {
+            if (!isFullBlock(client, feet.relative(direction))) {
                 return false;
             }
         }
-        return client.level.getBlockState(feet.below()).isSolid();
+        return isFullBlock(client, feet.below());
+    }
+
+    private static boolean isFullBlock(final Minecraft client, final BlockPos pos) {
+        return client.level.getBlockState(pos).isCollisionShapeFullBlock(client.level, pos);
     }
 }
