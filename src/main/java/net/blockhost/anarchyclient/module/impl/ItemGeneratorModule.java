@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
+import net.minecraft.world.item.ItemStack;
 
 public final class ItemGeneratorModule extends Module {
 
@@ -43,8 +44,11 @@ public final class ItemGeneratorModule extends Module {
             return;
         }
         this.ticks = 0;
-        int slot = 36 + client.player.getInventory().getSelectedSlot();
-        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(slot, CreativeItemFactory.randomItem(this.generated++)));
+        int selected = client.player.getInventory().getSelectedSlot();
+        ItemStack stack = CreativeItemFactory.randomItem(this.generated++);
+        // The server does not echo creative slot changes back, so set the slot locally as the creative screen does.
+        client.player.getInventory().setItem(selected, stack.copy());
+        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(36 + selected, stack));
     }
 
     @Override

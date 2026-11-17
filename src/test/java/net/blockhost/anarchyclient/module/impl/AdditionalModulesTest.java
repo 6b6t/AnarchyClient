@@ -241,7 +241,7 @@ class AdditionalModulesTest {
 
     @Test
     void packetGuardModulesClassifyTheirPackets() {
-        assertTrue(NoRotateSetModule.shouldCancel(new ClientboundPlayerRotationPacket(90.0F, false, 30.0F, false), false));
+        assertTrue(NoRotateSetModule.shouldCancel(new ClientboundPlayerRotationPacket(90.0F, false, 30.0F, false)));
         assertTrue(NoSlotSetModule.shouldCancel(new ClientboundSetHeldSlotPacket(2)));
         assertTrue(NoSwingModule.shouldCancel(ServerboundPunchPacket.INSTANCE, true));
         assertFalse(NoSwingModule.shouldCancel(ServerboundPunchPacket.INSTANCE, false));

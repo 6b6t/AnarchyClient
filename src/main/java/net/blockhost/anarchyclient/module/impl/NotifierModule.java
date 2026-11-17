@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -89,27 +90,29 @@ public final class NotifierModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!this.totemPops.value() || client.level == null || client.player == null
-                || !(packet instanceof ClientboundEntityEventPacket event)) {
-            return false;
+        if (packet instanceof ClientboundEntityEventPacket event
+                && (event.getEventId() == EntityEvent.DEATH || event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH)) {
+            MainThread.run(() -> this.handleEntityEvent(client, event));
         }
+        return false;
+    }
+
+    private void handleEntityEvent(final Minecraft client, final ClientboundEntityEventPacket event) {
+        if (!this.enabled() || !this.totemPops.value() || client.level == null || client.player == null) {
+            return;
+        }
+        Entity entity = event.getEntity(client.level);
         if (event.getEventId() == EntityEvent.DEATH) {
-            Entity entity = event.getEntity(client.level);
             if (entity != null) {
                 this.popCounts.remove(entity.getUUID());
             }
-            return false;
+            return;
         }
-        if (event.getEventId() != EntityEvent.PROTECTED_FROM_DEATH) {
-            return false;
-        }
-        Entity entity = event.getEntity(client.level);
         if (!(entity instanceof Player player) || shouldIgnore(player, client.player, this.ignoreFriends.value())) {
-            return false;
+            return;
         }
         int count = this.popCounts.merge(player.getUUID(), 1, Integer::sum);
         notifyPlayer(client, totemPopMessage(player.getScoreboardName(), count));
-        return false;
     }
 
     @Override

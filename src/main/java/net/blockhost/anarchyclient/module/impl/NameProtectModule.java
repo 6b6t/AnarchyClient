@@ -9,9 +9,14 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class NameProtectModule extends Module {
 
@@ -85,18 +90,34 @@ public final class NameProtectModule extends Module {
         if (client == null || client.getUser() == null || message == null) {
             return message;
         }
-        String replaced = replaceAll(message.getString(), protectedNames(client, includeFriends, extraNames), replacement);
-        if (replaced.equals(message.getString())) {
+        return replaceInComponent(message, protectedNames(client, includeFriends, extraNames), replacement);
+    }
+
+    /**
+     * Replaces names inside each styled text part, so colors, rank prefixes, and click or hover events survive. A name
+     * split across two differently styled parts is not matched.
+     */
+    static Component replaceInComponent(final Component message, final List<String> names, final String replacement) {
+        String plain = message.getString();
+        if (names.isEmpty() || replaceAll(plain, names, replacement).equals(plain)) {
             return message;
         }
-        return Component.literal(replaced).withStyle(message.getStyle());
+        MutableComponent result = Component.empty();
+        message.visit((style, text) -> {
+            result.append(Component.literal(replaceAll(text, names, replacement)).withStyle(style));
+            return Optional.empty();
+        }, Style.EMPTY);
+        return result;
     }
 
     static String replace(final String value, final String name, final String replacement) {
         if (value == null || name == null || name.isBlank()) {
             return value;
         }
-        return value.replace(name, replacement == null || replacement.isBlank() ? "You" : replacement);
+        // Match whole names only, so a short name such as "Al" does not rewrite "Also".
+        Pattern pattern = Pattern.compile("(?<![A-Za-z0-9_])" + Pattern.quote(name) + "(?![A-Za-z0-9_])");
+        String text = replacement == null || replacement.isBlank() ? "You" : replacement;
+        return pattern.matcher(value).replaceAll(Matcher.quoteReplacement(text));
     }
 
     static String replaceAll(final String value, final List<String> names, final String replacement) {

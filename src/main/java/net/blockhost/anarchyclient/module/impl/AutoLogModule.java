@@ -21,6 +21,8 @@ import java.util.Locale;
 
 public final class AutoLogModule extends Module {
 
+    private static volatile boolean safetyDisconnect;
+
     private final NumberSetting healthThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("health_threshold")
             .name("Health")
@@ -189,6 +191,16 @@ public final class AutoLogModule extends Module {
         return nearest;
     }
 
+    /**
+     * Returns whether the last disconnect came from Auto Log, and clears the flag. Auto Reconnect uses this so it does
+     * not rejoin the danger Auto Log just left.
+     */
+    public static boolean consumeSafetyDisconnect() {
+        boolean value = safetyDisconnect;
+        safetyDisconnect = false;
+        return value;
+    }
+
     private void disconnect(final Minecraft client, final String reason) {
         ClientPacketListener listener = client.getConnection();
         if (listener != null) {
@@ -201,6 +213,7 @@ public final class AutoLogModule extends Module {
             return;
         }
         this.logged = true;
+        safetyDisconnect = true;
         connection.disconnect(Component.literal("Auto Log: " + reason));
     }
 

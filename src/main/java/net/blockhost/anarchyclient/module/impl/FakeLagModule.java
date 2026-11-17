@@ -8,7 +8,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
@@ -48,12 +47,8 @@ public final class FakeLagModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        PacketQueueManager.flushOlderThan(this.delay.value().longValue());
-        if (client.player != null && (PacketQueueManager.incomingSize() > 0 || PacketQueueManager.outgoingSize() > 0)
-                && client.player.tickCount % 40 == 0) {
-            client.player.sendSystemMessage(Component.literal("Fake Lag queue: "
-                    + PacketQueueManager.incomingSize() + " in / " + PacketQueueManager.outgoingSize() + " out."));
-        }
+        PacketQueueManager.flushOutgoingOlderThan(this.id(), this.delay.value().longValue());
+        this.debugValue("queued", PacketQueueManager.outgoingSize(this.id()));
     }
 
     @Override
@@ -61,20 +56,21 @@ public final class FakeLagModule extends Module {
         if (!this.movement.value() || client.hasSingleplayerServer() || !(packet instanceof ServerboundMovePlayerPacket)) {
             return false;
         }
-        return PacketQueueManager.queueOutgoing(connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueOutgoing(this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override
     public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
-        PacketQueueManager.dropAll();
+        PacketQueueManager.dropOutgoing(this.id());
     }
 
     @Override
     protected void onDisable() {
         if (this.dropOnDisable.value()) {
-            PacketQueueManager.dropAll();
+            PacketQueueManager.dropOutgoing(this.id());
         } else {
-            PacketQueueManager.flushAll();
+            PacketQueueManager.flushOutgoing(this.id());
         }
+        this.clearDebugValues();
     }
 }

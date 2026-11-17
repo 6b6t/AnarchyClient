@@ -57,9 +57,12 @@ public final class SwarmModule extends Module {
             .build()));
     private final Queue<String> pendingActions = new ConcurrentLinkedQueue<>();
     private final CopyOnWriteArrayList<PeerConnection> peers = new CopyOnWriteArrayList<>();
+    private static final long HOST_RETRY_MILLIS = 5_000L;
+
     private volatile ServerSocket serverSocket;
     private volatile Socket workerSocket;
     private volatile boolean running;
+    private volatile long retryAfterMillis;
     private Thread serviceThread;
     private String lastStatus = "stopped";
 
@@ -70,7 +73,7 @@ public final class SwarmModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (!this.running) {
+        if (!this.running && System.currentTimeMillis() >= this.retryAfterMillis) {
             this.startService();
         }
         String action;
@@ -156,6 +159,8 @@ public final class SwarmModule extends Module {
         } catch (IOException exception) {
             if (this.running) {
                 this.lastStatus = "host error " + exception.getClass().getSimpleName();
+                // A failed bind (port in use) would otherwise start a new host thread every tick.
+                this.retryAfterMillis = System.currentTimeMillis() + HOST_RETRY_MILLIS;
             }
         } finally {
             this.running = false;

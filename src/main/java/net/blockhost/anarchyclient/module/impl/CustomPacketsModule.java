@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -49,8 +50,12 @@ public final class CustomPacketsModule extends Module {
         if (this.logger.value()) {
             AnarchyClient.LOGGER.info("[custom-payload] {}", description);
         }
-        if (this.chat.value() && client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Custom payload: " + description));
+        if (this.chat.value()) {
+            MainThread.run(() -> {
+                if (client.player != null) {
+                    client.player.sendSystemMessage(Component.literal("Custom payload: " + description));
+                }
+            });
         }
         return false;
     }

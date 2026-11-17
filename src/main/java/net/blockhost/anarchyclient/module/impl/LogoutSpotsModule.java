@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -80,8 +81,15 @@ public final class LogoutSpotsModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!(packet instanceof ClientboundPlayerInfoRemovePacket remove) || client.player == null) {
-            return false;
+        if (packet instanceof ClientboundPlayerInfoRemovePacket remove) {
+            MainThread.run(() -> this.markLogouts(client, remove));
+        }
+        return false;
+    }
+
+    private void markLogouts(final Minecraft client, final ClientboundPlayerInfoRemovePacket remove) {
+        if (client.player == null) {
+            return;
         }
         for (UUID id : remove.profileIds()) {
             LogoutSpot spot = this.lastSeen.get(id);
@@ -92,7 +100,6 @@ public final class LogoutSpotsModule extends Module {
             this.spots.put(id, spot.withAge(0));
         }
         this.trimSpots(this.maxSpots.value().intValue());
-        return false;
     }
 
     @Override

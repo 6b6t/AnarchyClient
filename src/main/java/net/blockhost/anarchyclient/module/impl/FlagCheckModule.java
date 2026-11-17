@@ -5,12 +5,17 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Set;
 
 public final class FlagCheckModule extends Module {
 
@@ -32,8 +37,6 @@ public final class FlagCheckModule extends Module {
             .max(180.0)
             .step(5.0)
             .build()));
-    private float lastYaw;
-    private float lastPitch;
     private int lastInvalidAlertTick;
 
     public FlagCheckModule() {
@@ -43,22 +46,36 @@ public final class FlagCheckModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.player == null || client.player.tickCount <= 25 || !(packet instanceof ClientboundPlayerPositionPacket position)) {
+        LocalPlayer player = client.player;
+        if (player == null || player.tickCount <= 25 || !(packet instanceof ClientboundPlayerPositionPacket position)) {
             return false;
         }
-        float yaw = position.change().yRot();
-        float pitch = position.change().xRot();
-        float yawDelta = angleDelta(yaw, this.lastYaw);
-        float pitchDelta = angleDelta(pitch, this.lastPitch);
+        // Vanilla applies the packet before queued tasks run, so read the current rotation now.
+        Set<Relative> relatives = position.relatives();
+        float yawDelta = rotationDelta(position.change().yRot(), player.getYRot(), relatives.contains(Relative.Y_ROT));
+        float pitchDelta = rotationDelta(position.change().xRot(), player.getXRot(), relatives.contains(Relative.X_ROT));
+        Vec3 current = player.position();
+        Vec3 change = position.change().position();
+        Vec3 target = new Vec3(
+                relatives.contains(Relative.X) ? current.x + change.x : change.x,
+                relatives.contains(Relative.Y) ? current.y + change.y : change.y,
+                relatives.contains(Relative.Z) ? current.z + change.z : change.z
+        );
+        float yaw = relatives.contains(Relative.Y_ROT) ? player.getYRot() + position.change().yRot() : position.change().yRot();
+        float pitch = relatives.contains(Relative.X_ROT) ? player.getXRot() + position.change().xRot() : position.change().xRot();
         boolean forceRotate = yawDelta >= this.forceRotateAngle.value() || pitchDelta >= this.forceRotateAngle.value();
         ServerObserver.FlagReason reason = forceRotate ? ServerObserver.FlagReason.FORCE_ROTATE : ServerObserver.FlagReason.LAGBACK;
-        Vec3 target = position.change().position();
         String detail = forceRotate ? Math.round(yawDelta) + " yaw / " + Math.round(pitchDelta) + " pitch" : "";
-        ServerObserver.recordFlag(reason, target, yaw, pitch, detail);
-        this.lastYaw = client.player.getYRot();
-        this.lastPitch = client.player.getXRot();
-        this.notify(client, reason, detail);
+        MainThread.run(() -> {
+            ServerObserver.recordFlag(reason, target, yaw, pitch, detail);
+            this.notify(client, reason, detail);
+        });
         return false;
+    }
+
+    /** Angle the server turns the player by. A relative rotation is already the turn amount. */
+    static float rotationDelta(final float change, final float current, final boolean relative) {
+        return relative ? Math.abs(change) : angleDelta(change, current);
     }
 
     @Override

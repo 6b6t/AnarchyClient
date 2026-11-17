@@ -22,7 +22,7 @@ public final class ClickTpModule extends Module {
 
     public ClickTpModule() {
         super("click_tp", "Click TP", ModuleCategory.MOVEMENT,
-                "Teleports to the targeted block when you middle-click, optionally only while sneaking. This can flag anti-cheats.");
+                "Teleports on top of the targeted block when you middle-click, optionally only while sneaking. This can flag anti-cheats.");
     }
 
     @Override
@@ -36,7 +36,8 @@ public final class ClickTpModule extends Module {
                 || this.requireSneak.value() && !client.options.keyShift.isDown()) {
             return false;
         }
-        Vec3 target = ((BlockHitResult) client.hitResult).getLocation().add(0.0, 0.15, 0.0);
+        // Stand on top of the clicked block; the raw hit point on a side face is inside the wall.
+        Vec3 target = Vec3.atBottomCenterOf(((BlockHitResult) client.hitResult).getBlockPos().above());
         player.setPos(target);
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, player.onGround(), player.horizontalCollision));
         return true;

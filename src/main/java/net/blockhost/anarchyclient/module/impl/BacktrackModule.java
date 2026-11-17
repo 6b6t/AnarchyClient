@@ -12,9 +12,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundEntityPositionSyncPacket;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
 import net.minecraft.world.entity.player.Player;
 
 public final class BacktrackModule extends Module {
+
+    private static final int NO_TARGET = Integer.MIN_VALUE;
 
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")
@@ -46,56 +52,69 @@ public final class BacktrackModule extends Module {
             .defaultValue(true)
             .build()));
 
+    /** Entity id of the local player while an enemy is in range, or {@code NO_TARGET}. Read on the Netty thread. */
+    private volatile int activeSelfId = NO_TARGET;
+
     public BacktrackModule() {
-        super("backtrack", "Backtrack", ModuleCategory.COMBAT, "Tracks recent target positions and uses delayed hit information to improve combat reach decisions.");
+        super("backtrack", "Backtrack", ModuleCategory.COMBAT,
+                "Delays entity movement updates while an enemy is in range, so you can still hit where they were a moment ago.");
     }
 
     @Override
     public void tick(final Minecraft client) {
-        int flushed = PacketQueueManager.flushIncomingOlderThan(this.delay.value().longValue());
-        this.debugValue("queued", PacketQueueManager.incomingSize());
+        Player target = client.player == null || client.hasSingleplayerServer()
+                ? null
+                : CombatTargets.nearestEnemy(client, this.range.value());
+        this.activeSelfId = target == null ? NO_TARGET : client.player.getId();
+        int flushed = target == null
+                ? PacketQueueManager.flushIncoming(this.id())
+                : PacketQueueManager.flushIncomingOlderThan(this.id(), this.delay.value().longValue());
+        this.debugValue("queued", PacketQueueManager.incomingSize(this.id()));
         if (flushed > 0) {
             this.debugValue("flushed", flushed);
         }
-        if (this.esp.value() && client.player != null) {
-            Player target = CombatTargets.nearestEnemy(client, this.range.value());
-            if (target != null) {
-                MarkerManager.put(new CuboidMarker("backtrack:" + target.getUUID(), target.getBoundingBox(),
-                        MarkerStyle.CYAN, 4));
-            }
+        if (this.esp.value() && target != null) {
+            MarkerManager.put(new CuboidMarker("backtrack:" + target.getUUID(), target.getBoundingBox(),
+                    MarkerStyle.CYAN, 4));
         }
     }
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.hasSingleplayerServer()
-                || client.player == null
-                || CombatTargets.nearestEnemy(client, this.range.value()) == null
-                || !isEntityMovementPacket(packet)) {
+        int selfId = this.activeSelfId;
+        if (selfId == NO_TARGET || !isEntityMovementPacket(packet) || isAbout(packet, selfId)) {
             return false;
         }
-        return PacketQueueManager.queueIncoming(connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueIncoming(this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override
     public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
-        PacketQueueManager.dropIncoming();
+        this.activeSelfId = NO_TARGET;
+        PacketQueueManager.dropIncoming(this.id());
     }
 
     @Override
     protected void onDisable() {
-        PacketQueueManager.flushIncoming();
+        this.activeSelfId = NO_TARGET;
+        PacketQueueManager.flushIncoming(this.id());
         this.clearDebugValues();
     }
 
     static boolean isEntityMovementPacket(final Packet<?> packet) {
-        if (packet == null) {
-            return false;
-        }
-        String name = packet.getClass().getSimpleName();
-        return name.contains("MoveEntity")
-                || name.contains("TeleportEntity")
-                || name.contains("EntityPosition")
-                || name.contains("SetEntityMotion");
+        return packet instanceof ClientboundMoveEntityPacket
+                || packet instanceof ClientboundTeleportEntityPacket
+                || packet instanceof ClientboundEntityPositionSyncPacket
+                || packet instanceof ClientboundSetEntityMotionPacket;
+    }
+
+    /** Returns whether the packet moves the given entity. Relative move packets never target the receiver. */
+    private static boolean isAbout(final Packet<?> packet, final int entityId) {
+        return switch (packet) {
+            case ClientboundTeleportEntityPacket teleport -> teleport.id() == entityId;
+            case ClientboundEntityPositionSyncPacket sync -> sync.id() == entityId;
+            case ClientboundSetEntityMotionPacket motion -> motion.id() == entityId;
+            default -> false;
+        };
     }
 }

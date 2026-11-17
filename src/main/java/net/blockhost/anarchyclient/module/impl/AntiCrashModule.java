@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -88,9 +89,13 @@ public final class AntiCrashModule extends Module {
         if (reason == SuspiciousPacket.NONE) {
             return false;
         }
-        if (this.log.value() && this.logCooldownTicks == 0 && client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Anti Crash blocked " + reason.displayName() + "."));
-            this.logCooldownTicks = 40;
+        if (this.log.value()) {
+            MainThread.run(() -> {
+                if (this.logCooldownTicks == 0 && client.player != null) {
+                    client.player.sendSystemMessage(Component.literal("Anti Crash blocked " + reason.displayName() + "."));
+                    this.logCooldownTicks = 40;
+                }
+            });
         }
         return true;
     }

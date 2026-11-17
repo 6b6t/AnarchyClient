@@ -25,7 +25,7 @@ public final class ChatBotModule extends Module {
     private final StringSetting replies = this.setting(StringSetting.from(StringSetting.builder()
             .id("replies")
             .name("Replies")
-            .defaultValue("ping=Pong, {player.name}.\\ncoords={player.x}, {player.y}, {player.z}")
+            .defaultValue("ping=Pong, {player.name}.")
             .description("One key=value reply per line.")
             .build()));
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()

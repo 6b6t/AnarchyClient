@@ -4,6 +4,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.blockhost.anarchyclient.render.RenderSuppression;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
@@ -71,14 +73,12 @@ class LiquidBouncePlanModulesTest {
         var tagsPacket = new ClientboundUpdateTagsPacket(Map.of());
         var otherPacket = ServerboundPunchPacket.INSTANCE;
 
-        assertTrue(AntiExploitModule.isRegistrySync(registryPacket));
-        assertTrue(AntiExploitModule.isRegistrySync(tagsPacket));
-        assertFalse(AntiExploitModule.isRegistrySync(otherPacket));
-
-        // Even at a limit no packet could satisfy, sync survives while everything else is still cut.
+        // Only displayed text is measured, so large non-text packets survive even a limit of one.
         assertNull(AntiExploitModule.exploitReason(registryPacket, 1, 64));
         assertNull(AntiExploitModule.exploitReason(tagsPacket, 1, 64));
-        assertNotNull(AntiExploitModule.exploitReason(otherPacket, 1, 64));
+        assertNull(AntiExploitModule.exploitReason(otherPacket, 1, 64));
+        assertNotNull(AntiExploitModule.exploitReason(
+                new ClientboundSystemChatPacket(Component.literal("too long"), false), 1, 64));
     }
 
     @Test

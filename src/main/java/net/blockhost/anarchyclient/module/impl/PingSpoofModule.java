@@ -45,7 +45,7 @@ public final class PingSpoofModule extends Module {
             this.enabled(false);
             return;
         }
-        PacketQueueManager.flushOlderThan(this.delay.value().longValue());
+        PacketQueueManager.flushIncomingOlderThan(this.id(), this.delay.value().longValue());
     }
 
     @Override
@@ -53,16 +53,16 @@ public final class PingSpoofModule extends Module {
         if (client.hasSingleplayerServer() || !(packet instanceof ClientboundKeepAlivePacket || packet instanceof ClientboundPingPacket)) {
             return false;
         }
-        return PacketQueueManager.queueIncoming(connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueIncoming(this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override
     public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
-        PacketQueueManager.dropAll();
+        PacketQueueManager.dropIncoming(this.id());
     }
 
     @Override
     protected void onDisable() {
-        PacketQueueManager.flushAll();
+        PacketQueueManager.flushIncoming(this.id());
     }
 }

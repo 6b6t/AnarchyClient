@@ -3,7 +3,9 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.network.Connection;
@@ -30,21 +32,28 @@ public final class DamageParticlesModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.level == null || !(packet instanceof ClientboundDamageEventPacket damage)) {
-            return false;
+        if (packet instanceof ClientboundDamageEventPacket damage) {
+            MainThread.run(() -> this.spawnParticles(client, damage.entityId()));
         }
-        Entity entity = client.level.getEntity(damage.entityId());
+        return false;
+    }
+
+    private void spawnParticles(final Minecraft client, final int entityId) {
+        ClientLevel level = client.level;
+        if (level == null) {
+            return;
+        }
+        Entity entity = level.getEntity(entityId);
         if (entity == null) {
-            return false;
+            return;
         }
         Vec3 center = entity.getBoundingBox().getCenter();
-        RandomSource random = client.level.getRandom();
+        RandomSource random = level.getRandom();
         for (int i = 0; i < this.count.value().intValue(); i++) {
-            client.level.addParticle(ParticleTypes.DAMAGE_INDICATOR, center.x, center.y + 0.4, center.z,
+            level.addParticle(ParticleTypes.DAMAGE_INDICATOR, center.x, center.y + 0.4, center.z,
                     (random.nextDouble() - 0.5) * 0.12,
                     random.nextDouble() * 0.18,
                     (random.nextDouble() - 0.5) * 0.12);
         }
-        return false;
     }
 }

@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -28,11 +29,13 @@ public final class AutoReconnectModule extends Module {
             .defaultValue(true)
             .build()));
 
+    private static final SystemToast.SystemToastId RECONNECT_TOAST = new SystemToast.SystemToastId();
+
     private ServerData lastServer;
     private int reconnectTicks;
 
     public AutoReconnectModule() {
-        super("auto_reconnect", "Auto Reconnect", ModuleCategory.MISC, "Reconnects after disconnects using configured delays and notification behavior.");
+        super("auto_reconnect", "Auto Reconnect", ModuleCategory.MISC, "Reconnects to the last server after a disconnect, except when Auto Log disconnected you.");
     }
 
     @Override
@@ -41,6 +44,7 @@ public final class AutoReconnectModule extends Module {
             return;
         }
         if (client.level != null && client.getCurrentServer() != null) {
+            AutoLogModule.consumeSafetyDisconnect();
             this.lastServer = copyServer(client.getCurrentServer());
             this.reconnectTicks = this.delaySeconds.value().intValue() * 20;
             return;
@@ -48,12 +52,18 @@ public final class AutoReconnectModule extends Module {
         if (!(client.gui.screen() instanceof DisconnectedScreen) || this.lastServer == null) {
             return;
         }
+        if (AutoLogModule.consumeSafetyDisconnect()) {
+            // Auto Log left on purpose; rejoining would put the player back into the same danger.
+            this.lastServer = null;
+            return;
+        }
         if (this.reconnectTicks > 0) {
             this.reconnectTicks--;
             return;
         }
-        if (this.notify.value() && client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Reconnecting to " + this.lastServer.ip + "..."));
+        if (this.notify.value()) {
+            SystemToast.addOrUpdate(client.gui.toastManager(), RECONNECT_TOAST, Component.literal("Auto Reconnect"),
+                    Component.literal("Reconnecting to " + this.lastServer.ip + "..."));
         }
         ConnectScreen.startConnecting(
                 new TitleScreen(),

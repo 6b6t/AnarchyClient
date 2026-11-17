@@ -6,8 +6,11 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +21,7 @@ import net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -63,25 +67,46 @@ public final class NewChunksModule extends Module {
             .build()));
     private final Set<Long> newChunks = ConcurrentHashMap.newKeySet();
     private final Set<Long> oldChunks = ConcurrentHashMap.newKeySet();
+    private ClientLevel trackedLevel;
 
     public NewChunksModule() {
         super("new_chunks", "New Chunks", ModuleCategory.RENDER,
-                "Marks chunks where flowing liquid updates next to a source block, which suggests freshly generated terrain, in red.");
+                "Marks chunks where flowing liquid updates next to a source block, which suggests freshly generated terrain, in red. Marks reset when you change dimension or server.");
     }
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.level == null) {
-            return false;
-        }
         if (packet instanceof ClientboundSectionBlocksUpdatePacket update) {
-            update.runUpdates((pos, state) -> this.markFluidUpdate(client, pos, state.getFluidState()));
+            MainThread.run(() -> {
+                if (this.syncLevel(client)) {
+                    update.runUpdates((pos, state) -> this.markFluidUpdate(client, pos, state.getFluidState()));
+                }
+            });
         } else if (packet instanceof ClientboundBlockUpdatePacket update) {
-            this.markFluidUpdate(client, update.getPos(), update.getBlockState().getFluidState());
+            MainThread.run(() -> {
+                if (this.syncLevel(client)) {
+                    this.markFluidUpdate(client, update.getPos(), update.getBlockState().getFluidState());
+                }
+            });
         } else if (this.inspectChunkPackets.value() && packet instanceof ClientboundLevelChunkWithLightPacket chunkPacket) {
-            this.inspectChunkPacket(client, chunkPacket);
+            MainThread.run(() -> {
+                if (this.syncLevel(client)) {
+                    this.inspectChunkPacket(client, chunkPacket);
+                }
+            });
         }
         return false;
+    }
+
+    @Override
+    public void tick(final Minecraft client) {
+        this.syncLevel(client);
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.clearChunks();
+        this.trackedLevel = null;
     }
 
     @Override
@@ -102,9 +127,24 @@ public final class NewChunksModule extends Module {
     @Override
     protected void onDisable() {
         if (this.clearOnDisable.value()) {
-            this.newChunks.clear();
-            this.oldChunks.clear();
+            this.clearChunks();
         }
+    }
+
+    /** Clears marks when the level changes, so they do not carry over to another dimension or server. */
+    private boolean syncLevel(final Minecraft client) {
+        if (client.level != this.trackedLevel) {
+            if (this.trackedLevel != null) {
+                this.clearChunks();
+            }
+            this.trackedLevel = client.level;
+        }
+        return this.enabled() && client.level != null;
+    }
+
+    private void clearChunks() {
+        this.newChunks.clear();
+        this.oldChunks.clear();
     }
 
     private void markFluidUpdate(final Minecraft client, final BlockPos pos, final FluidState fluid) {
@@ -140,14 +180,17 @@ public final class NewChunksModule extends Module {
         } catch (RuntimeException exception) {
             return;
         }
-        int minY = client.level.getMinY();
-        int maxY = minY + client.level.getHeight();
-        for (int y = minY; y < maxY; y++) {
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    if (isFlowingFluid(chunkView.getFluidState(x, y, z))) {
-                        this.oldChunks.add(chunk);
-                        return;
+        for (LevelChunkSection section : chunkView.getSections()) {
+            if (!section.hasFluid() || !section.maybeHas(state -> isFlowingFluid(state.getFluidState()))) {
+                continue;
+            }
+            for (int y = 0; y < 16; y++) {
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        if (isFlowingFluid(section.getFluidState(x, y, z))) {
+                            this.oldChunks.add(chunk);
+                            return;
+                        }
                     }
                 }
             }

@@ -31,7 +31,7 @@ public final class ColorSignsModule extends Module {
 
     public ColorSignsModule() {
         super("color_signs", "Color Signs", ModuleCategory.MISC,
-                "Converts & color codes into formatting codes when you write signs and, optionally, books.");
+                "Converts & color codes into formatting codes when you write signs and, optionally, books. Vanilla servers strip sign formatting, so signs only keep colors on servers that allow it.");
     }
 
     @Override

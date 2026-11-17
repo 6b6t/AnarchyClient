@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.target.TargetClassifier;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -85,8 +86,15 @@ public final class StaffAlertModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.player == null || !(packet instanceof ClientboundPlayerInfoUpdatePacket info)) {
-            return false;
+        if (packet instanceof ClientboundPlayerInfoUpdatePacket info) {
+            MainThread.run(() -> this.checkNewEntries(client, info));
+        }
+        return false;
+    }
+
+    private void checkNewEntries(final Minecraft client, final ClientboundPlayerInfoUpdatePacket info) {
+        if (!this.enabled() || client.player == null) {
+            return;
         }
         for (ClientboundPlayerInfoUpdatePacket.Entry entry : info.newEntries()) {
             GameProfile profile = entry.profile();
@@ -94,7 +102,6 @@ public final class StaffAlertModule extends Module {
                 this.alert(client, profile.name());
             }
         }
-        return false;
     }
 
     private boolean isStaff(final String name) {

@@ -5,8 +5,11 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -33,6 +36,7 @@ public final class PopChamsModule extends Module {
             .step(5.0)
             .build()));
     private final List<PopGhost> ghosts = new ArrayList<>();
+    private ClientLevel trackedLevel;
 
     public PopChamsModule() {
         super("pop_chams", "Pop Chams", ModuleCategory.RENDER,
@@ -41,6 +45,10 @@ public final class PopChamsModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        if (client.level != this.trackedLevel) {
+            this.trackedLevel = client.level;
+            this.ghosts.clear();
+        }
         Iterator<PopGhost> iterator = this.ghosts.iterator();
         while (iterator.hasNext()) {
             PopGhost ghost = iterator.next();
@@ -53,15 +61,36 @@ public final class PopChamsModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.level != null
-                && packet instanceof ClientboundEntityEventPacket event
-                && event.getEventId() == TOTEM_POP_EVENT) {
-            Entity entity = event.getEntity(client.level);
-            if (entity instanceof LivingEntity living) {
-                this.ghosts.add(new PopGhost(living.getBoundingBox(), 0));
-            }
+        if (packet instanceof ClientboundEntityEventPacket event && event.getEventId() == TOTEM_POP_EVENT) {
+            MainThread.run(() -> this.addGhost(client, event));
         }
         return false;
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.ghosts.clear();
+        this.trackedLevel = null;
+    }
+
+    @Override
+    protected void onDisable() {
+        this.ghosts.clear();
+        this.trackedLevel = null;
+    }
+
+    private void addGhost(final Minecraft client, final ClientboundEntityEventPacket event) {
+        if (client.level == null) {
+            return;
+        }
+        if (client.level != this.trackedLevel) {
+            this.trackedLevel = client.level;
+            this.ghosts.clear();
+        }
+        Entity entity = event.getEntity(client.level);
+        if (entity instanceof LivingEntity living) {
+            this.ghosts.add(new PopGhost(living.getBoundingBox(), 0));
+        }
     }
 
     @Override

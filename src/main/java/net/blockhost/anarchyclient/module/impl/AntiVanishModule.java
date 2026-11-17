@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -82,7 +83,7 @@ public final class AntiVanishModule extends Module {
         if (packet instanceof ClientboundSystemChatPacket systemChat) {
             String message = systemChat.content().getString();
             if (!message.isBlank()) {
-                this.messageCache.add(message);
+                MainThread.run(() -> this.messageCache.add(message));
             }
         }
         return false;

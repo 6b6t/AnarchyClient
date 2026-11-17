@@ -75,7 +75,8 @@ public final class PluginScannerModule extends Module {
             return;
         }
         switch (this.stage) {
-            case START -> this.next(client, this.slash.value() ? ScanStage.SLASH : ScanStage.BUKKIT);
+            case START -> this.next(client, this.slash.value() ? ScanStage.SLASH
+                    : this.bukkit.value() ? ScanStage.BUKKIT : ScanStage.SUGGESTIONS);
             case SLASH -> {
                 ChatActions.send(client, "/plugins");
                 ServerObserver.beginPluginChatCapture(this.timeoutMillis());

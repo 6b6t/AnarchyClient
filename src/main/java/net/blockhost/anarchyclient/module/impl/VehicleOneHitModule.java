@@ -7,7 +7,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundInteractPacket;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
@@ -31,11 +31,11 @@ public final class VehicleOneHitModule extends Module {
 
     @Override
     public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!(packet instanceof ServerboundInteractPacket interact)
+        if (!(packet instanceof ServerboundAttackPacket attack)
                 || !(client.hitResult instanceof EntityHitResult hit)
                 || !client.options.keyAttack.isDown()
                 || !isVehicle(hit.getEntity())
-                || hit.getEntity().getId() != interact.entityId()) {
+                || hit.getEntity().getId() != attack.entityId()) {
             return false;
         }
         int duplicates = Math.max(1, this.packetCount.value().intValue() - 1);

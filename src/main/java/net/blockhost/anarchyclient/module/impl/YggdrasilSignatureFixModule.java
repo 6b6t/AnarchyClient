@@ -5,6 +5,7 @@ import com.mojang.authlib.properties.Property;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -20,15 +21,11 @@ public final class YggdrasilSignatureFixModule extends Module {
             .name("Warn")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting cancelInvalid = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("cancel_invalid")
-            .name("Cancel")
-            .defaultValue(false)
-            .build()));
     private int warnCooldown;
 
     public YggdrasilSignatureFixModule() {
-        super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC, "Repairs profile signature edge cases that can break joins or authentication on some servers.",
+        super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC, "Warns in chat when the server sends player skins without a valid Yggdrasil signature. Vanilla can show"
+                        + " the default skin for those players.",
                 List.of("signature_fix"));
     }
 
@@ -41,20 +38,25 @@ public final class YggdrasilSignatureFixModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!(packet instanceof ClientboundPlayerInfoUpdatePacket info)) {
+        if (!(packet instanceof ClientboundPlayerInfoUpdatePacket info) || !this.warn.value()) {
             return false;
         }
         for (ClientboundPlayerInfoUpdatePacket.Entry entry : info.newEntries()) {
             GameProfile profile = entry.profile();
             if (profile != null && hasUnsignedTextures(profile)) {
-                if (this.warn.value() && this.warnCooldown == 0 && client.player != null) {
-                    client.player.sendSystemMessage(Component.literal("Unsigned Yggdrasil textures for " + profile.name() + "."));
-                    this.warnCooldown = 80;
-                }
-                return this.cancelInvalid.value();
+                String name = profile.name();
+                MainThread.run(() -> this.warn(client, name));
+                return false;
             }
         }
         return false;
+    }
+
+    private void warn(final Minecraft client, final String name) {
+        if (this.warnCooldown == 0 && client.player != null) {
+            client.player.sendSystemMessage(Component.literal("Unsigned Yggdrasil textures for " + name + "."));
+            this.warnCooldown = 80;
+        }
     }
 
     static boolean hasUnsignedTextures(final GameProfile profile) {
