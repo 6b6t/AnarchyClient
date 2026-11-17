@@ -27,8 +27,7 @@ public final class BlockSelectionModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
-        Minecraft client = Minecraft.getInstance();
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         if (!(client.hitResult instanceof BlockHitResult hit)

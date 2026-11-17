@@ -193,7 +193,7 @@ public final class ModuleEventListener {
 
     @EventHandler
     public void handleWorldRender(final WorldRenderEvent event) {
-        this.module.renderWorld(event.context());
+        this.module.renderWorld(event.client(), event.context());
     }
 
     @EventHandler

@@ -16,7 +16,7 @@ public final class CombatHudModule extends HudElementModule {
     }
 
     @Override
-    protected int color() {
+    protected int color(final Minecraft client) {
         return 0xFFE56A6A;
     }
 

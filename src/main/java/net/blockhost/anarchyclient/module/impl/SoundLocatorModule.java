@@ -103,11 +103,10 @@ public final class SoundLocatorModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         if (!this.renderMarkers.value()) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         if (client.level == null || matrices == null || submits == null) {

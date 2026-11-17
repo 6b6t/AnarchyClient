@@ -257,7 +257,7 @@ public abstract class Module {
         return new CameraTransform(position, yaw, pitch);
     }
 
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
     }
 
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {

@@ -23,7 +23,7 @@ public final class PlayerModelHudModule extends HudElementModule {
         int y = position.y();
         graphics.fill(x, y, x + width, y + height, 0x66000000);
         graphics.outline(x, y, width, height, 0x55FFFFFF);
-        graphics.text(client.font, client.player.getName().getString(), x + 5, y + 5, this.color(), true);
+        graphics.text(client.font, client.player.getName().getString(), x + 5, y + 5, this.color(client), true);
         InventoryScreen.extractEntityInInventoryFollowsMouse(
                 graphics,
                 x + 8,

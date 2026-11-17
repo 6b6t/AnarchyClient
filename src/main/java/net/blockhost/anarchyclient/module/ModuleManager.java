@@ -125,8 +125,8 @@ public final class ModuleManager {
         return this.call(new CameraTransformEvent(client, position, yaw, pitch));
     }
 
-    public void renderWorld(final LevelRenderContext context) {
-        this.call(new WorldRenderEvent(context));
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
+        this.call(new WorldRenderEvent(client, context));
     }
 
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {

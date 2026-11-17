@@ -65,8 +65,7 @@ public final class SkeletonEspModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
-        Minecraft client = Minecraft.getInstance();
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         Player viewer = client.gameRenderer.mainCamera().entity() instanceof Player player ? player : null;
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();

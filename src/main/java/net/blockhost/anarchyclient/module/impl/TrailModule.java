@@ -71,13 +71,12 @@ public final class TrailModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         if (matrices == null || submits == null) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         Vec3 camera = client.gameRenderer.mainCamera().position();
         WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 210, 92, 170);
         for (List<TrailPoint> points : this.trails.values()) {

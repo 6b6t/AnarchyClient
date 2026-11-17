@@ -103,11 +103,10 @@ public final class TracersModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         if (!"World".equals(this.mode.value())) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();

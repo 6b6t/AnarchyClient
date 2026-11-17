@@ -69,7 +69,7 @@ class ModuleManagerTest {
 
         manager.tick(null);
         manager.updateInput(null, new ClientInput());
-        manager.renderWorld(null);
+        manager.renderWorld(null, null);
         manager.renderHud(null, null);
         manager.call(new PacketSentEvent(null, null, null));
         manager.call(new GameJoinedEvent(null, null));
@@ -209,7 +209,7 @@ class ModuleManagerTest {
         }
 
         @Override
-        public void renderWorld(final LevelRenderContext context) {
+        public void renderWorld(final Minecraft client, final LevelRenderContext context) {
             this.worldRenders++;
         }
 

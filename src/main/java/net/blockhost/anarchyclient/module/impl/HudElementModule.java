@@ -42,10 +42,10 @@ abstract class HudElementModule extends Module {
         }
         int[] size = HudText.size(client, lines);
         HudPosition position = this.position(graphics, size[0], size[1]);
-        HudText.panelAt(client, graphics, lines, position.x(), position.y(), this.color(), this.background.value());
+        HudText.panelAt(client, graphics, lines, position.x(), position.y(), this.color(client), this.background.value());
     }
 
-    protected int color() {
+    protected int color(final Minecraft client) {
         return HudText.textColor();
     }
 

@@ -72,7 +72,7 @@ public final class MapHudModule extends HudElementModule {
         String biome = client.level.getBiome(playerPos).unwrapKey()
                 .map(key -> key.identifier().toString())
                 .orElse("unknown");
-        graphics.text(client.font, chunk, x + 5, y + size + 4, this.color(), true);
+        graphics.text(client.font, chunk, x + 5, y + size + 4, this.color(client), true);
         graphics.text(client.font, biome, x + 5, y + size + 13, 0xFF9FB0C3, true);
     }
 

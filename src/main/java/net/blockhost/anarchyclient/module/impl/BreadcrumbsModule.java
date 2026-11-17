@@ -78,13 +78,12 @@ public final class BreadcrumbsModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         if (matrices == null || submits == null || this.points.size() < 2) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         Vec3 camera = client.gameRenderer.mainCamera().position();
         WorldLineRenderer.Color color = new WorldLineRenderer.Color(0, 212, 170, this.opacity.value().intValue());
         for (int index = 1; index < this.points.size(); index++) {

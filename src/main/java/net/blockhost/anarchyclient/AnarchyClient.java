@@ -71,7 +71,7 @@ public final class AnarchyClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
             EspOutlineRegistry.clear();
-            MODULES.call(new WorldRenderEvent(context));
+            MODULES.call(new WorldRenderEvent(Minecraft.getInstance(), context));
             MarkerManager.render(context);
         });
         HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,

@@ -132,11 +132,10 @@ public final class AutoWitherModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         if (!this.preview.value() || this.previewPositions.isEmpty()) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
         if (client.player == null || matrices == null || submits == null) {

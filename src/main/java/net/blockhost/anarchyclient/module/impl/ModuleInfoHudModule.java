@@ -22,7 +22,7 @@ public final class ModuleInfoHudModule extends HudElementModule {
     }
 
     @Override
-    protected int color() {
+    protected int color(final Minecraft client) {
         return HudText.accentColor();
     }
 

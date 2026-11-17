@@ -13,8 +13,8 @@ public final class HoleHudModule extends HudElementModule {
     }
 
     @Override
-    protected int color() {
-        return this.inHole(Minecraft.getInstance()) ? HudText.accentColor() : 0xFFE56A6A;
+    protected int color(final Minecraft client) {
+        return this.inHole(client) ? HudText.accentColor() : 0xFFE56A6A;
     }
 
     @Override

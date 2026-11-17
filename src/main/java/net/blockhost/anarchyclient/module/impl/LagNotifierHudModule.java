@@ -38,7 +38,7 @@ public final class LagNotifierHudModule extends HudElementModule {
     }
 
     @Override
-    protected int color() {
+    protected int color(final Minecraft client) {
         return 0xFFE6C76E;
     }
 

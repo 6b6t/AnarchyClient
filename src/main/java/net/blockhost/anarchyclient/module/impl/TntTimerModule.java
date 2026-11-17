@@ -47,11 +47,10 @@ public final class TntTimerModule extends Module {
     }
 
     @Override
-    public void renderWorld(final LevelRenderContext context) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         if (!this.boxes.value()) {
             return;
         }
-        Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
