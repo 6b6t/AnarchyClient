@@ -5,7 +5,10 @@ import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -253,6 +256,29 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("boat_glitch").orElseThrow());
         assertNotNull(modules.find("lavacast").orElseThrow());
         assertNotNull(modules.find("ore_sim").orElseThrow());
+    }
+
+    @Test
+    void registersOrderSensitiveModulesInDispatchOrder() {
+        ModuleManager modules = new ModuleManager();
+
+        ModuleRegistry.registerDefaults(modules);
+
+        List<String> order = modules.all().stream().map(Module::id).toList();
+        for (String inputModule : List.of("auto_walk", "sneak", "eagle", "inventory_move", "no_slow", "avoid_hazards")) {
+            assertRegisteredBefore(order, inputModule, "freecam");
+        }
+        for (String packetModule : List.of("velocity", "pop_chams", "new_chunks")) {
+            assertRegisteredBefore(order, "anti_crash", packetModule);
+        }
+    }
+
+    private static void assertRegisteredBefore(final List<String> order, final String first, final String second) {
+        int firstIndex = order.indexOf(first);
+        int secondIndex = order.indexOf(second);
+        assertNotEquals(-1, firstIndex, first + " should be registered");
+        assertNotEquals(-1, secondIndex, second + " should be registered");
+        assertTrue(firstIndex < secondIndex, first + " should receive events before " + second);
     }
 
     @Test
