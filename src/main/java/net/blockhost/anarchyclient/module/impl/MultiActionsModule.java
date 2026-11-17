@@ -4,6 +4,8 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 
+import java.util.List;
+
 public final class MultiActionsModule extends Module {
 
     private static MultiActionsModule instance;
@@ -29,7 +31,7 @@ public final class MultiActionsModule extends Module {
             .build()));
 
     public MultiActionsModule() {
-        super("multi_actions", "Multi Actions", ModuleCategory.MISC, java.util.List.of("multitask"));
+        super("multi_actions", "Multi Actions", ModuleCategory.MISC, List.of("multitask"));
         instance = this;
     }
 

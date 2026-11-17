@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
@@ -43,6 +44,10 @@ public final class AutoWeaponModule extends Module {
         double bestScore = 0.0;
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
+            if (!stack.has(DataComponents.WEAPON)) {
+                // Blocks and other items score like a bare hand, so switching to them never helps.
+                continue;
+            }
             double score = EquipmentScorer.weaponScore(stack);
             if (score > bestScore) {
                 bestScore = score;

@@ -8,6 +8,9 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
+import java.util.List;
+import java.util.Locale;
+
 public final class AutoQueueModule extends Module {
 
     private final StringSetting trigger = this.setting(StringSetting.from(StringSetting.builder()
@@ -36,7 +39,7 @@ public final class AutoQueueModule extends Module {
     private int cooldownTicks;
 
     public AutoQueueModule() {
-        super("auto_queue", "Auto Queue", ModuleCategory.PLAYER, java.util.List.of("auto_play"));
+        super("auto_queue", "Auto Queue", ModuleCategory.PLAYER, List.of("auto_play"));
     }
 
     @Override
@@ -62,6 +65,6 @@ public final class AutoQueueModule extends Module {
         if (matchCase) {
             return message.contains(trigger);
         }
-        return message.toLowerCase(java.util.Locale.ROOT).contains(trigger.toLowerCase(java.util.Locale.ROOT));
+        return message.toLowerCase(Locale.ROOT).contains(trigger.toLowerCase(Locale.ROOT));
     }
 }

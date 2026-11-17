@@ -7,6 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,7 +47,7 @@ final class BlockScan {
         BlockPos center = player.blockPosition();
         int minY = Math.max(client.level.getMinY(), center.getY() - verticalRadius);
         int maxY = Math.min(client.level.getMinY() + client.level.getHeight() - 1, center.getY() + verticalRadius);
-        List<BlockPos> results = new java.util.ArrayList<>();
+        List<BlockPos> results = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
         for (int y = minY; y <= maxY && results.size() < maxResults; y++) {
             for (int x = center.getX() - horizontalRadius; x <= center.getX() + horizontalRadius && results.size() < maxResults; x++) {

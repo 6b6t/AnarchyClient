@@ -10,8 +10,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.equipment.Equippable;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 final class EquipmentScorer {
 
@@ -103,11 +105,11 @@ final class EquipmentScorer {
         if (value == null || value.isBlank()) {
             return Set.of();
         }
-        return java.util.Arrays.stream(value.split("[,;|]"))
+        return Arrays.stream(value.split("[,;|]"))
                 .map(String::trim)
                 .filter(token -> !token.isEmpty())
                 .map(token -> token.toLowerCase(Locale.ROOT))
-                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     static boolean matchesAny(final String identifier, final Set<String> candidates) {

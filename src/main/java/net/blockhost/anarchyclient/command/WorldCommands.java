@@ -1,0 +1,410 @@
+package net.blockhost.anarchyclient.command;
+
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.blockhost.anarchyclient.command.CommandSupport.BlockArea;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.SharedConstants;
+import net.minecraft.client.Minecraft;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+
+import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
+import static net.blockhost.anarchyclient.command.CommandSupport.blockArea;
+import static net.blockhost.anarchyclient.command.CommandSupport.parseBlock;
+import static net.blockhost.anarchyclient.command.CommandSupport.parseBlockPosition;
+import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+
+/**
+ * Registers and handles the {@code seed}, {@code locate}, {@code terrain-export}, {@code save-map}, {@code ghost}, {@code setblock}, and {@code fill} subcommands.
+ */
+final class WorldCommands {
+
+    private static final int MAX_FILL_BLOCKS = 32_768;
+
+    private WorldCommands() {
+    }
+
+    static void register(final LiteralArgumentBuilder<FabricClientCommandSource> root) {
+        root
+                .then(literal("seed")
+                        .executes(WorldCommands::showSeed)
+                        .then(literal("set")
+                                .then(argument("seed", StringArgumentType.greedyString())
+                                        .executes(WorldCommands::setSeed)))
+                        .then(literal("list")
+                                .executes(WorldCommands::listSeeds))
+                        .then(literal("delete")
+                                .executes(WorldCommands::deleteSeed)))
+                .then(literal("locate")
+                        .then(literal("slime-chunk")
+                                .executes(WorldCommands::locateSlimeChunk)))
+                .then(literal("terrain-export")
+                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                                .executes(WorldCommands::terrainExport)))
+                .then(literal("ghost")
+                        .executes(context -> ghostBlocks(context, 4))
+                        .then(argument("radius", IntegerArgumentType.integer(1, 16))
+                                .executes(context -> ghostBlocks(context, IntegerArgumentType.getInteger(context, "radius")))))
+                .then(literal("save-map")
+                        .then(argument("distance", IntegerArgumentType.integer(1, 64))
+                                .executes(WorldCommands::terrainExport)))
+                .then(literal("setblock")
+                        .then(argument("x", StringArgumentType.word())
+                                .then(argument("y", StringArgumentType.word())
+                                        .then(argument("z", StringArgumentType.word())
+                                                .then(argument("block", StringArgumentType.word())
+                                                        .suggests(WorldCommands::suggestBlocks)
+                                                        .executes(WorldCommands::setBlock))))))
+                .then(literal("fill")
+                        .then(argument("from_x", StringArgumentType.word())
+                                .then(argument("from_y", StringArgumentType.word())
+                                        .then(argument("from_z", StringArgumentType.word())
+                                                .then(argument("to_x", StringArgumentType.word())
+                                                        .then(argument("to_y", StringArgumentType.word())
+                                                                .then(argument("to_z", StringArgumentType.word())
+                                                                        .then(argument("block", StringArgumentType.word())
+                                                                                .suggests(WorldCommands::suggestBlocks)
+                                                                                .executes(context -> fill(context, false))
+                                                                                .then(literal("replace")
+                                                                                        .then(argument("filter", StringArgumentType.word())
+                                                                                                .suggests(WorldCommands::suggestBlocks)
+                                                                                                .executes(context -> fill(context, true))))))))))));
+    }
+
+    private static int showSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            SeedStore.SeedRecord record = SeedStore.get(seedPath(), world);
+            if (record == null) {
+                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+            } else {
+                context.getSource().sendFeedback(Component.literal(world + " seed: ")
+                        .append(CommandFeedback.copyable(record.seed(), record.seed()))
+                        .append(Component.literal(seedMetadata(record))));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int setSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            SeedStore.SeedRecord record = SeedStore.put(seedPath(), world,
+                    StringArgumentType.getString(context, "seed"),
+                    Instant.now(),
+                    SharedConstants.getCurrentVersion().name(),
+                    currentDimension(client),
+                    "manual");
+            context.getSource().sendFeedback(Component.literal("Saved seed for " + record.world() + ": " + record.seed()));
+            return SUCCESS;
+        } catch (IllegalArgumentException | IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to save seed: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int listSeeds(final CommandContext<FabricClientCommandSource> context) {
+        try {
+            List<SeedStore.SeedRecord> records = SeedStore.list(seedPath());
+            if (records.isEmpty()) {
+                context.getSource().sendFeedback(Component.literal("No saved seeds."));
+                return SUCCESS;
+            }
+            for (SeedStore.SeedRecord record : records) {
+                context.getSource().sendFeedback(Component.literal(record.world() + " = " + record.seed()
+                        + seedMetadata(record)));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int deleteSeed(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        String world = SeedStore.worldKey(client);
+        try {
+            if (SeedStore.delete(seedPath(), world)) {
+                context.getSource().sendFeedback(Component.literal("Deleted saved seed for " + world + "."));
+            } else {
+                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+            }
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to delete seed: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int locateSlimeChunk(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "locate a slime chunk");
+        if (client == null) {
+            return 0;
+        }
+        try {
+            SeedStore.SeedRecord record = SeedStore.get(seedPath(), SeedStore.worldKey(client));
+            if (record == null) {
+                context.getSource().sendError(Component.literal("Save a seed first with /ac seed set <seed>."));
+                return 0;
+            }
+            long seed = numericSeed(record.seed());
+            BlockPos playerPos = client.player.blockPosition();
+            BlockPos result = closestSlimeChunk(seed, Math.floorDiv(playerPos.getX(), 16),
+                    Math.floorDiv(playerPos.getZ(), 16), 128);
+            String coords = result.getX() + ", " + result.getZ();
+            context.getSource().sendFeedback(Component.literal("Nearest slime chunk starts at ")
+                    .append(CommandFeedback.copyable(coords, coords)));
+            return SUCCESS;
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int terrainExport(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.player == null || client.level == null) {
+            context.getSource().sendError(Component.literal("You must be in-game to export terrain."));
+            return 0;
+        }
+        int distance = IntegerArgumentType.getInteger(context, "distance");
+        BlockPos center = client.player.blockPosition();
+        Path output = terrainExportPath(center, distance);
+        try {
+            Files.createDirectories(output.getParent());
+            Files.write(output, terrainLines(client, center, distance), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Failed to export terrain: " + exception.getMessage()));
+            return 0;
+        }
+        context.getSource().sendFeedback(Component.literal("Exported terrain to " + output));
+        return SUCCESS;
+    }
+
+    private static int ghostBlocks(final CommandContext<FabricClientCommandSource> context, final int radius) {
+        Minecraft client = requireInGame(context, "refresh ghost blocks");
+        if (client == null || client.getConnection() == null) {
+            return 0;
+        }
+        BlockPos center = client.player.blockPosition();
+        int sent = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    client.getConnection().send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                            center.offset(dx, dy, dz),
+                            Direction.UP
+                    ));
+                    sent++;
+                }
+            }
+        }
+        context.getSource().sendFeedback(Component.literal("Sent " + sent + " ghost-block refresh packets."));
+        return SUCCESS;
+    }
+
+    private static int setBlock(final CommandContext<FabricClientCommandSource> context) {
+        Minecraft client = requireInGame(context, "set a client block");
+        if (client == null || client.level == null) {
+            return 0;
+        }
+        try {
+            BlockPos pos = parseBlockPosition(
+                    StringArgumentType.getString(context, "x"),
+                    StringArgumentType.getString(context, "y"),
+                    StringArgumentType.getString(context, "z"),
+                    client.player.position()
+            );
+            client.level.setBlockAndUpdate(pos, parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState());
+            return SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int fill(final CommandContext<FabricClientCommandSource> context, final boolean replaceOnly) {
+        Minecraft client = requireInGame(context, "fill client blocks");
+        if (client == null || client.level == null) {
+            return 0;
+        }
+        try {
+            BlockArea area = blockArea(
+                    parseBlockPosition(
+                            StringArgumentType.getString(context, "from_x"),
+                            StringArgumentType.getString(context, "from_y"),
+                            StringArgumentType.getString(context, "from_z"),
+                            client.player.position()
+                    ),
+                    parseBlockPosition(
+                            StringArgumentType.getString(context, "to_x"),
+                            StringArgumentType.getString(context, "to_y"),
+                            StringArgumentType.getString(context, "to_z"),
+                            client.player.position()
+                    ),
+                    MAX_FILL_BLOCKS
+            );
+            BlockState state = parseBlock(StringArgumentType.getString(context, "block")).defaultBlockState();
+            Block filter = replaceOnly ? parseBlock(StringArgumentType.getString(context, "filter")) : null;
+            int changed = 0;
+            for (int x = area.minX(); x <= area.maxX(); x++) {
+                for (int y = area.minY(); y <= area.maxY(); y++) {
+                    for (int z = area.minZ(); z <= area.maxZ(); z++) {
+                        BlockPos pos = new BlockPos(x, y, z);
+                        if (filter != null && client.level.getBlockState(pos).getBlock() != filter) {
+                            continue;
+                        }
+                        if (client.level.setBlockAndUpdate(pos, state)) {
+                            changed++;
+                        }
+                    }
+                }
+            }
+            context.getSource().sendFeedback(Component.literal("Changed " + changed + " client block" + (changed == 1 ? "" : "s") + "."));
+            return SUCCESS;
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+    }
+
+    private static CompletableFuture<Suggestions> suggestBlocks(final CommandContext<FabricClientCommandSource> context,
+                                                                final SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggest(BuiltInRegistries.BLOCK.keySet().stream()
+                .map(Identifier::toString), builder);
+    }
+
+    private static List<String> terrainLines(final Minecraft client, final BlockPos center, final int distance) {
+        List<String> lines = new ArrayList<>();
+        lines.add("dx,dy,dz,block");
+        for (int y = center.getY() - distance; y <= center.getY() + distance; y++) {
+            if (y < client.level.getMinY() || y >= client.level.getMinY() + client.level.getHeight()) {
+                continue;
+            }
+            for (int x = center.getX() - distance; x <= center.getX() + distance; x++) {
+                for (int z = center.getZ() - distance; z <= center.getZ() + distance; z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (!client.level.isLoaded(pos)) {
+                        continue;
+                    }
+                    BlockState state = client.level.getBlockState(pos);
+                    if (state.isAir() || state.getCollisionShape(client.level, pos).isEmpty()) {
+                        continue;
+                    }
+                    lines.add((x - center.getX()) + "," + (y - center.getY()) + "," + (z - center.getZ())
+                            + "," + BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+                }
+            }
+        }
+        return List.copyOf(lines);
+    }
+
+    private static Path terrainExportPath(final BlockPos center, final int distance) {
+        String fileName = "terrain-" + center.getX() + "-" + center.getY() + "-" + center.getZ()
+                + "-r" + distance + ".csv";
+        return FabricLoader.getInstance().getConfigDir().resolve("anarchyclient").resolve("exports").resolve(fileName);
+    }
+
+    private static Path seedPath() {
+        return FabricLoader.getInstance().getConfigDir()
+                .resolve("anarchyclient")
+                .resolve("seeds.json");
+    }
+
+    private static String currentDimension(final Minecraft client) {
+        return client.level == null ? "" : client.level.dimension().identifier().toString();
+    }
+
+    private static String seedMetadata(final SeedStore.SeedRecord record) {
+        List<String> parts = new ArrayList<>();
+        if (!record.version().isBlank()) {
+            parts.add("version " + record.version());
+        }
+        if (!record.dimension().isBlank()) {
+            parts.add(record.dimension());
+        }
+        if (!record.source().isBlank()) {
+            parts.add("source " + record.source());
+        }
+        return parts.isEmpty() ? "" : " (" + String.join(", ", parts) + ")";
+    }
+
+    static long numericSeed(final String seed) {
+        try {
+            return Long.parseLong(seed.trim());
+        } catch (NumberFormatException exception) {
+            return seed.hashCode();
+        }
+    }
+
+    static boolean isSlimeChunk(final long seed, final int chunkX, final int chunkZ) {
+        long randomSeed = seed
+                + (long) (chunkX * chunkX) * 4987142L
+                + (long) chunkX * 5947611L
+                + (long) (chunkZ * chunkZ) * 4392871L
+                + (long) chunkZ * 389711L
+                ^ 987234911L;
+        return new Random(randomSeed).nextInt(10) == 0;
+    }
+
+    static BlockPos closestSlimeChunk(final long seed, final int centerChunkX, final int centerChunkZ,
+                                      final int radiusChunks) {
+        BlockPos best = null;
+        int bestDistance = Integer.MAX_VALUE;
+        for (int radius = 0; radius <= radiusChunks; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) {
+                        continue;
+                    }
+                    int chunkX = centerChunkX + dx;
+                    int chunkZ = centerChunkZ + dz;
+                    if (!isSlimeChunk(seed, chunkX, chunkZ)) {
+                        continue;
+                    }
+                    int distance = dx * dx + dz * dz;
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = new BlockPos(chunkX * 16, 0, chunkZ * 16);
+                    }
+                }
+            }
+            if (best != null) {
+                return best;
+            }
+        }
+        return new BlockPos(centerChunkX * 16, 0, centerChunkZ * 16);
+    }
+}

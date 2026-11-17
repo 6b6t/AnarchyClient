@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -72,7 +73,7 @@ public final class SkeletonEspModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        for (net.minecraft.world.entity.LivingEntity entity : RenderedEntityCache.entities()) {
+        for (LivingEntity entity : RenderedEntityCache.entities()) {
             if (!(entity instanceof Player target) || target == viewer || target.isSpectator()) {
                 continue;
             }

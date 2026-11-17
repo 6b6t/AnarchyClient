@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
 public final class BetterTabModule extends Module {
 
@@ -120,7 +121,7 @@ public final class BetterTabModule extends Module {
                     .thenComparing(info -> info.getProfile().name(), String.CASE_INSENSITIVE_ORDER);
             default -> null;
         };
-        java.util.stream.Stream<PlayerInfo> stream = infos.stream()
+        Stream<PlayerInfo> stream = infos.stream()
                 .filter(info -> hidePattern == null || !hidePattern.matcher(info.getProfile().name()).find());
         if (comparator != null) {
             stream = stream.sorted(comparator);

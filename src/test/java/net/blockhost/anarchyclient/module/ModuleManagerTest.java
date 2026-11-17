@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.event.CameraTransformEvent;
 import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.PacketReceiveEvent;
@@ -10,8 +11,11 @@ import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
@@ -164,7 +168,7 @@ class ModuleManagerTest {
         assertEquals("hello!", manager.sendChatMessage(null, "hello", false));
         assertEquals(95.0F, manager.fov(null, 90.0F));
 
-        net.blockhost.anarchyclient.event.CameraTransformEvent camera =
+        CameraTransformEvent camera =
                 manager.cameraTransform(null, Vec3.ZERO, 10.0F, 20.0F);
         assertEquals(new Vec3(1.0, 2.0, 3.0), camera.position());
         assertEquals(11.0F, camera.yaw());
@@ -236,32 +240,32 @@ class ModuleManagerTest {
         }
 
         @Override
-        public boolean receivePacket(final Minecraft client, final net.minecraft.network.Connection connection,
-                                     final net.minecraft.network.protocol.Packet<?> packet) {
+        public boolean receivePacket(final Minecraft client, final Connection connection,
+                                     final Packet<?> packet) {
             this.packetsReceived++;
             return this.cancelPackets;
         }
 
         @Override
-        public boolean sendPacket(final Minecraft client, final net.minecraft.network.Connection connection,
-                                  final net.minecraft.network.protocol.Packet<?> packet) {
+        public boolean sendPacket(final Minecraft client, final Connection connection,
+                                  final Packet<?> packet) {
             this.packetsSending++;
             return this.cancelPackets;
         }
 
         @Override
-        public void sentPacket(final Minecraft client, final net.minecraft.network.Connection connection,
-                               final net.minecraft.network.protocol.Packet<?> packet) {
+        public void sentPacket(final Minecraft client, final Connection connection,
+                               final Packet<?> packet) {
             this.packetsSent++;
         }
 
         @Override
-        public void gameJoined(final Minecraft client, final net.minecraft.client.multiplayer.ClientPacketListener listener) {
+        public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
             this.gameJoins++;
         }
 
         @Override
-        public void gameLeft(final Minecraft client, final net.minecraft.client.multiplayer.ClientPacketListener listener) {
+        public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
             this.gameLeaves++;
         }
     }

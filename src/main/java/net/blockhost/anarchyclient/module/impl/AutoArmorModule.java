@@ -14,9 +14,11 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.List;
 import java.util.Set;
@@ -75,10 +77,10 @@ public final class AutoArmorModule extends Module {
         Set<String> avoided = EquipmentScorer.parseIdentifiers(this.avoidedEnchantments.value());
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack current = player.getItemBySlot(slot);
-            if (slot == EquipmentSlot.CHEST && this.keepElytra.value() && current.has(net.minecraft.core.component.DataComponents.GLIDER)) {
+            if (slot == EquipmentSlot.CHEST && this.keepElytra.value() && current.has(DataComponents.GLIDER)) {
                 continue;
             }
-            if (EquipmentScorer.hasEnchantment(current, net.minecraft.world.item.enchantment.Enchantments.BINDING_CURSE)) {
+            if (EquipmentScorer.hasEnchantment(current, Enchantments.BINDING_CURSE)) {
                 continue;
             }
             int inventorySlot = bestArmorSlot(player.getInventory(), slot, current, protection, avoided, this.antiBreak.value());

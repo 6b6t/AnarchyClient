@@ -1,0 +1,49 @@
+package net.blockhost.anarchyclient.command;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class CommandSupportTest {
+
+    @Test
+    void parsesCommandCoordinatesAndRelativeBlockPositions() {
+        assertEquals(12.0, CommandSupport.parseCoordinate("12", 5.0));
+        assertEquals(5.0, CommandSupport.parseCoordinate("~", 5.0));
+        assertEquals(7.5, CommandSupport.parseCoordinate("~2.5", 5.0));
+        assertEquals(new BlockPos(12, 64, -5),
+                CommandSupport.parseBlockPosition("~2", "64", "~-1", new Vec3(10.2, 70.0, -3.4)));
+        assertThrows(IllegalArgumentException.class, () -> CommandSupport.parseCoordinate("~bad", 0.0));
+    }
+
+    @Test
+    void fillAreasAreNormalizedAndBounded() {
+        CommandSupport.BlockArea area = CommandSupport.blockArea(
+                new BlockPos(3, 5, 7),
+                new BlockPos(1, 4, 6),
+                12
+        );
+
+        assertEquals(1, area.minX());
+        assertEquals(4, area.minY());
+        assertEquals(6, area.minZ());
+        assertEquals(3, area.maxX());
+        assertEquals(5, area.maxY());
+        assertEquals(7, area.maxZ());
+        assertEquals(12, area.count());
+        assertThrows(IllegalArgumentException.class, () -> CommandSupport.blockArea(
+                new BlockPos(0, 0, 0),
+                new BlockPos(3, 3, 3),
+                8
+        ));
+    }
+
+    @Test
+    void sanitizesSkinFileNames() {
+        assertEquals("Bad_Name__", CommandSupport.sanitizeFileName("Bad/Name:*"));
+        assertEquals("skin", CommandSupport.sanitizeFileName("   "));
+    }
+}

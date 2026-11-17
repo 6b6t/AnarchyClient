@@ -32,6 +32,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.OptionalInt;
@@ -351,7 +352,7 @@ public final class SmartEatModule extends Module {
         if (value == null || value.isBlank()) {
             return Set.of();
         }
-        return java.util.Arrays.stream(value.split("[,;|\\s]+"))
+        return Arrays.stream(value.split("[,;|\\s]+"))
                 .map(String::trim)
                 .filter(token -> !token.isEmpty())
                 .map(token -> token.toLowerCase(Locale.ROOT))

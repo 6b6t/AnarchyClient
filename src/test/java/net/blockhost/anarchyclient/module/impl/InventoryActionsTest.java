@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -35,9 +36,9 @@ class InventoryActionsTest {
     @Test
     void resolvesTypedStorageSlots() {
         assertEquals(InventoryMenu.USE_ROW_SLOT_START,
-                net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(0).orElseThrow().menuSlot());
+                InventorySlots.storageSlot(0).orElseThrow().menuSlot());
         assertEquals(InventoryMenu.INV_SLOT_START,
-                net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(Inventory.getSelectionSize()).orElseThrow().menuSlot());
-        assertTrue(net.blockhost.anarchyclient.inventory.InventorySlots.storageSlot(Inventory.INVENTORY_SIZE).isEmpty());
+                InventorySlots.storageSlot(Inventory.getSelectionSize()).orElseThrow().menuSlot());
+        assertTrue(InventorySlots.storageSlot(Inventory.INVENTORY_SIZE).isEmpty());
     }
 }

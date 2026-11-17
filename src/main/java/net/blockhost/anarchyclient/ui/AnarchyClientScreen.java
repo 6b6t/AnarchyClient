@@ -22,6 +22,7 @@ import net.lenni0451.rivet.math.Size;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
@@ -177,7 +178,7 @@ public final class AnarchyClientScreen extends Screen {
     }
 
     @Override
-    public boolean charTyped(final net.minecraft.client.input.CharacterEvent event) {
+    public boolean charTyped(final CharacterEvent event) {
         return this.rivet != null && this.rivet.onCharTyped(new CharEvent(event.codepoint()));
     }
 

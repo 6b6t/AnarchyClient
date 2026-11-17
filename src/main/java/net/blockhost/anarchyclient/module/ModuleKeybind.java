@@ -5,6 +5,8 @@ import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.InputConstants;
 import org.lwjgl.sdl.SDLScancode;
 
+import java.util.Locale;
+
 public final class ModuleKeybind {
 
     private int key;
@@ -47,7 +49,7 @@ public final class ModuleKeybind {
         JsonObject json = new JsonObject();
         json.addProperty("key", this.key);
         json.addProperty("key_format", "sdl_scancode");
-        json.addProperty("action", this.action.name().toLowerCase(java.util.Locale.ROOT));
+        json.addProperty("action", this.action.name().toLowerCase(Locale.ROOT));
         return json;
     }
 

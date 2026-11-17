@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -71,7 +72,7 @@ public final class ChatSpammerModule extends Module {
     }
 
     static List<String> parseMessages(final String value) {
-        return java.util.Arrays.stream(value.split("\\|"))
+        return Arrays.stream(value.split("\\|"))
                 .map(String::trim)
                 .filter(message -> !message.isEmpty())
                 .toList();

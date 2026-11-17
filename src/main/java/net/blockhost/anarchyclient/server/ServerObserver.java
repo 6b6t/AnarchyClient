@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public final class ServerObserver {
 
@@ -210,7 +211,7 @@ public final class ServerObserver {
                 snapshot.antiCheat().orElse(""),
                 snapshot.environmentLabels(),
                 snapshot.plugins(),
-                snapshot.payloadChannels().stream().map(Identifier::toString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)),
+                snapshot.payloadChannels().stream().map(Identifier::toString).collect(Collectors.toCollection(LinkedHashSet::new)),
                 snapshot.safetyScore()
         );
     }

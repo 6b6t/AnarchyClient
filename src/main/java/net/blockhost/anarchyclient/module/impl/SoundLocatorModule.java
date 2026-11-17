@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.AABB;
@@ -93,7 +94,7 @@ public final class SoundLocatorModule extends Module {
             }
         }
         if (this.logChat.value() && client.player != null) {
-            client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+            client.player.sendSystemMessage(Component.literal(
                     "%s at %.1f %.1f %.1f".formatted(id, position.x, position.y, position.z)
             ));
         }

@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -134,7 +135,7 @@ public final class AutoClickerModule extends Module {
 
     static boolean isWeapon(final ItemStack stack) {
         return !stack.isEmpty()
-                && (stack.has(net.minecraft.core.component.DataComponents.WEAPON)
+                && (stack.has(DataComponents.WEAPON)
                 || stack.is(ItemTags.SWORDS)
                 || stack.is(ItemTags.AXES));
     }

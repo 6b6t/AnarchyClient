@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -263,7 +264,7 @@ class ModuleRegistryTest {
         for (Module module : modules.all()) {
             assertFalse(module.description().isBlank(), module.id() + " should have a module description");
             assertFalse(module.icon().isBlank(), module.id() + " should have a module icon");
-            for (net.blockhost.anarchyclient.setting.Setting<?> setting : module.settings()) {
+            for (Setting<?> setting : module.settings()) {
                 assertFalse(module.settingDescription(setting).isBlank(),
                         module.id() + "." + setting.id() + " should have a setting description");
             }

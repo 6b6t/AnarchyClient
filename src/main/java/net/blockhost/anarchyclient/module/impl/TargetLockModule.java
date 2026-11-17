@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.target.TargetQuery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Comparator;
 import java.util.Optional;
@@ -68,7 +69,7 @@ public final class TargetLockModule extends Module {
                 .ifPresent(target -> this.locked = target.getUUID());
     }
 
-    public static Optional<LivingEntity> preferred(final Iterable<? extends Entity> entities, final net.minecraft.world.entity.player.Player player,
+    public static Optional<LivingEntity> preferred(final Iterable<? extends Entity> entities, final Player player,
                                                    final TargetPolicy policy, final double range) {
         TargetLockModule module = active;
         if (module == null || player == null) {
@@ -84,7 +85,7 @@ public final class TargetLockModule extends Module {
     }
 
     private Optional<LivingEntity> findLocked(final Iterable<? extends Entity> entities,
-                                             final net.minecraft.world.entity.player.Player player,
+                                             final Player player,
                                              final TargetPolicy policy, final double range) {
         if (this.locked == null) {
             return Optional.empty();

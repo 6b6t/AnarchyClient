@@ -68,7 +68,7 @@ public final class FastUseModule extends Module {
     }
 
     static boolean shouldApply(final ItemStack stack, final String mode,
-                               final List<net.minecraft.world.item.Item> items, final boolean blocks) {
+                               final List<Item> items, final boolean blocks) {
         if (stack == null || stack.isEmpty()) {
             return false;
         }

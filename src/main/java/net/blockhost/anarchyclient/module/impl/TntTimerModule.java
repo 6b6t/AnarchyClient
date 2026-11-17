@@ -17,6 +17,8 @@ import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Locale;
+
 public final class TntTimerModule extends Module {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -97,7 +99,7 @@ public final class TntTimerModule extends Module {
 
     static String formatFuse(final int fuseTicks) {
         // Locale.ROOT keeps the decimal point stable regardless of the system locale.
-        return String.format(java.util.Locale.ROOT, "%.1fs", Math.max(0, fuseTicks) / 20.0);
+        return String.format(Locale.ROOT, "%.1fs", Math.max(0, fuseTicks) / 20.0);
     }
 
     static WorldLineRenderer.Color colorForFuse(final int fuseTicks) {
