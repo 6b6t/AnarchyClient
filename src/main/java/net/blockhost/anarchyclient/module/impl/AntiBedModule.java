@@ -94,10 +94,17 @@ public final class AntiBedModule extends Module {
             return false;
         }
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (!client.level.getBlockState(feet.relative(direction)).isSolid()) {
+            if (!isSolid(client, feet.relative(direction))) {
                 return false;
             }
         }
-        return client.level.getBlockState(feet.below()).isSolid();
+        return isSolid(client, feet.below());
+    }
+
+    // isSolid() has no public replacement: it also honors private per-block overrides, and vanilla still uses it.
+    // A full-block check would stop counting slabs, stairs, and fences as hole walls.
+    @SuppressWarnings("deprecation")
+    private static boolean isSolid(final Minecraft client, final BlockPos pos) {
+        return client.level.getBlockState(pos).isSolid();
     }
 }

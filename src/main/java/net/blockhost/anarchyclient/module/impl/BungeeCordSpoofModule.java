@@ -49,7 +49,10 @@ public final class BungeeCordSpoofModule extends Module {
         if (this.includeProfile.value()) {
             host += "\0[{\"name\":\"name\",\"value\":\"" + client.getUser().getName() + "\"}]";
         }
-        return new ClientIntentionPacket(intention.protocolVersion(), host, intention.port(), intention.intention());
+        // Vanilla has no non-deprecated way to build a handshake packet; Connection uses this constructor too.
+        @SuppressWarnings("deprecation")
+        ClientIntentionPacket forwarded = new ClientIntentionPacket(intention.protocolVersion(), host, intention.port(), intention.intention());
+        return forwarded;
     }
 
     static boolean matches(final String host, final String filters) {

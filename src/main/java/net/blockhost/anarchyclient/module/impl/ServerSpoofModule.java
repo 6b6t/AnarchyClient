@@ -69,12 +69,15 @@ public final class ServerSpoofModule extends Module {
         if (this.spoofHost.value()
                 && packet instanceof ClientIntentionPacket intention
                 && intention.intention() == ClientIntent.LOGIN) {
-            return new ClientIntentionPacket(
+            // Vanilla has no non-deprecated way to build a handshake packet; Connection uses this constructor too.
+            @SuppressWarnings("deprecation")
+            ClientIntentionPacket spoofed = new ClientIntentionPacket(
                     intention.protocolVersion(),
                     this.host.value(),
                     intention.port(),
                     intention.intention()
             );
+            return spoofed;
         }
         if (this.spoofBrand.value()
                 && packet instanceof ServerboundCustomPayloadPacket customPayload
