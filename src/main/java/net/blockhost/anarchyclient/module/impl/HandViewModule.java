@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
 
 public final class HandViewModule extends Module {
 
@@ -45,7 +46,7 @@ public final class HandViewModule extends Module {
     }
 
     @Override
-    public void tick(final net.minecraft.client.Minecraft client) {
+    public void tick(final Minecraft client) {
         activeTransform = this.transform();
     }
 

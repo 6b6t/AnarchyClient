@@ -3,7 +3,9 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.HitResult;
 
 public final class NoMissCooldownModule extends Module {
 
@@ -14,10 +16,10 @@ public final class NoMissCooldownModule extends Module {
     }
 
     @Override
-    public boolean mouseClick(final Minecraft client, final net.minecraft.client.input.MouseButtonInfo buttonInfo,
+    public boolean mouseClick(final Minecraft client, final MouseButtonInfo buttonInfo,
                               final int action) {
         if (client.player != null && action == 1 && client.hitResult != null
-                && client.hitResult.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+                && client.hitResult.getType() == HitResult.Type.MISS) {
             this.lastMissTick = client.player.tickCount;
         }
         return false;

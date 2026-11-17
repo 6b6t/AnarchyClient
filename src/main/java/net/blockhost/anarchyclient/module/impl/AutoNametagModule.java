@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
@@ -60,7 +61,7 @@ public final class AutoNametagModule extends Module {
         double rangeSqr = range * range;
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof LivingEntity living) || living == player || living.hasCustomName()
                     || this.tagged.contains(living.getUUID())) {
                 continue;

@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -53,7 +54,7 @@ public final class TrajectoriesModule extends Module {
         Vec3 camera = client.gameRenderer.mainCamera().position();
         WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 245, 145, this.opacity.value().intValue());
         drawHeldTrajectory(client, player, matrices, submits, camera, color);
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (entity instanceof Projectile projectile && projectile.getDeltaMovement().lengthSqr() > 0.0025) {
                 drawSimulated(client, projectile.position(), projectile.getDeltaMovement(), 0.03, matrices, submits, camera,
                         new WorldLineRenderer.Color(145, 205, 255, this.opacity.value().intValue()));

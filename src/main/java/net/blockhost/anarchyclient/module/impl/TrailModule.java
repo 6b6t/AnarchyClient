@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
@@ -54,7 +55,7 @@ public final class TrailModule extends Module {
             points.removeIf(point -> point.age() > this.lifetime.value().intValue());
         }
         double rangeSqr = this.range.value() * this.range.value();
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof Player target) || target == player || target.distanceToSqr(player) > rangeSqr) {
                 continue;
             }

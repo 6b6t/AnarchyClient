@@ -8,7 +8,9 @@ import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.world.level.Level;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class CoordinatesHudModule extends Module {
@@ -58,14 +60,14 @@ public final class CoordinatesHudModule extends Module {
     }
 
     List<String> lines(final Minecraft client) {
-        List<String> lines = new java.util.ArrayList<>();
+        List<String> lines = new ArrayList<>();
         if (client.player == null) {
             return lines;
         }
         lines.add(String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
         if (this.showLinkedCoords.value()) {
-            double scale = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? 8.0 : 0.125;
-            String label = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? "OW" : "Nether";
+            double scale = client.player.level().dimension() == Level.NETHER ? 8.0 : 0.125;
+            String label = client.player.level().dimension() == Level.NETHER ? "OW" : "Nether";
             lines.add(String.format("%s %.1f %.1f", label, client.player.getX() * scale, client.player.getZ() * scale));
         }
         lines.add(client.player.level().dimension().identifier().toString());

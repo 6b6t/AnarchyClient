@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.FloatArgumentType;
@@ -68,6 +69,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +81,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 public final class AnarchyClientCommands {
 
-    private static final int SUCCESS = com.mojang.brigadier.Command.SINGLE_SUCCESS;
+    private static final int SUCCESS = Command.SINGLE_SUCCESS;
     private static final int MAX_FILL_BLOCKS = 32_768;
 
     private AnarchyClientCommands() {
@@ -1375,7 +1377,7 @@ public final class AnarchyClientCommands {
 
     private static CompletableFuture<Suggestions> suggestBindActions(final CommandContext<FabricClientCommandSource> context,
                                                                     final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(java.util.Arrays.stream(ModuleBindAction.values())
+        return SharedSuggestionProvider.suggest(Arrays.stream(ModuleBindAction.values())
                 .map(action -> action.name().toLowerCase(Locale.ROOT)), builder);
     }
 

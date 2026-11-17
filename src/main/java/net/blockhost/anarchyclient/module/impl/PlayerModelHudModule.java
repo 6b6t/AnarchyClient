@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 
 import java.util.List;
+import java.util.Locale;
 
 public final class PlayerModelHudModule extends HudElementModule {
 
@@ -39,7 +40,7 @@ public final class PlayerModelHudModule extends HudElementModule {
     @Override
     protected List<String> lines(final Minecraft client) {
         return List.of(
-                "Pose " + client.player.getPose().name().toLowerCase(java.util.Locale.ROOT),
+                "Pose " + client.player.getPose().name().toLowerCase(Locale.ROOT),
                 "Yaw " + Math.round(client.player.getYRot()),
                 "Pitch " + Math.round(client.player.getXRot()),
                 "Body " + Math.round(client.player.yBodyRot)

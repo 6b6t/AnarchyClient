@@ -3,6 +3,9 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
+
+import java.util.List;
 
 public final class HitboxModule extends Module {
 
@@ -18,11 +21,11 @@ public final class HitboxModule extends Module {
             .build()));
 
     public HitboxModule() {
-        super("hitbox", "Hitbox", ModuleCategory.COMBAT, java.util.List.of("hitboxes"));
+        super("hitbox", "Hitbox", ModuleCategory.COMBAT, List.of("hitboxes"));
     }
 
     @Override
-    public void tick(final net.minecraft.client.Minecraft client) {
+    public void tick(final Minecraft client) {
         activeExpansion = this.expansion.value();
     }
 

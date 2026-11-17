@@ -10,6 +10,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,7 +51,7 @@ public final class CityEspModule extends Module {
         this.cooldownTicks = 10;
         this.positions.clear();
         double rangeSqr = this.range.value() * this.range.value();
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof Player target) || target == player || target.distanceToSqr(player) > rangeSqr) {
                 continue;
             }

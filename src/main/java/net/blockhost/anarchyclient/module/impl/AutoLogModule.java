@@ -17,6 +17,8 @@ import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.Locale;
+
 public final class AutoLogModule extends Module {
 
     private final NumberSetting healthThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -207,6 +209,6 @@ public final class AutoLogModule extends Module {
     }
 
     private static String formatHealth(final float health) {
-        return String.format(java.util.Locale.ROOT, "%.1f", health);
+        return String.format(Locale.ROOT, "%.1f", health);
     }
 }

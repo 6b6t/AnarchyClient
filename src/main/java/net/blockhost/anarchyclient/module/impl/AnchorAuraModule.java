@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public final class AnchorAuraModule extends Module {
 
@@ -195,15 +196,15 @@ public final class AnchorAuraModule extends Module {
         return best(scores);
     }
 
-    private static java.util.Optional<ScoredAnchor> score(final Minecraft client, final Player target, final BlockPos pos,
+    private static Optional<ScoredAnchor> score(final Minecraft client, final Player target, final BlockPos pos,
                                                          final double maxSelfDamage, final double minDamage) {
         Vec3 explosion = Vec3.atCenterOf(pos);
         double targetDamage = DamageEstimator.explosionDamage(target, explosion, 5.0);
         double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, 5.0);
         if (targetDamage < minDamage || selfDamage > maxSelfDamage) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
-        return java.util.Optional.of(new ScoredAnchor(pos.immutable(), targetDamage, selfDamage));
+        return Optional.of(new ScoredAnchor(pos.immutable(), targetDamage, selfDamage));
     }
 
     private static ScoredAnchor best(final List<ScoredAnchor> scores) {

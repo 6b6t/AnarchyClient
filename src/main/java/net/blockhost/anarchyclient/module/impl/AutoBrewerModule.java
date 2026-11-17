@@ -9,7 +9,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+
+import java.util.function.Predicate;
 
 public final class AutoBrewerModule extends Module {
 
@@ -59,7 +62,7 @@ public final class AutoBrewerModule extends Module {
     }
 
     private static boolean quickMoveMatching(final Minecraft client, final BrewingStandMenu menu,
-                                             final java.util.function.Predicate<net.minecraft.world.item.ItemStack> predicate) {
+                                             final Predicate<ItemStack> predicate) {
         for (int slot = 5; slot < menu.slots.size(); slot++) {
             Slot menuSlot = menu.getSlot(slot);
             if (menuSlot.hasItem() && predicate.test(menuSlot.getItem())) {

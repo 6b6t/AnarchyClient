@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -99,7 +100,7 @@ public final class TreeAuraModule extends Module {
                         this.rotate.value()
                 );
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Tree Aura disabled: no saplings in hotbar."));
+                    player.sendSystemMessage(Component.literal("Tree Aura disabled: no saplings in hotbar."));
                     this.enabled(false);
                     return;
                 }
@@ -120,7 +121,7 @@ public final class TreeAuraModule extends Module {
                         this.rotate.value()
                 );
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Tree Aura disabled: no bone meal in hotbar."));
+                    player.sendSystemMessage(Component.literal("Tree Aura disabled: no bone meal in hotbar."));
                     this.enabled(false);
                     return;
                 }

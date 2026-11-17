@@ -11,6 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 
+import java.util.List;
+
 public final class YggdrasilSignatureFixModule extends Module {
 
     private final BooleanSetting warn = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -27,7 +29,7 @@ public final class YggdrasilSignatureFixModule extends Module {
 
     public YggdrasilSignatureFixModule() {
         super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC,
-                java.util.List.of("signature_fix"));
+                List.of("signature_fix"));
     }
 
     @Override

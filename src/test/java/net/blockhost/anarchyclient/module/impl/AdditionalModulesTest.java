@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
 import net.blockhost.anarchyclient.waypoint.Waypoint;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
@@ -16,9 +17,11 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.time.LocalTime;
@@ -73,7 +76,7 @@ class AdditionalModulesTest {
 
     @Test
     void hitChanceCanForceAttacks() {
-        assertTrue(KillAuraModule.shouldAttack(new java.util.Random(0), 100));
+        assertTrue(KillAuraModule.shouldAttack(new Random(0), 100));
     }
 
     @Test
@@ -192,11 +195,11 @@ class AdditionalModulesTest {
         Identifier step = Identifier.withDefaultNamespace("block.stone.step");
         Identifier splash = Identifier.withDefaultNamespace("entity.generic.splash");
 
-        assertTrue(SoundBlockerModule.shouldBlock(step, java.util.Set.of(step), false));
-        assertFalse(SoundBlockerModule.shouldBlock(splash, java.util.Set.of(step), false));
-        assertFalse(SoundBlockerModule.shouldBlock(step, java.util.Set.of(step), true));
-        assertTrue(SoundBlockerModule.shouldBlock(splash, java.util.Set.of(step), true));
-        assertFalse(SoundBlockerModule.shouldBlock(step, java.util.Set.of(), true));
+        assertTrue(SoundBlockerModule.shouldBlock(step, Set.of(step), false));
+        assertFalse(SoundBlockerModule.shouldBlock(splash, Set.of(step), false));
+        assertFalse(SoundBlockerModule.shouldBlock(step, Set.of(step), true));
+        assertTrue(SoundBlockerModule.shouldBlock(splash, Set.of(step), true));
+        assertFalse(SoundBlockerModule.shouldBlock(step, Set.of(), true));
     }
 
     @Test
@@ -325,7 +328,7 @@ class AdditionalModulesTest {
 
     @Test
     void blockTargetScannerSortsByDistance() {
-        List<BlockTargetScanner.BlockTarget> targets = new java.util.ArrayList<>(List.of(
+        List<BlockTargetScanner.BlockTarget> targets = new ArrayList<>(List.of(
                 new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 3), null, 9.0),
                 new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 1), null, 1.0),
                 new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 2), null, 4.0)
@@ -424,7 +427,7 @@ class AdditionalModulesTest {
     @Test
     void betterChatPrefixesStableTimestamps() {
         assertEquals("[09:05] hello", BetterChatModule.withTimestamp(
-                net.minecraft.network.chat.Component.literal("hello"),
+                Component.literal("hello"),
                 LocalTime.of(9, 5)
         ).getString());
     }

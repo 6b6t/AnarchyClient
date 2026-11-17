@@ -13,6 +13,7 @@ import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,7 +81,7 @@ class LiquidBounceDeepPlanModulesTest {
 
     @Test
     void chestCleanerFindsOnlyConfiguredJunk() {
-        assertEquals(-1, ChestCleanerModule.firstJunkSlot(java.util.List.of(ItemStack.EMPTY), 1, Set.of()));
+        assertEquals(-1, ChestCleanerModule.firstJunkSlot(List.of(ItemStack.EMPTY), 1, Set.of()));
     }
 
     @Test

@@ -17,6 +17,7 @@ import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -138,7 +139,7 @@ public final class BookBotModule extends Module {
         if (value == null || value.isBlank()) {
             return List.of();
         }
-        return java.util.Arrays.stream(value.split("\\|", -1))
+        return Arrays.stream(value.split("\\|", -1))
                 .map(String::trim)
                 .toList();
     }

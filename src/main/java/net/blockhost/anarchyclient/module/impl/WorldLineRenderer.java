@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -19,7 +20,7 @@ public final class WorldLineRenderer {
     }
 
     private static void box(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color,
-                            final net.minecraft.client.renderer.rendertype.RenderType renderType) {
+                            final RenderType renderType) {
         submits.submitCustomGeometry(matrices, renderType, (pose, vertices) -> {
             box(pose, vertices, box, color);
         });

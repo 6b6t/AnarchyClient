@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
 
 public final class ReachModule extends Module {
 
@@ -31,7 +32,7 @@ public final class ReachModule extends Module {
     }
 
     @Override
-    public void tick(final net.minecraft.client.Minecraft client) {
+    public void tick(final Minecraft client) {
         blockBonus = this.block.value();
         entityBonus = this.entity.value();
     }

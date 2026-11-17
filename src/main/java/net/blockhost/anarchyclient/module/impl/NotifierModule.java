@@ -18,6 +18,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -185,14 +186,14 @@ public final class NotifierModule extends Module {
         return Map.copyOf(players);
     }
 
-    private static java.util.List<String> joinedPlayers(final Map<UUID, String> previous, final Map<UUID, String> current) {
+    private static List<String> joinedPlayers(final Map<UUID, String> previous, final Map<UUID, String> current) {
         return current.entrySet().stream()
                 .filter(entry -> !previous.containsKey(entry.getKey()))
                 .map(Map.Entry::getValue)
                 .toList();
     }
 
-    private static java.util.List<String> leftPlayers(final Map<UUID, String> previous, final Map<UUID, String> current) {
+    private static List<String> leftPlayers(final Map<UUID, String> previous, final Map<UUID, String> current) {
         return previous.entrySet().stream()
                 .filter(entry -> !current.containsKey(entry.getKey()))
                 .map(Map.Entry::getValue)

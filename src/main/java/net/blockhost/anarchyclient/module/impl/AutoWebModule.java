@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 
@@ -62,7 +63,7 @@ public final class AutoWebModule extends Module {
         double rangeSqr = range * range;
         Player best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof Player target) || target == player || !target.isAlive()) {
                 continue;
             }

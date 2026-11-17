@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
@@ -45,11 +46,11 @@ public final class AntiSpawnpointModule extends Module {
         return true;
     }
 
-    static boolean shouldCancelUse(final net.minecraft.resources.ResourceKey<Level> dimension, final Block block) {
+    static boolean shouldCancelUse(final ResourceKey<Level> dimension, final Block block) {
         return shouldCancelUse(dimension, block instanceof BedBlock, block == Blocks.RESPAWN_ANCHOR);
     }
 
-    static boolean shouldCancelUse(final net.minecraft.resources.ResourceKey<Level> dimension, final boolean bed,
+    static boolean shouldCancelUse(final ResourceKey<Level> dimension, final boolean bed,
                                    final boolean respawnAnchor) {
         return shouldCancelUse(dimension == Level.OVERWORLD, dimension == Level.NETHER, bed, respawnAnchor);
     }

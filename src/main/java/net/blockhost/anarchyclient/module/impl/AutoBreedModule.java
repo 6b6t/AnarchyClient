@@ -7,7 +7,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
@@ -68,7 +70,7 @@ public final class AutoBreedModule extends Module {
         double rangeSqr = range * range;
         Animal best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (net.minecraft.world.entity.Entity entity : client.level.entitiesForRendering()) {
+        for (Entity entity : client.level.entitiesForRendering()) {
             if (!(entity instanceof Animal animal) || !animal.canFallInLove()) {
                 continue;
             }
@@ -86,7 +88,7 @@ public final class AutoBreedModule extends Module {
     }
 
     private static boolean hasFood(final LocalPlayer player, final Animal animal) {
-        for (int slot = 0; slot < net.minecraft.world.entity.player.Inventory.getSelectionSize(); slot++) {
+        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
             if (!stack.isEmpty() && animal.isFood(stack)) {
                 return true;

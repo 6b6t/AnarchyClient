@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -207,15 +208,15 @@ public final class SwarmModule extends Module {
         return "RUN\t" + this.channel.value() + "\t" + encoded;
     }
 
-    private java.util.Optional<String> decodeRun(final String line) {
+    private Optional<String> decodeRun(final String line) {
         String[] parts = line.split("\\t", 3);
         if (parts.length != 3 || !"RUN".equals(parts[0]) || !this.channel.value().equals(parts[1])) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
         try {
-            return java.util.Optional.of(new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8));
+            return Optional.of(new String(Base64.getDecoder().decode(parts[2]), StandardCharsets.UTF_8));
         } catch (IllegalArgumentException exception) {
-            return java.util.Optional.empty();
+            return Optional.empty();
         }
     }
 

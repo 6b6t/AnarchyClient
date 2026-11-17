@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public final class MapHudModule extends HudElementModule {
             if (sx < x + 4 || sx > x + size - 4 || sy < y + 4 || sy > y + size - 4) {
                 continue;
             }
-            int color = entity instanceof net.minecraft.world.entity.player.Player ? 0xFF7DD3FC : 0xFFFF7A7A;
+            int color = entity instanceof Player ? 0xFF7DD3FC : 0xFFFF7A7A;
             graphics.fill(sx - 1, sy - 1, sx + 2, sy + 2, color);
         }
 

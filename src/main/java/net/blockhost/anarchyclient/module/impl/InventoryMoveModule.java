@@ -9,6 +9,8 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 
+import java.util.List;
+
 public final class InventoryMoveModule extends Module {
 
     private final BooleanSetting allowJump = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -28,7 +30,7 @@ public final class InventoryMoveModule extends Module {
             .build()));
 
     public InventoryMoveModule() {
-        super("inventory_move", "Inventory Move", ModuleCategory.MOVEMENT, java.util.List.of("inv_move"));
+        super("inventory_move", "Inventory Move", ModuleCategory.MOVEMENT, List.of("inv_move"));
     }
 
     @Override

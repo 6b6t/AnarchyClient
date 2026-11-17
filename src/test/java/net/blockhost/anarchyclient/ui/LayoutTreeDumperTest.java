@@ -11,6 +11,7 @@ import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
+import net.lenni0451.rivet.math.Point;
 import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
 import net.lenni0451.rivet.text.model.TextLine;
@@ -176,8 +177,8 @@ class LayoutTreeDumperTest {
         }
 
         @Override
-        public net.lenni0451.rivet.math.Point cursorPosition(final int index) {
-            return new net.lenni0451.rivet.math.Point(0, 0);
+        public Point cursorPosition(final int index) {
+            return new Point(0, 0);
         }
 
         @Override

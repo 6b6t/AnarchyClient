@@ -13,6 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -92,7 +93,7 @@ public final class MossBotModule extends Module {
                                 && isMoss(target.state())
                                 && replaceableAround(client, target.pos()) >= minReplaceableBlocks)
                 .stream()
-                .max(java.util.Comparator.comparingInt(target -> replaceableAround(client, target.pos())))
+                .max(Comparator.comparingInt(target -> replaceableAround(client, target.pos())))
                 .map(BlockTargetScanner.BlockTarget::pos)
                 .orElse(null);
     }

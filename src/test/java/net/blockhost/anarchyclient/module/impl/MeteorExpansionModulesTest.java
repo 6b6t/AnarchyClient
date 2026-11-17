@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -152,8 +153,8 @@ class MeteorExpansionModulesTest {
     @Test
     void betterBeaconsAddsBeaconOnlyTooltipDetails() {
         BetterBeaconsModule module = new BetterBeaconsModule();
-        List<Component> beacon = new java.util.ArrayList<>();
-        List<Component> dirt = new java.util.ArrayList<>();
+        List<Component> beacon = new ArrayList<>();
+        List<Component> dirt = new ArrayList<>();
 
         BetterBeaconsModule.addBeaconTooltip(true, beacon, true, true, false);
         BetterBeaconsModule.addBeaconTooltip(false, dirt, true, true, true);

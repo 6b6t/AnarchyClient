@@ -6,6 +6,8 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 
+import java.util.List;
+
 public final class AutoSprintModule extends Module {
 
     private final BooleanSetting keepSprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -25,7 +27,7 @@ public final class AutoSprintModule extends Module {
             .build()));
 
     public AutoSprintModule() {
-        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, java.util.List.of("sprint"));
+        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, List.of("sprint"));
     }
 
     @Override
