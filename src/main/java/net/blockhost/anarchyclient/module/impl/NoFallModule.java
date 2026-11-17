@@ -26,7 +26,9 @@ public final class NoFallModule extends Module {
             .id("mode")
             .name("Mode")
             .defaultValue("Packet")
-            .addAllOptions(List.of("Packet", "Spoof Ground", "No Ground", "Cancel Motion", "MLG Assist"))
+            // "No Ground" and "Cancel Motion" were removed: the server still counted the whole fall. Saved
+            // values for them load as the default "Packet" mode.
+            .addAllOptions(List.of("Packet", "Spoof Ground", "MLG Assist"))
             .build()));
 
     public NoFallModule() {
@@ -44,12 +46,6 @@ public final class NoFallModule extends Module {
             return;
         }
         switch (this.mode.value()) {
-            case "Cancel Motion" -> {
-                if (player.getDeltaMovement().y < 0.0) {
-                    player.setDeltaMovement(player.getDeltaMovement().x, 0.0, player.getDeltaMovement().z);
-                }
-                player.resetFallDistance();
-            }
             case "Spoof Ground" -> {
                 player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(true, player.horizontalCollision));
                 player.resetFallDistance();
@@ -72,9 +68,6 @@ public final class NoFallModule extends Module {
         }
         if ("Spoof Ground".equals(this.mode.value())) {
             return withGround(move, client.player, true);
-        }
-        if ("No Ground".equals(this.mode.value())) {
-            return withGround(move, client.player, false);
         }
         return packet;
     }

@@ -7,6 +7,8 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.effect.MobEffects;
 
 import java.util.ArrayList;
@@ -60,13 +62,23 @@ public final class NoRenderModule extends Module {
             .defaultValue(true)
             .build()));
 
+    private final ServerWeather serverWeather = new ServerWeather();
+    private boolean weatherHidden;
+
     public NoRenderModule() {
         super("no_render", "No Render", ModuleCategory.RENDER, "Suppresses selected visual effects, overlays, and entities that clutter the screen.");
     }
 
     @Override
     protected void onEnable() {
+        this.serverWeather.capture(Minecraft.getInstance().level);
         this.updateSuppression();
+    }
+
+    @Override
+    public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        this.serverWeather.observe(packet);
+        return false;
     }
 
     @Override
@@ -88,6 +100,10 @@ public final class NoRenderModule extends Module {
         if (this.weather.value() && client.level != null) {
             client.level.setRainLevel(0.0F);
             client.level.setThunderLevel(0.0F);
+            this.weatherHidden = true;
+        } else if (this.weatherHidden) {
+            this.serverWeather.restore(client.level);
+            this.weatherHidden = false;
         }
     }
 
@@ -99,6 +115,10 @@ public final class NoRenderModule extends Module {
     @Override
     protected void onDisable() {
         RenderSuppression.disable(this.id());
+        if (this.weatherHidden) {
+            this.serverWeather.restore(Minecraft.getInstance().level);
+            this.weatherHidden = false;
+        }
     }
 
     private void updateSuppression() {

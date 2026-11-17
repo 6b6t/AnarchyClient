@@ -1,9 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.player.ClientInput;
@@ -42,15 +45,26 @@ public final class InventoryMoveModule extends Module {
                 || !this.allowChat.value() && client.gui.screen() instanceof ChatScreen) {
             return;
         }
+        // Vanilla releases every key mapping while a screen is open, so read the physical key state instead.
         input.keyPresses = new Input(
-                client.options.keyUp.isDown(),
-                client.options.keyDown.isDown(),
-                client.options.keyLeft.isDown(),
-                client.options.keyRight.isDown(),
-                this.allowJump.value() && client.options.keyJump.isDown(),
-                this.allowSneak.value() && client.options.keyShift.isDown(),
-                client.options.keySprint.isDown()
+                physicallyDown(client, client.options.keyUp),
+                physicallyDown(client, client.options.keyDown),
+                physicallyDown(client, client.options.keyLeft),
+                physicallyDown(client, client.options.keyRight),
+                this.allowJump.value() && physicallyDown(client, client.options.keyJump),
+                this.allowSneak.value() && physicallyDown(client, client.options.keyShift),
+                physicallyDown(client, client.options.keySprint)
         );
         InputStates.refreshMoveVector(input);
+    }
+
+    private static boolean physicallyDown(final Minecraft client, final KeyMapping mapping) {
+        if (mapping.isUnbound()) {
+            return false;
+        }
+        InputConstants.Key key = KeyMappingHelper.getBoundKeyOf(mapping);
+        return key.getType() == InputConstants.Type.MOUSE
+                ? InputStates.mousePressed(client, key.getValue())
+                : InputStates.keyPressed(client, key.getValue());
     }
 }

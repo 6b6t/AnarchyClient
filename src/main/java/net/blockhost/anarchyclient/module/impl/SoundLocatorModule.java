@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -64,6 +65,7 @@ public final class SoundLocatorModule extends Module {
     private final List<SoundMarker> markers = new ArrayList<>();
     private String lastSounds = "";
     private Set<Identifier> parsedSounds = Set.of();
+    private Level level;
 
     public SoundLocatorModule() {
         super("sound_locator", "Sound Locator", ModuleCategory.RENDER,
@@ -73,6 +75,11 @@ public final class SoundLocatorModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         synchronized (this.markers) {
+            if (client.level != this.level) {
+                // Markers belong to the level they were heard in; drop them on a dimension or server change.
+                this.markers.clear();
+                this.level = client.level;
+            }
             this.markers.replaceAll(SoundMarker::tick);
             this.markers.removeIf(SoundMarker::expired);
         }
@@ -136,6 +143,7 @@ public final class SoundLocatorModule extends Module {
     protected void onDisable() {
         synchronized (this.markers) {
             this.markers.clear();
+            this.level = null;
         }
     }
 

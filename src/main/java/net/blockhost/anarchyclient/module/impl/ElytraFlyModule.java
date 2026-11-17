@@ -49,7 +49,7 @@ public final class ElytraFlyModule extends Module {
 
     public ElytraFlyModule() {
         super("elytra_fly", "Elytra Fly", ModuleCategory.MOVEMENT,
-                "Controls elytra flight speed and height directly from movement keys, with optional auto start when falling.");
+                "Controls elytra flight speed and height directly from movement keys, with optional auto start when falling while wearing a usable elytra.");
     }
 
     @Override
@@ -59,7 +59,9 @@ public final class ElytraFlyModule extends Module {
             return;
         }
         if (!player.isFallFlying()) {
-            if (this.autoStart.value() && !player.onGround() && player.getDeltaMovement().y < 0.0 && client.getConnection() != null) {
+            // tryToStartFallFlying checks for a usable elytra and sets the client flag, so this sends once per start.
+            if (this.autoStart.value() && player.getDeltaMovement().y < 0.0 && !player.getAbilities().flying
+                    && client.getConnection() != null && player.tryToStartFallFlying()) {
                 client.getConnection().send(new ServerboundPlayerCommandPacket(player,
                         ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
             }

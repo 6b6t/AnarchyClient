@@ -26,7 +26,7 @@ public final class JetpackModule extends Module {
 
     public JetpackModule() {
         super("jetpack", "Jetpack", ModuleCategory.MOVEMENT,
-                "Lifts you upward at a set speed while you hold jump, and cancels your fall damage.");
+                "Lifts you upward at a set speed while you hold jump. It does not prevent fall damage; use No Fall for that.");
     }
 
     @Override
@@ -38,7 +38,6 @@ public final class JetpackModule extends Module {
         boolean active = !this.requireJump.value() || client.options.keyJump.isDown();
         if (active) {
             player.setDeltaMovement(jetpackVelocity(player.getDeltaMovement(), this.speed.value(), true));
-            player.resetFallDistance();
         }
     }
 

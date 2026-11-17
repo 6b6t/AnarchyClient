@@ -18,20 +18,41 @@ public final class ReverseStepModule extends Module {
             .step(0.1)
             .build()));
 
+    private boolean rising;
+
     public ReverseStepModule() {
         super("reverse_step", "Reverse Step", ModuleCategory.MOVEMENT,
-                "Pulls the player down faster when falling off ledges.");
+                "Pulls the player down faster when walking off ledges. Ignores jumps, flight, and elytra gliding.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || player.onGround() || player.isInWater() || player.isInLava() || client.options.keyJump.isDown()) {
+        if (player == null) {
             return;
         }
         Vec3 velocity = player.getDeltaMovement();
+        this.rising = airborneAfterRising(this.rising, player.onGround(), velocity.y);
+        if (player.onGround() || this.rising || player.isInWater() || player.isInLava() || player.isFallFlying()
+                || player.getAbilities().flying || player.isPassenger() || player.onClimbable()
+                || client.options.keyJump.isDown()) {
+            return;
+        }
         if (velocity.y < 0.0) {
             player.setDeltaMovement(velocity.x, velocity.y - this.speed.value(), velocity.z);
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.rising = false;
+    }
+
+    /** Tracks whether this airborne phase went upward (a jump or knockback), which is not a ledge drop. */
+    static boolean airborneAfterRising(final boolean rising, final boolean onGround, final double verticalVelocity) {
+        if (onGround) {
+            return false;
+        }
+        return rising || verticalVelocity > 0.0;
     }
 }

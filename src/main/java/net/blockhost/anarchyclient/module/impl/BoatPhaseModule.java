@@ -34,9 +34,17 @@ public final class BoatPhaseModule extends Module {
         this.lastVehicle = vehicle;
         vehicle.noPhysics = true;
         Vec3 horizontal = MovementVelocity.fromKeys(client, client.player.getYRot(), this.speed.value());
-        double y = client.options.keyJump.isDown() ? this.speed.value()
-                : client.options.keyShift.isDown() ? -this.speed.value() : vehicle.getDeltaMovement().y;
-        vehicle.setDeltaMovement(horizontal.x, y, horizontal.z);
+        vehicle.setDeltaMovement(horizontal.x,
+                verticalSpeed(client.options.keyJump.isDown(), client.options.keyShift.isDown(), this.speed.value()),
+                horizontal.z);
+    }
+
+    /** Without physics the vehicle would keep its gravity and sink through the floor, so it hovers when idle. */
+    static double verticalSpeed(final boolean up, final boolean down, final double speed) {
+        if (up == down) {
+            return 0.0;
+        }
+        return up ? speed : -speed;
     }
 
     @Override

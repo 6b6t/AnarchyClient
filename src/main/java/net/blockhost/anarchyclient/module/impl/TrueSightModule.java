@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.EspOutlineRegistry;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -36,8 +37,9 @@ public final class TrueSightModule extends Module {
                 "Outlines invisible players and mobs near you so you can see where they are.");
     }
 
+    /** The outline registry is cleared before every world render, so outlines are set each frame. */
     @Override
-    public void tick(final Minecraft client) {
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
         if (client.player == null || client.level == null) {
             return;
         }

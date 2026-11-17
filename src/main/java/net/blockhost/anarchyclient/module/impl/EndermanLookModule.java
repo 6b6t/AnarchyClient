@@ -5,10 +5,15 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enderman;
-import net.minecraft.world.phys.EntityHitResult;
 
 public final class EndermanLookModule extends Module {
+
+    /** Endermen look for staring players within their 64 block follow range. */
+    private static final double STARE_RANGE = 64.0;
+    /** Cone size vanilla passes to {@code isLookingAtMe} in {@code Enderman.isBeingStaredBy}. */
+    private static final double STARE_CONE = 0.025;
 
     private final NumberSetting pitch = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("pitch")
@@ -21,16 +26,22 @@ public final class EndermanLookModule extends Module {
 
     public EndermanLookModule() {
         super("enderman_look", "Enderman Look", ModuleCategory.PLAYER,
-                "Tilts your view to a set pitch when the crosshair is on an enderman so it does not turn hostile.");
+                "Tilts your view to a set pitch when you look at an enderman within 64 blocks so it does not turn hostile.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !(client.hitResult instanceof EntityHitResult hit)
-                || !(hit.getEntity() instanceof Enderman)) {
+        if (player == null || client.level == null || !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(player)) {
             return;
         }
-        player.setXRot(this.pitch.value().floatValue());
+        boolean staring = client.level.getEntitiesOfClass(Enderman.class, player.getBoundingBox().inflate(STARE_RANGE))
+                .stream()
+                .anyMatch(enderman -> enderman.isAlive()
+                        && enderman.distanceToSqr(player) <= STARE_RANGE * STARE_RANGE
+                        && enderman.isLookingAtMe(player, STARE_CONE, true, false, enderman.getEyeY()));
+        if (staring) {
+            player.setXRot(this.pitch.value().floatValue());
+        }
     }
 }

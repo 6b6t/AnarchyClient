@@ -35,13 +35,19 @@ public final class AvoidHazardsModule extends Module {
 
     public AvoidHazardsModule() {
         super("avoid_hazards", "Avoid Hazards", ModuleCategory.MOVEMENT,
-                "Stops your movement when you are about to walk into lava, fire, cactus, berry bushes, wither roses, or powder snow.");
+                "Stops your movement when you are about to walk into lava, fire, cactus, berry bushes, wither roses, or powder snow. You can still walk out once inside one.");
     }
 
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
         LocalPlayer player = client.player;
         if (!this.stopMovement.value() || player == null || client.level == null || input == null) {
+            return;
+        }
+        BlockPos current = player.blockPosition();
+        if (isHazard(client.level.getBlockState(current).getBlock())
+                || isHazard(client.level.getBlockState(current.below()).getBlock())) {
+            // Already in a hazard: let the player walk out instead of freezing them in place.
             return;
         }
         BlockPos next = BlockPos.containing(player.position().add(player.getDeltaMovement().multiply(4.0, 0.0, 4.0)));

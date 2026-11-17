@@ -73,7 +73,7 @@ public final class NyanCatGifSpammerModule extends Module {
     private Animation animation;
 
     public NyanCatGifSpammerModule() {
-        super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.FUN, "Sends animated Nyan Cat-style chat frames with configurable timing.");
+        super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.FUN, "Shows an animated Nyan Cat GIF at a random spot on your screen at random intervals. Only you can see it.");
     }
 
     @Override

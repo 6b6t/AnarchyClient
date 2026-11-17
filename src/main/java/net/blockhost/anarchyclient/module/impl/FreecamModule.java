@@ -22,6 +22,7 @@ public final class FreecamModule extends Module {
             .step(0.1)
             .build()));
     private Vec3 position;
+    private Input cameraInput = Input.EMPTY;
 
     public FreecamModule() {
         super("freecam", "Freecam", ModuleCategory.RENDER, "Detaches the camera from the player so areas can be inspected without moving the body.");
@@ -37,18 +38,18 @@ public final class FreecamModule extends Module {
         if (this.position == null) {
             this.position = player.getEyePosition();
         }
-        ClientInput input = player.input;
-        if (input == null) {
-            return;
-        }
-        this.position = move(this.position, player.getYRot(), input.keyPresses, this.speed.value());
+        this.position = move(this.position, player.getYRot(), this.cameraInput, this.speed.value());
     }
 
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
-        if (input != null) {
-            ((ClientInputAccessor) input).anarchyclient$setMoveVector(Vec2.ZERO);
+        if (input == null) {
+            return;
         }
+        // Keep the keys for the camera and give the body no input at all, including jump and sneak.
+        this.cameraInput = input.keyPresses;
+        input.keyPresses = Input.EMPTY;
+        ((ClientInputAccessor) input).anarchyclient$setMoveVector(Vec2.ZERO);
     }
 
     @Override
@@ -60,6 +61,7 @@ public final class FreecamModule extends Module {
     @Override
     protected void onDisable() {
         this.position = null;
+        this.cameraInput = Input.EMPTY;
     }
 
     static Vec3 move(final Vec3 position, final float yaw, final Input input, final double speed) {

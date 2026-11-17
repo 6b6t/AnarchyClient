@@ -10,6 +10,8 @@ import java.util.List;
 
 public final class AutoSprintModule extends Module {
 
+    private static AutoSprintModule active;
+
     private final BooleanSetting keepSprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("keep_sprint")
             .name("Keep Sprint")
@@ -31,13 +33,36 @@ public final class AutoSprintModule extends Module {
     }
 
     @Override
+    protected void onEnable() {
+        active = this;
+    }
+
+    @Override
+    protected void onDisable() {
+        if (active == this) {
+            active = null;
+        }
+    }
+
+    /**
+     * Whether vanilla should treat {@code player} as having forward impulse for sprinting. Vanilla stops
+     * sprinting without forward input in {@code LocalPlayer.shouldStopRunSprinting}, so omni sprint needs a
+     * mixin there that calls this.
+     */
+    public static boolean omniSprintImpulse(final LocalPlayer player) {
+        AutoSprintModule module = active;
+        return module != null && module.omniSprint.value() && player != null && player.input != null
+                && InputStates.moving(player.input.keyPresses);
+    }
+
+    @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null || player.input == null) {
             return;
         }
         boolean moving = this.omniSprint.value()
-                ? player.input.keyPresses.forward() || player.input.keyPresses.backward() || player.input.keyPresses.left() || player.input.keyPresses.right()
+                ? InputStates.moving(player.input.keyPresses)
                 : player.input.hasForwardImpulse();
         boolean blocked = player.isCrouching()
                 || player.isInWater()

@@ -11,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -39,18 +40,23 @@ public final class TrailModule extends Module {
             .step(20.0)
             .build()));
     private final Map<UUID, List<TrailPoint>> trails = new HashMap<>();
+    private Level level;
 
     public TrailModule() {
         super("trail", "Trail", ModuleCategory.RENDER,
-                "Draws a line along the recent path of each nearby player until the points expire.");
+                "Draws a line along the recent path of each nearby player until the points expire or you change dimension.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null) {
+        if (player == null || client.level == null || client.level != this.level) {
+            // A new level means a new dimension or server; old points would be drawn at the wrong place.
             this.trails.clear();
-            return;
+            this.level = client.level;
+            if (player == null || client.level == null) {
+                return;
+            }
         }
         for (List<TrailPoint> points : this.trails.values()) {
             points.replaceAll(TrailPoint::tick);
@@ -92,6 +98,12 @@ public final class TrailModule extends Module {
                 previous = next;
             }
         }
+    }
+
+    @Override
+    protected void onDisable() {
+        this.trails.clear();
+        this.level = null;
     }
 
     record TrailPoint(Vec3 position, int age) {

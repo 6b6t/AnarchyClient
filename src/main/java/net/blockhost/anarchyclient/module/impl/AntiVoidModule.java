@@ -11,12 +11,12 @@ import net.minecraft.world.phys.Vec3;
 
 public final class AntiVoidModule extends Module {
 
-    private final NumberSetting minY = this.setting(NumberSetting.from(NumberSetting.builder()
-            .id("min_y")
-            .name("Min Y")
+    private final NumberSetting offset = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("void_offset")
+            .name("Offset")
             .defaultValue(0.0)
-            .min(-128.0)
-            .max(128.0)
+            .min(-64.0)
+            .max(64.0)
             .step(1.0)
             .build()));
     private final BooleanSetting freezeHorizontal = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -38,21 +38,22 @@ public final class AntiVoidModule extends Module {
 
     public AntiVoidModule() {
         super("anti_void", "Anti Void", ModuleCategory.MOVEMENT,
-                "Stops your fall and holds you in place when you drop below a set Y level, optionally boosting you upward.");
+                "Stops your fall and holds you in place when you drop below the bottom of the world plus an offset, optionally boosting you upward.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null) {
+        if (player == null || client.level == null) {
             this.warned = false;
             return;
         }
-        if (player.getY() > this.minY.value() + 4.0 || player.onGround()) {
+        double triggerY = triggerY(client.level.getMinY(), this.offset.value());
+        if (player.getY() > triggerY + 4.0 || player.onGround()) {
             this.warned = false;
             return;
         }
-        if (player.getY() > this.minY.value()) {
+        if (player.getY() > triggerY) {
             return;
         }
 
@@ -65,8 +66,12 @@ public final class AntiVoidModule extends Module {
         );
         player.fallDistance = 0.0;
         if (this.warn.value() && !this.warned) {
-            player.sendSystemMessage(Component.literal("Anti Void stopped a fall below Y " + this.minY.value().intValue()));
+            player.sendSystemMessage(Component.literal("Anti Void stopped a fall below Y " + (int) Math.floor(triggerY)));
             this.warned = true;
         }
+    }
+
+    static double triggerY(final int levelMinY, final double offset) {
+        return levelMinY + offset;
     }
 }

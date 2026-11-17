@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 
 public final class RadarHudModule extends Module {
 
@@ -112,19 +113,29 @@ public final class RadarHudModule extends Module {
     }
 
     private RadarPoint point(final LocalPlayer player, final Entity entity, final int panelSize, final double rangeValue) {
-        double dx = entity.getX() - player.getX();
-        double dz = entity.getZ() - player.getZ();
-        if (this.rotateWithPlayer.value()) {
-            double yaw = Math.toRadians(player.getYRot());
-            double rotatedX = dx * Math.cos(yaw) - dz * Math.sin(yaw);
-            double rotatedZ = dx * Math.sin(yaw) + dz * Math.cos(yaw);
-            dx = rotatedX;
-            dz = rotatedZ;
-        }
+        Vec2 offset = screenOffset(entity.getX() - player.getX(), entity.getZ() - player.getZ(), player.getYRot(),
+                this.rotateWithPlayer.value());
         double scale = (panelSize / 2.0 - 8.0) / rangeValue;
-        int x = (int) Math.round(clamp(dx * scale, -panelSize / 2.0 + 8.0, panelSize / 2.0 - 8.0));
-        int y = (int) Math.round(clamp(dz * scale, -panelSize / 2.0 + 8.0, panelSize / 2.0 - 8.0));
+        int x = (int) Math.round(clamp(offset.x * scale, -panelSize / 2.0 + 8.0, panelSize / 2.0 - 8.0));
+        int y = (int) Math.round(clamp(offset.y * scale, -panelSize / 2.0 + 8.0, panelSize / 2.0 - 8.0));
         return new RadarPoint(x, y);
+    }
+
+    /**
+     * Maps a world offset to radar screen space, where +x is right and +y is down. Without rotation north is up.
+     * With rotation the player's facing is up; vanilla yaw 0 faces +Z, forward is (-sin, cos) and right is
+     * (-cos, -sin).
+     */
+    static Vec2 screenOffset(final double dx, final double dz, final float yawDegrees, final boolean rotate) {
+        if (!rotate) {
+            return new Vec2((float) dx, (float) dz);
+        }
+        double yaw = Math.toRadians(yawDegrees);
+        double sin = Math.sin(yaw);
+        double cos = Math.cos(yaw);
+        double right = -dx * cos - dz * sin;
+        double forward = -dx * sin + dz * cos;
+        return new Vec2((float) right, (float) -forward);
     }
 
     private int entityColor(final Entity entity) {

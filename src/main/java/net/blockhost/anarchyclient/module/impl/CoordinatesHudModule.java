@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public final class CoordinatesHudModule extends Module {
 
     public CoordinatesHudModule() {
         super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD,
-                "Shows your coordinates, linked Nether or Overworld coordinates, dimension, facing, speed, FPS, and ping.");
+                "Shows your coordinates, linked Nether or Overworld coordinates outside the End, dimension, facing, speed, FPS, and ping.");
     }
 
     @Override
@@ -66,9 +67,11 @@ public final class CoordinatesHudModule extends Module {
             return lines;
         }
         lines.add(String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
-        if (this.showLinkedCoords.value()) {
-            double scale = client.player.level().dimension() == Level.NETHER ? 8.0 : 0.125;
-            String label = client.player.level().dimension() == Level.NETHER ? "OW" : "Nether";
+        // Only the Overworld and the Nether are linked; other dimensions such as the End have no counterpart.
+        ResourceKey<Level> dimension = client.player.level().dimension();
+        if (this.showLinkedCoords.value() && (dimension == Level.NETHER || dimension == Level.OVERWORLD)) {
+            double scale = dimension == Level.NETHER ? 8.0 : 0.125;
+            String label = dimension == Level.NETHER ? "OW" : "Nether";
             lines.add(String.format("%s %.1f %.1f", label, client.player.getX() * scale, client.player.getZ() * scale));
         }
         lines.add(client.player.level().dimension().identifier().toString());

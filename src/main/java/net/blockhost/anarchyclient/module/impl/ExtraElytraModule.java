@@ -99,13 +99,19 @@ public final class ExtraElytraModule extends Module {
     }
 
     private void startFallFlying(final LocalPlayer player) {
-        if (this.jumpTimer <= 0) {
-            this.jumpTimer = 20;
-            player.setJumping(false);
-            player.setSprinting(true);
-            player.jumpFromGround();
+        if (player.onGround()) {
+            if (this.jumpTimer <= 0) {
+                this.jumpTimer = 20;
+                player.setJumping(false);
+                player.setSprinting(true);
+                player.jumpFromGround();
+            }
+            return;
         }
-        sendFallFlyingPacket(player);
+        // Only glide once airborne; never jump again in mid-air.
+        if (!player.getAbilities().flying && player.tryToStartFallFlying()) {
+            sendFallFlyingPacket(player);
+        }
     }
 
     private static void sendFallFlyingPacket(final LocalPlayer player) {

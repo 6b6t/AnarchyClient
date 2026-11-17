@@ -16,6 +16,7 @@ public final class FreeLookModule extends Module {
             .id("lock_player")
             .name("Lock Player")
             .defaultValue(true)
+            .description("When on, the mouse turns only the camera. When off, the mouse turns both, but the camera ignores rotations from other modules.")
             .build()));
     private float cameraYaw;
     private float cameraPitch;
@@ -51,12 +52,13 @@ public final class FreeLookModule extends Module {
     public static boolean handleTurn(final Minecraft client, final LocalPlayer player,
                                      final double xOffset, final double yOffset) {
         FreeLookModule module = active;
-        if (module == null || !module.lockPlayer.value() || client.gui.screen() != null || player == null) {
+        if (module == null || client.gui.screen() != null || player == null) {
             return false;
         }
+        // The camera always follows the mouse; only a locked player is kept from turning with it.
         module.cameraYaw += (float) xOffset * 0.15F;
-        module.cameraPitch = Mth.clamp(module.cameraPitch + (float) yOffset * 0.15F, -90.0F, 90.0F);
-        return true;
+        module.cameraPitch = clampedPitch(module.cameraPitch + (float) yOffset * 0.15F);
+        return module.lockPlayer.value();
     }
 
     static float clampedPitch(final float pitch) {

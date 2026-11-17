@@ -296,9 +296,10 @@ class AdditionalModulesTest {
     }
 
     @Test
-    void zoomFovUsesConfiguredFactorWithFloor() {
-        assertEquals(30, ZoomModule.zoomedFov(90, 3.0));
-        assertEquals(10, ZoomModule.zoomedFov(30, 10.0));
+    void zoomFovDividesRenderedFovByFactorWithFloor() {
+        assertEquals(30.0F, ZoomModule.zoomedFov(90.0F, 3.0), 1.0E-6F);
+        assertEquals(3.0F, ZoomModule.zoomedFov(30.0F, 10.0), 1.0E-6F);
+        assertEquals(1.0F, ZoomModule.zoomedFov(5.0F, 10.0), 1.0E-6F);
     }
 
     @Test

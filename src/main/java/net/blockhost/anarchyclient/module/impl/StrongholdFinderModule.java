@@ -4,16 +4,17 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.EyeOfEnder;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public final class StrongholdFinderModule extends Module {
@@ -23,23 +24,51 @@ public final class StrongholdFinderModule extends Module {
             .name("Notify")
             .defaultValue(true)
             .build()));
+    private static final double MIN_TRAVEL = 2.0;
+
     private final List<EyeSample> samples = new ArrayList<>();
+    private final Map<EyeOfEnder, Vec3> flyingEyes = new IdentityHashMap<>();
+    private Level level;
 
     public StrongholdFinderModule() {
         super("stronghold_finder", "Stronghold Finder", ModuleCategory.WORLD,
-                "Estimates the stronghold position from two thrown eyes of ender and prints it in chat.");
+                "Estimates the stronghold position from the flight paths of two thrown eyes of ender and prints it in chat.");
     }
 
     @Override
-    public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!(packet instanceof ServerboundUseItemPacket use) || client.player == null) {
+    public void entityAdded(final Minecraft client, final Entity entity) {
+        if (entity instanceof EyeOfEnder eye) {
+            this.flyingEyes.put(eye, eye.position());
+        }
+    }
+
+    @Override
+    public void tick(final Minecraft client) {
+        if (client.level != this.level) {
+            this.level = client.level;
+            this.flyingEyes.clear();
+            this.samples.clear();
+        }
+        if (client.player == null || this.flyingEyes.isEmpty()) {
             return;
         }
-        InteractionHand hand = use.hand();
-        if (!client.player.getItemInHand(hand).is(Items.ENDER_EYE)) {
-            return;
+        Iterator<Map.Entry<EyeOfEnder, Vec3>> iterator = this.flyingEyes.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<EyeOfEnder, Vec3> entry = iterator.next();
+            EyeOfEnder eye = entry.getKey();
+            if (eye.isRemoved()) {
+                iterator.remove();
+                continue;
+            }
+            Optional<Vec3> direction = flightDirection(entry.getValue(), eye.position());
+            if (direction.isPresent()) {
+                iterator.remove();
+                this.addSample(client, new EyeSample(entry.getValue(), direction.get()));
+            }
         }
-        EyeSample sample = new EyeSample(client.player.position(), client.player.getViewVector(0.0F));
+    }
+
+    private void addSample(final Minecraft client, final EyeSample sample) {
         this.samples.add(sample);
         while (this.samples.size() > 8) {
             this.samples.removeFirst();
@@ -53,9 +82,20 @@ public final class StrongholdFinderModule extends Module {
         }
     }
 
+    /** The eye flies straight toward the stronghold at first, so its horizontal travel gives the bearing. */
+    static Optional<Vec3> flightDirection(final Vec3 start, final Vec3 current) {
+        Vec3 travel = new Vec3(current.x - start.x, 0.0, current.z - start.z);
+        if (travel.lengthSqr() < MIN_TRAVEL * MIN_TRAVEL) {
+            return Optional.empty();
+        }
+        return Optional.of(travel.normalize());
+    }
+
     @Override
     protected void onDisable() {
         this.samples.clear();
+        this.flyingEyes.clear();
+        this.level = null;
     }
 
     Optional<Vec3> estimate() {
