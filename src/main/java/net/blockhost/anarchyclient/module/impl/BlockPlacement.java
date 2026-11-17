@@ -25,7 +25,17 @@ final class BlockPlacement {
     static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
                                  final boolean rotate, final float maxTurnDegrees,
                                  final Predicate<ItemStack> itemPredicate) {
-        return switch (BlockPlacer.place(client, owner.id(), target, rotate, maxTurnDegrees, itemPredicate)) {
+        return place(client, owner, target, rotate, maxTurnDegrees, itemPredicate, BlockPlacer.PlacementOptions.DEFAULT);
+    }
+
+    /**
+     * Places a block with explicit options. Use {@link BlockPlacer.PlacementOptions#NON_FULL} for
+     * blocks without a full collision box, such as string, slabs, soul sand, and cobwebs.
+     */
+    static PlacementResult place(final Minecraft client, final Module owner, final BlockPos target,
+                                 final boolean rotate, final float maxTurnDegrees,
+                                 final Predicate<ItemStack> itemPredicate, final BlockPlacer.PlacementOptions options) {
+        return switch (BlockPlacer.place(client, owner.id(), target, rotate, maxTurnDegrees, itemPredicate, options)) {
             case FILLED -> PlacementResult.FILLED;
             case PLACED -> PlacementResult.PLACED;
             case WAITING, MISSING_ITEM -> PlacementResult.WAITING;

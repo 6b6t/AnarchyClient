@@ -23,7 +23,7 @@ final class ItemScan {
             if (id.isEmpty()) {
                 continue;
             }
-            Identifier identifier = id.contains(":") ? Identifier.tryParse(id) : Identifier.withDefaultNamespace(id);
+            Identifier identifier = Identifier.tryParse(id);
             if (identifier != null) {
                 BuiltInRegistries.ITEM.getOptional(identifier).ifPresent(items::add);
             }

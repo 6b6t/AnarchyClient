@@ -18,7 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientPacketListener.class)
 public abstract class ClientPacketListenerMixin {
 
-    @Inject(method = "handleSoundEvent", at = @At("HEAD"))
+    @Inject(
+            method = "handleSoundEvent",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V",
+                    shift = At.Shift.AFTER
+            )
+    )
     private void anarchyclient$handleSoundEvent(final ClientboundSoundPacket packet, final CallbackInfo info) {
         AnarchyClient.MODULES.call(new SoundPacketEvent(Minecraft.getInstance(), packet));
     }

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -50,11 +51,11 @@ final class CombatPlacementPlanner {
                 continue;
             }
             if (options.support() && BlockPlacer.findPlacementTarget(client.level, pos).isEmpty()) {
-                for (BlockPos support : supportPositions(client.level, pos)) {
-                    if (shouldTry(client, player, support, options.allowEntitySupport())) {
-                        requests.add(new BlockPlacer.PlacementRequest(support, itemPredicate));
-                    }
+                Optional<BlockPos> support = viableSupport(client, player, pos, options);
+                if (support.isEmpty()) {
+                    continue;
                 }
+                requests.add(new BlockPlacer.PlacementRequest(support.orElseThrow(), itemPredicate));
             }
             requests.add(new BlockPlacer.PlacementRequest(pos, itemPredicate));
         }
@@ -95,6 +96,24 @@ final class CombatPlacementPlanner {
         return positions;
     }
 
+    /**
+     * Returns the first support block (bottom first) that can itself be placed now: it must be
+     * replaceable, have a clickable neighbour, be in range, and pass the self and entity checks.
+     */
+    static Optional<BlockPos> viableSupport(final Minecraft client, final LocalPlayer player, final BlockPos target,
+                                            final Options options) {
+        if (client.level == null) {
+            return Optional.empty();
+        }
+        for (BlockPos support : supportPositions(client.level, target)) {
+            if (shouldTry(client, player, support, options.placeRange(), options.avoidSelf(), !options.allowEntitySupport())
+                    && BlockPlacer.findPlacementTarget(client.level, support).isPresent()) {
+                return Optional.of(support);
+            }
+        }
+        return Optional.empty();
+    }
+
     static boolean isReplaceable(final ClientLevel level, final BlockPos pos) {
         return level != null && BlockPlacer.needsPlacement(level, pos);
     }
@@ -132,17 +151,12 @@ final class CombatPlacementPlanner {
     }
 
     static boolean withinRange(final LocalPlayer player, final BlockPos pos, final double range) {
-        return range <= 0.0 || player.distanceToSqr(Vec3.atCenterOf(pos)) <= range * range;
+        return range <= 0.0 || CombatTargets.canReachBlock(player, pos, range);
     }
 
     private static boolean shouldTry(final Minecraft client, final LocalPlayer player, final BlockPos pos,
                                      final Options options) {
         return shouldTry(client, player, pos, options.placeRange(), options.avoidSelf(), options.avoidEntities());
-    }
-
-    private static boolean shouldTry(final Minecraft client, final LocalPlayer player, final BlockPos pos,
-                                     final boolean allowLivingSupport) {
-        return shouldTry(client, player, pos, 0.0, false, !allowLivingSupport);
     }
 
     private static boolean shouldTry(final Minecraft client, final LocalPlayer player, final BlockPos pos,

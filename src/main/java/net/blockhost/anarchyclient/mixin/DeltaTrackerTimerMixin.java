@@ -5,20 +5,21 @@ import net.blockhost.anarchyclient.timer.TimerManager;
 import net.minecraft.client.DeltaTracker;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(DeltaTracker.Timer.class)
 public abstract class DeltaTrackerTimerMixin {
 
-    @ModifyArg(
+    // Adjust the provider's result, not its argument: Minecraft.getTickTargetMillis clamps the
+    // argument to at least the level tick rate, which would cancel any speed-up.
+    @Redirect(
             method = "advanceGameTime",
             at = @At(
                     value = "INVOKE",
                     target = "Lit/unimi/dsi/fastutil/floats/FloatUnaryOperator;apply(F)F"
-            ),
-            index = 0
+            )
     )
-    private float anarchyclient$applyTimerMultiplier(final float msPerTick) {
-        return TimerManager.adjustMspt(msPerTick);
+    private float anarchyclient$applyTimerMultiplier(final FloatUnaryOperator provider, final float msPerTick) {
+        return TimerManager.adjustMspt(provider.apply(msPerTick));
     }
 }

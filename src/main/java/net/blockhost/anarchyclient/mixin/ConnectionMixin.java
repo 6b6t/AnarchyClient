@@ -7,16 +7,31 @@ import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.blockhost.anarchyclient.event.PacketReceiveEvent;
 import net.blockhost.anarchyclient.event.PacketSendEvent;
 import net.blockhost.anarchyclient.event.PacketSentEvent;
+import net.blockhost.anarchyclient.rotation.ServerRotationTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Fires packet events for the client's own connections.
+ *
+ * <p>Receive events run on the Netty thread so listeners can cancel or replace packets before
+ * vanilla handles them. Listeners must move other side effects to the client thread with
+ * {@code MainThread.run}. Connections owned by the
+ * integrated server (singleplayer and LAN) receive serverbound packets and are skipped.
+ */
 @Mixin(Connection.class)
 public abstract class ConnectionMixin {
+
+    @Shadow
+    public abstract PacketFlow getReceiving();
 
     @Inject(
             method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
@@ -25,6 +40,9 @@ public abstract class ConnectionMixin {
     )
     private void anarchyclient$receivePacket(final ChannelHandlerContext context, final Packet<?> packet,
                                              final CallbackInfo info) {
+        if (!this.anarchyclient$isClientConnection()) {
+            return;
+        }
         PacketReceiveEvent event = AnarchyClient.MODULES.call(new PacketReceiveEvent(
                 Minecraft.getInstance(),
                 (Connection) (Object) this,
@@ -42,7 +60,7 @@ public abstract class ConnectionMixin {
     )
     private void anarchyclient$sendPacket(final Packet<?> packet, final ChannelFutureListener listener,
                                           final boolean flush, final CallbackInfo info) {
-        if (PacketEventSilencer.silent()) {
+        if (PacketEventSilencer.silent() || !this.anarchyclient$isClientConnection()) {
             return;
         }
         PacketSendEvent event = AnarchyClient.MODULES.call(new PacketSendEvent(
@@ -66,8 +84,18 @@ public abstract class ConnectionMixin {
     )
     private void anarchyclient$sentPacket(final Packet<?> packet, final ChannelFutureListener listener,
                                           final boolean flush, final CallbackInfo info) {
+        if (!this.anarchyclient$isClientConnection()) {
+            return;
+        }
+        // Silent sends (replaced or delayed packets) also reach the server, so they count too.
+        ServerRotationTracker.onSent(packet);
         if (!PacketEventSilencer.silent()) {
             AnarchyClient.MODULES.call(new PacketSentEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
         }
+    }
+
+    @Unique
+    private boolean anarchyclient$isClientConnection() {
+        return this.getReceiving() == PacketFlow.CLIENTBOUND;
     }
 }

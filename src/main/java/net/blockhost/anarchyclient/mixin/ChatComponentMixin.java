@@ -52,7 +52,16 @@ public abstract class ChatComponentMixin {
         }
     }
 
-    @Inject(method = "clearMessages", at = @At("HEAD"), cancellable = true)
+    // Runs after vanilla flushes the delayed chat queue and the deletion queue, so only the
+    // visible messages and history survive.
+    @Inject(
+            method = "clearMessages",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/client/gui/components/ChatComponent;trimmedMessages:Ljava/util/List;"
+            ),
+            cancellable = true
+    )
     private void anarchyclient$preventChatClear(final boolean history, final CallbackInfo info) {
         if (BetterChatModule.shouldPreventClearMessages()) {
             info.cancel();

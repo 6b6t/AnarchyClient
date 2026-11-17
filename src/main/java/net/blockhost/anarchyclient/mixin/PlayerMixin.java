@@ -23,11 +23,15 @@ public abstract class PlayerMixin {
 
     @Inject(method = "blockInteractionRange", at = @At("RETURN"), cancellable = true)
     private void anarchyclient$extendBlockReach(final CallbackInfoReturnable<Double> info) {
-        info.setReturnValue(info.getReturnValue() + ReachModule.blockBonus());
+        if ((Object) this == Minecraft.getInstance().player) {
+            info.setReturnValue(info.getReturnValue() + ReachModule.blockBonus());
+        }
     }
 
     @Inject(method = "entityInteractionRange", at = @At("RETURN"), cancellable = true)
     private void anarchyclient$extendEntityReach(final CallbackInfoReturnable<Double> info) {
-        info.setReturnValue(info.getReturnValue() + ReachModule.entityBonus());
+        if ((Object) this == Minecraft.getInstance().player) {
+            info.setReturnValue(info.getReturnValue() + ReachModule.entityBonus());
+        }
     }
 }

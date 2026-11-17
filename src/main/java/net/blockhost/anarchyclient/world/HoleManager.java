@@ -1,9 +1,10 @@
 package net.blockhost.anarchyclient.world;
 
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,7 +15,7 @@ public final class HoleManager {
     private HoleManager() {
     }
 
-    public static List<BlockPos> nearbyHoles(final ClientLevel level, final BlockPos center, final int radius) {
+    public static List<BlockPos> nearbyHoles(final BlockGetter level, final BlockPos center, final int radius) {
         List<BlockPos> holes = new ArrayList<>();
         for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
             for (int y = center.getY() - 1; y <= center.getY() + 1; y++) {
@@ -30,10 +31,10 @@ public final class HoleManager {
         return holes;
     }
 
-    public static boolean isHole(final ClientLevel level, final BlockPos pos) {
+    public static boolean isHole(final BlockGetter level, final BlockPos pos) {
         if (level == null
-                || !level.getBlockState(pos).canBeReplaced()
-                || !level.getBlockState(pos.above()).canBeReplaced()
+                || !isOpen(level.getBlockState(pos))
+                || !isOpen(level.getBlockState(pos.above()))
                 || !isSafeWall(level, pos.below())) {
             return false;
         }
@@ -45,7 +46,12 @@ public final class HoleManager {
         return true;
     }
 
-    public static boolean isSafeWall(final ClientLevel level, final BlockPos pos) {
+    /** Open space a player can stand in: replaceable and free of fluid such as lava or water. */
+    public static boolean isOpen(final BlockState state) {
+        return state.canBeReplaced() && state.getFluidState().isEmpty();
+    }
+
+    public static boolean isSafeWall(final BlockGetter level, final BlockPos pos) {
         return level.getBlockState(pos).is(Blocks.BEDROCK)
                 || level.getBlockState(pos).is(Blocks.OBSIDIAN)
                 || level.getBlockState(pos).is(Blocks.CRYING_OBSIDIAN)

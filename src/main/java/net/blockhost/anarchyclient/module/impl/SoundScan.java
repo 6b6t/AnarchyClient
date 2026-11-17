@@ -23,7 +23,7 @@ final class SoundScan {
             if (id.isEmpty()) {
                 continue;
             }
-            Identifier identifier = id.contains(":") ? Identifier.tryParse(id) : Identifier.withDefaultNamespace(id);
+            Identifier identifier = Identifier.tryParse(id);
             if (identifier != null && BuiltInRegistries.SOUND_EVENT.containsKey(identifier)) {
                 sounds.add(identifier);
             }

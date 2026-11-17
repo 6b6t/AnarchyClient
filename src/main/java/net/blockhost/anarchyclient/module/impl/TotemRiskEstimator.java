@@ -7,6 +7,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.monster.Creeper;
+import net.minecraft.world.phys.Vec3;
 
 final class TotemRiskEstimator {
 
@@ -16,6 +17,9 @@ final class TotemRiskEstimator {
             EquipmentSlot.LEGS,
             EquipmentSlot.FEET
     };
+
+    private static final double TNT_POWER = 4.0;
+    private static final double CREEPER_POWER = 3.0;
 
     private TotemRiskEstimator() {
     }
@@ -46,14 +50,12 @@ final class TotemRiskEstimator {
         double predictedDamage = 0.0;
         double rangeSqr = range * range;
         for (Entity entity : entities) {
-            double maxDamage = maxExplosionDamage(entity);
-            if (maxDamage <= 0.0) {
+            double power = explosionPower(entity);
+            if (power <= 0.0 || player.distanceToSqr(entity) > rangeSqr) {
                 continue;
             }
-            double distanceSqr = player.distanceToSqr(entity);
-            if (distanceSqr <= rangeSqr) {
-                predictedDamage = Math.max(predictedDamage, estimateExplosionDamage(distanceSqr, range, maxDamage));
-            }
+            predictedDamage = Math.max(predictedDamage,
+                    DamageEstimator.explosionDamage(player, explosionCenter(entity), power));
         }
         return predictedDamage;
     }
@@ -82,6 +84,10 @@ final class TotemRiskEstimator {
         return predictedDamage >= damageUntilThreshold(health, healthThreshold);
     }
 
+    /**
+     * Generic distance falloff kept for {@code AutoTotemModule.estimateExplosionDamage}. Real
+     * predictions use {@link DamageEstimator}.
+     */
     static double estimateExplosionDamage(final double distanceSqr, final double range, final double maxDamage) {
         if (range <= 0.0 || maxDamage <= 0.0) {
             return 0.0;
@@ -91,16 +97,27 @@ final class TotemRiskEstimator {
         return ((exposure * exposure + exposure) / 2.0) * maxDamage;
     }
 
-    private static double maxExplosionDamage(final Entity entity) {
+    /** Explosion power vanilla uses when this entity explodes, or 0 if it cannot explode. */
+    static double explosionPower(final Entity entity) {
         if (!entity.isAlive()) {
             return 0.0;
         }
-        if (entity instanceof EndCrystal || entity instanceof PrimedTnt) {
-            return 20.0;
+        if (entity instanceof EndCrystal) {
+            return DamageEstimator.CRYSTAL_POWER;
         }
-        if (entity instanceof Creeper) {
-            return 18.0;
+        if (entity instanceof PrimedTnt) {
+            return TNT_POWER;
+        }
+        if (entity instanceof Creeper creeper) {
+            return creeper.isPowered() ? CREEPER_POWER * 2.0 : CREEPER_POWER;
         }
         return 0.0;
+    }
+
+    private static Vec3 explosionCenter(final Entity entity) {
+        if (entity instanceof PrimedTnt) {
+            return new Vec3(entity.getX(), entity.getY(0.0625), entity.getZ());
+        }
+        return entity.position();
     }
 }

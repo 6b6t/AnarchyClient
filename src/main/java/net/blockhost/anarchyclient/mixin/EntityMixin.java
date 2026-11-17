@@ -21,6 +21,9 @@ public abstract class EntityMixin {
 
     @Inject(method = "makeStuckInBlock", at = @At("HEAD"), cancellable = true)
     private void anarchyclient$noWeb(final BlockState state, final Vec3 speedMultiplier, final CallbackInfo info) {
+        if ((Object) this != Minecraft.getInstance().player) {
+            return;
+        }
         if (NoWebModule.shouldIgnore(state) || NoSlowModule.shouldIgnoreStuckBlock(state)) {
             info.cancel();
         }

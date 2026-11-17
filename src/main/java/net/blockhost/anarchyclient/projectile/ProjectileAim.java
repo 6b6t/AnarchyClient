@@ -1,10 +1,13 @@
 package net.blockhost.anarchyclient.projectile;
 
 import net.blockhost.anarchyclient.rotation.Rotation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 public final class ProjectileAim {
+
+    private static final double MAX_TICK_MOVEMENT_SQR = 10.0 * 10.0;
 
     private ProjectileAim() {
     }
@@ -20,9 +23,18 @@ public final class ProjectileAim {
         Vec3 center = target.getBoundingBox().getCenter();
         double safeVelocity = Math.max(0.1, velocity);
         double travelTicks = shooterEye.distanceTo(center) / safeVelocity;
-        Vec3 lead = target.getDeltaMovement().scale(travelTicks);
+        Vec3 lead = tickMovement(target).scale(travelTicks);
         double dropCompensation = 0.5 * Math.max(0.0, gravity) * travelTicks * travelTicks;
         return center.add(lead.x, lead.y + dropCompensation, lead.z);
+    }
+
+    /**
+     * Movement over the last tick. Remote entities have no synced delta movement on the client,
+     * so this uses the change in position instead. Teleport-sized jumps count as no movement.
+     */
+    public static Vec3 tickMovement(final Entity target) {
+        Vec3 movement = new Vec3(target.getX() - target.xo, target.getY() - target.yo, target.getZ() - target.zo);
+        return movement.lengthSqr() > MAX_TICK_MOVEMENT_SQR ? Vec3.ZERO : movement;
     }
 
     public static double throwableVelocity(final String type) {
