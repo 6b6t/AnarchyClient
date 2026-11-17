@@ -1,13 +1,54 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(MinecraftBootstrapExtension.class)
 class DamageEstimatorTest {
+
+    private static final BlockPos ANCHOR = new BlockPos(0, 64, 0);
+    private static final AABB PLAYER_BOX = new AABB(2.2, 64.0, 0.2, 2.8, 65.8, 0.8);
+
+    @Test
+    void explodingBlockShieldsEveryRayUnlessRemoved() {
+        BlockGetter level = new MapBlockGetter(Map.of(ANCHOR, Blocks.RESPAWN_ANCHOR.defaultBlockState()));
+        Vec3 center = DamageEstimator.blockCenter(ANCHOR);
+
+        assertEquals(0.0F, DamageEstimator.seenPercent(level, center, PLAYER_BOX, CollisionContext.empty()));
+        BlockGetter removed = new DamageEstimator.RemovedBlocksGetter(level, Set.of(ANCHOR));
+        assertEquals(1.0F, DamageEstimator.seenPercent(removed, center, PLAYER_BOX, CollisionContext.empty()));
+    }
+
+    @Test
+    void removedBlocksKeepOtherCover() {
+        BlockPos wall = new BlockPos(1, 64, 0);
+        BlockPos wallAbove = wall.above();
+        BlockGetter level = new MapBlockGetter(Map.of(
+                ANCHOR, Blocks.RESPAWN_ANCHOR.defaultBlockState(),
+                wall, Blocks.OBSIDIAN.defaultBlockState(),
+                wallAbove, Blocks.OBSIDIAN.defaultBlockState()));
+        BlockGetter removed = new DamageEstimator.RemovedBlocksGetter(level, Set.of(ANCHOR));
+
+        assertEquals(0.0F, DamageEstimator.seenPercent(removed, DamageEstimator.blockCenter(ANCHOR), PLAYER_BOX,
+                CollisionContext.empty()));
+    }
 
     @Test
     void matchesVanillaCrystalDamageCurve() {
@@ -52,5 +93,33 @@ class DamageEstimatorTest {
     void crystalsExplodeAtTheBottomCenterOfTheirBlock() {
         assertEquals(new Vec3(1.5, 2.0, 3.5), DamageEstimator.crystalCenter(new BlockPos(1, 2, 3)));
         assertEquals(new Vec3(1.5, 2.5, 3.5), DamageEstimator.blockCenter(new BlockPos(1, 2, 3)));
+    }
+
+    private record MapBlockGetter(Map<BlockPos, BlockState> blocks) implements BlockGetter {
+
+        @Override
+        public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+            return null;
+        }
+
+        @Override
+        public BlockState getBlockState(final BlockPos pos) {
+            return this.blocks.getOrDefault(pos, Blocks.AIR.defaultBlockState());
+        }
+
+        @Override
+        public FluidState getFluidState(final BlockPos pos) {
+            return this.getBlockState(pos).getFluidState();
+        }
+
+        @Override
+        public int getHeight() {
+            return 384;
+        }
+
+        @Override
+        public int getMinY() {
+            return -64;
+        }
     }
 }

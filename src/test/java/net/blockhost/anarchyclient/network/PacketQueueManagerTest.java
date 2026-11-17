@@ -36,33 +36,59 @@ class PacketQueueManagerTest {
         this.queue("ping_spoof", 2);
         this.queue("backtrack", 3);
 
-        this.queue.release("backtrack", entry -> true);
+        assertEquals(2, this.queue.release("backtrack", entry -> true));
 
-        assertEquals(List.of(1L), this.delivered);
+        assertEquals(List.of(1L, 3L), this.delivered);
         assertEquals(1, this.queue.size("ping_spoof"));
+        assertEquals(1, this.queue.totalSize());
     }
 
     @Test
-    void releasedPacketsWaitForOlderPacketsOfOtherOwners() {
+    void releasedPacketsDoNotWaitForPacketsAnotherOwnerStillHolds() {
         this.queue("ping_spoof", 1);
         this.queue("backtrack", 2);
+        this.queue("backtrack", 3);
 
         this.queue.release("backtrack", entry -> true);
-        assertEquals(List.of(), this.delivered);
+        assertEquals(List.of(2L, 3L), this.delivered);
 
         this.queue.release("ping_spoof", entry -> true);
-        assertEquals(List.of(1L, 2L), this.delivered);
+        assertEquals(List.of(2L, 3L, 1L), this.delivered);
+        assertEquals(0, this.queue.totalSize());
     }
 
     @Test
-    void droppingOneOwnerDeliversReleasedPacketsBehindIt() {
+    void partialReleaseKeepsOwnerOrder() {
+        this.queue("backtrack", 5);
+        this.queue("backtrack", 2);
+
+        // Packet 2 matches but stays behind the newer packet 5 so it cannot overtake it.
+        assertEquals(0, this.queue.release("backtrack", entry -> entry.createdAtMillis() < 3));
+        assertEquals(List.of(), this.delivered);
+
+        assertEquals(2, this.queue.release("backtrack", entry -> entry.createdAtMillis() < 6));
+        assertEquals(List.of(5L, 2L), this.delivered);
+    }
+
+    @Test
+    void droppingOneOwnerKeepsOtherOwnersPackets() {
         this.queue("ping_spoof", 1);
         this.queue("backtrack", 2);
-        this.queue.release("backtrack", entry -> true);
 
         assertEquals(1, this.queue.drop("ping_spoof"));
-        assertEquals(List.of(2L), this.delivered);
-        assertEquals(0, this.queue.totalSize());
+        assertEquals(List.of(), this.delivered);
+        assertEquals(1, this.queue.size("backtrack"));
+    }
+
+    @Test
+    void packetLimitCountsOnlyTheOwnersOwnPackets() {
+        this.queue("ping_spoof", 1);
+        this.queue("ping_spoof", 2);
+        this.queue("backtrack", 3);
+        this.queue("backtrack", 4);
+
+        assertEquals(List.of(), this.delivered);
+        assertEquals(4, this.queue.totalSize());
     }
 
     private void queue(final String owner, final long sequence) {

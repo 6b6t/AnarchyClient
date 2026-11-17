@@ -1,7 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.google.gson.JsonObject;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -31,8 +33,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
-public final class BedAuraModule extends Module {
+public final class BedAuraModule extends Module implements ModuleConfigMigration {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -90,6 +93,16 @@ public final class BedAuraModule extends Module {
 
     public BedAuraModule() {
         super("bed_aura", "Bed Aura", ModuleCategory.COMBAT, "Places and detonates beds within reach near targets outside the Overworld. Damage values are in HP.");
+    }
+
+    /** Moves configs saved with the old defaults to the current ones. */
+    @Override
+    public void migrateConfig(final JsonObject moduleJson, final int savedVersion) {
+        if (savedVersion >= VANILLA_DAMAGE_DEFAULTS) {
+            return;
+        }
+        ModuleConfigMigration.upgradeDefault(moduleJson, "min_damage", 5.0, 6.0);
+        ModuleConfigMigration.upgradeDefault(moduleJson, "max_self_damage", 8.0, 12.0);
     }
 
     @Override
@@ -164,7 +177,8 @@ public final class BedAuraModule extends Module {
                     // The explosion happens at the head, whichever half is clicked.
                     if (state.getBlock() instanceof BedBlock && state.getValue(BedBlock.PART) == BedPart.HEAD
                             && CombatTargets.canReachBlock(client.player, pos)) {
-                        score(client, target, pos, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
+                        BlockPos foot = pos.relative(state.getValue(BedBlock.FACING).getOpposite());
+                        score(client, target, pos, pos, foot, maxSelfDamage, minDamage).ifPresent(scores::add);
                     }
                 }
             }
@@ -201,7 +215,7 @@ public final class BedAuraModule extends Module {
                             || !client.level.isUnobstructed(null, Shapes.block().move(foot))) {
                         continue;
                     }
-                    score(client, target, foot, head, maxSelfDamage, minDamage).ifPresent(scores::add);
+                    score(client, target, foot, head, foot, maxSelfDamage, minDamage).ifPresent(scores::add);
                 }
             }
         }
@@ -227,10 +241,13 @@ public final class BedAuraModule extends Module {
     }
 
     private static Optional<ScoredBed> score(final Minecraft client, final Player target, final BlockPos clickPos,
-                                             final BlockPos head, final double maxSelfDamage, final double minDamage) {
+                                             final BlockPos head, final BlockPos foot, final double maxSelfDamage,
+                                             final double minDamage) {
         Vec3 explosion = DamageEstimator.blockCenter(head);
-        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.BED_POWER);
-        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.BED_POWER);
+        // Vanilla removes both bed halves before the explosion, so the bed does not shield anyone.
+        Set<BlockPos> removed = Set.of(head.immutable(), foot.immutable());
+        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.BED_POWER, removed);
+        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.BED_POWER, removed);
         double selfHealth = client.player.getHealth() + client.player.getAbsorptionAmount();
         if (targetDamage < minDamage || selfDamage > maxSelfDamage || selfDamage >= selfHealth) {
             return Optional.empty();

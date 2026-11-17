@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.google.gson.JsonObject;
 import net.minecraft.world.InteractionHand;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -22,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public final class CrystalAuraModule extends Module {
+public final class CrystalAuraModule extends Module implements ModuleConfigMigration {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -101,6 +103,16 @@ public final class CrystalAuraModule extends Module {
     public CrystalAuraModule() {
         super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT,
                 "Places and breaks end crystals within reach near targets. Damage values are in HP and skip crystals that would kill you.");
+    }
+
+    /** Moves configs saved with the old defaults to the current ones. */
+    @Override
+    public void migrateConfig(final JsonObject moduleJson, final int savedVersion) {
+        if (savedVersion >= VANILLA_DAMAGE_DEFAULTS) {
+            return;
+        }
+        ModuleConfigMigration.upgradeDefault(moduleJson, "min_damage", 4.0, 6.0);
+        ModuleConfigMigration.upgradeDefault(moduleJson, "max_self_damage", 8.0, 12.0);
     }
 
     @Override

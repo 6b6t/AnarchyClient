@@ -1,10 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -20,7 +22,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.List;
 
-public final class AutoTotemModule extends Module {
+public final class AutoTotemModule extends Module implements ModuleConfigMigration {
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
@@ -95,6 +97,15 @@ public final class AutoTotemModule extends Module {
 
     public AutoTotemModule() {
         super("auto_totem", "Auto Totem", ModuleCategory.COMBAT, "Keeps a totem ready in the offhand by scoring danger, inventory state, and configured replacement rules.");
+    }
+
+    /** Moves configs saved with the old defaults to the current ones. */
+    @Override
+    public void migrateConfig(final JsonObject moduleJson, final int savedVersion) {
+        if (savedVersion >= VANILLA_DAMAGE_DEFAULTS) {
+            return;
+        }
+        ModuleConfigMigration.upgradeDefault(moduleJson, "explosion_range", 6.0, 12.0);
     }
 
     @Override

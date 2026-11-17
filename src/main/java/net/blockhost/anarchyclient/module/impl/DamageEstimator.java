@@ -8,8 +8,20 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ServerExplosion;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Set;
 
 /**
  * Estimates explosion damage with the vanilla formulas from {@code ExplosionDamageCalculator},
@@ -43,6 +55,58 @@ public final class DamageEstimator {
         }
         double exposure = ServerExplosion.getSeenPercent(center, entity);
         return applyDefenses(entity, rawDamage(distance, power, exposure));
+    }
+
+    /**
+     * Same as {@link #explosionDamage} but treats {@code removedBlocks} as air. Respawn anchors and
+     * beds remove themselves before they explode, so the block that explodes must not shield the
+     * entity from its own explosion.
+     */
+    public static double explosionDamage(final LivingEntity entity, final Vec3 center, final double power,
+                                         final Set<BlockPos> removedBlocks) {
+        if (entity == null || center == null || power <= 0.0) {
+            return 0.0;
+        }
+        double distance = Math.sqrt(entity.distanceToSqr(center));
+        if (distance > power * 2.0) {
+            return 0.0;
+        }
+        double exposure = seenPercent(new RemovedBlocksGetter(entity.level(), removedBlocks), center,
+                entity.getBoundingBox(), CollisionContext.of(entity));
+        return applyDefenses(entity, rawDamage(distance, power, exposure));
+    }
+
+    /**
+     * Vanilla {@code ServerExplosion.getSeenPercent} against an arbitrary block view: the share of
+     * sample points in {@code box} with an unobstructed collider line to {@code center}.
+     */
+    static float seenPercent(final BlockGetter level, final Vec3 center, final AABB box, final CollisionContext context) {
+        double xs = 1.0 / ((box.maxX - box.minX) * 2.0 + 1.0);
+        double ys = 1.0 / ((box.maxY - box.minY) * 2.0 + 1.0);
+        double zs = 1.0 / ((box.maxZ - box.minZ) * 2.0 + 1.0);
+        double xOffset = (1.0 - Math.floor(1.0 / xs) * xs) / 2.0;
+        double zOffset = (1.0 - Math.floor(1.0 / zs) * zs) / 2.0;
+        if (xs < 0.0 || ys < 0.0 || zs < 0.0) {
+            return 0.0F;
+        }
+        int hits = 0;
+        int count = 0;
+        for (double xx = 0.0; xx <= 1.0; xx += xs) {
+            for (double yy = 0.0; yy <= 1.0; yy += ys) {
+                for (double zz = 0.0; zz <= 1.0; zz += zs) {
+                    double x = Mth.lerp(xx, box.minX, box.maxX);
+                    double y = Mth.lerp(yy, box.minY, box.maxY);
+                    double z = Mth.lerp(zz, box.minZ, box.maxZ);
+                    Vec3 from = new Vec3(x + xOffset, y, z + zOffset);
+                    ClipContext clip = new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, context);
+                    if (level.clip(clip).getType() == HitResult.Type.MISS) {
+                        hits++;
+                    }
+                    count++;
+                }
+            }
+        }
+        return (float) hits / count;
     }
 
     /** Same as {@link #explosionDamage} but assumes no blocks shield the entity. */
@@ -117,5 +181,34 @@ public final class DamageEstimator {
         damage = afterArmor(damage, entity.getArmorValue(), entity.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
         MobEffectInstance resistance = entity.getEffect(MobEffects.RESISTANCE);
         return afterResistance(damage, resistance == null ? -1 : resistance.getAmplifier());
+    }
+
+    /** A block view that reports air at the removed positions and delegates everything else. */
+    record RemovedBlocksGetter(BlockGetter level, Set<BlockPos> removed) implements BlockGetter {
+
+        @Override
+        public @Nullable BlockEntity getBlockEntity(final BlockPos pos) {
+            return this.removed.contains(pos) ? null : this.level.getBlockEntity(pos);
+        }
+
+        @Override
+        public BlockState getBlockState(final BlockPos pos) {
+            return this.removed.contains(pos) ? Blocks.AIR.defaultBlockState() : this.level.getBlockState(pos);
+        }
+
+        @Override
+        public FluidState getFluidState(final BlockPos pos) {
+            return this.removed.contains(pos) ? Blocks.AIR.defaultBlockState().getFluidState() : this.level.getFluidState(pos);
+        }
+
+        @Override
+        public int getHeight() {
+            return this.level.getHeight();
+        }
+
+        @Override
+        public int getMinY() {
+            return this.level.getMinY();
+        }
     }
 }

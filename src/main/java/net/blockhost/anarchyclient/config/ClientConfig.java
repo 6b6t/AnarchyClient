@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.blockhost.anarchyclient.friends.FriendManager;
@@ -34,6 +35,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class ClientConfig {
+
+    /** Bump when a {@link ModuleConfigMigration} needs to know which files predate a change. */
+    static final int CONFIG_VERSION = ModuleConfigMigration.VANILLA_DAMAGE_DEFAULTS;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
     private static final long SAVE_DELAY_NANOS = TimeUnit.MILLISECONDS.toNanos(500);
@@ -108,11 +112,12 @@ public final class ClientConfig {
             if (moduleRoot == null) {
                 return;
             }
+            int savedVersion = savedVersion(root);
             boolean migratedFriends = this.migrateLegacyFriends(moduleRoot);
             for (Module module : this.modules.all()) {
                 JsonObject moduleJson = findObject(moduleRoot, module.id(), module.aliases());
                 if (moduleJson != null) {
-                    this.loadModule(module, moduleJson);
+                    this.loadModule(module, moduleJson, savedVersion);
                 }
             }
             if (migratedFriends) {
@@ -132,10 +137,16 @@ public final class ClientConfig {
      * Loads one module. Settings and the keybind load before the enabled state, so {@code onEnable} sees
      * the saved settings. A bad value only skips that value and keeps the rest of the config.
      */
-    private void loadModule(final Module module, final JsonObject moduleJson) {
+    /** Format version of a saved config; files written before versioning count as version 1. */
+    static int savedVersion(final JsonObject root) {
+        JsonElement version = root.get("version");
+        return version instanceof JsonPrimitive primitive && primitive.isNumber() ? primitive.getAsInt() : 1;
+    }
+
+    private void loadModule(final Module module, final JsonObject moduleJson, final int savedVersion) {
         if (module instanceof ModuleConfigMigration migration) {
             try {
-                migration.migrateConfig(moduleJson);
+                migration.migrateConfig(moduleJson, savedVersion);
             } catch (RuntimeException exception) {
                 LOGGER.warn("Failed to migrate config for module {}", module.id(), exception);
             }
@@ -301,6 +312,7 @@ public final class ClientConfig {
             return;
         }
         JsonObject root = new JsonObject();
+        root.addProperty("version", CONFIG_VERSION);
         JsonObject moduleRoot = new JsonObject();
         root.add("modules", moduleRoot);
         this.saveUi(root);

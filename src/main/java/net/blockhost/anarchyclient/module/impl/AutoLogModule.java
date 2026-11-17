@@ -137,6 +137,7 @@ public final class AutoLogModule extends Module {
 
     @Override
     public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
+        clearSafetyDisconnect();
         this.reset();
     }
 
@@ -199,6 +200,11 @@ public final class AutoLogModule extends Module {
         boolean value = safetyDisconnect;
         safetyDisconnect = false;
         return value;
+    }
+
+    /** Forgets an Auto Log disconnect from an earlier session. */
+    static void clearSafetyDisconnect() {
+        safetyDisconnect = false;
     }
 
     private void disconnect(final Minecraft client, final String reason) {

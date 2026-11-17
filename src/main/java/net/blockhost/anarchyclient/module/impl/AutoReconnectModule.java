@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.Component;
@@ -44,7 +45,8 @@ public final class AutoReconnectModule extends Module {
             return;
         }
         if (client.level != null && client.getCurrentServer() != null) {
-            AutoLogModule.consumeSafetyDisconnect();
+            // Auto Log disconnects during its tick, so the level can still exist here. Keep its flag
+            // until the disconnected screen decides whether to reconnect.
             this.lastServer = copyServer(client.getCurrentServer());
             this.reconnectTicks = this.delaySeconds.value().intValue() * 20;
             return;
@@ -74,6 +76,12 @@ public final class AutoReconnectModule extends Module {
                 null
         );
         this.reconnectTicks = this.delaySeconds.value().intValue() * 20;
+    }
+
+    @Override
+    public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
+        // A new session started, so an Auto Log disconnect from an earlier session no longer applies.
+        AutoLogModule.clearSafetyDisconnect();
     }
 
     static ServerData copyServer(final ServerData server) {

@@ -29,7 +29,8 @@ public final class NoRotateSetModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.player == null) {
+        LocalPlayer player = client.player;
+        if (player == null) {
             return false;
         }
         if (shouldCancel(packet)) {
@@ -39,23 +40,18 @@ public final class NoRotateSetModule extends Module {
                 && packet instanceof ClientboundPlayerPositionPacket positionPacket
                 && hasRotation(positionPacket)) {
             // A setback must reach vanilla so it confirms the teleport; cancelling it leaves the player stuck.
-            // Vanilla handles the packet on the client thread after this first task, and the nested task queues
-            // behind that handling, so the rotation from before the setback is put back afterwards.
+            // This hook runs on the Netty thread before vanilla queues the packet on its packet processor.
+            // Minecraft.runTick handles queued packets before it runs queued tasks, so the rotation is read
+            // here and the task below puts it back after vanilla applied the setback.
+            float yaw = player.getYRot();
+            float pitch = player.getXRot();
             MainThread.run(() -> {
-                LocalPlayer player = client.player;
-                if (player == null) {
-                    return;
+                if (client.player == player) {
+                    player.setYRot(yaw);
+                    player.setXRot(pitch);
+                    player.yRotO = yaw;
+                    player.xRotO = pitch;
                 }
-                float yaw = player.getYRot();
-                float pitch = player.getXRot();
-                client.execute(() -> {
-                    if (client.player == player) {
-                        player.setYRot(yaw);
-                        player.setXRot(pitch);
-                        player.yRotO = yaw;
-                        player.xRotO = pitch;
-                    }
-                });
             });
         }
         return false;

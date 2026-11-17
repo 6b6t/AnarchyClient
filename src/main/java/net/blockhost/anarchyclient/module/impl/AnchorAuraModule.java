@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import com.google.gson.JsonObject;
 import net.minecraft.world.InteractionHand;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -29,8 +31,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
-public final class AnchorAuraModule extends Module {
+public final class AnchorAuraModule extends Module implements ModuleConfigMigration {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -91,7 +94,18 @@ public final class AnchorAuraModule extends Module {
 
     public AnchorAuraModule() {
         super("anchor_aura", "Anchor Aura", ModuleCategory.COMBAT,
-                "Places, charges with one glowstone, and detonates respawn anchors within reach near targets. Inactive in the Nether.");
+                "Places, charges with one glowstone, and detonates respawn anchors within reach near targets. "
+                        + "Inactive in the Nether. Does not charge or detonate while you hold glowstone in your offhand.");
+    }
+
+    /** Moves configs saved with the old defaults to the current ones. */
+    @Override
+    public void migrateConfig(final JsonObject moduleJson, final int savedVersion) {
+        if (savedVersion >= VANILLA_DAMAGE_DEFAULTS) {
+            return;
+        }
+        ModuleConfigMigration.upgradeDefault(moduleJson, "min_damage", 5.0, 6.0);
+        ModuleConfigMigration.upgradeDefault(moduleJson, "max_self_damage", 8.0, 12.0);
     }
 
     @Override
@@ -120,7 +134,8 @@ public final class AnchorAuraModule extends Module {
                 this.detonate(client, anchor);
                 return;
             }
-            if (this.charge.value()) {
+            // With glowstone in the offhand the anchor cannot be detonated, so charging would only leave it armed.
+            if (this.charge.value() && !client.player.getOffhandItem().is(Items.GLOWSTONE)) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, anchor.pos(), Direction.UP,
                         stack -> stack.is(Items.GLOWSTONE), true);
                 if (result == WorldInteraction.ActionResult.DONE) {
@@ -239,8 +254,10 @@ public final class AnchorAuraModule extends Module {
     private static Optional<ScoredAnchor> score(final Minecraft client, final Player target, final BlockPos pos,
                                                          final double maxSelfDamage, final double minDamage) {
         Vec3 explosion = DamageEstimator.blockCenter(pos);
-        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.ANCHOR_POWER);
-        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.ANCHOR_POWER);
+        // Vanilla removes the anchor before it explodes, so the anchor does not shield anyone.
+        Set<BlockPos> removed = Set.of(pos.immutable());
+        double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.ANCHOR_POWER, removed);
+        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.ANCHOR_POWER, removed);
         double selfHealth = client.player.getHealth() + client.player.getAbsorptionAmount();
         if (targetDamage < minDamage || selfDamage > maxSelfDamage || selfDamage >= selfHealth) {
             return Optional.empty();
