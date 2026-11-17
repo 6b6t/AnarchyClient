@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
@@ -19,6 +20,13 @@ public final class WorldLineRenderer {
         box(matrices, submits, box, color, AnarchyClientRenderPipelines.LINES_NO_DEPTH);
     }
 
+    /**
+     * Draws a box outline that blocks in front of it hide, using vanilla's depth-tested translucent lines.
+     */
+    public static void boxDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
+        box(matrices, submits, box, color, RenderTypes.linesTranslucent());
+    }
+
     private static void box(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color,
                             final RenderType renderType) {
         submits.submitCustomGeometry(matrices, renderType, (pose, vertices) -> {
@@ -27,7 +35,19 @@ public final class WorldLineRenderer {
     }
 
     public static void fillNoDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
-        submits.submitCustomGeometry(matrices, AnarchyClientRenderPipelines.QUADS_NO_DEPTH, (pose, vertices) -> {
+        fill(matrices, submits, box, color, AnarchyClientRenderPipelines.QUADS_NO_DEPTH);
+    }
+
+    /**
+     * Fills a box that blocks in front of it hide, using vanilla's depth-tested debug quads.
+     */
+    public static void fillDepth(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color) {
+        fill(matrices, submits, box, color, RenderTypes.debugQuads());
+    }
+
+    private static void fill(final PoseStack matrices, final SubmitNodeCollector submits, final AABB box, final Color color,
+                             final RenderType renderType) {
+        submits.submitCustomGeometry(matrices, renderType, (pose, vertices) -> {
             quad(pose, vertices, box.minX, box.minY, box.minZ, box.maxX, box.minY, box.minZ, box.maxX, box.maxY, box.minZ, box.minX, box.maxY, box.minZ, color);
             quad(pose, vertices, box.maxX, box.minY, box.maxZ, box.minX, box.minY, box.maxZ, box.minX, box.maxY, box.maxZ, box.maxX, box.maxY, box.maxZ, color);
             quad(pose, vertices, box.minX, box.minY, box.maxZ, box.minX, box.minY, box.minZ, box.minX, box.maxY, box.minZ, box.minX, box.maxY, box.maxZ, color);

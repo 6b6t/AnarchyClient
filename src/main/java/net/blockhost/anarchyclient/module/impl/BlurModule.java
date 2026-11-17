@@ -2,33 +2,29 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
 
 public final class BlurModule extends Module {
 
-    private final NumberSetting opacity = this.setting(NumberSetting.from(NumberSetting.builder()
-            .id("opacity")
-            .name("Opacity")
-            .defaultValue(90.0)
-            .min(10.0)
-            .max(180.0)
-            .step(5.0)
-            .build()));
-
     public BlurModule() {
         super("blur", "Blur", ModuleCategory.RENDER,
-                "Darkens the background behind open game screens with an overlay of adjustable opacity.");
+                "Blurs the world behind inventories, containers, and other in-game screens using the vanilla Menu Background Blur strength.");
     }
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (client.gui.screen() == null || client.gui.screen() instanceof AnarchyClientScreen) {
+        if (!shouldBlur(client.gui.screen()) || client.options.getMenuBackgroundBlurriness() < 1) {
             return;
         }
-        int alpha = Math.max(0, Math.min(255, this.opacity.value().intValue()));
-        graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), alpha << 24);
+        // Vanilla only blurs once per frame and never does so for in-game UI screens, so this cannot collide with it.
+        graphics.nextStratum();
+        graphics.blurBeforeThisStratum();
+    }
+
+    static boolean shouldBlur(final Screen screen) {
+        return screen != null && !(screen instanceof AnarchyClientScreen) && screen.isInGameUi();
     }
 }

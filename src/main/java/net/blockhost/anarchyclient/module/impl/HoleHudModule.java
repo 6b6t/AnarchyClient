@@ -1,7 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 
 import java.util.List;
 
@@ -9,7 +8,7 @@ public final class HoleHudModule extends HudElementModule {
 
     public HoleHudModule() {
         super("hole_hud", "Hole HUD",
-                "Shows whether solid blocks surround you on all four sides and below.", "Top Right");
+                "Shows whether bedrock, obsidian, or other blast-proof blocks surround you on all four sides and below.", "Top Right");
     }
 
     @Override
@@ -26,19 +25,6 @@ public final class HoleHudModule extends HudElementModule {
         if (client.player == null || client.level == null) {
             return false;
         }
-        BlockPos pos = client.player.blockPosition();
-        return HoleEspModule.isHole(
-                client.level.getBlockState(pos).isAir(),
-                client.level.getBlockState(pos.above()).isAir(),
-                isSafe(client, pos.below()),
-                isSafe(client, pos.north()),
-                isSafe(client, pos.south()),
-                isSafe(client, pos.east()),
-                isSafe(client, pos.west())
-        );
-    }
-
-    private static boolean isSafe(final Minecraft client, final BlockPos pos) {
-        return !client.level.getBlockState(pos).getCollisionShape(client.level, pos).isEmpty();
+        return HoleEspModule.isHole(client.level, client.player.blockPosition());
     }
 }

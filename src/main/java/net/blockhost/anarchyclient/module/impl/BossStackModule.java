@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -18,25 +19,43 @@ public final class BossStackModule extends HudElementModule {
 
     public BossStackModule() {
         super("boss_stack", "Boss Stack",
-                "Lists active boss bars with their names and progress percentages.", "Top Right");
+                "Lists boss bars received while enabled with their names and progress percentages.", "Top Right");
     }
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         if (packet instanceof ClientboundBossEventPacket bossPacket) {
-            bossPacket.dispatch(new Handler());
+            // Packets arrive on the network thread while the HUD reads the map on the render thread.
+            synchronized (this.bosses) {
+                bossPacket.dispatch(new Handler());
+            }
         }
         return false;
     }
 
     @Override
-    protected List<String> lines(final Minecraft client) {
-        if (this.bosses.isEmpty()) {
-            return List.of();
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.clear();
+    }
+
+    @Override
+    protected void onDisable() {
+        this.clear();
+    }
+
+    private void clear() {
+        synchronized (this.bosses) {
+            this.bosses.clear();
         }
-        return this.bosses.values().stream()
-                .map(info -> info.name() + " " + Math.round(info.progress() * 100.0F) + "%")
-                .toList();
+    }
+
+    @Override
+    protected List<String> lines(final Minecraft client) {
+        synchronized (this.bosses) {
+            return this.bosses.values().stream()
+                    .map(info -> info.name() + " " + Math.round(info.progress() * 100.0F) + "%")
+                    .toList();
+        }
     }
 
     private final class Handler implements ClientboundBossEventPacket.Handler {

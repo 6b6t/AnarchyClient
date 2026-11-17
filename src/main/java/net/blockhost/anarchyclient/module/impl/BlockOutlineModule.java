@@ -28,7 +28,7 @@ public final class BlockOutlineModule extends Module {
 
     public BlockOutlineModule() {
         super("block_outline", "Block Outline", ModuleCategory.RENDER,
-                "Draws a cyan box with optional fill around the targeted block that stays visible through other blocks.");
+                "Draws a cyan box with optional fill around the targeted block, optionally visible through other blocks.");
     }
 
     @Override
@@ -43,12 +43,18 @@ public final class BlockOutlineModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         AABB box = new AABB(hit.getBlockPos()).inflate(0.003).move(camera.scale(-1));
-        WorldLineRenderer.Color outline = this.throughWalls.value()
-                ? new WorldLineRenderer.Color(95, 205, 255, 235)
-                : new WorldLineRenderer.Color(255, 255, 255, 220);
-        if (this.fill.value()) {
-            WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(95, 205, 255, 35));
+        WorldLineRenderer.Color outline = new WorldLineRenderer.Color(95, 205, 255, 235);
+        WorldLineRenderer.Color fillColor = new WorldLineRenderer.Color(95, 205, 255, 35);
+        if (this.throughWalls.value()) {
+            if (this.fill.value()) {
+                WorldLineRenderer.fillNoDepth(matrices, submits, box, fillColor);
+            }
+            WorldLineRenderer.boxNoDepth(matrices, submits, box, outline);
+        } else {
+            if (this.fill.value()) {
+                WorldLineRenderer.fillDepth(matrices, submits, box, fillColor);
+            }
+            WorldLineRenderer.boxDepth(matrices, submits, box, outline);
         }
-        WorldLineRenderer.boxNoDepth(matrices, submits, box, outline);
     }
 }

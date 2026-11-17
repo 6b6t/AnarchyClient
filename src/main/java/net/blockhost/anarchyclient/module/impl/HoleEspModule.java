@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -116,7 +117,7 @@ public final class HoleEspModule extends Module {
             for (int x = center.getX() - radius; x <= center.getX() + radius && results.size() < maxHoles; x++) {
                 for (int z = center.getZ() - radius; z <= center.getZ() + radius && results.size() < maxHoles; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (client.level.isLoaded(pos) && isHole(client, pos)) {
+                    if (client.level.isLoaded(pos) && isHole(client.level, pos)) {
                         results.add(pos.immutable());
                     }
                 }
@@ -125,15 +126,18 @@ public final class HoleEspModule extends Module {
         return List.copyOf(results);
     }
 
-    private static boolean isHole(final Minecraft client, final BlockPos pos) {
+    /**
+     * Whether {@code pos} is an open one-block hole walled and floored by blast-proof blocks. Hole HUD shares this rule.
+     */
+    static boolean isHole(final BlockGetter level, final BlockPos pos) {
         return isHole(
-                client.level.getBlockState(pos).isAir(),
-                client.level.getBlockState(pos.above()).isAir(),
-                safeBlock(client.level.getBlockState(pos.below())),
-                safeBlock(client.level.getBlockState(pos.north())),
-                safeBlock(client.level.getBlockState(pos.south())),
-                safeBlock(client.level.getBlockState(pos.east())),
-                safeBlock(client.level.getBlockState(pos.west()))
+                level.getBlockState(pos).isAir(),
+                level.getBlockState(pos.above()).isAir(),
+                safeBlock(level.getBlockState(pos.below())),
+                safeBlock(level.getBlockState(pos.north())),
+                safeBlock(level.getBlockState(pos.south())),
+                safeBlock(level.getBlockState(pos.east())),
+                safeBlock(level.getBlockState(pos.west()))
         );
     }
 

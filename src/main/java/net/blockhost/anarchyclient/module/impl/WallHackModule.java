@@ -9,10 +9,15 @@ import net.blockhost.anarchyclient.setting.BlockListSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 public final class WallHackModule extends Module {
 
@@ -44,6 +49,7 @@ public final class WallHackModule extends Module {
             .max(512.0)
             .step(16.0)
             .build()));
+    private final Set<BlockPos> highlighted = new HashSet<>();
     private int cooldownTicks;
 
     public WallHackModule() {
@@ -53,22 +59,54 @@ public final class WallHackModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        if (client.level == null) {
+            this.removeAllMarkers();
+            this.cooldownTicks = 0;
+            return;
+        }
+        Set<Block> targets = SetBackedBlocks.ids(this.blocks.value());
+        // Mined or replaced blocks lose their highlight right away instead of waiting for the next scan.
+        List<BlockPos> stale = stalePositions(this.highlighted, targets, pos -> client.level.getBlockState(pos).getBlock());
+        stale.forEach(this::removeMarker);
         if (this.cooldownTicks-- > 0) {
             return;
         }
         int max = this.maxBlocks.value().intValue();
-        for (BlockPos pos : BlockScan.matchingBlocks(client, SetBackedBlocks.ids(this.blocks.value()),
-                this.range.value().intValue(), this.range.value().intValue(), max)) {
-            MarkerManager.put(new CuboidMarker("wall_hack:" + pos.asLong(), new AABB(pos), MarkerStyle.CYAN, 45));
+        Set<BlockPos> found = new HashSet<>(BlockScan.matchingBlocks(client, targets,
+                this.range.value().intValue(), this.range.value().intValue(), max));
+        List.copyOf(this.highlighted).stream()
+                .filter(pos -> !found.contains(pos))
+                .forEach(this::removeMarker);
+        for (BlockPos pos : found) {
+            MarkerManager.put(new CuboidMarker(markerId(pos), new AABB(pos), MarkerStyle.CYAN, 45));
+            this.highlighted.add(pos);
         }
         this.cooldownTicks = 40;
     }
 
     @Override
     protected void onDisable() {
-        MarkerManager.markers().stream()
-                .map(marker -> marker.id())
-                .filter(id -> id.startsWith("wall_hack:"))
-                .forEach(MarkerManager::remove);
+        this.removeAllMarkers();
+        this.cooldownTicks = 0;
+    }
+
+    static List<BlockPos> stalePositions(final Collection<BlockPos> highlighted, final Set<Block> targets,
+                                         final Function<BlockPos, Block> blockAt) {
+        return highlighted.stream()
+                .filter(pos -> !targets.contains(blockAt.apply(pos)))
+                .toList();
+    }
+
+    private void removeAllMarkers() {
+        List.copyOf(this.highlighted).forEach(this::removeMarker);
+    }
+
+    private void removeMarker(final BlockPos pos) {
+        MarkerManager.remove(markerId(pos));
+        this.highlighted.remove(pos);
+    }
+
+    private static String markerId(final BlockPos pos) {
+        return "wall_hack:" + pos.asLong();
     }
 }
