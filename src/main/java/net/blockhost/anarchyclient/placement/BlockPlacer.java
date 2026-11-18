@@ -36,6 +36,8 @@ import java.util.function.Predicate;
 public final class BlockPlacer {
 
     private static final Set<String> USE_METHODS = Set.of("useWithoutItem", "useItemOn");
+    // Reflection here inspects which methods a block class declares; it does not reach private
+    // members, so an access widener or a mixin cannot replace it.
     private static final ClassValue<Boolean> OVERRIDES_USE = new ClassValue<>() {
         @Override
         protected Boolean computeValue(final Class<?> type) {

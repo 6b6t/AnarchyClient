@@ -48,6 +48,7 @@ class MixinCompatibilityTest {
     })
     void appliesMixinsToMinecraftClasses(final String target) {
         assertTrue(FabricLoader.getInstance().isModLoaded("anarchyclient"), "AnarchyClient must be loaded for mixin validation");
+        // Reflection only inspects the loaded class for mixin methods; there is no member to widen.
         Class<?> transformed = assertDoesNotThrow(() -> Class.forName(target, false, MixinCompatibilityTest.class.getClassLoader()));
         assertTrue(
                 Arrays.stream(transformed.getDeclaredMethods()).anyMatch(method -> method.getName().contains("anarchyclient$")),

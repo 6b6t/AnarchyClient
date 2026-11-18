@@ -261,3 +261,6 @@ Keep the explanation respectful and connect it to the proposed change.
 ## Java conventions
 
 - Import Java types instead of using fully qualified class names in code.
+- To reach private or protected Minecraft members, use an access widener entry or a mixin (`@Accessor`, `@Invoker`, or an injection) before you use reflection. These options are checked at build or load time and fail loudly when the target changes.
+- Keep test-only access in the test code. Gametests use accessor mixins in the gametest mod, because entries in `anarchyclient.accesswidener` also ship in the release jar.
+- Use reflection only when neither option can reach the target, and say why in a comment.
