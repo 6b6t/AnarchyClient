@@ -57,7 +57,7 @@ public final class AutoMendModule extends Module {
 
     public AutoMendModule() {
         super("auto_mend", "Auto Mend", ModuleCategory.PLAYER,
-                "Swaps your most damaged mending item into the offhand so collected XP repairs it, unless a totem is protecting low health.");
+                "Swaps your most damaged mending item into the offhand until collected XP fully repairs it. Leaves the offhand alone while a totem protects low health or Auto Totem is using it.");
     }
 
     @Override
@@ -70,10 +70,13 @@ public final class AutoMendModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        if (this.protectTotem.value() && protectedTotem(player, this.totemHealth.value())) {
+        if (this.protectTotem.value() && protectedTotem(player, this.totemHealth.value())
+                || AutoTotemModule.ownsOffhand(player)) {
             return;
         }
-        if (isRepairCandidate(player.getOffhandItem(), this.minDurabilityPercent.value(), this.requireMending.value())) {
+        // Keep the current item until it is fully repaired, not just until it passes the threshold.
+        if (isRepairCandidate(player.getOffhandItem(), 100.0, this.requireMending.value())
+                && player.getOffhandItem().isDamaged()) {
             return;
         }
         int inventorySlot = findRepairSlot(player.getInventory(), this.minDurabilityPercent.value(), this.requireMending.value());

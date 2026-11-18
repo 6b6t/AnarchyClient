@@ -92,11 +92,24 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
             .max(100.0)
             .step(1.0)
             .build()));
+    private static AutoTotemModule instance;
     private int switchBackTicks;
     private boolean emergencyWasActive;
+    private Item lastDesiredItem;
 
     public AutoTotemModule() {
         super("auto_totem", "Auto Totem", ModuleCategory.COMBAT, "Keeps a totem ready in the offhand by scoring danger, inventory state, and configured replacement rules.");
+        instance = this;
+    }
+
+    /** Returns whether Auto Totem is keeping, or can put, its chosen item in the offhand, so other modules leave it alone. */
+    static boolean ownsOffhand(final LocalPlayer player) {
+        AutoTotemModule module = instance;
+        if (module == null || !module.enabled() || module.lastDesiredItem == null) {
+            return false;
+        }
+        return player.getOffhandItem().is(module.lastDesiredItem)
+                || module.findItemSlot(player.getInventory(), module.lastDesiredItem) >= 0;
     }
 
     /** Moves configs saved with the old defaults to the current ones. */
@@ -117,6 +130,7 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
 
         boolean needsEmergencyTotem = this.emergencyTotem.value() && this.needsTotem(player, client.level);
         Item desiredItem = this.desiredItem(needsEmergencyTotem);
+        this.lastDesiredItem = desiredItem;
         if (this.waitingForSwitchBack(player, desiredItem, needsEmergencyTotem)) {
             return;
         }

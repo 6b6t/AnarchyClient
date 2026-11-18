@@ -32,8 +32,9 @@ public final class InventoryActionScheduler {
     /**
      * Runs the highest-priority chain that can run now. A chain whose constraints or actions are
      * blocked is skipped in favour of the next one. After a chain runs, its delay only holds back
-     * chains of the same or lower priority, so a higher-priority chain (a totem swap) is never
-     * delayed by a lower one.
+     * chains of the same or lower priority, so a higher-priority chain is never delayed by a lower
+     * one. Life chains (a totem swap) ignore the delay entirely, since a second pop can come within
+     * a few ticks.
      */
     public static void tick(final Minecraft client) {
         boolean coolingDown = cooldownTicks > 0;
@@ -68,7 +69,7 @@ public final class InventoryActionScheduler {
     static List<InventoryActionChain> eligible(final List<InventoryActionChain> pending, final boolean coolingDown,
                                                final int cooldownPriority) {
         return pending.stream()
-                .filter(chain -> !coolingDown || chain.priority() > cooldownPriority)
+                .filter(chain -> !coolingDown || chain.priority() >= PRIORITY_LIFE || chain.priority() > cooldownPriority)
                 .sorted(Comparator.comparingInt(InventoryActionChain::priority).reversed())
                 .toList();
     }

@@ -41,9 +41,11 @@ public final class HighwayBuilderModule extends Module {
         for (BlockPos pos : plan(client.player.blockPosition(), client.player.getDirection(), this.length.value().intValue(), this.rails.value())) {
             if (BlockPlacement.needsPlacement(client.level, pos) && CombatTargets.canReachBlock(client.player, pos)
                     && BlockPlacer.findPlacementTarget(client.level, pos).isPresent()) {
-                // Placed or still rotating: one block per tick, retried until it is in place.
-                BlockPlacement.place(client, this, pos, true, 70.0F);
-                return;
+                // Placed or still rotating: one block per tick, retried until it is in place. A blocked spot
+                // (a mob standing there) is skipped so the rest of the path still gets paved.
+                if (BlockPlacement.place(client, this, pos, true, 70.0F) != BlockPlacement.PlacementResult.UNPLACEABLE) {
+                    return;
+                }
             }
         }
     }

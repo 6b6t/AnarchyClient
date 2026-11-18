@@ -86,6 +86,10 @@ public final class BlockInModule extends Module {
                     this.rotate.value(),
                     this.maxTurnDegrees.value().floatValue()
             );
+            if (result == BlockPlacement.PlacementResult.WAITING && this.rotate.value()) {
+                // Later blocks would replace this rotation request before the server sees it.
+                return;
+            }
             if (result == BlockPlacement.PlacementResult.WAITING || result == BlockPlacement.PlacementResult.UNPLACEABLE) {
                 complete = false;
             }

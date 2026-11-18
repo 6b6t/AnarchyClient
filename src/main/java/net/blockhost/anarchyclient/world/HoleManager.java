@@ -46,6 +46,51 @@ public final class HoleManager {
         return true;
     }
 
+    /**
+     * Returns the cells within {@code radius} that belong to a double hole: two open cells side by side, walled on the
+     * six outer sides and floored with safe blocks.
+     */
+    public static List<BlockPos> nearbyDoubleHoleCells(final BlockGetter level, final BlockPos center, final int radius) {
+        List<BlockPos> cells = new ArrayList<>();
+        for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
+            for (int y = center.getY() - 1; y <= center.getY() + 1; y++) {
+                for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
+                    BlockPos pos = new BlockPos(x, y, z);
+                    if (isDoubleHoleCell(level, pos)) {
+                        cells.add(pos);
+                    }
+                }
+            }
+        }
+        cells.sort(Comparator.comparingDouble(pos -> pos.distSqr(center)));
+        return cells;
+    }
+
+    /** Returns whether {@code pos} is one half of a double hole, open towards its partner in any direction. */
+    public static boolean isDoubleHoleCell(final BlockGetter level, final BlockPos pos) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (isDoubleHoleHalf(level, pos, direction) && isDoubleHoleHalf(level, pos.relative(direction), direction.getOpposite())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isDoubleHoleHalf(final BlockGetter level, final BlockPos pos, final Direction openSide) {
+        if (level == null
+                || !isOpen(level.getBlockState(pos))
+                || !isOpen(level.getBlockState(pos.above()))
+                || !isSafeWall(level, pos.below())) {
+            return false;
+        }
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (direction != openSide && !isSafeWall(level, pos.relative(direction))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Open space a player can stand in: replaceable and free of fluid such as lava or water. */
     public static boolean isOpen(final BlockState state) {
         return state.canBeReplaced() && state.getFluidState().isEmpty();

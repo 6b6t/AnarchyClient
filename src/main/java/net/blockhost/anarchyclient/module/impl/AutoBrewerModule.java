@@ -13,9 +13,16 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public final class AutoBrewerModule extends Module {
+
+    private static final int LAST_BOTTLE_SLOT = 2;
+    private static final int INGREDIENT_SLOT = 3;
+    private static final int FUEL_SLOT = 4;
+    private static final int FIRST_PLAYER_SLOT = 5;
 
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")
@@ -46,15 +53,15 @@ public final class AutoBrewerModule extends Module {
             return;
         }
         if (quickMoveFinishedPotions(client, menu)
-                || quickMoveMatching(client, menu, stack -> stack.has(DataComponents.BREWING_FUEL))
-                || quickMoveMatching(client, menu, stack -> stack.is(Items.NETHER_WART))
-                || quickMoveMatching(client, menu, AutoBrewerModule::isWaterBottle)) {
+                || quickMoveMatching(client, menu, FUEL_SLOT, FUEL_SLOT, stack -> stack.has(DataComponents.BREWING_FUEL))
+                || quickMoveMatching(client, menu, INGREDIENT_SLOT, INGREDIENT_SLOT, stack -> stack.is(Items.NETHER_WART))
+                || quickMoveMatching(client, menu, 0, LAST_BOTTLE_SLOT, AutoBrewerModule::isWaterBottle)) {
             this.cooldownTicks = this.delay.value().intValue();
         }
     }
 
     private static boolean quickMoveFinishedPotions(final Minecraft client, final BrewingStandMenu menu) {
-        for (int slot = 0; slot <= 2; slot++) {
+        for (int slot = 0; slot <= LAST_BOTTLE_SLOT; slot++) {
             Slot menuSlot = menu.getSlot(slot);
             if (menuSlot.hasItem() && !isWaterBottle(menuSlot.getItem())) {
                 return ContainerActions.quickMove(client, menu, slot);
@@ -71,14 +78,33 @@ public final class AutoBrewerModule extends Module {
         return contents != null && contents.is(Potions.WATER);
     }
 
+    /**
+     * Quick-moves the first matching inventory stack, but only when one of the stand slots from {@code firstTarget} to
+     * {@code lastTarget} can take it. Vanilla sends blaze powder to the ingredient slot when the fuel slot is full.
+     */
     private static boolean quickMoveMatching(final Minecraft client, final BrewingStandMenu menu,
+                                             final int firstTarget, final int lastTarget,
                                              final Predicate<ItemStack> predicate) {
-        for (int slot = 5; slot < menu.slots.size(); slot++) {
+        for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
             Slot menuSlot = menu.getSlot(slot);
-            if (menuSlot.hasItem() && predicate.test(menuSlot.getItem())) {
+            if (menuSlot.hasItem() && predicate.test(menuSlot.getItem())
+                    && hasRoom(standStacks(menu, firstTarget, lastTarget), menuSlot.getItem())) {
                 return ContainerActions.quickMove(client, menu, slot);
             }
         }
         return false;
+    }
+
+    private static List<ItemStack> standStacks(final BrewingStandMenu menu, final int firstTarget,
+                                               final int lastTarget) {
+        List<ItemStack> stacks = new ArrayList<>();
+        for (int target = firstTarget; target <= lastTarget; target++) {
+            stacks.add(menu.getSlot(target).getItem());
+        }
+        return stacks;
+    }
+
+    static boolean hasRoom(final List<ItemStack> targets, final ItemStack stack) {
+        return targets.stream().anyMatch(current -> AutoSmelterModule.canStackInto(current, stack));
     }
 }

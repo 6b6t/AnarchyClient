@@ -103,7 +103,7 @@ public final class SpeedMineModule extends Module {
             return;
         }
         if (this.autoTool.value()) {
-            int slot = AutoToolModule.bestToolSlot(player.getInventory(), state, true);
+            int slot = AutoToolModule.bestToolSlot(player.getInventory(), state);
             if (slot >= 0) {
                 InventoryActions.selectHotbarSlot(player, slot);
             }

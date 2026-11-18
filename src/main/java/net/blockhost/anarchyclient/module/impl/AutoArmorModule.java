@@ -115,7 +115,7 @@ public final class AutoArmorModule extends Module {
         double currentScore = EquipmentScorer.armorScore(current, slot, protection, avoidedEnchantments, antiBreak);
         int bestSlot = -1;
         double bestScore = currentScore;
-        for (int inventorySlot = 0; inventorySlot < inventory.getContainerSize(); inventorySlot++) {
+        for (int inventorySlot = 0; inventorySlot < Inventory.INVENTORY_SIZE; inventorySlot++) {
             ItemStack stack = inventory.getItem(inventorySlot);
             double score = EquipmentScorer.armorScore(stack, slot, protection, avoidedEnchantments, antiBreak);
             if (score > bestScore + 0.1) {

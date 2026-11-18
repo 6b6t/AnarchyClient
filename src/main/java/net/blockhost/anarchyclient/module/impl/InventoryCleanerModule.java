@@ -296,7 +296,7 @@ public final class InventoryCleanerModule extends Module {
             }
             return switch (this) {
                 case PICKAXE -> stack.is(ItemTags.PICKAXES);
-                case AXE -> stack.is(ItemTags.AXES) && !AutoClickerModule.isWeapon(stack);
+                case AXE -> stack.is(ItemTags.AXES);
                 case SHOVEL -> stack.is(ItemTags.SHOVELS);
                 case HOE -> stack.is(ItemTags.HOES);
             };

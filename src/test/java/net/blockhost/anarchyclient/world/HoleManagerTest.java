@@ -13,8 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,6 +34,41 @@ class HoleManagerTest {
     void rejectsLavaAndWaterPits() {
         assertFalse(HoleManager.isHole(walledHole(Blocks.LAVA.defaultBlockState()), HOLE));
         assertFalse(HoleManager.isHole(walledHole(Blocks.WATER.defaultBlockState()), HOLE));
+    }
+
+    @Test
+    void findsBothCellsOfADoubleHole() {
+        BlockPos second = HOLE.east();
+        Map<BlockPos, BlockState> blocks = new HashMap<>();
+        for (BlockPos cell : List.of(HOLE, second)) {
+            blocks.put(cell.below(), Blocks.OBSIDIAN.defaultBlockState());
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                blocks.putIfAbsent(cell.relative(direction), Blocks.BEDROCK.defaultBlockState());
+            }
+        }
+        blocks.remove(HOLE);
+        blocks.remove(second);
+        BlockGetter level = new MapBlockGetter(blocks);
+
+        assertFalse(HoleManager.isHole(level, HOLE));
+        assertEquals(List.of(HOLE, second), HoleManager.nearbyDoubleHoleCells(level, HOLE, 2));
+    }
+
+    @Test
+    void rejectsADoubleHoleWithAGapInTheWall() {
+        BlockPos second = HOLE.east();
+        Map<BlockPos, BlockState> blocks = new HashMap<>();
+        for (BlockPos cell : List.of(HOLE, second)) {
+            blocks.put(cell.below(), Blocks.OBSIDIAN.defaultBlockState());
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                blocks.putIfAbsent(cell.relative(direction), Blocks.BEDROCK.defaultBlockState());
+            }
+        }
+        blocks.remove(HOLE);
+        blocks.remove(second);
+        blocks.remove(second.north());
+
+        assertTrue(HoleManager.nearbyDoubleHoleCells(new MapBlockGetter(blocks), HOLE, 2).isEmpty());
     }
 
     private static BlockGetter walledHole(final BlockState inside) {

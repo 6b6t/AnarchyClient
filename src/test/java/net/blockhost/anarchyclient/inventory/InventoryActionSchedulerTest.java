@@ -23,6 +23,12 @@ class InventoryActionSchedulerTest {
         assertEquals(List.of(TOTEM),
                 InventoryActionScheduler.eligible(List.of(MEND, ARMOR, TOTEM), true, InventoryActionScheduler.PRIORITY_EQUIPMENT));
         assertEquals(List.of(),
+                InventoryActionScheduler.eligible(List.of(MEND, ARMOR), true, InventoryActionScheduler.PRIORITY_EQUIPMENT));
+    }
+
+    @Test
+    void lifeChainsIgnoreTheCooldown() {
+        assertEquals(List.of(TOTEM),
                 InventoryActionScheduler.eligible(List.of(MEND, TOTEM), true, InventoryActionScheduler.PRIORITY_LIFE));
     }
 

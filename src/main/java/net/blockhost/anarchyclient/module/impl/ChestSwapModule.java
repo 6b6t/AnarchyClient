@@ -22,6 +22,8 @@ import java.util.List;
 
 public final class ChestSwapModule extends Module {
 
+    private static final int TIMEOUT_TICKS = 100;
+
     private final SelectSetting chestplate = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("chestplate")
             .name("Chestplate")
@@ -37,33 +39,53 @@ public final class ChestSwapModule extends Module {
             .step(1.0)
             .build()));
 
+    private SwapTarget target;
+    private int ticksLeft;
+
     public ChestSwapModule() {
         super("chest_swap", "Chest Swap", ModuleCategory.PLAYER,
                 "Swaps between an elytra and the best chestplate in the chest slot, then turns itself off.");
     }
 
     @Override
+    protected void onEnable() {
+        this.target = null;
+    }
+
+    @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !InventoryActionScheduler.canUseInventoryMenu(client, player)) {
+        if (player == null) {
             return;
         }
-        int inventorySlot = isGlider(player.getItemBySlot(EquipmentSlot.CHEST))
+        boolean wearingGlider = isGlider(player.getItemBySlot(EquipmentSlot.CHEST));
+        if (this.target == null) {
+            this.target = swapTarget(wearingGlider);
+            this.ticksLeft = TIMEOUT_TICKS;
+        }
+        // The scheduler drops chains that are not renewed, so keep asking until the swap lands or times out.
+        if (wearingGlider == (this.target == SwapTarget.GLIDER) || --this.ticksLeft <= 0) {
+            this.enabled(false);
+            return;
+        }
+        if (!InventoryActionScheduler.canUseInventoryMenu(client, player)) {
+            return;
+        }
+        int inventorySlot = this.target == SwapTarget.CHESTPLATE
                 ? findChestplateSlot(player.getInventory(), this.chestplate.value())
                 : findGliderSlot(player.getInventory());
-        if (inventorySlot >= 0) {
-            InventorySlotRef source = InventorySlots.storageSlot(inventorySlot).orElse(null);
-            if (source != null) {
-                InventoryActionScheduler.schedule(InventoryActionChain.single(
-                        this.id(),
-                        InventoryActionScheduler.PRIORITY_EQUIPMENT,
-                        this.delay.value().intValue(),
-                        InventoryActionConstraints.cautiousPlayerInventory(),
-                        InventoryAction.pickupSwap(source, InventorySlots.armorSlot(EquipmentSlot.CHEST))
-                ));
-            }
+        InventorySlotRef source = inventorySlot >= 0 ? InventorySlots.storageSlot(inventorySlot).orElse(null) : null;
+        if (source == null) {
+            this.enabled(false);
+            return;
         }
-        this.enabled(false);
+        InventoryActionScheduler.schedule(InventoryActionChain.single(
+                this.id(),
+                InventoryActionScheduler.PRIORITY_EQUIPMENT,
+                this.delay.value().intValue(),
+                InventoryActionConstraints.cautiousPlayerInventory(),
+                InventoryAction.pickupSwap(source, InventorySlots.armorSlot(EquipmentSlot.CHEST))
+        ));
     }
 
     static boolean isGlider(final ItemStack stack) {

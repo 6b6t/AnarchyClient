@@ -8,7 +8,6 @@ import net.blockhost.anarchyclient.world.HoleManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -100,39 +99,9 @@ public final class HoleFillerModule extends Module {
         }
         List<BlockPos> positions = new ArrayList<>(HoleManager.nearbyHoles(client.level, center, radius));
         if (doubleHoles) {
-            for (BlockPos hole : List.copyOf(positions)) {
-                for (Direction direction : Direction.Plane.HORIZONTAL) {
-                    BlockPos second = hole.relative(direction);
-                    if (isDoubleHoleHalf(client, hole, second, direction)) {
-                        positions.add(second);
-                    }
-                }
-            }
+            positions.addAll(HoleManager.nearbyDoubleHoleCells(client.level, center, radius));
         }
         return CombatPlacementPlanner.unique(positions);
-    }
-
-    private static boolean isDoubleHoleHalf(final Minecraft client, final BlockPos first, final BlockPos second,
-                                            final Direction openDirection) {
-        if (client.level == null
-                || !client.level.getBlockState(second).canBeReplaced()
-                || !client.level.getBlockState(second.above()).canBeReplaced()
-                || !HoleManager.isSafeWall(client.level, second.below())) {
-            return false;
-        }
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            BlockPos wall = second.relative(direction);
-            if (direction == openDirection.getOpposite()) {
-                if (!wall.equals(first)) {
-                    return false;
-                }
-                continue;
-            }
-            if (!HoleManager.isSafeWall(client.level, wall)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     static boolean isHole(final Minecraft client, final BlockPos pos) {

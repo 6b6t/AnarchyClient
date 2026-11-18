@@ -8,6 +8,8 @@ import net.minecraft.world.item.alchemy.Potions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,5 +27,15 @@ class AutoBrewerModuleTest {
         assertFalse(AutoBrewerModule.isWaterBottle(PotionContents.createItemStack(Items.POTION, Potions.AWKWARD)));
         assertFalse(AutoBrewerModule.isWaterBottle(PotionContents.createItemStack(Items.POTION, Potions.SWIFTNESS)));
         assertFalse(AutoBrewerModule.isWaterBottle(new ItemStack(Items.GLASS_BOTTLE)));
+    }
+
+    @Test
+    void skipsBlazePowderWhenTheFuelSlotIsFull() {
+        // Vanilla would put the extra blaze powder into the ingredient slot instead.
+        ItemStack powder = new ItemStack(Items.BLAZE_POWDER);
+
+        assertFalse(AutoBrewerModule.hasRoom(List.of(new ItemStack(Items.BLAZE_POWDER, 64)), powder));
+        assertTrue(AutoBrewerModule.hasRoom(List.of(new ItemStack(Items.BLAZE_POWDER, 10)), powder));
+        assertTrue(AutoBrewerModule.hasRoom(List.of(ItemStack.EMPTY), powder));
     }
 }
