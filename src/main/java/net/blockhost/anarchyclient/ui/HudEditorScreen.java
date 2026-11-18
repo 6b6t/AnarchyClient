@@ -115,7 +115,7 @@ public final class HudEditorScreen extends Screen {
         for (HudLayout.Element element : HudLayout.elements()) {
             boolean active = this.selection.contains(element.id())
                     || this.dragOffsets.containsKey(element.id())
-                    || (this.selection.isEmpty() && element.contains(mouseX, mouseY));
+                    || (this.selection.isEmpty() && element.contains(mouseX, mouseY, FRAME_PAD));
             this.renderHandle(renderer, graphics, element, active, accent);
         }
         if (this.boxSelecting) {
@@ -315,9 +315,6 @@ public final class HudEditorScreen extends Screen {
 
     @Override
     public void onClose() {
-        if (this.dirty) {
-            HudLayout.save();
-        }
         GlassBackdrop.deactivate();
         // Return to the client menu rather than the game, so the editor feels like part of the menu.
         this.minecraft.gui.setScreen(new AnarchyClientScreen(this.modules, this.config));
@@ -325,6 +322,11 @@ public final class HudEditorScreen extends Screen {
 
     @Override
     public void removed() {
+        // Runs however the editor closes (onClose, a disconnect, death, another setScreen), so save here.
+        if (this.dirty) {
+            HudLayout.save();
+            this.dirty = false;
+        }
         // Screens swapped via setScreen() skip onClose(); the glass capture must still stop.
         GlassBackdrop.deactivate();
         super.removed();
@@ -338,7 +340,8 @@ public final class HudEditorScreen extends Screen {
     private HudLayout.Element topElementAt(final double px, final double py) {
         HudLayout.Element found = null;
         for (HudLayout.Element element : HudLayout.elements()) {
-            if (element.contains(px, py)) {
+            // Hit the frame as drawn, padding included.
+            if (element.contains(px, py, FRAME_PAD)) {
                 found = element;
             }
         }

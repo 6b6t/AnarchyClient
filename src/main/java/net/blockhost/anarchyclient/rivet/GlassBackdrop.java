@@ -6,6 +6,7 @@ import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,22 +36,25 @@ public final class GlassBackdrop {
         active = true;
     }
 
+    /**
+     * Stops capturing. The textures are closed after the current frame, not now: a screen can close in the middle
+     * of a frame (a render error) while panels drawn earlier in that frame still sample the blurred view.
+     */
     public static void deactivate() {
         active = false;
-        closeRetired();
-        if (blurredView != null) {
-            blurredView.close();
-            blurredView = null;
+        for (AutoCloseable resource : new AutoCloseable[]{blurredView, blurredTexture, sharpTexture}) {
+            if (resource != null) {
+                retired.add(resource);
+            }
         }
-        if (blurredTexture != null) {
-            blurredTexture.close();
-            blurredTexture = null;
-        }
-        if (sharpTexture != null) {
-            sharpTexture.close();
-            sharpTexture = null;
-        }
+        blurredView = null;
+        blurredTexture = null;
+        sharpTexture = null;
         capturedThisFrame = false;
+        if (!retired.isEmpty()) {
+            // schedule() always queues, even on the render thread, so this runs before the next frame.
+            Minecraft.getInstance().schedule(GlassBackdrop::closeRetired);
+        }
     }
 
     /**

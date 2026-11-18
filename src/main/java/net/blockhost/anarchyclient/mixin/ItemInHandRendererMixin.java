@@ -32,7 +32,7 @@ public abstract class ItemInHandRendererMixin {
             info.cancel();
             return;
         }
-        AnimationsModule.AnimationTransform animation = AnimationsModule.activeTransform();
+        AnimationsModule.AnimationTransform animation = AnimationsModule.activeTransform(partialTick);
         if (!transform.identity() || !animation.identityTransform()) {
             poseStack.pushPose();
             poseStack.translate(transform.x(), transform.y(), 0.0);

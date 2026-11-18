@@ -42,7 +42,8 @@ public final class DebugRenderModule extends Module {
             WorldLineRenderer.boxNoDepth(
                     matrices,
                     submits,
-                    client.player.getBoundingBox().move(camera.scale(-1)),
+                    WorldLineRenderer.interpolatedBox(client.player,
+                            client.getDeltaTracker().getGameTimeDeltaPartialTick(false), 0.0, camera),
                     new WorldLineRenderer.Color(80, 220, 255, 220)
             );
         }

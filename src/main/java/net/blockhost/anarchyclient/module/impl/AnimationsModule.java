@@ -10,7 +10,7 @@ import java.util.List;
 
 public final class AnimationsModule extends Module {
 
-    private static AnimationTransform activeTransform = AnimationTransform.identity();
+    private static AnimationsModule active;
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
@@ -41,29 +41,42 @@ public final class AnimationsModule extends Module {
     }
 
     @Override
-    public void tick(final Minecraft client) {
-        if (client.player == null || "None".equals(this.mode.value())) {
-            activeTransform = AnimationTransform.identity();
-            return;
+    protected void onEnable() {
+        active = this;
+    }
+
+    @Override
+    protected void onDisable() {
+        if (active == this) {
+            active = null;
         }
-        double phase = client.player.tickCount * 0.18 * this.speed.value();
-        double amount = this.intensity.value();
-        activeTransform = switch (this.mode.value()) {
+    }
+
+    /**
+     * The held-item transform for this frame. Computed at render time with the partial tick, so the motion is
+     * smooth at any frame rate instead of stepping 20 times per second.
+     */
+    public static AnimationTransform activeTransform(final float partialTick) {
+        AnimationsModule module = active;
+        Minecraft client = Minecraft.getInstance();
+        if (module == null || client.player == null) {
+            return AnimationTransform.identity();
+        }
+        return transform(module.mode.value(), client.player.tickCount + partialTick, module.speed.value(),
+                module.intensity.value());
+    }
+
+    static AnimationTransform transform(final String mode, final double ticks, final double speed,
+                                        final double amount) {
+        double phase = ticks * 0.18 * speed;
+        return switch (mode) {
+            case "None" -> AnimationTransform.identity();
             case "Slide" -> new AnimationTransform(Math.sin(phase) * amount * 0.35, 0.0, 0.0, 0.0, 0.0,
                     Math.sin(phase) * amount * 12.0);
             case "Spin" -> new AnimationTransform(0.0, 0.0, 0.0, 0.0, phase * 38.0 * amount, 0.0);
             default -> new AnimationTransform(Math.sin(phase) * amount * 0.08, Math.cos(phase) * amount * 0.05, 0.0,
                     Math.sin(phase) * amount * 8.0, 0.0, Math.cos(phase) * amount * 10.0);
         };
-    }
-
-    @Override
-    protected void onDisable() {
-        activeTransform = AnimationTransform.identity();
-    }
-
-    public static AnimationTransform activeTransform() {
-        return activeTransform;
     }
 
     public record AnimationTransform(double x, double y, double z, double pitch, double yaw, double roll) {

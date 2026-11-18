@@ -3,9 +3,10 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.minecraft.client.Minecraft;
 
 public final class FullbrightModule extends Module {
+
+    private static FullbrightModule active;
 
     private final NumberSetting brightness = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("brightness")
@@ -15,26 +16,26 @@ public final class FullbrightModule extends Module {
             .max(10.0)
             .step(0.5)
             .build()));
-    private Double previousBrightness;
 
     public FullbrightModule() {
         super("fullbright", "Fullbright", ModuleCategory.RENDER, "Raises scene brightness so caves and night areas stay readable without torches.");
     }
 
     @Override
-    public void tick(final Minecraft client) {
-        if (this.previousBrightness == null) {
-            this.previousBrightness = client.options.gamma().value;
-        }
-        client.options.gamma().value = this.brightness.value();
+    protected void onEnable() {
+        active = this;
     }
 
     @Override
     protected void onDisable() {
-        Minecraft client = Minecraft.getInstance();
-        if (this.previousBrightness != null) {
-            client.options.gamma().value = this.previousBrightness;
-            this.previousBrightness = null;
+        if (active == this) {
+            active = null;
         }
+    }
+
+    /** Lightmap brightness to use instead of the gamma option, or -1 while the module is off. */
+    public static float brightness() {
+        FullbrightModule module = active;
+        return module == null ? -1.0F : module.brightness.value().floatValue();
     }
 }

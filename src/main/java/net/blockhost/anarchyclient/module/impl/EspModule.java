@@ -99,6 +99,9 @@ public final class EspModule extends Module {
     public EspModule() {
         super("esp", "ESP", ModuleCategory.RENDER,
                 "Outlines players and mobs through walls with boxes or a shader glow, colored by type or distance.");
+        // The shader outline is always drawn at full strength, so these only apply to boxes.
+        this.opacity.visibleWhen(() -> !"Shader".equals(this.mode.value()));
+        this.lineOfSightFade.visibleWhen(() -> !"Shader".equals(this.mode.value()));
     }
 
     @Override

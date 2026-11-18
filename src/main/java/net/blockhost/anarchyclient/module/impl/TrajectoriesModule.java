@@ -61,23 +61,26 @@ public final class TrajectoriesModule extends Module {
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
         WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 245, 145, this.opacity.value().intValue());
-        drawHeldTrajectory(client, player, matrices, submits, camera, color);
+        // Start where the entities are drawn this frame, not at their last tick position.
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        drawHeldTrajectory(client, player, partialTick, matrices, submits, camera, color);
         WorldLineRenderer.Color flying = new WorldLineRenderer.Color(145, 205, 255, this.opacity.value().intValue());
         for (Entity entity : client.level.entitiesForRendering()) {
             if (entity.getDeltaMovement().lengthSqr() <= 0.0025) {
                 continue;
             }
             if (entity instanceof ThrowableProjectile) {
-                drawSimulated(client, entity.position(), entity.getDeltaMovement(), entity.getGravity(), true,
+                drawSimulated(client, entity.getPosition(partialTick), entity.getDeltaMovement(), entity.getGravity(), true,
                         matrices, submits, camera, flying);
             } else if (entity instanceof AbstractArrow) {
-                drawSimulated(client, entity.position(), entity.getDeltaMovement(), entity.getGravity(), false,
+                drawSimulated(client, entity.getPosition(partialTick), entity.getDeltaMovement(), entity.getGravity(), false,
                         matrices, submits, camera, flying);
             }
         }
     }
 
-    private void drawHeldTrajectory(final Minecraft client, final LocalPlayer player, final PoseStack matrices,
+    private void drawHeldTrajectory(final Minecraft client, final LocalPlayer player, final float partialTick,
+                                    final PoseStack matrices,
                                     final SubmitNodeCollector submits, final Vec3 camera, final WorldLineRenderer.Color color) {
         Ballistics ballistics = ballistics(player, player.getMainHandItem());
         if (ballistics == null) {
@@ -87,7 +90,7 @@ public final class TrajectoriesModule extends Module {
             return;
         }
         // Vanilla spawns thrown items and arrows 0.1 below the eyes and adds the shooter's movement.
-        Vec3 start = new Vec3(player.getX(), player.getEyeY() - 0.1, player.getZ());
+        Vec3 start = player.getEyePosition(partialTick).subtract(0.0, 0.1, 0.0);
         Vec3 shooterMovement = player.getKnownMovement();
         Vec3 motion = launchMotion(player.getXRot(), player.getYRot(), ballistics.pitchOffset(), ballistics.velocity())
                 .add(shooterMovement.x, player.onGround() ? 0.0 : shooterMovement.y, shooterMovement.z);

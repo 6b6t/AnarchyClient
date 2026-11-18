@@ -44,7 +44,13 @@ public final class HudLayout {
     public record Element(String id, String name, int x, int y, int width, int height) {
 
         public boolean contains(final double px, final double py) {
-            return px >= this.x && px <= this.x + this.width && py >= this.y && py <= this.y + this.height;
+            return this.contains(px, py, 0.0);
+        }
+
+        /** Like {@link #contains(double, double)}, with the bounds grown by {@code pad} on every side. */
+        public boolean contains(final double px, final double py, final double pad) {
+            return px >= this.x - pad && px <= this.x + this.width + pad
+                    && py >= this.y - pad && py <= this.y + this.height + pad;
         }
 
         /** True when any part of this element falls inside the given rectangle (box selection). */

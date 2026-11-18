@@ -60,11 +60,12 @@ public final class OreSimModule extends Module {
         }
         double size = this.radius.value();
         Vec3 offset = client.gameRenderer.mainCamera().position().scale(-1);
+        Vec3 center = player.getPosition(client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         WorldLineRenderer.Color color = DEBRIS.equals(this.target.value())
                 ? new WorldLineRenderer.Color(190, 120, 85, 210)
                 : new WorldLineRenderer.Color(105, 235, 255, 210);
-        AABB bandBox = new AABB(player.getX() - size, band.minY(), player.getZ() - size,
-                player.getX() + size, band.maxY() + 1, player.getZ() + size);
+        AABB bandBox = new AABB(center.x - size, band.minY(), center.z - size,
+                center.x + size, band.maxY() + 1, center.z + size);
         WorldLineRenderer.boxNoDepth(matrices, submits, bandBox.move(offset), color);
         AABB peakLayer = new AABB(bandBox.minX, band.peakY(), bandBox.minZ, bandBox.maxX, band.peakY() + 1, bandBox.maxZ);
         WorldLineRenderer.fillNoDepth(matrices, submits, peakLayer.move(offset),

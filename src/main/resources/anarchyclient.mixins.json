@@ -27,6 +27,7 @@
     "KeyboardHandlerMixin",
     "KeyboardInputMixin",
     "LevelExtractorMixin",
+    "LightmapRenderStateExtractorMixin",
     "LivingEntityAccessor",
     "LivingEntitySwingMixin",
     "LocalPlayerMixin",

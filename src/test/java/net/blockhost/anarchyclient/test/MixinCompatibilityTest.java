@@ -34,6 +34,7 @@ class MixinCompatibilityTest {
             "net.minecraft.client.player.LocalPlayer",
             "net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer",
             "net.minecraft.client.renderer.GameRenderer",
+            "net.minecraft.client.renderer.LightmapRenderStateExtractor",
             "net.minecraft.client.renderer.entity.EntityRenderer",
             "net.minecraft.client.renderer.entity.ItemEntityRenderer",
             "net.minecraft.client.renderer.extract.LevelExtractor",

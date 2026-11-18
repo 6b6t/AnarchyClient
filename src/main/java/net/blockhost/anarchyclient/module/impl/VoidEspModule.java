@@ -55,13 +55,14 @@ public final class VoidEspModule extends Module {
         double radiusValue = this.radius.value();
         double y = this.minY.value();
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        Vec3 center = player.getPosition(client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         AABB plane = new AABB(
-                player.getX() - radiusValue,
+                center.x - radiusValue,
                 y,
-                player.getZ() - radiusValue,
-                player.getX() + radiusValue,
+                center.z - radiusValue,
+                center.x + radiusValue,
                 y + 0.05,
-                player.getZ() + radiusValue
+                center.z + radiusValue
         ).move(camera.scale(-1));
         int alpha = this.opacity.value().intValue();
         WorldLineRenderer.fillNoDepth(matrices, submits, plane, new WorldLineRenderer.Color(255, 50, 70, alpha));
