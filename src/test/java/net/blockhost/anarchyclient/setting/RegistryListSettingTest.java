@@ -44,4 +44,14 @@ class RegistryListSettingTest {
         setting.fromJson(new JsonPrimitive("stone;dirt"));
         assertEquals(List.of("minecraft:stone", "minecraft:dirt"), setting.ids());
     }
+
+    @Test
+    void skipsIdsThatAreNotValidInsteadOfThrowing() {
+        BlockListSetting setting = BlockListSetting.from(BlockListSetting.builder()
+                .id("blocks")
+                .name("Blocks")
+                .build());
+
+        assertEquals(List.of(Blocks.STONE), setting.parse("#logs, é, stone, (dirt"));
+    }
 }

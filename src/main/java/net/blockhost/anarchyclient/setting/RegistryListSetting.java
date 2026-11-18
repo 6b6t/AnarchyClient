@@ -56,9 +56,11 @@ public abstract class RegistryListSetting<T> extends Setting<List<T>> implements
             if (normalized.isEmpty()) {
                 continue;
             }
+            // tryParse and tryBuild return null for invalid ids (such as "#logs" or "é"); withDefaultNamespace threw,
+            // which crashed the game while typing into a list field.
             Identifier id = normalized.contains(":")
                     ? Identifier.tryParse(normalized)
-                    : Identifier.withDefaultNamespace(normalized);
+                    : Identifier.tryBuild(Identifier.DEFAULT_NAMESPACE, normalized);
             if (id == null) {
                 continue;
             }

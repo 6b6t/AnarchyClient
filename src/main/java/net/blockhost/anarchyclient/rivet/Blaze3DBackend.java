@@ -5,6 +5,7 @@ import net.lenni0451.rivet.backend.Backend;
 import net.lenni0451.rivet.backend.text.Font;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.StringUtil;
 
 import javax.annotation.Nullable;
 
@@ -26,8 +27,10 @@ public final class Blaze3DBackend implements Backend {
     @Override
     @Nullable
     public String getClipboard() {
+        // Filter like vanilla's text fields: newlines, tabs and section signs would otherwise end up in settings.
         String clipboard = this.client.keyboardHandler.getClipboard();
-        return clipboard == null || clipboard.isEmpty() ? null : clipboard;
+        String filtered = clipboard == null ? "" : StringUtil.filterText(clipboard);
+        return filtered.isEmpty() ? null : filtered;
     }
 
     @Override

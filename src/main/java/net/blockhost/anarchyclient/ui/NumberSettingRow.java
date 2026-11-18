@@ -45,8 +45,13 @@ final class NumberSettingRow extends Container implements LayoutDebugLabel {
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
         this.slider = slider(setting.min(), setting.max(), setting.step(), setting.value());
         this.slider.valueChangeListener().add(value -> {
-            setting.value(value);
+            double snapped = setting.snap(value);
+            setting.value(snapped);
             this.save.run();
+            if (snapped != value) {
+                // Show the snapped value; the listener runs once more with it and finds nothing to change.
+                this.slider.value(snapped);
+            }
         });
         this.addChild(this.divider);
         this.addChild(this.label);

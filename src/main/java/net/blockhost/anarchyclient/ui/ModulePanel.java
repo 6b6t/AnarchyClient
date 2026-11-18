@@ -577,7 +577,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     void configureScroll(final ScrollContainer scroll) {
         scroll.barColor().set(Color.fromRGBA(255, 255, 255, 46));
         scroll.barHoverColor().set(Color.fromRGBA(255, 255, 255, 84));
-        scroll.barClickColor().set(GlassTheme.accent().multiplyAlpha(0.72F));
+        // A supplier, so a new accent applies without rebuilding the panel.
+        scroll.barClickColor().set(() -> GlassTheme.accent().multiplyAlpha(0.72F));
         scroll.scrollSpeed().set(20F);
         scroll.barType().set(ScrollContainer.ScrollBarType.FLOATING);
     }

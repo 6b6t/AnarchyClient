@@ -38,7 +38,7 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
         this.fixedSize(-1, 44);
         this.name = textNode(profile.name(), TEXT);
         this.modules = textNode(profile.modules() + " modules", FAINT);
-        this.apply = textAction("Apply", GlassTheme.accent(), () -> {
+        this.apply = textAction("Apply", GlassTheme::accent, () -> {
             AnarchyClient.PROFILES.apply(this.profile.name(), this.panel.modules);
             this.panel.config.save();
             this.panel.refreshModuleList();
@@ -54,9 +54,11 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
                 padding(PADDING, 0F, 8F, 0F), null, 18F));
         place(this.modules, cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                 padding(PADDING, 0F, 8F, 0F), null, 18F));
-        place(this.apply, cell(1, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+        // Size each action to its text, right-aligned in its column: a click on the empty space next to
+        // "Apply" used to land on "Delete".
+        place(this.apply, cell(1, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
                 padding(0F, 0F, 10F, 0F), 52F, null));
-        place(this.delete, cell(2, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+        place(this.delete, cell(2, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
                 padding(0F, 0F, PADDING, 0F), 50F, null));
         this.addChild(this.background);
         this.addChild(this.name);

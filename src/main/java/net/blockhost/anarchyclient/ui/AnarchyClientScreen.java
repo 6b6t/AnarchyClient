@@ -38,6 +38,10 @@ public final class AnarchyClientScreen extends Screen {
     // it the same virtual room (real pixels / 2) so it always fits the screen. Clamped like the
     // BleachHack auto-fit so extreme factors cannot shrink the UI into unreadability.
     private static final float REFERENCE_GUI_SCALE = 2F;
+    private double lastMouseX = Double.NaN;
+    private double lastMouseY = Double.NaN;
+    /** Virtual height the dock (420) and its margins need. */
+    private static final float MIN_VIRTUAL_HEIGHT = 440F;
 
     private final ModuleManager modules;
     private final ClientConfig config;
@@ -55,6 +59,9 @@ public final class AnarchyClientScreen extends Screen {
     protected void init() {
         Minecraft client = Minecraft.getInstance();
         GlassBackdrop.activate();
+        // Typed characters only arrive while SDL text input runs, and opening a screen stops it. Vanilla starts it
+        // for its own text widgets; the menu's Rivet text fields need it for the whole screen, as signs do.
+        client.textInputManager().startTextInput(this);
         this.rivet = new Rivet(new Blaze3DBackend(client), FullSizeLayout.INSTANCE, this.virtualSize());
         this.rivet.theme(new AnarchyClientTheme(this.config.uiPreferences().guiTheme()));
         this.panel = new ModulePanel(this.modules, this.config);
@@ -63,7 +70,13 @@ public final class AnarchyClientScreen extends Screen {
 
     private float uiScale() {
         int factor = Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
-        return Math.max(0.5F, Math.min(2F, REFERENCE_GUI_SCALE / factor));
+        float scale = Math.max(0.5F, Math.min(2F, REFERENCE_GUI_SCALE / factor));
+        // Shrink when the window is too short for the dock and drawers (720p and 768p at the reference scale);
+        // otherwise their lower buttons sit off screen and cannot be clicked.
+        if (this.height > 0) {
+            scale = Math.min(scale, this.height / MIN_VIRTUAL_HEIGHT);
+        }
+        return Math.max(0.5F, scale);
     }
 
     private Size virtualSize() {
@@ -92,9 +105,14 @@ public final class AnarchyClientScreen extends Screen {
         }
         float scale = this.uiScale();
         this.rivet.size(this.virtualSize());
-        this.rivet.onMouseMove(new MouseMoveEvent(mouseX / scale, mouseY / scale, this.heldMouseButtons));
+        // Prefer the precise position from mouseMoved: the frame's mouseX/mouseY are whole GUI pixels, and
+        // re-sending them every frame made slider drags jump between the two at high GUI scales.
+        double pointerX = Double.isNaN(this.lastMouseX) ? mouseX : this.lastMouseX;
+        double pointerY = Double.isNaN(this.lastMouseY) ? mouseY : this.lastMouseY;
+        this.rivet.onMouseMove(new MouseMoveEvent((float) (pointerX / scale), (float) (pointerY / scale),
+                this.heldMouseButtons));
         if (this.panel != null) {
-            this.panel.mousePosition(mouseX / scale, mouseY / scale);
+            this.panel.mousePosition((float) (pointerX / scale), (float) (pointerY / scale));
         }
         graphics.pose().pushMatrix();
         graphics.pose().scale(scale, scale);
@@ -119,6 +137,8 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public void mouseMoved(final double mouseX, final double mouseY) {
+        this.lastMouseX = mouseX;
+        this.lastMouseY = mouseY;
         if (this.rivet != null) {
             float scale = this.uiScale();
             this.rivet.onMouseMove(new MouseMoveEvent((float) (mouseX / scale), (float) (mouseY / scale), this.heldMouseButtons));
@@ -213,6 +233,7 @@ public final class AnarchyClientScreen extends Screen {
         // Screens replaced via setScreen() skip onClose(); the glass capture must still stop so
         // vanilla menus keep their normal full-screen blur.
         GlassBackdrop.deactivate();
+        Minecraft.getInstance().textInputManager().stopTextInput(this);
         super.removed();
     }
 

@@ -239,7 +239,7 @@ final class PanelWidgets {
         button.activeColor().set(CARD_HOVER);
         button.activeOutlineColor().set(Color.fromRGBA(255, 255, 255, 60));
         button.clickColor().set(Color.fromRGBA(255, 255, 255, 10));
-        button.clickOutlineColor().set(GlassTheme.accent());
+        button.clickOutlineColor().set(GlassTheme::accent);
         button.innerPadding().set(new Padding(8, 4, 8, 4));
         button.clickOn().set(ClickOn.UP);
         return button;
@@ -249,8 +249,8 @@ final class PanelWidgets {
         TextField field = new TextField(value);
         field.backgroundColor().set(FIELD);
         field.outlineColor().set(DIVIDER);
-        field.focusedOutlineColor().set(GlassTheme.accent());
-        field.selectionColor().set(GlassTheme.accent().multiplyAlpha(0.4F));
+        field.focusedOutlineColor().set(GlassTheme::accent);
+        field.selectionColor().set(() -> GlassTheme.accent().multiplyAlpha(0.4F));
         field.cursorColor().set(TEXT);
         field.cornerRadius().set(8F);
         field.innerPadding().set(new Padding(7, 4, 7, 4));
@@ -271,9 +271,9 @@ final class PanelWidgets {
     static Slider slider(final double min, final double max, final double step, final double value) {
         Slider slider = new Slider(min, max, step, value);
         slider.barColor().set(TRACK);
-        slider.activeBarColor().set(GlassTheme.accent());
+        slider.activeBarColor().set(GlassTheme::accent);
         slider.thumbColor().set(TEXT);
-        slider.thumbClickColor().set(GlassTheme.accent());
+        slider.thumbClickColor().set(GlassTheme::accent);
         slider.barHeight().set(3F);
         slider.barCornerRadius().set(1.5F);
         slider.thumbWidth().set(9F);
@@ -367,6 +367,10 @@ final class PanelWidgets {
 
     static TextAction textAction(final String text, final Color color, final Runnable action) {
         return new TextAction(() -> text, () -> color, action);
+    }
+
+    static TextAction textAction(final String text, final Supplier<Color> color, final Runnable action) {
+        return new TextAction(() -> text, color, action);
     }
 
     static Surface surface(final Color color) {

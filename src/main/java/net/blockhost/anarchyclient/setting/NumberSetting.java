@@ -4,6 +4,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import net.lenni0451.commons.math.MathUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public final class NumberSetting extends Setting<Double> {
 
     private final double min;
@@ -35,6 +38,22 @@ public final class NumberSetting extends Setting<Double> {
 
     public double step() {
         return this.step;
+    }
+
+    /**
+     * Snaps a slider value to the step grid starting at {@link #min()}, rounded to the step's precision. Rivet snaps
+     * from 0 in floating point, which stored values such as 0.30000000000000004 and left ranges like 0.42 to 2.0
+     * (step 0.05) off their own grid. Not applied in {@link #sanitize}: config and commands may set any value.
+     */
+    public double snap(final double value) {
+        if (!Double.isFinite(value) || this.step <= 0.0) {
+            return MathUtils.clamp(value, this.min, this.max);
+        }
+        double snapped = this.min + Math.round((value - this.min) / this.step) * this.step;
+        int scale = Math.max(BigDecimal.valueOf(this.step).stripTrailingZeros().scale(),
+                BigDecimal.valueOf(this.min).stripTrailingZeros().scale());
+        double rounded = BigDecimal.valueOf(snapped).setScale(Math.max(0, scale), RoundingMode.HALF_UP).doubleValue();
+        return MathUtils.clamp(rounded, this.min, this.max);
     }
 
     @Override

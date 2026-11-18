@@ -21,6 +21,7 @@ import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
+import org.joml.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -287,8 +288,19 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         }
     }
 
+    /**
+     * Pushes the scissor in screen pixels. Vanilla's {@code enableScissor} takes integer coordinates in the current
+     * pose and floors both the left edge and the width after scaling, which clipped up to two pixels off the right
+     * and bottom of every component at GUI scale 3 and above. Transform the float corners instead and round outward.
+     */
     private void enableScissor(final float x, final float y, final float width, final float height) {
-        this.graphics.enableScissor(MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height));
+        Vector2f topLeft = this.graphics.pose().transformPosition(x, y, new Vector2f());
+        Vector2f bottomRight = this.graphics.pose().transformPosition(x + width, y + height, new Vector2f());
+        int left = MathUtils.floorInt(Math.min(topLeft.x, bottomRight.x));
+        int top = MathUtils.floorInt(Math.min(topLeft.y, bottomRight.y));
+        int right = MathUtils.ceilInt(Math.max(topLeft.x, bottomRight.x));
+        int bottom = MathUtils.ceilInt(Math.max(topLeft.y, bottomRight.y));
+        this.graphics.scissorStack.push(new ScreenRectangle(left, top, right - left, bottom - top));
     }
 
     @Override

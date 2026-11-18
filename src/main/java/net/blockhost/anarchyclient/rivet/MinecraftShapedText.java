@@ -66,7 +66,7 @@ public final class MinecraftShapedText implements ShapedText {
 
     @Override
     public Point cursorPosition(final int index) {
-        int safeIndex = Math.max(0, Math.min(index, this.text.length()));
+        int safeIndex = codePointBoundary(this.text, Math.max(0, Math.min(index, this.text.length())));
         return new Point(this.font.width(this.text.substring(0, safeIndex)) * this.scale(), 0);
     }
 
@@ -74,14 +74,25 @@ public final class MinecraftShapedText implements ShapedText {
     public int index(final float x, final float y) {
         float unscaledX = x / this.scale();
         float previousWidth = 0;
-        for (int index = 0; index < this.text.length(); index++) {
-            float nextWidth = this.font.width(this.text.substring(0, index + 1));
+        // Step by code point, so a click never lands between the two halves of an emoji.
+        for (int index = 0; index < this.text.length(); index = this.text.offsetByCodePoints(index, 1)) {
+            int next = this.text.offsetByCodePoints(index, 1);
+            float nextWidth = this.font.width(this.text.substring(0, next));
             if (unscaledX < previousWidth + (nextWidth - previousWidth) / 2F) {
                 return index;
             }
             previousWidth = nextWidth;
         }
         return this.text.length();
+    }
+
+    /** Moves an index that falls inside a surrogate pair back to the start of that character. */
+    static int codePointBoundary(final String text, final int index) {
+        if (index > 0 && index < text.length()
+                && Character.isLowSurrogate(text.charAt(index)) && Character.isHighSurrogate(text.charAt(index - 1))) {
+            return index - 1;
+        }
+        return index;
     }
 
     private static List<Segment> fromTextLine(final TextLine line) {

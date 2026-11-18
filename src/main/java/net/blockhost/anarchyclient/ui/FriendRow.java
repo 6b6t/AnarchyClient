@@ -47,7 +47,8 @@ final class FriendRow extends Container implements LayoutDebugLabel {
                 padding(PADDING, 0F, 0F, 0F), (float) HEAD_SIZE, (float) HEAD_SIZE));
         place(this.name, cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                 padding(10F, 0F, 8F, 0F), null, null));
-        place(this.remove, cell(2, 0, 1, 1, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
+        // Size the action to its text so only the visible "Remove" reacts to clicks.
+        place(this.remove, cell(2, 0, 1, 1, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
                 padding(0F, 0F, PADDING, 0F), 76F, null));
         this.addChild(this.background);
         this.addChild(this.head);
