@@ -115,14 +115,16 @@ public final class PistonCrystalModule extends Module {
         double reach = Math.min(this.range.value(), client.player.blockInteractionRange());
         switch (PistonPlacement.placePiston(client, this, this.plan.piston(), this.plan.pistonFacing(), reach)) {
             case PRESENT -> this.advance(Stage.CRYSTAL);
-            case BLOCKED, MISSING_ITEM -> this.failPlan();
+            case BLOCKED -> this.failPlan("piston blocked");
+            case MISSING_ITEM -> this.failPlan("no pistons");
             default -> {
             }
         }
     }
 
     /** Drops the current setup and skips its direction for a while. */
-    private void failPlan() {
+    private void failPlan(final String reason) {
+        this.debugValue("failed", this.stage + ": " + reason);
         if (this.plan != null) {
             this.failedDirections.put(this.plan.outward(), FAILED_DIRECTION_TICKS);
         }
@@ -137,7 +139,7 @@ public final class PistonCrystalModule extends Module {
         WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, this.plan.crystal().below(),
                 Direction.UP, stack -> stack.is(Items.END_CRYSTAL), this.rotate.value());
         if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.REFUSED) {
-            this.failPlan();
+            this.failPlan("crystal " + result);
         }
     }
 
@@ -146,7 +148,7 @@ public final class PistonCrystalModule extends Module {
         this.debugValue("power", result);
         switch (result) {
             case PLACED, PRESENT -> this.advance(Stage.BREAK);
-            case BLOCKED, MISSING_ITEM -> this.failPlan();
+            case BLOCKED, MISSING_ITEM -> this.failPlan("power " + result);
             default -> {
             }
         }
@@ -167,7 +169,7 @@ public final class PistonCrystalModule extends Module {
         // or the crystal itself stands in the head cell; give up if the push never happens.
         if (!pushed(level, this.plan, entity)) {
             if (this.stageTicks > PUSH_TIMEOUT_TICKS) {
-                this.failPlan();
+                this.failPlan("crystal not pushed");
             }
             return;
         }
