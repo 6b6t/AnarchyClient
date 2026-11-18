@@ -22,7 +22,9 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
@@ -31,8 +33,8 @@ import java.util.function.Predicate;
  * Places pistons that face a chosen direction and the redstone blocks that power them.
  *
  * <p>A piston faces away from the direction the player looks while placing it, so the placement
- * turns the player to a fixed horizontal rotation and waits until the server has that rotation
- * before clicking.
+ * turns the player to a fixed horizontal rotation and waits until the server has that rotation,
+ * and has turned the player's head to it, before clicking.
  */
 final class PistonPlacement {
 
@@ -40,6 +42,13 @@ final class PistonPlacement {
     static final Predicate<ItemStack> REDSTONE_BLOCKS = stack -> stack.is(Items.REDSTONE_BLOCK);
 
     private static final float ROTATION_TOLERANCE = 1.0F;
+    /**
+     * Ticks to wait after the server has the rotation. Vanilla takes a placed block's facing from
+     * the player's head rotation, and the server only turns the head when it ticks the player, so
+     * a click in the same server tick as the rotation packet still uses the old facing.
+     */
+    static final int HEAD_TURN_TICKS = 2;
+    private static final Map<String, Integer> SETTLED_TICKS = new HashMap<>();
 
     private PistonPlacement() {
     }
@@ -130,14 +139,24 @@ final class PistonPlacement {
                 RotationTurnMode.INSTANT, true));
         RotationManager.apply(player);
         if (RotationManager.serverRotation(player).angleTo(rotation) > ROTATION_TOLERANCE) {
+            SETTLED_TICKS.remove(owner.id());
             return Result.WAITING;
         }
+        if (!headTurned(SETTLED_TICKS.merge(owner.id(), 1, Integer::sum))) {
+            return Result.WAITING;
+        }
+        SETTLED_TICKS.remove(owner.id());
         BlockPlacer.PlacementTarget placement = target.orElseThrow();
         if (BlockPlacer.useItemOn(client, player, placement.hitResult(), placement.sneak()).consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return Result.PLACED;
         }
         return Result.WAITING;
+    }
+
+    /** Returns whether the rotation has been on the server long enough for the head to follow it. */
+    static boolean headTurned(final int ticksSinceRotationSent) {
+        return ticksSinceRotationSent > HEAD_TURN_TICKS;
     }
 
     /** Places a redstone block on the first open power position next to the piston. */

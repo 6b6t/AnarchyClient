@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -79,6 +80,7 @@ public final class PistonCrystalModule extends Module {
         Player target = CombatTargets.nearestEnemy(client, this.range.value() + 2.0);
         if (target == null) {
             this.resetPlan();
+            this.debugValue("stage", "no target");
             return;
         }
         if (this.plan == null || !this.plan.feet().equals(target.blockPosition()) || ++this.stageTicks > STAGE_TIMEOUT_TICKS) {
@@ -123,7 +125,9 @@ public final class PistonCrystalModule extends Module {
     }
 
     private void power(final Minecraft client) {
-        switch (PistonPlacement.placePower(client, this, this.plan.power(), this.rotate.value())) {
+        PistonPlacement.Result result = PistonPlacement.placePower(client, this, this.plan.power(), this.rotate.value());
+        this.debugValue("power", result);
+        switch (result) {
             case PLACED, PRESENT -> this.advance(Stage.BREAK);
             case BLOCKED, MISSING_ITEM -> this.plan = null;
             default -> {
@@ -174,7 +178,8 @@ public final class PistonCrystalModule extends Module {
         for (Direction outward : candidates(level, feet, eye)) {
             Plan candidate = Plan.of(feet, outward);
             if (!CombatTargets.canReachBlock(player, candidate.piston(), reach)
-                    || !CombatTargets.canReachBlock(player, candidate.crystal().below(), reach)) {
+                    || !CombatTargets.canReachBlock(player, candidate.crystal().below(), reach)
+                    || !canBuild(level, player, candidate)) {
                 continue;
             }
             double selfDamage = Math.max(
@@ -188,6 +193,18 @@ public final class PistonCrystalModule extends Module {
             return Optional.of(candidate);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns whether the piston can be placed (or already stands) and at least one power spot
+     * is free or already holds a redstone block.
+     */
+    private static boolean canBuild(final ClientLevel level, final LocalPlayer player, final Plan plan) {
+        boolean pistonReady = PistonPlacement.isPistonFacing(level.getBlockState(plan.piston()), plan.pistonFacing())
+                || BlockPlacer.findPlacementTarget(level, plan.piston()).isPresent();
+        boolean powerReady = plan.power().stream().anyMatch(pos -> level.getBlockState(pos).is(Blocks.REDSTONE_BLOCK)
+                || PistonPlacement.isOpen(level, pos) && !CombatPlacementPlanner.playerInside(player, pos));
+        return pistonReady && powerReady;
     }
 
     /**
@@ -266,9 +283,20 @@ public final class PistonCrystalModule extends Module {
             BlockPos head = feet.above();
             BlockPos crystal = head.relative(outward);
             BlockPos piston = crystal.relative(outward);
+            // An end crystal's hitbox is two blocks wide, so it blocks placing power on most sides of
+            // the piston. Only spots outside it, such as behind or below the piston, stay usable.
+            AABB crystalBox = crystalHitbox(crystal);
             List<BlockPos> power = PistonPlacement.powerPositions(piston, outward.getOpposite(),
-                    List.of(crystal, head, crystal.above()));
+                    List.of(crystal, head, crystal.above())).stream()
+                    .filter(pos -> !new AABB(pos).intersects(crystalBox))
+                    .toList();
             return new Plan(feet.immutable(), outward, head, crystal, piston, power);
+        }
+
+        /** The hitbox of an end crystal resting in {@code cell}: two blocks wide and two tall. */
+        static AABB crystalHitbox(final BlockPos cell) {
+            return new AABB(cell.getX() - 0.5, cell.getY(), cell.getZ() - 0.5,
+                    cell.getX() + 1.5, cell.getY() + 2.0, cell.getZ() + 1.5);
         }
 
         Direction pistonFacing() {

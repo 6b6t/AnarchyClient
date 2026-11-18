@@ -78,8 +78,8 @@ class PistonModulesTest {
         assertEquals(FEET.above().west(), plan.crystal());
         assertEquals(FEET.above().west(2), plan.piston());
         assertEquals(Direction.EAST, plan.pistonFacing());
-        assertFalse(plan.power().contains(plan.crystal()));
-        assertFalse(plan.power().contains(plan.crystal().above()));
+        // The crystal's wide hitbox leaves only the cells behind and below the piston for power.
+        assertEquals(List.of(plan.piston().west(), plan.piston().below()), plan.power());
     }
 
     @Test
