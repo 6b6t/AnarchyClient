@@ -26,6 +26,7 @@
     "ItemStackMixin",
     "KeyboardHandlerMixin",
     "KeyboardInputMixin",
+    "LevelExtractorMixin",
     "LivingEntityAccessor",
     "LivingEntitySwingMixin",
     "LocalPlayerMixin",

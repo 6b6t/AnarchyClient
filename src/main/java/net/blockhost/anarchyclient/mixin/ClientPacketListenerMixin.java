@@ -5,9 +5,11 @@ import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.SendChatEvent;
 import net.blockhost.anarchyclient.event.SoundPacketEvent;
+import net.blockhost.anarchyclient.module.impl.NoRotateSetModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -28,6 +30,21 @@ public abstract class ClientPacketListenerMixin {
     )
     private void anarchyclient$handleSoundEvent(final ClientboundSoundPacket packet, final CallbackInfo info) {
         AnarchyClient.MODULES.call(new SoundPacketEvent(Minecraft.getInstance(), packet));
+    }
+
+    // HEAD also runs on the network thread before vanilla moves the packet to the client thread, so only the
+    // client-thread pass records the rotation.
+    @Inject(method = "handleMovePlayer", at = @At("HEAD"))
+    private void anarchyclient$beforeSetback(final ClientboundPlayerPositionPacket packet, final CallbackInfo info) {
+        Minecraft client = Minecraft.getInstance();
+        if (client.isSameThread()) {
+            NoRotateSetModule.beforeSetback(client.player, packet);
+        }
+    }
+
+    @Inject(method = "handleMovePlayer", at = @At("RETURN"))
+    private void anarchyclient$afterSetback(final ClientboundPlayerPositionPacket packet, final CallbackInfo info) {
+        NoRotateSetModule.afterSetback(Minecraft.getInstance().player);
     }
 
     @Inject(method = "handleLogin", at = @At("RETURN"))

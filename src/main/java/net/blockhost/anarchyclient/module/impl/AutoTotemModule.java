@@ -154,7 +154,8 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
         InventoryActionScheduler.schedule(InventoryActionChain.single(
                 this.id(),
                 InventoryActionScheduler.PRIORITY_LIFE,
-                5,
+                // A totem may be needed again soon after a pop; other items can wait longer between swaps.
+                desiredItem == Items.TOTEM_OF_UNDYING ? 2 : 5,
                 action
         ));
     }

@@ -43,7 +43,9 @@ public final class FreecamModule extends Module {
             this.position = player.getEyePosition();
         }
         this.previousPosition = this.position;
-        this.position = move(this.position, player.getYRot(), this.cameraInput, this.speed.value());
+        // Move along the camera's facing, which Free Look can turn away from the player's.
+        float yaw = FreeLookModule.viewYaw(player, player.getYRot());
+        this.position = move(this.position, yaw, this.cameraInput, this.speed.value());
     }
 
     /** Whether the camera is away from the player, so vanilla draws the player's body and hides the held item. */
@@ -72,7 +74,11 @@ public final class FreecamModule extends Module {
         // The camera moves once per tick; interpolate so it stays smooth at high frame rates.
         Vec3 previous = this.previousPosition == null ? this.position : this.previousPosition;
         float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
-        return new CameraTransform(previous.lerp(this.position, partialTick), yaw, pitch);
+        // The incoming rotation is flipped in front view; Freecam always looks where the player (or Free Look) looks.
+        LocalPlayer player = client.player;
+        float viewYaw = player == null ? yaw : FreeLookModule.viewYaw(player, player.getViewYRot(partialTick));
+        float viewPitch = player == null ? pitch : FreeLookModule.viewPitch(player, player.getViewXRot(partialTick));
+        return new CameraTransform(previous.lerp(this.position, partialTick), viewYaw, viewPitch);
     }
 
     @Override

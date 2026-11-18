@@ -2,7 +2,6 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.util.MainThread;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,6 +13,9 @@ import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
 import net.minecraft.world.entity.Relative;
 
 public final class NoRotateSetModule extends Module {
+
+    private static NoRotateSetModule active;
+    private static float[] savedRotation;
 
     private final BooleanSetting positionCorrections = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("position_corrections")
@@ -29,39 +31,50 @@ public final class NoRotateSetModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        LocalPlayer player = client.player;
-        if (player == null) {
-            return false;
+        // A setback must reach vanilla so it confirms the teleport; cancelling it leaves the player stuck.
+        // Position packets are handled by the hooks below, around vanilla's handler on the client thread.
+        return client.player != null && shouldCancel(packet);
+    }
+
+    @Override
+    protected void onEnable() {
+        active = this;
+    }
+
+    @Override
+    protected void onDisable() {
+        if (active == this) {
+            active = null;
         }
-        if (shouldCancel(packet)) {
-            return true;
+        savedRotation = null;
+    }
+
+    /** Called on the client thread right before vanilla applies a position packet. */
+    public static void beforeSetback(final LocalPlayer player, final ClientboundPlayerPositionPacket packet) {
+        NoRotateSetModule module = active;
+        savedRotation = module != null && module.positionCorrections.value() && player != null && hasRotation(packet)
+                ? new float[]{player.getYRot(), player.getXRot()}
+                : null;
+    }
+
+    /** Called on the client thread right after vanilla applied a position packet; puts the view back. */
+    public static void afterSetback(final LocalPlayer player) {
+        float[] rotation = savedRotation;
+        savedRotation = null;
+        if (rotation == null || player == null) {
+            return;
         }
-        if (this.positionCorrections.value()
-                && packet instanceof ClientboundPlayerPositionPacket positionPacket
-                && hasRotation(positionPacket)) {
-            // A setback must reach vanilla so it confirms the teleport; cancelling it leaves the player stuck.
-            // This hook runs on the Netty thread before vanilla queues the packet on its packet processor.
-            // Minecraft.runTick handles queued packets before it runs queued tasks, so the rotation is read
-            // here and the task below puts it back after vanilla applied the setback.
-            float yaw = player.getYRot();
-            float pitch = player.getXRot();
-            MainThread.run(() -> {
-                if (client.player == player) {
-                    player.setYRot(yaw);
-                    player.setXRot(pitch);
-                    player.yRotO = yaw;
-                    player.xRotO = pitch;
-                }
-            });
-        }
-        return false;
+        player.setYRot(rotation[0]);
+        player.setXRot(rotation[1]);
+        player.yRotO = rotation[0];
+        player.xRotO = rotation[1];
     }
 
     static boolean shouldCancel(final Packet<?> packet) {
         return packet instanceof ClientboundPlayerRotationPacket || packet instanceof ClientboundPlayerLookAtPacket;
     }
 
-    private static boolean hasRotation(final ClientboundPlayerPositionPacket packet) {
+    static boolean hasRotation(final ClientboundPlayerPositionPacket packet) {
         return !packet.relatives().contains(Relative.X_ROT)
                 || !packet.relatives().contains(Relative.Y_ROT)
                 || packet.change().xRot() != 0.0F

@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.blockhost.anarchyclient.module.impl.AnimationsModule;
+import net.blockhost.anarchyclient.module.impl.FreecamModule;
 import net.blockhost.anarchyclient.module.impl.HandViewModule;
 import net.minecraft.client.renderer.FirstPersonHandsAndItemsRenderer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
@@ -26,7 +27,8 @@ public abstract class ItemInHandRendererMixin {
                                              final PlayerRenderState playerState,
                                              final FirstPersonHandsAndItemsRenderState state, final CallbackInfo info) {
         HandViewModule.HandTransform transform = HandViewModule.activeTransform();
-        if (transform.hidden()) {
+        // Vanilla checks the camera mode, not Camera.isDetached, so Freecam hides the hand here.
+        if (transform.hidden() || FreecamModule.detachesCamera()) {
             info.cancel();
             return;
         }

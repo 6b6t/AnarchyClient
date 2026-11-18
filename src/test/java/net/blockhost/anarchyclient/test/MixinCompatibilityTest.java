@@ -36,6 +36,7 @@ class MixinCompatibilityTest {
             "net.minecraft.client.renderer.GameRenderer",
             "net.minecraft.client.renderer.entity.EntityRenderer",
             "net.minecraft.client.renderer.entity.ItemEntityRenderer",
+            "net.minecraft.client.renderer.extract.LevelExtractor",
             "net.minecraft.network.Connection",
             "net.minecraft.world.entity.Entity",
             "net.minecraft.world.entity.LivingEntity",

@@ -101,7 +101,9 @@ class ProfileManagerTest {
                 {
                   "profiles": {
                     "old": {"name": "old", "settings": {"migrating_module": {"range": 2.0}}},
-                    "new": {"name": "new", "version": 2, "settings": {"migrating_module": {"range": 2.0}}}
+                    "new": {"name": "new", "version": 2, "settings": {"migrating_module": {"range": 2.0}}},
+                    "dev": {"name": "dev", "updatedAt": "2026-11-18T10:00:00Z",
+                            "settings": {"migrating_module": {"range": 2.0}}}
                   }
                 }
                 """);
@@ -115,6 +117,11 @@ class ProfileManagerTest {
         assertEquals(4.0, module.range.value());
 
         manager.apply("new", modules);
+        assertEquals(2.0, module.range.value());
+
+        // Saved without a version, but after the defaults changed, so it already holds the new values.
+        module.range.value(5.0);
+        manager.apply("dev", modules);
         assertEquals(2.0, module.range.value());
     }
 

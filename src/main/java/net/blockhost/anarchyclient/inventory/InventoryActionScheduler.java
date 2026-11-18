@@ -17,6 +17,7 @@ public final class InventoryActionScheduler {
     private static final List<InventoryActionChain> PENDING = new ArrayList<>();
     private static int cooldownTicks;
     private static int cooldownPriority = Integer.MIN_VALUE;
+    private static String cooldownOwner = "";
 
     private InventoryActionScheduler() {
     }
@@ -33,8 +34,9 @@ public final class InventoryActionScheduler {
      * Runs the highest-priority chain that can run now. A chain whose constraints or actions are
      * blocked is skipped in favour of the next one. After a chain runs, its delay only holds back
      * chains of the same or lower priority, so a higher-priority chain is never delayed by a lower
-     * one. Life chains (a totem swap) ignore the delay entirely, since a second pop can come within
-     * a few ticks.
+     * one. Life chains (a totem swap) also skip a delay another owner set, so a food move cannot hold
+     * back a totem; a chain's own delay still applies, which keeps a rejected swap from repeating
+     * every tick.
      */
     public static void tick(final Minecraft client) {
         boolean coolingDown = cooldownTicks > 0;
@@ -50,7 +52,7 @@ public final class InventoryActionScheduler {
         if (context == null) {
             return;
         }
-        for (InventoryActionChain chain : eligible(pending, coolingDown, cooldownPriority)) {
+        for (InventoryActionChain chain : eligible(pending, coolingDown, cooldownPriority, cooldownOwner)) {
             if (!canRun(chain, context)) {
                 continue;
             }
@@ -61,15 +63,18 @@ public final class InventoryActionScheduler {
             }
             cooldownTicks = chain.delayTicks();
             cooldownPriority = chain.priority();
+            cooldownOwner = chain.owner();
             return;
         }
     }
 
     /** Orders chains by priority (highest first, then schedule order) and removes those held back by the cooldown. */
     static List<InventoryActionChain> eligible(final List<InventoryActionChain> pending, final boolean coolingDown,
-                                               final int cooldownPriority) {
+                                               final int cooldownPriority, final String cooldownOwner) {
         return pending.stream()
-                .filter(chain -> !coolingDown || chain.priority() >= PRIORITY_LIFE || chain.priority() > cooldownPriority)
+                .filter(chain -> !coolingDown
+                        || chain.priority() > cooldownPriority
+                        || chain.priority() >= PRIORITY_LIFE && !chain.owner().equals(cooldownOwner))
                 .sorted(Comparator.comparingInt(InventoryActionChain::priority).reversed())
                 .toList();
     }
@@ -98,5 +103,6 @@ public final class InventoryActionScheduler {
         PENDING.clear();
         cooldownTicks = 0;
         cooldownPriority = Integer.MIN_VALUE;
+        cooldownOwner = "";
     }
 }
