@@ -12,9 +12,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.HashMap;
@@ -71,13 +72,7 @@ public final class AnnouncerModule extends Module {
         if (player == null || client.level == null) {
             return;
         }
-        if (client.level != this.level) {
-            // Positions from another dimension would read as mined or placed here.
-            this.pendingMining.clear();
-            this.pendingPlacing.clear();
-            this.lastPosition = null;
-            this.level = client.level;
-        }
+        this.syncLevel(client);
         Vec3 position = player.position();
         if (this.lastPosition != null && !player.isPassenger()) {
             double dx = position.x - this.lastPosition.x;
@@ -91,6 +86,8 @@ public final class AnnouncerModule extends Module {
         this.lastPosition = position;
         this.trackMining(client);
         this.trackPlacing(client);
+        this.debugValue("counts", (int) this.walked + " walked, " + this.placed + " placed, " + this.mined + " mined, "
+                + this.pendingPlacing.size() + " pending");
         if (++this.ticks < this.interval.value().intValue() * 20) {
             return;
         }
@@ -102,6 +99,19 @@ public final class AnnouncerModule extends Module {
             this.walked = 0.0;
             this.placed = 0;
             this.mined = 0;
+        }
+    }
+
+    /**
+     * Forgets pending positions after a world or dimension change, where they would read as mined or
+     * placed. Every entry point calls it first, so an action recorded before the first tick survives.
+     */
+    private void syncLevel(final Minecraft client) {
+        if (client.level != this.level) {
+            this.pendingMining.clear();
+            this.pendingPlacing.clear();
+            this.lastPosition = null;
+            this.level = client.level;
         }
     }
 
@@ -165,19 +175,32 @@ public final class AnnouncerModule extends Module {
         if (client.player == null || client.level == null) {
             return;
         }
+        this.syncLevel(client);
         if (packet instanceof ServerboundPlayerActionPacket action
                 && (action.getAction() == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
                 || action.getAction() == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK)) {
             this.pendingMining.putIfAbsent(action.getPos().immutable(), 0);
-        } else if (packet instanceof ServerboundUseItemOnPacket use
-                && client.player.getItemInHand(use.hand()).getItem() instanceof BlockItem) {
-            BlockPos clicked = use.hitResult().getBlockPos();
-            BlockPos target = client.level.getBlockState(clicked).canBeReplaced()
-                    ? clicked : clicked.relative(use.hitResult().getDirection());
-            if (client.level.getBlockState(target).canBeReplaced()) {
-                this.pendingPlacing.putIfAbsent(target.immutable(), 0);
-            }
         }
+    }
+
+    /**
+     * Records the cell a block click would fill. This runs before the client predicts the placement;
+     * by the time the packet is sent the cell already holds the predicted block.
+     */
+    @Override
+    public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
+        if (client.player == null || client.level == null
+                || !(client.player.getItemInHand(hand).getItem() instanceof BlockItem)) {
+            return false;
+        }
+        this.syncLevel(client);
+        BlockPos clicked = hitResult.getBlockPos();
+        BlockPos target = client.level.getBlockState(clicked).canBeReplaced()
+                ? clicked : clicked.relative(hitResult.getDirection());
+        if (client.level.getBlockState(target).canBeReplaced()) {
+            this.pendingPlacing.putIfAbsent(target.immutable(), 0);
+        }
+        return false;
     }
 
     @Override
