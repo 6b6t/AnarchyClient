@@ -7,9 +7,9 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 
 import java.util.List;
+import java.util.Optional;
 
 public final class BlockInModule extends Module {
 
@@ -90,6 +90,22 @@ public final class BlockInModule extends Module {
                 // Later blocks would replace this rotation request before the server sees it.
                 return;
             }
+            if (result == BlockPlacement.PlacementResult.UNPLACEABLE && BlockPlacement.needsPlacement(client.level, target)) {
+                // The roof has nothing to click on flat ground, so place a block it can rest against first.
+                Optional<BlockPos> support = CombatPlacementPlanner.viableSupport(client, player, target,
+                        CombatPlacementPlanner.Options.of(1, this.rotate.value(), player.blockInteractionRange()));
+                if (support.isPresent()) {
+                    result = BlockPlacement.place(client, this, support.orElseThrow(), this.rotate.value(),
+                            this.maxTurnDegrees.value().floatValue());
+                    if (result == BlockPlacement.PlacementResult.WAITING && this.rotate.value()) {
+                        return;
+                    }
+                    if (result == BlockPlacement.PlacementResult.PLACED && !this.multiPlace.value()) {
+                        return;
+                    }
+                }
+                complete = false;
+            }
             if (result == BlockPlacement.PlacementResult.WAITING || result == BlockPlacement.PlacementResult.UNPLACEABLE) {
                 complete = false;
             }
@@ -116,13 +132,8 @@ public final class BlockInModule extends Module {
         if (dx * dx + dz * dz < 0.0001) {
             return;
         }
+        // Vanilla sends the new position with its movement packet this tick. Sending one here too would
+        // be a second position packet in the tick, which a 26.3 server answers with a kick.
         player.setPos(x, player.getY(), z);
-        player.connection.send(new ServerboundMovePlayerPacket.Pos(
-                x,
-                player.getY(),
-                z,
-                player.onGround(),
-                player.horizontalCollision
-        ));
     }
 }
