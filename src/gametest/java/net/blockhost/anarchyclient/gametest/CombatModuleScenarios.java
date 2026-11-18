@@ -28,10 +28,9 @@ final class CombatModuleScenarios {
 
     private static void expectTargetDamaged(final ClientGameTestContext context, final GameTestSupport.Arena arena,
                                             final String moduleId, final int timeoutTicks) {
-        float start = arena.targetHealth();
         GameTestSupport.enable(context, moduleId, true);
         try {
-            arena.server().waitFor(server -> GameTestSupport.targetHealth(server) < start, timeoutTicks);
+            arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, timeoutTicks);
         } finally {
             GameTestSupport.enable(context, moduleId, false);
         }

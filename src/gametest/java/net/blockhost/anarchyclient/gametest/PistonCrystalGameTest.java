@@ -35,10 +35,9 @@ public final class PistonCrystalGameTest implements GameScenario {
             context.waitTicks(10);
             context.takeScreenshot("piston_crystal_setup");
 
-            float startHealth = arena.targetHealth();
             GameTestSupport.enable(context, "piston_crystal", true);
             try {
-                arena.server().waitFor(server -> GameTestSupport.targetHealth(server) < startHealth, 300);
+                arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 300);
             } catch (AssertionError timeout) {
                 throw new AssertionError("Piston Crystal never damaged the target; debug "
                         + DebugValueRegistry.snapshot().get("piston_crystal"), timeout);
@@ -46,7 +45,7 @@ public final class PistonCrystalGameTest implements GameScenario {
                 context.takeScreenshot("piston_crystal_result");
                 GameTestSupport.enable(context, "piston_crystal", false);
             }
-            LOGGER.info("Piston Crystal took the target from {} to {} health", startHealth, arena.targetHealth());
+            LOGGER.info("Piston Crystal hit the target {} time(s)", arena.targetHits());
         }
     }
 }

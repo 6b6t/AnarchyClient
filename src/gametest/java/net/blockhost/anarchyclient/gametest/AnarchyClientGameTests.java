@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.gametest;
 
+import net.blockhost.anarchyclient.module.DebugValueRegistry;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public final class AnarchyClientGameTests implements FabricClientGameTest {
             }
             LOGGER.info("SCENARIO START {}", name);
             HandlerErrors.drain();
+            DebugValueRegistry.clearAll();
             try {
                 scenario.getValue().run(context);
                 List<String> errors = HandlerErrors.drain();
@@ -48,6 +50,8 @@ public final class AnarchyClientGameTests implements FabricClientGameTest {
             } catch (Throwable failure) {
                 failures.put(name, String.valueOf(failure.getMessage()));
                 LOGGER.error("SCENARIO FAIL {}", name, failure);
+                LOGGER.error("SCENARIO DEBUG {} {}", name, DebugValueRegistry.snapshot());
+                HandlerErrors.drain().stream().limit(3).forEach(error -> LOGGER.error("SCENARIO HANDLER ERROR {} {}", name, error));
                 context.setScreen(() -> null);
             }
         }

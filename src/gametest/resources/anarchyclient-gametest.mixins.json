@@ -3,8 +3,7 @@
   "package": "net.blockhost.anarchyclient.gametest.mixin",
   "compatibilityLevel": "JAVA_25",
   "client": [
-    "ChatComponentAccessor",
-    "EntityAccessor"
+    "ChatComponentAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

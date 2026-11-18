@@ -61,7 +61,7 @@ final class MiscModuleScenarios {
     static void killEffects(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
-            arena.spawnTarget(arena.origin().offset(4, 0, 0));
+            arena.spawnMortalTarget(arena.origin().offset(4, 0, 0));
             GameTestSupport.enable(context, "kill_effects", true);
             try {
                 context.waitTicks(5);

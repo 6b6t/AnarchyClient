@@ -3,7 +3,6 @@ package net.blockhost.anarchyclient.gametest;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
 import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.gametest.mixin.EntityAccessor;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -17,7 +16,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -88,20 +88,20 @@ final class GameTestSupport {
     }
 
     /**
-     * Clears the short invulnerability after a hit. Stand-in players never tick, so it would never
-     * wear off by itself.
+     * Clears the hit cooldown that blocks repeated damage. Stand-in players never tick, so it would
+     * never wear off by itself.
      */
-    static void resetInvulnerability(final Entity entity) {
-        ((EntityAccessor) entity).anarchyclientGametest$setInvulnerableTime(0);
+    static void resetDamageCooldown(final LivingEntity entity) {
+        entity.damageCooldownTime = 0;
     }
 
-    /** The target's health plus absorption, or -1 when it is gone. Call it on the server thread. */
-    static float targetHealth(final MinecraftServer server) {
+    /** How many hits the target has taken. Call it on the server thread. */
+    static int targetHits(final MinecraftServer server) {
         return server.overworld().players().stream()
-                .filter(player -> TARGET.equals(player.getScoreboardName()))
+                .filter(player -> player instanceof DamageableTarget)
+                .map(player -> ((DamageableTarget) player).hits)
                 .findFirst()
-                .map(player -> player.getHealth() + player.getAbsorptionAmount())
-                .orElse(-1.0F);
+                .orElse(0);
     }
 
     record Arena(ClientGameTestContext context, TestServerContext server, String name, BlockPos origin) {
@@ -140,11 +140,20 @@ final class GameTestSupport {
             return this.server.computeOnServer(server -> server.overworld().getBlockState(pos));
         }
 
-        /** Adds a damageable player named {@value #TARGET} at {@code feet} and waits until the client sees it. */
+        /** Adds a player named {@value #TARGET} at {@code feet} that survives every hit, and waits until the client sees it. */
         void spawnTarget(final BlockPos feet) {
+            this.spawnTarget(feet, true);
+        }
+
+        /** Adds a player named {@value #TARGET} at {@code feet} that dies like a real player. */
+        void spawnMortalTarget(final BlockPos feet) {
+            this.spawnTarget(feet, false);
+        }
+
+        private void spawnTarget(final BlockPos feet, final boolean immortal) {
             this.server.runOnServer(server -> {
                 ServerLevel level = server.overworld();
-                FakePlayer target = new DamageableTarget(level, new GameProfile(UUID.randomUUID(), TARGET));
+                FakePlayer target = new DamageableTarget(level, new GameProfile(UUID.randomUUID(), TARGET), immortal);
                 target.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 90.0F, 0.0F);
                 server.getPlayerList().broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(target)));
                 level.addNewPlayer(target);
@@ -153,8 +162,8 @@ final class GameTestSupport {
                     .anyMatch(player -> TARGET.equals(player.getScoreboardName())));
         }
 
-        float targetHealth() {
-            return this.server.computeOnServer(GameTestSupport::targetHealth);
+        int targetHits() {
+            return this.server.computeOnServer(GameTestSupport::targetHits);
         }
 
         ServerPlayer serverPlayer(final MinecraftServer server) {
@@ -162,16 +171,45 @@ final class GameTestSupport {
         }
     }
 
-    /** A server-side stand-in player. Fabric's fake players ignore damage, which these tests need. */
+    /**
+     * A server-side stand-in player that counts the hits it takes. Fabric's fake players ignore
+     * damage, which these tests need.
+     */
     private static final class DamageableTarget extends FakePlayer {
 
-        private DamageableTarget(final ServerLevel level, final GameProfile profile) {
+        private static final float IMMORTAL_HEALTH = 1024.0F;
+
+        private final boolean immortal;
+        private int hits;
+
+        private DamageableTarget(final ServerLevel level, final GameProfile profile, final boolean immortal) {
             super(level, profile);
+            this.immortal = immortal;
+            if (immortal) {
+                // Enough health that no hit kills it. A dead player waits for a respawn, and the server
+                // makes it invulnerable until then.
+                this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(IMMORTAL_HEALTH);
+                this.setHealth(IMMORTAL_HEALTH);
+            }
         }
 
         @Override
         public boolean isInvulnerableTo(final ServerLevel level, final DamageSource source) {
             return false;
         }
+
+        @Override
+        public boolean hurtServer(final ServerLevel level, final DamageSource source, final float amount) {
+            boolean hurt = super.hurtServer(level, source, amount);
+            if (hurt) {
+                this.hits++;
+                if (this.immortal) {
+                    // The stand-in never ticks, so its hit cooldown would never wear off by itself.
+                    resetDamageCooldown(this);
+                }
+            }
+            return hurt;
+        }
+
     }
 }

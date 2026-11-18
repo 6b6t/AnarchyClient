@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
@@ -20,7 +21,6 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /** Edge cases and interactions between modules. */
 final class EdgeCaseScenarios {
@@ -30,7 +30,7 @@ final class EdgeCaseScenarios {
 
     /**
      * Piston Crystal must keep cycling: the blast destroys its piston, so it has to rebuild the setup
-     * for a second hit. The target is healed after each hit so it survives.
+     * for a second hit.
      */
     static void pistonCrystalRepeats(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -43,23 +43,21 @@ final class EdgeCaseScenarios {
             arena.give("end_crystal 16");
             arena.give("redstone_block 16");
             arena.give("diamond_pickaxe[enchantments={efficiency:5}]");
-            arena.teleport(target.offset(-2, 0, 2), 135.0F);
+            // Stand in an own hole, as players do in crystal PvP: resistance blocks the blast's damage
+            // but not its knockback, which would push the player out of reach after the first hit.
+            BlockPos self = target.offset(-2, 0, 2);
+            arena.hole(self);
+            for (Direction direction : Direction.Plane.HORIZONTAL) {
+                arena.setBlock(self.above().relative(direction), "obsidian");
+            }
+            arena.teleport(self, 135.0F);
             arena.spawnTarget(target);
             context.waitTicks(10);
-            AtomicInteger hits = new AtomicInteger();
             GameTestSupport.enable(context, "piston_crystal", true);
             try {
-                arena.server().waitFor(server -> {
-                    ServerPlayer victim = target(server);
-                    if (victim != null && victim.getHealth() < victim.getMaxHealth()) {
-                        hits.incrementAndGet();
-                        victim.setHealth(victim.getMaxHealth());
-                        GameTestSupport.resetInvulnerability(victim);
-                    }
-                    return hits.get() >= 2;
-                }, 600);
+                arena.server().waitFor(server -> GameTestSupport.targetHits(server) >= 2, 600);
             } catch (AssertionError timeout) {
-                throw new AssertionError("Piston Crystal hit the target only " + hits.get() + " time(s); debug "
+                throw new AssertionError("Piston Crystal hit the target only " + arena.targetHits() + " time(s); debug "
                         + DebugValueRegistry.snapshot().get("piston_crystal"), timeout);
             } finally {
                 GameTestSupport.enable(context, "piston_crystal", false);
@@ -99,11 +97,10 @@ final class EdgeCaseScenarios {
             arena.spawnTarget(arena.origin().offset(2, 0, 0));
             arena.hotbar(0, "diamond_sword");
             context.waitTicks(10);
-            float start = arena.targetHealth();
             GameTestSupport.enable(context, "anti_aim", true);
             GameTestSupport.enable(context, "kill_aura", true);
             try {
-                arena.server().waitFor(server -> GameTestSupport.targetHealth(server) < start, 100);
+                arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 100);
             } finally {
                 GameTestSupport.enable(context, "kill_aura", false);
                 GameTestSupport.enable(context, "anti_aim", false);
@@ -145,17 +142,16 @@ final class EdgeCaseScenarios {
             arena.hotbar(0, "diamond_sword[damage=1559]");
             context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
             context.waitTicks(10);
-            float start = arena.targetHealth();
             GameTestSupport.enable(context, "item_saver", true);
             try {
                 context.getInput().lookAt(arena.origin().offset(2, 1, 0));
                 context.waitTicks(2);
                 context.getInput().pressKey(options -> options.keyAttack);
                 context.waitTicks(10);
-                float health = arena.targetHealth();
+                int hits = arena.targetHits();
                 int damage = arena.server().computeOnServer(server ->
                         arena.serverPlayer(server).getInventory().getItem(0).getDamageValue());
-                GameTestSupport.check(health == start, "Item Saver let a nearly broken sword hit the target");
+                GameTestSupport.check(hits == 0, "Item Saver let a nearly broken sword hit the target");
                 GameTestSupport.check(damage == 1559, "The protected sword lost durability: " + damage);
             } finally {
                 GameTestSupport.enable(context, "item_saver", false);
@@ -195,10 +191,9 @@ final class EdgeCaseScenarios {
             context.waitTicks(10);
             GameTestSupport.setting(context, "crystal_aura", "id_predict", new JsonPrimitive(true));
             GameTestSupport.setting(context, "crystal_aura", "set_dead", new JsonPrimitive(true));
-            float start = arena.targetHealth();
             GameTestSupport.enable(context, "crystal_aura", true);
             try {
-                arena.server().waitFor(server -> GameTestSupport.targetHealth(server) < start, 200);
+                arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 200);
                 context.waitTicks(40);
                 GameTestSupport.check(context.computeOnClient(client -> client.level != null), "Crystal Aura got the player kicked");
             } finally {
@@ -270,6 +265,8 @@ final class EdgeCaseScenarios {
             BlockPos origin = arena.origin();
             arena.hotbar(0, "dirt 16");
             context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            // Wait for the item to reach the client, or the first click is made with an empty hand.
+            context.waitFor(client -> client.player.getMainHandItem().is(Items.DIRT), 20);
             GameTestSupport.setting(context, "announcer", "interval", new JsonPrimitive(10.0));
             GameTestSupport.enable(context, "announcer", true);
             try {
@@ -316,13 +313,21 @@ final class EdgeCaseScenarios {
             arena.run("effect give " + arena.name() + " resistance infinite 4 true");
             arena.teleport(arena.origin().above(60), -90.0F);
             context.waitTicks(10);
-            context.getInput().pressKey(options -> options.keyJump);
-            context.waitTicks(2);
-            context.getInput().pressKey(options -> options.keyJump);
-            context.waitFor(client -> client.player.isFallFlying(), 40);
+            // A one-tick press can be released before the client reads the jump key, so hold it.
+            context.getInput().holdKeyFor(options -> options.keyJump, 3);
+            try {
+                context.waitFor(client -> client.player.isFallFlying(), 20);
+            } catch (AssertionError timeout) {
+                throw new AssertionError("The test could not start gliding; y "
+                        + context.computeOnClient(client -> client.player.getY()), timeout);
+            }
             GameTestSupport.enable(context, "auto_firework", true);
             try {
                 arena.server().waitFor(server -> arena.serverPlayer(server).getInventory().getItem(0).getCount() < 16, 100);
+            } catch (AssertionError timeout) {
+                throw new AssertionError("Auto Firework used no rocket; debug " + DebugValueRegistry.snapshot().get("auto_firework")
+                        + " gliding " + context.computeOnClient(client -> client.player.isFallFlying())
+                        + " speed " + context.computeOnClient(client -> client.player.getDeltaMovement().length() * 20.0), timeout);
             } finally {
                 GameTestSupport.enable(context, "auto_firework", false);
             }
