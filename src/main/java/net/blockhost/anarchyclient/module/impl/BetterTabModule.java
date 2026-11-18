@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
@@ -90,7 +91,7 @@ public final class BetterTabModule extends Module {
                     .append(result);
         }
         if (this.ping.value()) {
-            result = Component.literal(playerInfo.getLatency() + "ms ")
+            result = Translations.component("anarchyclient.message.better_tab.ms", "%sms ", playerInfo.getLatency())
                     .withStyle(ChatFormatting.GRAY)
                     .append(result);
         }

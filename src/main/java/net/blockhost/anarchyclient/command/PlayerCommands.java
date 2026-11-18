@@ -9,6 +9,7 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.blockhost.anarchyclient.inventory.InventoryTracker;
 import net.fabricmc.loader.api.FabricLoader;
@@ -107,7 +108,7 @@ final class PlayerCommands {
     private static int listTrackedInventories(final CommandContext<FabricClientCommandSource> context) {
         List<InventoryTracker.Snapshot> snapshots = InventoryTracker.newest(TRACKED_INVENTORY_LIMIT);
         if (snapshots.isEmpty()) {
-            context.getSource().sendError(Component.literal("No tracked players. Enable Inventory Tracker and get near players."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.player.no_tracked_players_enable_inventory_tracker", "No tracked players. Enable Inventory Tracker and get near players."));
             return 0;
         }
         long now = System.currentTimeMillis();
@@ -127,7 +128,7 @@ final class PlayerCommands {
                     return SUCCESS;
                 })
                 .orElseGet(() -> {
-                    context.getSource().sendError(Component.literal("No tracked inventory for " + playerName + "."));
+                    context.getSource().sendError(Translations.component("anarchyclient.message.player.no_tracked_inventory_for", "No tracked inventory for %s.", playerName));
                     return 0;
                 });
     }
@@ -161,7 +162,7 @@ final class PlayerCommands {
     private static int centerPlayer(final CommandContext<FabricClientCommandSource> context, final CenterMode mode) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.player.connection == null) {
-            context.getSource().sendError(Component.literal("You must be in-game to center yourself."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.player.you_must_be_in_game_to", "You must be in-game to center yourself."));
             return 0;
         }
         double x = mode.coordinate(client.player.getX());
@@ -174,7 +175,7 @@ final class PlayerCommands {
                 client.player.onGround(),
                 client.player.horizontalCollision
         ));
-        context.getSource().sendFeedback(Component.literal("Centered player."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.centered_player", "Centered player."));
         return SUCCESS;
     }
 
@@ -182,19 +183,19 @@ final class PlayerCommands {
         Minecraft client = Minecraft.getInstance();
         ClientPacketListener connection = client.getConnection();
         if (connection == null) {
-            context.getSource().sendError(Component.literal("You must be connected to a server to save a skin."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.player.you_must_be_connected_to_a", "You must be connected to a server to save a skin."));
             return 0;
         }
         String playerName = StringArgumentType.getString(context, "player");
         PlayerInfo info = connection.getPlayerInfoIgnoreCase(playerName);
         if (info == null) {
-            context.getSource().sendError(Component.literal("Unknown online player: " + playerName));
+            context.getSource().sendError(Translations.component("anarchyclient.message.player.unknown_online_player", "Unknown online player: %s", playerName));
             return 0;
         }
         String profileName = info.getProfile().name();
         String uuid = info.getProfile().id().toString().replace("-", "");
         downloadSkin(client, context.getSource(), profileName, uuid);
-        context.getSource().sendFeedback(Component.literal("Saving skin for " + profileName + "..."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.saving_skin_for", "Saving skin for %s...", profileName));
         return SUCCESS;
     }
 
@@ -278,8 +279,7 @@ final class PlayerCommands {
         }
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(pos, true, client.player.horizontalCollision));
         // Vanilla 26.3 servers reset fall distance on every upward move, so this only works on servers that do not.
-        context.getSource().sendFeedback(Component.literal("Sent " + packets
-                + " fall packet pairs. Vanilla servers reset fall distance on upward moves, so they deal no damage there."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.sent_fall_packet_pairs_vanilla_servers", "Sent %s fall packet pairs. Vanilla servers reset fall distance on upward moves, so they deal no damage there.", packets));
         return SUCCESS;
     }
 
@@ -290,9 +290,9 @@ final class PlayerCommands {
         }
         if (client.player.isPassenger()) {
             client.player.stopRiding();
-            context.getSource().sendFeedback(Component.literal("Dismounted."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.dismounted", "Dismounted."));
         } else {
-            context.getSource().sendFeedback(Component.literal("You are not riding anything."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.you_are_not_riding_anything", "You are not riding anything."));
         }
         return SUCCESS;
     }
@@ -307,9 +307,7 @@ final class PlayerCommands {
         }
         client.player.absSnapTo(target.x, target.y, target.z);
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, client.player.onGround(), client.player.horizontalCollision));
-        context.getSource().sendFeedback(Component.literal("Sent a move to "
-                + formatCoordinate(target.x) + ", " + formatCoordinate(target.y) + ", " + formatCoordinate(target.z)
-                + ". The server can still set you back."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.sent_a_move_to_the_server", "Sent a move to %s, %s, %s. The server can still set you back.", formatCoordinate(target.x), formatCoordinate(target.y), formatCoordinate(target.z)));
         return SUCCESS;
     }
 
@@ -321,8 +319,7 @@ final class PlayerCommands {
                                            final Vec3 to) {
         double distance = from.distanceTo(to);
         if (exceedsMoveLimit(distance)) {
-            context.getSource().sendError(Component.literal("That is " + formatCoordinate(distance)
-                    + " blocks; the server only accepts moves of up to " + (int) MAX_MOVE_DISTANCE + " blocks."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.player.that_is_blocks_the_server_only", "That is %s blocks; the server only accepts moves of up to %s blocks.", formatCoordinate(distance), (int) MAX_MOVE_DISTANCE));
             return false;
         }
         return true;
@@ -404,14 +401,14 @@ final class PlayerCommands {
                 Path output = skinPath(profileName);
                 Files.createDirectories(output.getParent());
                 Files.write(output, skinResponse.body());
-                client.execute(() -> source.sendFeedback(Component.literal("Saved skin to " + output)));
+                client.execute(() -> source.sendFeedback(Translations.component("anarchyclient.message.player.saved_skin_to", "Saved skin to %s", output)));
             } catch (IOException | RuntimeException exception) {
                 // RuntimeException covers malformed profile JSON, bad Base64, and bad skin URLs, which
                 // the async task would otherwise drop silently.
-                client.execute(() -> source.sendError(Component.literal("Failed to save skin: " + exception.getMessage())));
+                client.execute(() -> source.sendError(Translations.component("anarchyclient.message.player.failed_to_save_skin", "Failed to save skin: %s", exception.getMessage())));
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                client.execute(() -> source.sendError(Component.literal("Failed to save skin: interrupted")));
+                client.execute(() -> source.sendError(Translations.component("anarchyclient.message.player.failed_to_save_skin_interrupted", "Failed to save skin: interrupted")));
             }
         });
     }

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.world.level.GameType;
@@ -89,7 +89,7 @@ public final class GamemodeNotifierModule extends Module {
                 continue;
             }
             String name = current.getProfile().name();
-            client.player.sendSystemMessage(Component.literal(name + " changed gamemode to " + entry.gameMode().getName() + "."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.gamemode_notifier.changed_gamemode_to", "%s changed gamemode to %s.", name, entry.gameMode().getName()));
         }
     }
 

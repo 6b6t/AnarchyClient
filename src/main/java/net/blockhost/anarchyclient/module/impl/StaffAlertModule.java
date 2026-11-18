@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -14,7 +15,6 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
@@ -149,7 +149,7 @@ public final class StaffAlertModule extends Module {
 
     private void alert(final Minecraft client, final String name) {
         if (client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Staff detected: " + name + "."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.staff_alert.staff_detected", "Staff detected: %s.", name));
         }
         if (this.disableModules.value()) {
             for (String id : AutoDisableModule.parseModuleIds(this.moduleList.value())) {

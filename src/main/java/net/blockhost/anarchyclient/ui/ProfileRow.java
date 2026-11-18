@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.layout.grid.GridAnchor;
@@ -37,14 +38,14 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
         this.profile = profile;
         this.fixedSize(-1, 44);
         this.name = textNode(profile.name(), TEXT);
-        this.modules = textNode(profile.modules() + " modules", FAINT);
-        this.apply = textAction("Apply", GlassTheme::accent, () -> {
+        this.modules = textNode(Translations.format("anarchyclient.ui.profile_module_count", "%s modules", profile.modules()), FAINT);
+        this.apply = textAction(Translations.text("anarchyclient.ui.apply", "Apply"), GlassTheme::accent, () -> {
             AnarchyClient.PROFILES.apply(this.profile.name(), this.panel.modules);
             this.panel.config.save();
             this.panel.refreshModuleList();
             this.panel.inspector.refresh();
         });
-        this.delete = textAction("Delete", MUTED, () -> {
+        this.delete = textAction(Translations.text("anarchyclient.ui.delete", "Delete"), MUTED, () -> {
             if (AnarchyClient.PROFILES.delete(this.profile.name())) {
                 this.panel.profilesPanel.refresh();
             }
@@ -55,7 +56,7 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
         place(this.modules, cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                 padding(PADDING, 0F, 8F, 0F), null, 18F));
         // Size each action to its text, right-aligned in its column: a click on the empty space next to
-        // "Apply" used to land on "Delete".
+        // Translations.text("anarchyclient.ui.apply", "Apply") used to land on Translations.text("anarchyclient.ui.delete", "Delete").
         place(this.apply, cell(1, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
                 padding(0F, 0F, 10F, 0F), 52F, null));
         place(this.delete, cell(2, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,

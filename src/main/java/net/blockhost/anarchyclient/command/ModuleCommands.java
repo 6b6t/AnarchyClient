@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.impl.SwarmModule;
@@ -102,19 +103,19 @@ final class ModuleCommands {
     }
 
     private static int showPrefix(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Component.literal("Command prefix is \"" + CommandPrefix.get() + "\"."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.command_prefix_is", "Command prefix is \"%s\".", CommandPrefix.get()));
         return SUCCESS;
     }
 
     private static int setPrefix(final CommandContext<FabricClientCommandSource> context) {
         String prefix = StringArgumentType.getString(context, "prefix").trim();
         if (prefix.length() != 1 || prefix.equals("/")) {
-            context.getSource().sendError(Component.literal("The prefix must be a single character other than /."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.the_prefix_must_be_a_single", "The prefix must be a single character other than /."));
             return 0;
         }
         CommandPrefix.set(prefix);
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal("Command prefix set to \"" + CommandPrefix.get() + "\"."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.command_prefix_set_to", "Command prefix set to \"%s\".", CommandPrefix.get()));
         return SUCCESS;
     }
 
@@ -125,7 +126,7 @@ final class ModuleCommands {
         }
         module.toggle();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal(module.name() + " is now " + (module.enabled() ? "on" : "off") + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.is_now", "%s is now %s.", module.name(), (module.enabled() ? "on" : "off")));
         return SUCCESS;
     }
 
@@ -135,12 +136,12 @@ final class ModuleCommands {
                 .peek(module -> module.enabled(false))
                 .count();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal("Disabled " + disabled + " module" + (disabled == 1 ? "" : "s") + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.disabled_module", "Disabled %s module%s.", disabled, (disabled == 1 ? "" : "s")));
         return SUCCESS;
     }
 
     private static int notebotStatus(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Component.literal("Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.notebot_scans_nearby_note_blocks_when", "Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
         return SUCCESS;
     }
 
@@ -151,28 +152,28 @@ final class ModuleCommands {
         }
         int note = IntegerArgumentType.getInteger(context, "note");
         client.player.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 2.0F, notePitch(note));
-        context.getSource().sendFeedback(Component.literal("Played note " + note + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.played_note", "Played note %s.", note));
         return SUCCESS;
     }
 
     private static int swarmStatus(final CommandContext<FabricClientCommandSource> context) {
         SwarmModule swarm = swarmModule();
         if (swarm == null) {
-            context.getSource().sendError(Component.literal("Swarm module is not registered."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.swarm_module_is_not_registered", "Swarm module is not registered."));
             return 0;
         }
-        context.getSource().sendFeedback(Component.literal("Swarm " + swarm.status()));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.swarm", "Swarm %s", swarm.status()));
         return SUCCESS;
     }
 
     private static int swarmSend(final CommandContext<FabricClientCommandSource> context) {
         SwarmModule swarm = swarmModule();
         if (swarm == null) {
-            context.getSource().sendError(Component.literal("Swarm module is not registered."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.swarm_module_is_not_registered", "Swarm module is not registered."));
             return 0;
         }
         int sent = swarm.broadcast(StringArgumentType.getString(context, "message"));
-        context.getSource().sendFeedback(Component.literal("Sent swarm action to " + sent + " worker(s)."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.sent_swarm_action_to_worker_s", "Sent swarm action to %s worker(s).", sent));
         return sent > 0 ? SUCCESS : 0;
     }
 
@@ -189,8 +190,7 @@ final class ModuleCommands {
         String name = StringArgumentType.getString(context, "action");
         Optional<ModuleBindAction> action = ModuleBindAction.tryParse(name);
         if (action.isEmpty()) {
-            context.getSource().sendError(Component.literal("Unknown bind action '" + name
-                    + "'. Use toggle, hold, or smart."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_bind_action_use_toggle_hold", "Unknown bind action '%s'. Use toggle, hold, or smart.", name));
             return 0;
         }
         return bindModule(context, action.get());
@@ -205,7 +205,7 @@ final class ModuleCommands {
         module.keybind().key(key);
         module.keybind().action(action);
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal("Bound " + module.name() + " to key " + key + " as " + action.name().toLowerCase(Locale.ROOT) + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.bound_to_key_as", "Bound %s to key %s as %s.", module.name(), key, action.name().toLowerCase(Locale.ROOT)));
         return SUCCESS;
     }
 
@@ -216,7 +216,7 @@ final class ModuleCommands {
         }
         module.keybind().key(InputConstants.UNKNOWN.getValue());
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal("Unbound " + module.name() + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.unbound", "Unbound %s.", module.name()));
         return SUCCESS;
     }
 
@@ -294,7 +294,7 @@ final class ModuleCommands {
         String id = StringArgumentType.getString(context, "module");
         Module module = AnarchyClient.MODULES.find(id).orElse(null);
         if (module == null) {
-            context.getSource().sendError(Component.literal("Unknown module: " + id));
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_module", "Unknown module: %s", id));
         }
         return module;
     }
@@ -309,7 +309,7 @@ final class ModuleCommands {
                 return setting;
             }
         }
-        context.getSource().sendError(Component.literal("Unknown setting: " + id));
+        context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_setting", "Unknown setting: %s", id));
         return null;
     }
 

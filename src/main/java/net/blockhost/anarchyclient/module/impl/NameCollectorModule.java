@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
@@ -8,7 +9,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.network.chat.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -79,7 +79,7 @@ public final class NameCollectorModule extends Module {
             }
             Files.write(file, merged, StandardCharsets.UTF_8);
             if (client.player != null) {
-                client.player.sendSystemMessage(Component.literal("Saved " + merged.size() + " names to " + file + "."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.name_collector.saved_names_to", "Saved %s names to %s.", merged.size(), file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save collected names", exception);

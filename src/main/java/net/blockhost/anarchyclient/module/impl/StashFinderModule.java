@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -7,7 +8,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -82,8 +82,7 @@ public final class StashFinderModule extends Module {
                 if (count >= this.threshold.value().intValue()) {
                     this.reportedChunks.add(key);
                     BlockPos pos = chunk.getPos().getWorldPosition();
-                    player.sendSystemMessage(Component.literal("Possible stash: " + count + " containers near "
-                            + pos.getX() + ", " + pos.getZ()));
+                    player.sendSystemMessage(Translations.component("anarchyclient.message.stash_finder.possible_stash_containers_near", "Possible stash: %s containers near %s, %s", count, pos.getX(), pos.getZ()));
                 }
             }
         }

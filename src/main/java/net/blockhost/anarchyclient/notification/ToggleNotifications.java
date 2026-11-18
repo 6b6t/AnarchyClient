@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.notification;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.GlassPanelCommand;
 import net.blockhost.anarchyclient.ui.GlassTheme;
@@ -107,7 +108,8 @@ public final class ToggleNotifications {
         Component message = Component.literal("")
                 .append(Component.literal("[AnarchyClient] ").withStyle(style -> style.withColor(accentRgb).withBold(true)))
                 .append(Component.literal(moduleName + " "))
-                .append(Component.literal(on ? "enabled" : "disabled")
+                .append((on ? Translations.component("anarchyclient.message.toggle_notifications.enabled", "enabled")
+                        : Translations.component("anarchyclient.message.toggle_notifications.disabled", "disabled"))
                         .withStyle(style -> style.withColor(on ? accentRgb : offRgb)));
         client.player.sendSystemMessage(message);
     }

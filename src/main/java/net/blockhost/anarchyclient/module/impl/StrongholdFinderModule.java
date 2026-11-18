@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.level.Level;
@@ -76,9 +76,7 @@ public final class StrongholdFinderModule extends Module {
         Optional<Vec3> estimate = this.estimate();
         if (this.notify.value() && estimate.isPresent() && client.player != null) {
             Vec3 pos = estimate.orElseThrow();
-            client.player.sendSystemMessage(Component.literal(
-                    "Stronghold estimate: x " + Math.round(pos.x) + ", z " + Math.round(pos.z) + "."
-            ));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.stronghold_finder.stronghold_estimate_x_z", "Stronghold estimate: x %s, z %s.", Math.round(pos.x), Math.round(pos.z)));
         }
     }
 

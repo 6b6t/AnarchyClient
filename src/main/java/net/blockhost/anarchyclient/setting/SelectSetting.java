@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 import java.util.List;
 
@@ -30,6 +31,19 @@ public final class SelectSetting extends Setting<String> {
 
     public List<String> options() {
         return this.options;
+    }
+
+    /**
+     * The label shown for {@code option} in the selected language. The stored value stays the English option, so
+     * configs and commands do not depend on the language.
+     */
+    public String optionLabel(final String option) {
+        String key = this.translationKey();
+        return key == null ? option : Translations.text(optionKey(key, option), option);
+    }
+
+    public static String optionKey(final String settingKey, final String option) {
+        return settingKey + ".option." + Translations.keySegment(option);
     }
 
     public void next() {

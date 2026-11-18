@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.SettingGroup;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -75,8 +76,18 @@ public abstract class Module {
         return this.name;
     }
 
+    /** The description in the selected language; English when it has no translation. */
     public final String description() {
+        return Translations.text(this.descriptionKey(), this.description);
+    }
+
+    /** The English description, as written in code. */
+    public final String englishDescription() {
         return this.description;
+    }
+
+    public final String descriptionKey() {
+        return "module.anarchyclient." + this.id + ".description";
     }
 
     public final String icon() {
@@ -147,6 +158,7 @@ public abstract class Module {
         }
         group.add(setting);
         this.settings.add(setting);
+        setting.translationKey("setting.anarchyclient." + this.id + "." + setting.id());
         return setting;
     }
 

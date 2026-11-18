@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,7 +9,6 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
@@ -53,7 +53,7 @@ public final class CustomPacketsModule extends Module {
         if (this.chat.value()) {
             MainThread.run(() -> {
                 if (client.player != null) {
-                    client.player.sendSystemMessage(Component.literal("Custom payload: " + description));
+                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.custom_packets.custom_payload", "Custom payload: %s", description));
                 }
             });
         }

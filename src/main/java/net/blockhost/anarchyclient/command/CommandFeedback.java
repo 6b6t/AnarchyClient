@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.command;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -16,7 +17,7 @@ final class CommandFeedback {
                 .withStyle(style -> style
                         .withColor(ChatFormatting.AQUA)
                         .withClickEvent(new ClickEvent.CopyToClipboard(value))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Copy " + value))));
+                        .withHoverEvent(new HoverEvent.ShowText(Translations.component("anarchyclient.message.command_feedback.copy", "Copy %s", value))));
     }
 
     static MutableComponent command(final String label, final String command) {
@@ -24,6 +25,6 @@ final class CommandFeedback {
                 .withStyle(style -> style
                         .withColor(ChatFormatting.GREEN)
                         .withClickEvent(new ClickEvent.SuggestCommand(command))
-                        .withHoverEvent(new HoverEvent.ShowText(Component.literal("Suggest " + command))));
+                        .withHoverEvent(new HoverEvent.ShowText(Translations.component("anarchyclient.message.command_feedback.suggest", "Suggest %s", command))));
     }
 }

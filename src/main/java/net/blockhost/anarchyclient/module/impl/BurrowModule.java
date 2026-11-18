@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,7 +8,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
@@ -107,7 +107,7 @@ public final class BurrowModule extends Module {
         this.debugValue("placed", placed);
         if (CombatPlacementPlanner.isReplaceable(client.level, this.target) && ++this.placingTicks > PLACE_TIMEOUT_TICKS) {
             // No blocks, or the cell is still occupied by the player (Jump off): it will never work.
-            player.sendSystemMessage(Component.literal("Burrow failed: could not place a block in your cell."));
+            player.sendSystemMessage(Translations.component("anarchyclient.message.burrow.burrow_failed_could_not_place_a", "Burrow failed: could not place a block in your cell."));
             this.enabled(false);
             return;
         }

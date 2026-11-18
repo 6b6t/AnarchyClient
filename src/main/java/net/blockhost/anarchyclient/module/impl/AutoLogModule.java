@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,7 +10,6 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.world.entity.Entity;
@@ -226,7 +226,7 @@ public final class AutoLogModule extends Module {
         }
         this.logged = true;
         safetyDisconnect = true;
-        connection.disconnect(Component.literal("Auto Log: " + reason));
+        connection.disconnect(Translations.component("anarchyclient.message.auto_log.auto_log", "Auto Log: %s", reason));
     }
 
     private void reset() {

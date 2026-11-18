@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.impl.AutoReconnectModule;
 import net.blockhost.anarchyclient.module.impl.SilentDisconnectModule;
 import net.minecraft.client.Minecraft;
@@ -71,7 +72,7 @@ public abstract class ClientCommonPacketListenerMixin {
         SystemToast.addOrUpdate(
                 Minecraft.getInstance().gui.toastManager(),
                 ANARCHYCLIENT$DISCONNECT_TOAST,
-                Component.literal("Disconnected"),
+                Translations.component("anarchyclient.message.client_common_packet_listener_mixin.disconnected", "Disconnected"),
                 reason
         );
     }

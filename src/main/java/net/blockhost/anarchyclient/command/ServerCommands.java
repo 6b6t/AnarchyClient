@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.blockhost.anarchyclient.event.PacketEventSilencer;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
@@ -77,7 +78,7 @@ final class ServerCommands {
         Minecraft client = Minecraft.getInstance();
         ServerData server = client.getCurrentServer();
         if (server == null) {
-            context.getSource().sendError(Component.literal("No multiplayer server is available to reconnect to."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.server.no_multiplayer_server_is_available_to", "No multiplayer server is available to reconnect to."));
             return 0;
         }
         ServerAddress address = ServerAddress.parseString(server.ip);
@@ -94,7 +95,7 @@ final class ServerCommands {
         ClientPacketListener connection = client.getConnection();
         String address = server == null ? "singleplayer" : server.ip;
         String brand = connection == null || connection.serverBrand() == null ? "unknown" : connection.serverBrand();
-        context.getSource().sendFeedback(Component.literal("Server: " + address + " | Brand: " + brand));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.server_brand", "Server: %s | Brand: %s", address, brand));
         return SUCCESS;
     }
 
@@ -102,7 +103,7 @@ final class ServerCommands {
         ServerList list = ServerListTools.load(Minecraft.getInstance());
         List<ServerListTools.ServerEntry> entries = ServerListTools.entries(list);
         if (entries.isEmpty()) {
-            context.getSource().sendFeedback(Component.literal("No saved multiplayer servers."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.no_saved_multiplayer_servers", "No saved multiplayer servers."));
             return SUCCESS;
         }
         for (ServerListTools.ServerEntry entry : entries) {
@@ -118,8 +119,10 @@ final class ServerCommands {
         String address = getToken(context, "address");
         int added = ServerListTools.addOrUpdate(list, address, name);
         list.save();
-        context.getSource().sendFeedback(Component.literal((added == 0 ? "Updated " : "Added ")
-                + ServerListTools.normalizeAddress(address) + "."));
+        String normalized = ServerListTools.normalizeAddress(address);
+        context.getSource().sendFeedback(added == 0
+                ? Translations.component("anarchyclient.message.server.updated_server", "Updated %s.", normalized)
+                : Translations.component("anarchyclient.message.server.added_server", "Added %s.", normalized));
         return SUCCESS;
     }
 
@@ -127,8 +130,7 @@ final class ServerCommands {
         ServerList list = ServerListTools.load(Minecraft.getInstance());
         int removed = ServerListTools.cleanup(list);
         list.save();
-        context.getSource().sendFeedback(Component.literal("Removed " + removed + " duplicate server"
-                + (removed == 1 ? "" : "s") + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.removed_duplicate_server", "Removed %s duplicate server%s.", removed, (removed == 1 ? "" : "s")));
         return SUCCESS;
     }
 
@@ -137,12 +139,11 @@ final class ServerCommands {
         Path path = serverExportPath();
         try {
             ServerListTools.exportJson(list, path);
-            context.getSource().sendFeedback(Component.literal("Exported " + list.size() + " server"
-                    + (list.size() == 1 ? "" : "s") + " to ")
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.exported_server_to", "Exported %s server%s to ", list.size(), (list.size() == 1 ? "" : "s"))
                     .append(CommandFeedback.copyable(path.toString(), path.toString())));
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to export servers: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.server.failed_to_export_servers", "Failed to export servers: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -160,12 +161,10 @@ final class ServerCommands {
             int added = ServerListTools.importJson(list, path);
             int duplicates = ServerListTools.cleanup(list);
             list.save();
-            context.getSource().sendFeedback(Component.literal("Imported " + added + " new server"
-                    + (added == 1 ? "" : "s") + " and removed " + duplicates + " duplicate"
-                    + (duplicates == 1 ? "" : "s") + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.imported_new_server_and_removed_duplicate", "Imported %s new server%s and removed %s duplicate%s.", added, (added == 1 ? "" : "s"), duplicates, (duplicates == 1 ? "" : "s")));
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to import servers: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.server.failed_to_import_servers", "Failed to import servers: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -192,15 +191,15 @@ final class ServerCommands {
         Minecraft client = Minecraft.getInstance();
         ServerData server = client.getCurrentServer();
         if (server == null) {
-            context.getSource().sendError(Component.literal("You must be connected to a multiplayer server to scan ports."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.server.you_must_be_connected_to_a", "You must be connected to a multiplayer server to scan ports."));
             return 0;
         }
         String host = ServerAddress.parseString(server.ip).getHost();
         if (host.isBlank()) {
-            context.getSource().sendError(Component.literal("Could not resolve server host from " + server.ip + "."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.server.could_not_resolve_server_host_from", "Could not resolve server host from %s.", server.ip));
             return 0;
         }
-        context.getSource().sendFeedback(Component.literal("Scanning " + label + " on " + host + "..."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.scanning_on", "Scanning %s on %s...", label, host));
         CompletableFuture
                 .supplyAsync(() -> ServerPortScanner.scan(host, ports))
                 .thenAccept(results -> client.execute(() -> sendPortResults(context, results)));
@@ -223,7 +222,7 @@ final class ServerCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        client.getConnection().handleDisconnect(new ClientboundDisconnectPacket(Component.literal("Disconnected by AnarchyClient.")));
+        client.getConnection().handleDisconnect(new ClientboundDisconnectPacket(Translations.component("anarchyclient.message.server.disconnected_by_anarchyclient", "Disconnected by AnarchyClient.")));
         return SUCCESS;
     }
 
@@ -242,7 +241,7 @@ final class ServerCommands {
         // Skip module packet hooks: Anti Packet Kick exists to drop exactly this packet, and the user asked for it.
         ClientPacketListener connection = client.getConnection();
         PacketEventSilencer.runSilently(() -> connection.send(packet));
-        context.getSource().sendFeedback(Component.literal("Sent invalid position packet."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.sent_invalid_position_packet", "Sent invalid position packet."));
         return SUCCESS;
     }
 

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.TextValueSetting;
 
@@ -14,6 +15,9 @@ final class SettingControls {
         Object value = setting.value();
         if (value instanceof Double number) {
             return BigDecimal.valueOf(number).stripTrailingZeros().toPlainString();
+        }
+        if (setting instanceof SelectSetting select) {
+            return select.optionLabel(select.value());
         }
         if (setting instanceof TextValueSetting text) {
             return text.valueString();

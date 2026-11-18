@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.lenni0451.rivet.component.container.Button;
 import net.lenni0451.rivet.component.container.Container;
@@ -40,9 +41,9 @@ final class ProfilesPanel extends Container implements LayoutDebugLabel {
         super(gridLayout(8, 4));
         this.panel = panel;
         this.background = this.panel.glassPanel();
-        this.title = textNode("Profiles", TEXT);
+        this.title = textNode(Translations.text("anarchyclient.ui.profiles", "Profiles"), TEXT);
         this.nameField = textField("");
-        this.saveButton = button("Capture", TEXT, ignored -> this.capture());
+        this.saveButton = button(Translations.text("anarchyclient.ui.capture", "Capture"), TEXT, ignored -> this.capture());
         this.rows = new Container(new VerticalListLayout(4, true));
         this.scroll = new LayoutDebugScrollContainer(this.rows);
         this.panel.configureScroll(this.scroll);
@@ -67,7 +68,7 @@ final class ProfilesPanel extends Container implements LayoutDebugLabel {
         this.rows.clearChildren();
         List<ProfileManager.ProfileSummary> profiles = AnarchyClient.PROFILES.summaries();
         if (profiles.isEmpty()) {
-            this.rows.addChild(new EmptyState("No profiles captured."));
+            this.rows.addChild(new EmptyState(Translations.text("anarchyclient.ui.no_profiles_captured", "No profiles captured.")));
         } else {
             for (ProfileManager.ProfileSummary profile : profiles) {
                 this.rows.addChild(new ProfileRow(this.panel, profile));

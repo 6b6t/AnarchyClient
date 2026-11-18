@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -36,6 +36,6 @@ public final class PayloadInspectorModule extends Module {
         if (channels.isBlank()) {
             channels = "none";
         }
-        client.player.sendSystemMessage(Component.literal("Payload channels: " + channels + "."));
+        client.player.sendSystemMessage(Translations.component("anarchyclient.message.payload_inspector.payload_channels", "Payload channels: %s.", channels));
     }
 }

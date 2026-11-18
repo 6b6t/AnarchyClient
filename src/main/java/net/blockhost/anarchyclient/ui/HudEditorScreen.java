@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.GlassBackdrop;
@@ -14,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.network.chat.Component;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -65,7 +65,7 @@ public final class HudEditorScreen extends Screen {
     private boolean dirty;
 
     public HudEditorScreen(final ModuleManager modules, final ClientConfig config) {
-        super(Component.literal("HUD Editor"));
+        super(Translations.component("anarchyclient.ui.hud_editor", "HUD Editor"));
         this.modules = modules;
         this.config = config;
     }
@@ -158,7 +158,8 @@ public final class HudEditorScreen extends Screen {
 
     /** Frosted-glass hint chip, bottom-center, matching the menu's panels. */
     private void renderHint(final Blaze3DRenderer renderer, final GuiGraphicsExtractor graphics) {
-        String hint = "Drag to move  •  Box-select  •  Right-click resets  •  Esc saves";
+        String hint = Translations.text("anarchyclient.ui.hud_editor_hint",
+                "Drag to move  •  Box-select  •  Right-click resets  •  Esc saves");
         float textWidth = this.font.width(hint);
         float width = textWidth + 24F;
         float height = 20F;

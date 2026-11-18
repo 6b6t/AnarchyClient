@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -85,7 +86,7 @@ public final class ItemTagsModule extends Module {
         if (stack == null || stack.isEmpty() || !this.registryId.value()) {
             return;
         }
-        lines.add(Component.literal("Id: " + BuiltInRegistries.ITEM.getKey(stack.getItem())).withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(Translations.component("anarchyclient.message.item_tags.id", "Id: %s", BuiltInRegistries.ITEM.getKey(stack.getItem())).withStyle(ChatFormatting.DARK_GRAY));
     }
 
     @Override

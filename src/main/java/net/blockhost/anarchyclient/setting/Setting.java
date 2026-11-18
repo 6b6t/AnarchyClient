@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -14,6 +15,7 @@ public abstract class Setting<T> {
     private final T defaultValue;
     private T value;
     private Supplier<Boolean> visibilityCondition;
+    private String translationKey;
 
     protected Setting(final String id, final String name, final T defaultValue) {
         this(id, name, "", defaultValue, List.of());
@@ -36,12 +38,39 @@ public abstract class Setting<T> {
         return this.id;
     }
 
+    /** The setting's name in the selected language; English when it has no translation. */
     public final String name() {
+        return this.translationKey == null ? this.name : Translations.text(this.translationKey, this.name);
+    }
+
+    /** The English name, as written in code. */
+    public final String englishName() {
         return this.name;
     }
 
     public final String description() {
+        if (this.translationKey == null || this.description.isEmpty()) {
+            return this.description;
+        }
+        return Translations.text(this.translationKey + ".description", this.description);
+    }
+
+    /** The English description, as written in code. */
+    public final String englishDescription() {
         return this.description;
+    }
+
+    /**
+     * Sets the key this setting's name is translated under ({@code setting.anarchyclient.<module>.<setting>}). The
+     * owning module calls it when the setting is registered.
+     */
+    public final void translationKey(final String key) {
+        this.translationKey = key;
+    }
+
+    /** The translation key, or {@code null} for a setting that belongs to no module. */
+    public final String translationKey() {
+        return this.translationKey;
     }
 
     public final List<String> aliases() {

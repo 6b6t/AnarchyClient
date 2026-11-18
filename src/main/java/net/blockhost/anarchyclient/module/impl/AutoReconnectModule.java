@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -12,7 +13,6 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
-import net.minecraft.network.chat.Component;
 
 public final class AutoReconnectModule extends Module {
 
@@ -74,8 +74,8 @@ public final class AutoReconnectModule extends Module {
             return;
         }
         if (this.notify.value()) {
-            SystemToast.addOrUpdate(client.gui.toastManager(), RECONNECT_TOAST, Component.literal("Auto Reconnect"),
-                    Component.literal("Reconnecting to " + this.lastServer.ip + "..."));
+            SystemToast.addOrUpdate(client.gui.toastManager(), RECONNECT_TOAST, Translations.component("anarchyclient.message.auto_reconnect.auto_reconnect", "Auto Reconnect"),
+                    Translations.component("anarchyclient.message.auto_reconnect.reconnecting_to", "Reconnecting to %s...", this.lastServer.ip));
         }
         silentDisconnect = false;
         ConnectScreen.startConnecting(

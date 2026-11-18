@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -131,7 +131,7 @@ public final class TreeAuraModule extends Module {
                         this.rotate.value()
                 );
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(Component.literal("Tree Aura disabled: no saplings in hotbar."));
+                    player.sendSystemMessage(Translations.component("anarchyclient.message.tree_aura.tree_aura_disabled_no_saplings_in", "Tree Aura disabled: no saplings in hotbar."));
                     this.enabled(false);
                     return;
                 }
@@ -156,7 +156,7 @@ public final class TreeAuraModule extends Module {
                         this.rotate.value()
                 );
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(Component.literal("Tree Aura disabled: no bone meal in hotbar."));
+                    player.sendSystemMessage(Translations.component("anarchyclient.message.tree_aura.tree_aura_disabled_no_bone_meal", "Tree Aura disabled: no bone meal in hotbar."));
                     this.enabled(false);
                     return;
                 }

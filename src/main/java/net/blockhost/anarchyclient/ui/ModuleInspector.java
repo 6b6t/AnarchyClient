@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.SettingGroup;
@@ -55,7 +56,7 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
         this.settings.clearChildren();
         Module module = this.panel.inspectedModule;
         if (module == null) {
-            this.settings.addChild(new EmptyState("Open a module to edit its settings."));
+            this.settings.addChild(new EmptyState(Translations.text("anarchyclient.ui.open_a_module_to_edit_its_settings", "Open a module to edit its settings.")));
         } else {
             this.settings.addChild(new KeybindRow(this.panel, module));
             List<SettingGroup> groups = visibleSettingGroups(module);
@@ -71,7 +72,7 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
                 }
             }
             if (this.settings.children().isEmpty()) {
-                this.settings.addChild(new EmptyState("This module has no visible settings."));
+                this.settings.addChild(new EmptyState(Translations.text("anarchyclient.ui.this_module_has_no_visible_settings", "This module has no visible settings.")));
             }
         }
         this.panel.requestFrame();

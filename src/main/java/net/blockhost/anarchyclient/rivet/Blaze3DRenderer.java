@@ -4,6 +4,7 @@ import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
 import net.lenni0451.rivet.backend.Texture;
@@ -19,10 +20,16 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
 
+import java.text.Bidi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -120,6 +127,10 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         pose.translate(x, baselineY - shaped.size());
         pose.scale(shaped.scale(), shaped.scale());
         try {
+            if (shaped.segments().size() > 1 && needsBidi(shaped.text())) {
+                this.drawVisualOrder(shaped);
+                return;
+            }
             int cursorX = 0;
             for (MinecraftShapedText.Segment segment : shaped.segments()) {
                 if (segment.text().isEmpty()) {
@@ -142,6 +153,37 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         } finally {
             pose.popMatrix();
         }
+    }
+
+    /**
+     * Whether a line holds right-to-left text or is shown in a right-to-left language. Each segment drawn alone
+     * would be reordered on its own and then placed left to right, so a mixed-style RTL line would come out in the
+     * wrong order.
+     */
+    private static boolean needsBidi(final String text) {
+        return Translations.rightToLeft() || Bidi.requiresBidi(text.toCharArray(), 0, text.length());
+    }
+
+    /** Draws the whole line once, so vanilla's bidi reordering sees every segment together. */
+    private void drawVisualOrder(final MinecraftShapedText shaped) {
+        MutableComponent line = Component.empty();
+        boolean shadow = false;
+        int alpha = 255;
+        for (MinecraftShapedText.Segment segment : shaped.segments()) {
+            if (segment.text().isEmpty()) {
+                continue;
+            }
+            int color = argb(segment.format().color());
+            alpha = Math.min(alpha, ARGB.alpha(color));
+            shadow |= segment.format().shadow();
+            line.append(Component.literal(segment.text()).withStyle(Style.EMPTY
+                    .withColor(color & 0xFFFFFF)
+                    .withBold(segment.format().bold())
+                    .withUnderlined(segment.format().underlined())
+                    .withStrikethrough(segment.format().strikethrough())));
+        }
+        this.graphics.text(this.client.font, Language.getInstance().getVisualOrder(line), 0, 0,
+                ARGB.color(alpha, 0xFFFFFF), shadow);
     }
 
     @Override

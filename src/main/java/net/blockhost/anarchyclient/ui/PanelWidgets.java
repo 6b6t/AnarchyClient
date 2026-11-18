@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderCommand;
@@ -56,9 +57,9 @@ final class PanelWidgets {
 
     static String keyLabel(final int scancode) {
         if (scancode == InputConstants.UNKNOWN.getValue()) {
-            return "None";
+            return Translations.text("anarchyclient.ui.none", "None");
         }
-        return RivetInputMapper.fromScancode(scancode).map(Key::name).orElse("Key " + scancode);
+        return RivetInputMapper.fromScancode(scancode).map(Key::name).orElse(Translations.format("anarchyclient.ui.unknown_key", "Key %s", scancode));
     }
 
     static List<SettingGroup> visibleSettingGroups(final Module module) {

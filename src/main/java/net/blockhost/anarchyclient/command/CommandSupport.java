@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
@@ -11,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
@@ -52,7 +52,7 @@ final class CommandSupport {
                                    final String action) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
-            context.getSource().sendError(Component.literal("You must be in-game to " + action + "."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.you_must_be_in_game_to", "You must be in-game to %s.", action));
             return null;
         }
         return client;
@@ -61,7 +61,7 @@ final class CommandSupport {
     static Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context, "send creative item packets");
         if (client == null || client.player == null || !client.player.getAbilities().instabuild) {
-            context.getSource().sendError(Component.literal("You must be in creative mode to use this command."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.you_must_be_in_creative_mode", "You must be in creative mode to use this command."));
             return null;
         }
         return client;

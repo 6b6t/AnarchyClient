@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 
@@ -47,7 +47,7 @@ public final class EasyPearlModule extends Module {
         // window passes without a usable pearl, turn off instead of throwing a pearl picked up much later.
         if (!this.pending || player == null || client.gameMode == null || --this.ticksLeft < 0) {
             if (player != null && this.pending) {
-                player.sendSystemMessage(Component.literal("Easy Pearl: no ender pearl to throw."));
+                player.sendSystemMessage(Translations.component("anarchyclient.message.easy_pearl.easy_pearl_no_ender_pearl_to", "Easy Pearl: no ender pearl to throw."));
             }
             this.pending = false;
             this.enabled(false);

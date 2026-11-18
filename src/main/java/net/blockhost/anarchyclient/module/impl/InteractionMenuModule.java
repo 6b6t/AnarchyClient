@@ -2,13 +2,13 @@ package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
@@ -59,13 +59,13 @@ public final class InteractionMenuModule extends Module {
             case "Friend" -> {
                 if (client.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof Player player) {
                     AnarchyClient.FRIENDS.add(player.getScoreboardName());
-                    client.player.sendSystemMessage(Component.literal("Added friend " + player.getScoreboardName() + "."));
+                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.interaction_menu.added_friend", "Added friend %s.", player.getScoreboardName()));
                 }
             }
             default -> {
                 if (!info.isBlank()) {
                     client.keyboardHandler.setClipboard(info);
-                    client.player.sendSystemMessage(Component.literal("Copied " + info));
+                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.interaction_menu.copied", "Copied %s", info));
                 }
             }
         }

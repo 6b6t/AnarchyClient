@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
@@ -9,7 +10,6 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.world.entity.Relative;
@@ -100,7 +100,7 @@ public final class FlagCheckModule extends Module {
             return;
         }
         String suffix = detail == null || detail.isBlank() ? "" : " (" + detail + ")";
-        client.player.sendSystemMessage(Component.literal("Flag detected: " + label(reason) + suffix + "."));
+        client.player.sendSystemMessage(Translations.component("anarchyclient.message.flag_check.flag_detected", "Flag detected: %s%s.", label(reason), suffix));
     }
 
     private static String label(final ServerObserver.FlagReason reason) {

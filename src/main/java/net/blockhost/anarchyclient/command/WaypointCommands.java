@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -49,7 +50,7 @@ final class WaypointCommands {
         String world = WaypointStore.currentWorld(client);
         List<Waypoint> waypoints = AnarchyClient.WAYPOINTS.byWorld(world);
         if (waypoints.isEmpty()) {
-            context.getSource().sendFeedback(Component.literal("No waypoints for " + world + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.waypoint.no_waypoints_for", "No waypoints for %s.", world));
             return SUCCESS;
         }
         for (Waypoint waypoint : waypoints) {
@@ -69,8 +70,7 @@ final class WaypointCommands {
         String world = WaypointStore.currentWorld(client);
         BlockPos pos = client.player.blockPosition();
         AnarchyClient.WAYPOINTS.add(new Waypoint(world, name, pos, WaypointStore.DEFAULT_COLOR));
-        context.getSource().sendFeedback(Component.literal("Saved waypoint " + name + " at "
-                + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.waypoint.saved_waypoint_at", "Saved waypoint %s at %s, %s, %s.", name, pos.getX(), pos.getY(), pos.getZ()));
         return SUCCESS;
     }
 
@@ -79,9 +79,9 @@ final class WaypointCommands {
         String name = StringArgumentType.getString(context, "name");
         String world = WaypointStore.currentWorld(client);
         if (AnarchyClient.WAYPOINTS.remove(world, name)) {
-            context.getSource().sendFeedback(Component.literal("Removed waypoint " + name + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.waypoint.removed_waypoint", "Removed waypoint %s.", name));
         } else {
-            context.getSource().sendFeedback(Component.literal("No waypoint named " + name + " for this world."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.waypoint.no_waypoint_named_for_this_world", "No waypoint named %s for this world.", name));
         }
         return SUCCESS;
     }

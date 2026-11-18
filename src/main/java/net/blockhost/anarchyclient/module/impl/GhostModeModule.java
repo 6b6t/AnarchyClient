@@ -1,11 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 
 public final class GhostModeModule extends Module {
 
@@ -26,7 +26,7 @@ public final class GhostModeModule extends Module {
         if (screen == null && client.player != null && client.player.isDeadOrDying()) {
             if (!this.ghosted) {
                 this.ghosted = true;
-                client.player.sendSystemMessage(Component.literal("Ghost Mode held the death screen. Disable it to respawn."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.ghost_mode.ghost_mode_held_the_death_screen", "Ghost Mode held the death screen. Disable it to respawn."));
             }
             return true;
         }

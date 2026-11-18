@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,7 +9,6 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.item.Item;
@@ -71,8 +71,7 @@ public final class AutoRenameModule extends Module {
         if (menu.getSlot(AnvilMenu.RESULT_SLOT).hasItem()) {
             if (!canTakeResult(player.hasInfiniteMaterials(), player.experienceLevel, menu.getCost())) {
                 // Retrying would never succeed, and the same item would be put back in after moving it out.
-                player.sendSystemMessage(Component.literal("Auto Rename stopped: the rename costs "
-                        + menu.getCost() + " levels."));
+                player.sendSystemMessage(Translations.component("anarchyclient.message.auto_rename.auto_rename_stopped_the_rename_costs", "Auto Rename stopped: the rename costs %s levels.", menu.getCost()));
                 this.enabled(false);
                 return;
             }

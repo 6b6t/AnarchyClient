@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.ui;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -520,12 +521,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             Path file = LayoutTreeDumper.writeSnapshot(this.rivet(), directory);
             AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
             if (client.player != null) {
-                client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Layout tree saved to " + file + "."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.module_panel.layout_tree_saved_to", "Layout tree saved to %s.", file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
             if (client.player != null) {
-                client.player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Failed to save layout tree snapshot."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.module_panel.failed_to_save_layout_tree_snapshot", "Failed to save layout tree snapshot."));
             }
         }
     }

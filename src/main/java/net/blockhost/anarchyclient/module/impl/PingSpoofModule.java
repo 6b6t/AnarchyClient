@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.network.PacketQueueManager;
@@ -7,7 +8,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
@@ -40,7 +40,7 @@ public final class PingSpoofModule extends Module {
     public void tick(final Minecraft client) {
         if (client.hasSingleplayerServer()) {
             if (client.player != null) {
-                client.player.sendSystemMessage(Component.literal("Ping Spoof is disabled in singleplayer."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.ping_spoof.ping_spoof_is_disabled_in_singleplayer", "Ping Spoof is disabled in singleplayer."));
             }
             this.enabled(false);
             return;

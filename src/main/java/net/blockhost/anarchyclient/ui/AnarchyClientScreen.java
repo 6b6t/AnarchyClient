@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.rivet.Blaze3DBackend;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
@@ -258,12 +259,12 @@ public final class AnarchyClientScreen extends Screen {
             Path file = LayoutTreeDumper.writeSnapshot(this.rivet, directory);
             AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
             if (client.player != null) {
-                client.player.sendSystemMessage(Component.literal("Layout tree saved to " + file + "."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.anarchy_client_screen.layout_tree_saved_to", "Layout tree saved to %s.", file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
             if (client.player != null) {
-                client.player.sendSystemMessage(Component.literal("Failed to save layout tree snapshot."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.anarchy_client_screen.failed_to_save_layout_tree_snapshot", "Failed to save layout tree snapshot."));
             }
         }
     }

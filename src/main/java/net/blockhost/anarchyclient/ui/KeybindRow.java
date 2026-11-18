@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.component.container.Container;
@@ -35,7 +36,7 @@ final class KeybindRow extends Container implements LayoutDebugLabel {
 
     private final Module module;
     private final Surface divider = surface(DIVIDER);
-    private final TextNode label = textNode("Keybind", MUTED);
+    private final TextNode label = textNode(Translations.text("anarchyclient.ui.keybind", "Keybind"), MUTED);
     private final TextNode description;
     private final TextNode value;
 
@@ -81,7 +82,7 @@ final class KeybindRow extends Container implements LayoutDebugLabel {
     }
 
     private String valueText() {
-        return this.panel.isListeningFor(this.module) ? "Press a key..." : keyLabel(this.module.keybind().key());
+        return this.panel.isListeningFor(this.module) ? Translations.text("anarchyclient.ui.press_a_key", "Press a key...") : keyLabel(this.module.keybind().key());
     }
 
     private Color valueColor() {
@@ -92,7 +93,7 @@ final class KeybindRow extends Container implements LayoutDebugLabel {
     }
 
     private String descriptionText() {
-        return this.panel.isListeningFor(this.module) ? "Press a key, Esc to clear" : "Click to bind a key";
+        return this.panel.isListeningFor(this.module) ? Translations.text("anarchyclient.ui.press_a_key_esc_to_clear", "Press a key, Esc to clear") : Translations.text("anarchyclient.ui.click_to_bind_a_key", "Click to bind a key");
     }
 
     @Override

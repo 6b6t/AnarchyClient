@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.setting;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,8 +27,17 @@ public final class SettingGroup {
         return this.id;
     }
 
+    /** The group's name in the selected language, keyed by group id so shared groups translate once. */
     public String name() {
+        return Translations.text(this.translationKey(), this.name);
+    }
+
+    public String englishName() {
         return this.name;
+    }
+
+    public String translationKey() {
+        return "setting_group.anarchyclient." + this.id;
     }
 
     public List<Setting<?>> settings() {

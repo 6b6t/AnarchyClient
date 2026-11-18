@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -11,7 +12,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.network.chat.Component;
 
 public final class AutoConfigModule extends Module {
 
@@ -99,14 +99,14 @@ public final class AutoConfigModule extends Module {
         }
         if (ServerProfileStore.find(domain).isEmpty()) {
             if (this.notifyMissing.value() && client.player != null) {
-                client.player.sendSystemMessage(Component.literal("No server profile for " + domain + "."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.auto_config.no_server_profile_for", "No server profile for %s.", domain));
             }
             return;
         }
         int changed = ServerProfileStore.apply(this.modules, domain);
         AnarchyClient.CONFIG.save();
         if (client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Applied server profile for " + domain + " (" + changed + " changes)."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.auto_config.applied_server_profile_for_changes", "Applied server profile for %s (%s changes).", domain, changed));
         }
     }
 

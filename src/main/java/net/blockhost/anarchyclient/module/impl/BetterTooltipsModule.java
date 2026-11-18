@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -53,7 +54,7 @@ public final class BetterTooltipsModule extends Module {
         }
         if (this.durability.value() && stack.isDamageableItem()) {
             int remaining = Math.max(0, stack.getMaxDamage() - stack.getDamageValue());
-            lines.add(Component.literal("Durability: " + remaining + " / " + stack.getMaxDamage())
+            lines.add(Translations.component("anarchyclient.message.better_tooltips.durability", "Durability: %s / %s", remaining, stack.getMaxDamage())
                     .withStyle(ChatFormatting.GRAY));
         }
         if (this.containers.value()) {
@@ -73,7 +74,7 @@ public final class BetterTooltipsModule extends Module {
         if (items.isEmpty()) {
             return;
         }
-        lines.add(Component.literal("Contents: " + items.size() + " stacks").withStyle(ChatFormatting.GRAY));
+        lines.add(Translations.component("anarchyclient.message.better_tooltips.contents_stacks", "Contents: %s stacks", items.size()).withStyle(ChatFormatting.GRAY));
         for (int index = 0; index < Math.min(items.size(), Math.max(1, maxLines)); index++) {
             ItemStack item = items.get(index);
             lines.add(Component.literal(" - " + item.getCount() + "x ")
@@ -81,7 +82,7 @@ public final class BetterTooltipsModule extends Module {
                     .append(item.getHoverName().copy().withStyle(ChatFormatting.GRAY)));
         }
         if (items.size() > maxLines) {
-            lines.add(Component.literal(" - +" + (items.size() - maxLines) + " more").withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component("anarchyclient.message.better_tooltips.more", " - +%s more", (items.size() - maxLines)).withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 
@@ -90,7 +91,7 @@ public final class BetterTooltipsModule extends Module {
         if (contents == null || !contents.hasEffects()) {
             return;
         }
-        lines.add(Component.literal("Effects").withStyle(ChatFormatting.GRAY));
+        lines.add(Translations.component("anarchyclient.message.better_tooltips.effects", "Effects").withStyle(ChatFormatting.GRAY));
         for (MobEffectInstance effect : contents.getAllEffects()) {
             lines.add(Component.literal(" - ").withStyle(ChatFormatting.DARK_GRAY)
                     .append(Component.translatable(effect.getDescriptionId()).withStyle(ChatFormatting.GRAY))

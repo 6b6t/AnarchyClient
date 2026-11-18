@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 
@@ -71,7 +71,7 @@ public final class AntiVanishModule extends Module {
         }
         Map<UUID, String> current = onlinePlayers(listener);
         for (String name : vanishedPlayers(this.playerCache, current, this.messageCache, this.requireLeaveMessage.value())) {
-            client.player.sendSystemMessage(Component.literal(name + " may have vanished."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.anti_vanish.may_have_vanished", "%s may have vanished.", name));
         }
         this.playerCache = current;
         this.messageCache.clear();

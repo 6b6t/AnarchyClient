@@ -2,13 +2,13 @@ package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 
@@ -54,7 +54,7 @@ public final class YggdrasilSignatureFixModule extends Module {
 
     private void warn(final Minecraft client, final String name) {
         if (this.warnCooldown == 0 && client.player != null) {
-            client.player.sendSystemMessage(Component.literal("Unsigned Yggdrasil textures for " + name + "."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.yggdrasil_signature_fix.unsigned_yggdrasil_textures_for", "Unsigned Yggdrasil textures for %s.", name));
             this.warnCooldown = 80;
         }
     }

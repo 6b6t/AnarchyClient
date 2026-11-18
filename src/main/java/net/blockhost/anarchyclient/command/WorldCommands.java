@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.command.CommandSupport.BlockArea;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
@@ -113,15 +114,15 @@ final class WorldCommands {
         try {
             SeedStore.SeedRecord record = SeedStore.get(seedPath(), world);
             if (record == null) {
-                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+                context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.no_saved_seed_for", "No saved seed for %s.", world));
             } else {
-                context.getSource().sendFeedback(Component.literal(world + " seed: ")
+                context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.seed", "%s seed: ", world)
                         .append(CommandFeedback.copyable(record.seed(), record.seed()))
                         .append(Component.literal(seedMetadata(record))));
             }
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.failed_to_read_seeds", "Failed to read seeds: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -136,10 +137,10 @@ final class WorldCommands {
                     SharedConstants.getCurrentVersion().name(),
                     currentDimension(client),
                     "manual");
-            context.getSource().sendFeedback(Component.literal("Saved seed for " + record.world() + ": " + record.seed()));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.saved_seed_for", "Saved seed for %s: %s", record.world(), record.seed()));
             return SUCCESS;
         } catch (IllegalArgumentException | IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to save seed: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.failed_to_save_seed", "Failed to save seed: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -148,7 +149,7 @@ final class WorldCommands {
         try {
             List<SeedStore.SeedRecord> records = SeedStore.list(seedPath());
             if (records.isEmpty()) {
-                context.getSource().sendFeedback(Component.literal("No saved seeds."));
+                context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.no_saved_seeds", "No saved seeds."));
                 return SUCCESS;
             }
             for (SeedStore.SeedRecord record : records) {
@@ -157,7 +158,7 @@ final class WorldCommands {
             }
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.failed_to_read_seeds", "Failed to read seeds: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -167,13 +168,13 @@ final class WorldCommands {
         String world = SeedStore.worldKey(client);
         try {
             if (SeedStore.delete(seedPath(), world)) {
-                context.getSource().sendFeedback(Component.literal("Deleted saved seed for " + world + "."));
+                context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.deleted_saved_seed_for", "Deleted saved seed for %s.", world));
             } else {
-                context.getSource().sendFeedback(Component.literal("No saved seed for " + world + "."));
+                context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.no_saved_seed_for", "No saved seed for %s.", world));
             }
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to delete seed: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.failed_to_delete_seed", "Failed to delete seed: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -186,7 +187,7 @@ final class WorldCommands {
         try {
             SeedStore.SeedRecord record = SeedStore.get(seedPath(), SeedStore.worldKey(client));
             if (record == null) {
-                context.getSource().sendError(Component.literal("Save a seed first with /ac seed set <seed>."));
+                context.getSource().sendError(Translations.component("anarchyclient.message.world.save_a_seed_first_with_ac", "Save a seed first with /ac seed set <seed>."));
                 return 0;
             }
             long seed = numericSeed(record.seed());
@@ -194,11 +195,11 @@ final class WorldCommands {
             BlockPos result = closestSlimeChunk(seed, Math.floorDiv(playerPos.getX(), 16),
                     Math.floorDiv(playerPos.getZ(), 16), 128);
             String coords = result.getX() + ", " + result.getZ();
-            context.getSource().sendFeedback(Component.literal("Nearest slime chunk starts at ")
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.nearest_slime_chunk_starts_at", "Nearest slime chunk starts at ")
                     .append(CommandFeedback.copyable(coords, coords)));
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to read seeds: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.failed_to_read_seeds", "Failed to read seeds: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -206,7 +207,7 @@ final class WorldCommands {
     private static int terrainExport(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.level == null) {
-            context.getSource().sendError(Component.literal("You must be in-game to export terrain."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.world.you_must_be_in_game_to", "You must be in-game to export terrain."));
             return 0;
         }
         int distance = IntegerArgumentType.getInteger(context, "distance");
@@ -214,7 +215,7 @@ final class WorldCommands {
         Path output = terrainExportPath(center, distance);
         List<String> lines = terrainLines(client, center, distance);
         FabricClientCommandSource source = context.getSource();
-        source.sendFeedback(Component.literal("Exporting " + (lines.size() - 1) + " blocks..."));
+        source.sendFeedback(Translations.component("anarchyclient.message.world.exporting_blocks", "Exporting %s blocks...", (lines.size() - 1)));
         // Write off the render thread, then report back on it.
         CompletableFuture.runAsync(() -> {
             try {
@@ -225,14 +226,14 @@ final class WorldCommands {
             }
         }, Util.ioPool()).whenCompleteAsync((ignored, error) -> {
             if (error == null) {
-                source.sendFeedback(Component.literal("Exported terrain to " + output));
+                source.sendFeedback(Translations.component("anarchyclient.message.world.exported_terrain_to", "Exported terrain to %s", output));
                 return;
             }
             Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause() : error;
             if (cause instanceof UncheckedIOException unchecked) {
                 cause = unchecked.getCause();
             }
-            source.sendError(Component.literal("Failed to export terrain: " + cause.getMessage()));
+            source.sendError(Translations.component("anarchyclient.message.world.failed_to_export_terrain", "Failed to export terrain: %s", cause.getMessage()));
         }, client);
         return SUCCESS;
     }
@@ -256,7 +257,7 @@ final class WorldCommands {
                 }
             }
         }
-        context.getSource().sendFeedback(Component.literal("Sent " + sent + " ghost-block refresh packets."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.sent_ghost_block_refresh_packets", "Sent %s ghost-block refresh packets.", sent));
         return SUCCESS;
     }
 
@@ -317,7 +318,7 @@ final class WorldCommands {
                     }
                 }
             }
-            context.getSource().sendFeedback(Component.literal("Changed " + changed + " client block" + (changed == 1 ? "" : "s") + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.changed_client_block", "Changed %s client block%s.", changed, (changed == 1 ? "" : "s")));
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));

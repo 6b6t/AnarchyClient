@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketListener;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
@@ -80,7 +80,7 @@ public final class SoundBlockerModule extends Module {
         if (this.logBlocked.value()) {
             MainThread.run(() -> {
                 if (client.player != null) {
-                    client.player.sendSystemMessage(Component.literal("Blocked sound " + id));
+                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.sound_blocker.blocked_sound", "Blocked sound %s", id));
                 }
             });
         }

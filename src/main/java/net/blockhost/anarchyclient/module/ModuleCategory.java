@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.i18n.Translations;
+
+import java.util.Locale;
+
 public enum ModuleCategory {
     COMBAT("Combat"),
     RENDER("Render"),
@@ -17,6 +21,14 @@ public enum ModuleCategory {
     }
 
     public String displayName() {
+        return Translations.text(this.translationKey(), this.displayName);
+    }
+
+    public String englishName() {
         return this.displayName;
+    }
+
+    public String translationKey() {
+        return "category.anarchyclient." + this.name().toLowerCase(Locale.ROOT);
     }
 }

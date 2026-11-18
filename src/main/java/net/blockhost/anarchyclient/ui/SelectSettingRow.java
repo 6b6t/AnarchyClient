@@ -29,7 +29,7 @@ final class SelectSettingRow extends SettingLine {
         super(setting, SETTING_ROW_HEIGHT);
         this.setting = setting;
         this.onChange = onChange;
-        this.value = textNode(this.setting::value, () -> TEXT)
+        this.value = textNode(() -> this.setting.optionLabel(this.setting.value()), () -> TEXT)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
         this.addChild(this.value);
         this.addChild(this.icon);

@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 public final class BuildHeightModule extends Module {
 
@@ -31,7 +31,7 @@ public final class BuildHeightModule extends Module {
         int maxY = client.level.getMinY() + client.level.getHeight() - 1;
         int distance = maxY - client.player.blockPosition().getY();
         if (distance <= this.warningDistance.value().intValue()) {
-            client.player.sendSystemMessage(Component.literal("Build height in " + Math.max(0, distance) + " blocks."));
+            client.player.sendSystemMessage(Translations.component("anarchyclient.message.build_height.build_height_in_blocks", "Build height in %s blocks.", Math.max(0, distance)));
             this.cooldown = 60;
         }
     }

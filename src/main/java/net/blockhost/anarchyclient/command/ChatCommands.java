@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.command;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.impl.ChatActions;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 
 import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
 import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
@@ -34,7 +34,7 @@ final class ChatCommands {
     private static int clearChat(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         client.gui.hud.getChat().clearMessages(false);
-        context.getSource().sendFeedback(Component.literal("Cleared chat."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.chat.cleared_chat", "Cleared chat."));
         return SUCCESS;
     }
 

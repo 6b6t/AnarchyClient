@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.lenni0451.rivet.component.Component;
@@ -42,20 +43,20 @@ final class Dock extends Container {
             ));
         }
         this.entries.add(new DockDivider());
-        this.entries.add(new DockButton(this.panel, "palette", "Theme",
+        this.entries.add(new DockButton(this.panel, "palette", Translations.text("anarchyclient.ui.theme", "Theme"),
                 () -> this.panel.selectedTab == Tab.THEME,
                 () -> this.panel.selectTab(Tab.THEME),
                 () -> false));
-        this.entries.add(new DockButton(this.panel, "users", "Friends",
+        this.entries.add(new DockButton(this.panel, "users", Translations.text("anarchyclient.ui.friends", "Friends"),
                 () -> this.panel.selectedTab == Tab.FRIENDS,
                 () -> this.panel.selectTab(Tab.FRIENDS),
                 () -> false));
-        this.entries.add(new DockButton(this.panel, "layers", "Profiles",
+        this.entries.add(new DockButton(this.panel, "layers", Translations.text("anarchyclient.ui.profiles", "Profiles"),
                 () -> this.panel.selectedTab == Tab.PROFILES,
                 () -> this.panel.selectTab(Tab.PROFILES),
                 () -> false));
         this.entries.add(new DockDivider());
-        this.entries.add(new DockButton(this.panel, "settings", "Settings",
+        this.entries.add(new DockButton(this.panel, "settings", Translations.text("anarchyclient.ui.settings", "Settings"),
                 () -> this.panel.drawer != Drawer.NONE,
                 // openDrawer toggles: clicking the gear again closes the drawer.
                 () -> this.panel.openDrawer(Drawer.ROOT),

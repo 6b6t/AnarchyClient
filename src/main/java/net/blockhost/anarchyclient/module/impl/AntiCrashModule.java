@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,7 +8,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
@@ -95,7 +95,7 @@ public final class AntiCrashModule extends Module {
         if (this.log.value()) {
             MainThread.run(() -> {
                 if (this.logCooldownTicks == 0 && client.player != null) {
-                    client.player.sendSystemMessage(Component.literal("Anti Crash blocked " + reason.displayName() + "."));
+                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.anti_crash.anti_crash_blocked", "Anti Crash blocked %s.", reason.displayName()));
                     this.logCooldownTicks = 40;
                 }
             });

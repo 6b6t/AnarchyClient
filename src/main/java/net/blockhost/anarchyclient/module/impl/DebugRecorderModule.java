@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
@@ -10,7 +11,6 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 
 import java.io.IOException;
@@ -129,7 +129,7 @@ public final class DebugRecorderModule extends Module {
             Files.createDirectories(dir);
             Files.write(file, new ArrayList<>(this.records), StandardCharsets.UTF_8);
             if (client != null && client.player != null) {
-                client.player.sendSystemMessage(Component.literal("Debug log saved to " + file + "."));
+                client.player.sendSystemMessage(Translations.component("anarchyclient.message.debug_recorder.debug_log_saved_to", "Debug log saved to %s.", file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save debug recorder log", exception);

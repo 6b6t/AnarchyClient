@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.lenni0451.rivet.component.container.Button;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
@@ -39,9 +40,9 @@ final class FriendsPanel extends Container implements LayoutDebugLabel {
         super(gridLayout(8, 4));
         this.panel = panel;
         this.background = this.panel.glassPanel();
-        this.title = textNode("Friends", TEXT);
+        this.title = textNode(Translations.text("anarchyclient.ui.friends", "Friends"), TEXT);
         this.addField = textField("");
-        this.addButton = button("Add", TEXT, ignored -> this.addFriend());
+        this.addButton = button(Translations.text("anarchyclient.ui.add", "Add"), TEXT, ignored -> this.addFriend());
         this.rows = new Container(new VerticalListLayout(4, true));
         this.scroll = new LayoutDebugScrollContainer(this.rows);
         this.panel.configureScroll(this.scroll);
@@ -66,7 +67,7 @@ final class FriendsPanel extends Container implements LayoutDebugLabel {
         this.rows.clearChildren();
         Collection<String> friends = AnarchyClient.FRIENDS.friends();
         if (friends.isEmpty()) {
-            this.rows.addChild(new EmptyState("No friends saved."));
+            this.rows.addChild(new EmptyState(Translations.text("anarchyclient.ui.no_friends_saved", "No friends saved.")));
         } else {
             for (String friend : friends) {
                 this.rows.addChild(new FriendRow(this.panel, friend));

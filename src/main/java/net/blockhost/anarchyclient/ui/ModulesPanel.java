@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.lenni0451.rivet.component.container.Container;
@@ -45,7 +46,7 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
         this.title = textNode(this::title, () -> TEXT);
         this.count = textNode(this::countText, GlassTheme::accent)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        this.search = new SearchInput(this.panel, "Search all modules...");
+        this.search = new SearchInput(this.panel, Translations.text("anarchyclient.ui.search_all_modules", "Search all modules..."));
         this.editHud = iconButton("move", GlassTheme::accent,
                 this.panel::openHudEditor, this::showEditHud);
         this.cards = new CardGrid(this.panel);
@@ -84,7 +85,7 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
         this.cards.clearChildren();
         List<Module> visible = this.panel.visibleModules();
         if (visible.isEmpty()) {
-            this.cards.addChild(new EmptyState("No modules match the current filter."));
+            this.cards.addChild(new EmptyState(Translations.text("anarchyclient.ui.no_modules_match_the_current_filter", "No modules match the current filter.")));
         } else {
             for (Module module : visible) {
                 this.cards.addChild(new ModuleCard(this.panel, module));
@@ -94,9 +95,9 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
 
     private String title() {
         if (!this.panel.searchQuery.isEmpty()) {
-            return "Search";
+            return Translations.text("anarchyclient.ui.search", "Search");
         }
-        return this.panel.selectedCategory == null ? "Modules" : this.panel.selectedCategory.displayName();
+        return this.panel.selectedCategory == null ? Translations.text("anarchyclient.ui.modules", "Modules") : this.panel.selectedCategory.displayName();
     }
 
     private String countText() {
@@ -105,7 +106,7 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
             return "";
         }
         int count = this.panel.enabledCount(this.panel.selectedCategory);
-        return count > 0 ? count + " on" : "";
+        return count > 0 ? Translations.format("anarchyclient.ui.enabled_count", "%s on", count) : "";
     }
 
     @Override

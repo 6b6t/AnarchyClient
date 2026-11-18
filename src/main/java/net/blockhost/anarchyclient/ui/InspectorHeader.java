@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.component.container.Container;
@@ -46,7 +47,7 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
         this.panel = panel;
         this.divider = surface(DIVIDER);
         this.moduleIcon = iconNode(this::moduleIcon, this::moduleIconColor);
-        this.title = textNode(() -> this.panel.inspectedModule == null ? "No module" : this.panel.inspectedModule.name(),
+        this.title = textNode(() -> this.panel.inspectedModule == null ? Translations.text("anarchyclient.ui.no_module", "No module") : this.panel.inspectedModule.name(),
                 () -> this.panel.inspectedModule == null ? MUTED : TEXT);
         this.category = textNode(
                 () -> this.panel.inspectedModule == null ? "" : this.panel.inspectedModule.category().displayName(),

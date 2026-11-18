@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.ui;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
@@ -99,45 +100,45 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
 
     private String title() {
         return switch (this.panel.drawer) {
-            case ROOT -> "Settings";
-            case GENERAL -> "General";
-            case MODULES -> "Modules";
-            case SOUND -> "Sound";
-            case NOTIFICATIONS -> "Notifications";
+            case ROOT -> Translations.text("anarchyclient.ui.settings", "Settings");
+            case GENERAL -> Translations.text("anarchyclient.ui.general", "General");
+            case MODULES -> Translations.text("anarchyclient.ui.modules", "Modules");
+            case SOUND -> Translations.text("anarchyclient.ui.sound", "Sound");
+            case NOTIFICATIONS -> Translations.text("anarchyclient.ui.notifications", "Notifications");
             case NONE -> "";
         };
     }
 
     private void buildRoot() {
-        this.addRow(new OptionRow(this.panel, "General", true, null, () -> "", () -> this.openNestedDrawer(Drawer.GENERAL), this::refresh));
-        this.addRow(new OptionRow(this.panel, "Modules", true, null, () -> "", () -> this.openNestedDrawer(Drawer.MODULES), this::refresh));
-        this.addRow(new OptionRow(this.panel, "Sound", true, null, () -> "", () -> this.openNestedDrawer(Drawer.SOUND), this::refresh));
-        this.addRow(new OptionRow(this.panel, "Notifications", true, null, () -> "", () -> this.openNestedDrawer(Drawer.NOTIFICATIONS), this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.general", "General"), true, null, () -> "", () -> this.openNestedDrawer(Drawer.GENERAL), this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.modules", "Modules"), true, null, () -> "", () -> this.openNestedDrawer(Drawer.MODULES), this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.sound", "Sound"), true, null, () -> "", () -> this.openNestedDrawer(Drawer.SOUND), this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.notifications", "Notifications"), true, null, () -> "", () -> this.openNestedDrawer(Drawer.NOTIFICATIONS), this::refresh));
     }
 
     private void buildGeneral() {
-        this.addRow(new OptionRow(this.panel, "Save config now", false, null, () -> "", this.panel::saveConfigNow, this::refresh));
-        this.addRow(new OptionRow(this.panel, "Reload config", false, null, () -> "", this.panel::reloadConfig, this::refresh));
-        this.addRow(new OptionRow(this.panel, "Reset UI preferences", false, null, () -> "", this.panel::resetUiPreferences, this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.save_config_now", "Save config now"), false, null, () -> "", this.panel::saveConfigNow, this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.reload_config", "Reload config"), false, null, () -> "", this.panel::reloadConfig, this::refresh));
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.reset_ui_preferences", "Reset UI preferences"), false, null, () -> "", this.panel::resetUiPreferences, this::refresh));
         this.addRow(new OptionRow(this.panel, "Dump layout tree", false, null, () -> "", this.panel::dumpLayoutTree, this::refresh));
     }
 
     private void buildModules() {
-        this.addRow(new OptionRow(this.panel, "Show disabled modules", false,
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.show_disabled_modules", "Show disabled modules"), false,
                 () -> this.panel.showDisabledModules,
                 () -> {
                     this.panel.showDisabledModules = !this.panel.showDisabledModules;
                     this.panel.saveUiPreferences();
                     this.panel.refreshModuleList();
                 }, this::refresh));
-        this.addRow(new OptionRow(this.panel, "Enabled modules first", false,
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.enabled_modules_first", "Enabled modules first"), false,
                 () -> this.panel.enabledFirst,
                 () -> {
                     this.panel.enabledFirst = !this.panel.enabledFirst;
                     this.panel.saveUiPreferences();
                     this.panel.refreshModuleList();
                 }, this::refresh));
-        this.addRow(new OptionRow(this.panel, "Reset module filters", false, null, () -> "",
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.reset_module_filters", "Reset module filters"), false, null, () -> "",
                 this.panel::resetModuleListPreferences, this::refresh));
     }
 
@@ -150,31 +151,31 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
                 "ambience"
         );
         if (rows == 0) {
-            this.addBody(new EmptyState("No sound modules are registered."));
+            this.addBody(new EmptyState(Translations.text("anarchyclient.ui.no_sound_modules_are_registered", "No sound modules are registered.")));
         }
     }
 
     private void buildNotifications() {
-        this.addRow(new OptionRow(this.panel, "Toggle notifications", false,
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.toggle_notifications", "Toggle notifications"), false,
                 ToggleNotifications::enabled,
                 () -> {
                     ToggleNotifications.enabled(!ToggleNotifications.enabled());
                     this.panel.config.save();
                 }, this::refresh));
-        this.addRow(new OptionRow(this.panel, "Style", false, null,
+        this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.style", "Style"), false, null,
                 () -> ToggleNotifications.mode().displayName(),
                 () -> {
                     ToggleNotifications.mode(ToggleNotifications.mode().next());
                     this.panel.config.save();
                 }, this::refresh));
         if (ToggleNotifications.mode() == ToggleNotifications.Mode.POPUP) {
-            this.addRow(new OptionRow(this.panel, "Position", false, null,
+            this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.position", "Position"), false, null,
                     () -> ToggleNotifications.corner().displayName(),
                     () -> {
                         ToggleNotifications.corner(ToggleNotifications.corner().next());
                         this.panel.config.save();
                     }, this::refresh));
-            this.addRow(new OptionRow(this.panel, "Duration", false, null,
+            this.addRow(new OptionRow(this.panel, Translations.text("anarchyclient.ui.duration", "Duration"), false, null,
                     () -> (ToggleNotifications.durationMs() / 1000) + "s",
                     () -> {
                         ToggleNotifications.cycleDuration();

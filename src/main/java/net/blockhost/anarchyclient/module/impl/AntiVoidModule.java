@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 
 public final class AntiVoidModule extends Module {
@@ -66,7 +66,7 @@ public final class AntiVoidModule extends Module {
         );
         player.fallDistance = 0.0;
         if (this.warn.value() && !this.warned) {
-            player.sendSystemMessage(Component.literal("Anti Void stopped a fall below Y " + (int) Math.floor(triggerY)));
+            player.sendSystemMessage(Translations.component("anarchyclient.message.anti_void.anti_void_stopped_a_fall_below", "Anti Void stopped a fall below Y %s", (int) Math.floor(triggerY)));
             this.warned = true;
         }
     }

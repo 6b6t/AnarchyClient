@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -98,8 +99,7 @@ final class ItemCommands {
             giveToSlot(client, slot, CreativeItemFactory.randomItem(index));
             given++;
         }
-        context.getSource().sendFeedback(Component.literal("Gave " + given + " random item"
-                + (given == 1 ? "" : "s") + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_random_item", "Gave %s random item%s.", given, (given == 1 ? "" : "s")));
         return SUCCESS;
     }
 
@@ -109,7 +109,7 @@ final class ItemCommands {
             return 0;
         }
         giveToSlot(client, targetInventorySlot(client.player.getInventory()), stack);
-        context.getSource().sendFeedback(Component.literal("Gave creative item: ")
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_creative_item", "Gave creative item: ")
                 .append(stack.getHoverName()));
         return SUCCESS;
     }
@@ -145,10 +145,10 @@ final class ItemCommands {
         }
         if (client.gameMode != null && !client.player.getMainHandItem().isEmpty()) {
             client.gameMode.dropItem(client.player, all);
-            context.getSource().sendFeedback(Component.literal("Dropped selected " + (all ? "stack" : "item") + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.dropped_selected", "Dropped selected %s.", (all ? "stack" : "item")));
             return SUCCESS;
         }
-        context.getSource().sendError(Component.literal("No selected item to drop."));
+        context.getSource().sendError(Translations.component("anarchyclient.message.item.no_selected_item_to_drop", "No selected item to drop."));
         return 0;
     }
 
@@ -179,11 +179,10 @@ final class ItemCommands {
         }
         ItemStack stack = client.player.getMainHandItem();
         if (stack.isEmpty()) {
-            context.getSource().sendError(Component.literal("You are not holding an item."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
             return 0;
         }
-        context.getSource().sendFeedback(Component.literal(stackSummary(stack)
-                + " | components: " + stack.getComponents().size()));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.components", "%s | components: %s", stackSummary(stack), stack.getComponents().size()));
         return SUCCESS;
     }
 
@@ -194,11 +193,11 @@ final class ItemCommands {
         }
         ItemStack stack = client.player.getMainHandItem();
         if (stack.isEmpty()) {
-            context.getSource().sendError(Component.literal("You are not holding an item."));
+            context.getSource().sendError(Translations.component("anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
             return 0;
         }
         String data = stack.getComponents().toString();
-        context.getSource().sendFeedback(Component.literal("Held item components: ")
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.held_item_components", "Held item components: ")
                 .append(CommandFeedback.copyable("[copy]", data)));
         return SUCCESS;
     }

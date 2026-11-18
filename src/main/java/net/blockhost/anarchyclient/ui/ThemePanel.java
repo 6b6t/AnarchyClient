@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.ui;
 
 import net.blockhost.anarchyclient.command.CommandPrefix;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.layout.grid.GridAnchor;
@@ -33,7 +34,7 @@ final class ThemePanel extends Container implements LayoutDebugLabel {
         super(gridLayout(0, 0));
         this.panel = panel;
         this.background = this.panel.glassPanel();
-        this.title = textNode("Theme", TEXT);
+        this.title = textNode(Translations.text("anarchyclient.ui.theme", "Theme"), TEXT);
         this.rows = new Container(new VerticalListLayout(0, true));
         this.scroll = new LayoutDebugScrollContainer(this.rows);
         this.panel.configureScroll(this.scroll);
@@ -49,49 +50,49 @@ final class ThemePanel extends Container implements LayoutDebugLabel {
 
     void refresh() {
         this.rows.clearChildren();
-        this.rows.addChild(new GroupHeader("Accent"));
+        this.rows.addChild(new GroupHeader(Translations.text("anarchyclient.ui.accent", "Accent")));
         this.rows.addChild(new AccentRow(this.panel));
         this.rows.addChild(new ColorStrip());
-        this.rows.addChild(new GroupHeader("Glass"));
-        this.rows.addChild(new SliderRow(this.panel, "Glass opacity", "How dense the glass panels are.",
+        this.rows.addChild(new GroupHeader(Translations.text("anarchyclient.ui.glass", "Glass")));
+        this.rows.addChild(new SliderRow(this.panel, Translations.text("anarchyclient.ui.glass_opacity", "Glass opacity"), Translations.text("anarchyclient.ui.how_dense_the_glass_panels_are", "How dense the glass panels are."),
                 15F, 95F, 1F, () -> GlassTheme.glassOpacity() * 100F,
                 value -> GlassTheme.glassOpacity(value / 100F),
                 () -> Math.round(GlassTheme.glassOpacity() * 100F) + "%"));
-        this.rows.addChild(new SliderRow(this.panel, "Blur", "How strongly the panels blur the game behind them.",
+        this.rows.addChild(new SliderRow(this.panel, Translations.text("anarchyclient.ui.blur", "Blur"), Translations.text("anarchyclient.ui.how_strongly_the_panels_blur_the_game_behind_the", "How strongly the panels blur the game behind them."),
                 0F, 10F, 1F, GlassTheme::glassBlur,
                 GlassTheme::glassBlur,
                 () -> Integer.toString(Math.round(GlassTheme.glassBlur()))));
-        this.rows.addChild(new OptionRow(this.panel, "Background design", true, null,
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.background_design", "Background design"), true, null,
                 () -> this.panel.backgroundDesign.displayName(),
                 this.panel::cycleBackgroundDesign, this::refresh));
-        this.rows.addChild(new GroupHeader("Layout"));
-        this.rows.addChild(new OptionRow(this.panel, "Compact cards", false,
+        this.rows.addChild(new GroupHeader(Translations.text("anarchyclient.ui.layout", "Layout")));
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.compact_cards", "Compact cards"), false,
                 () -> this.panel.compactRows,
                 () -> {
                     this.panel.compactRows = !this.panel.compactRows;
                     this.panel.saveUiPreferences();
                     this.panel.refreshModuleList();
                 }, this::refresh));
-        this.rows.addChild(new OptionRow(this.panel, "Hover descriptions", false,
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.hover_descriptions", "Hover descriptions"), false,
                 () -> this.panel.showSummaries,
                 () -> {
                     this.panel.showSummaries = !this.panel.showSummaries;
                     this.panel.saveUiPreferences();
                 }, this::refresh));
-        this.rows.addChild(new OptionRow(this.panel, "Wide inspector", false,
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.wide_inspector", "Wide inspector"), false,
                 () -> this.panel.wideInspector,
                 () -> {
                     this.panel.wideInspector = !this.panel.wideInspector;
                     this.panel.saveUiPreferences();
                 }, this::refresh));
-        this.rows.addChild(new GroupHeader("Commands"));
-        this.rows.addChild(new OptionRow(this.panel, "Command prefix", true, null,
+        this.rows.addChild(new GroupHeader(Translations.text("anarchyclient.ui.commands", "Commands")));
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.command_prefix", "Command prefix"), true, null,
                 CommandPrefix::get,
                 () -> {
                     CommandPrefix.cycle();
                     this.panel.config.save();
                 }, this::refresh));
-        this.rows.addChild(new OptionRow(this.panel, "Reset UI preferences", false, null,
+        this.rows.addChild(new OptionRow(this.panel, Translations.text("anarchyclient.ui.reset_ui_preferences", "Reset UI preferences"), false, null,
                 () -> "", this.panel::resetUiPreferences, this::refresh));
         this.panel.requestFrame();
     }

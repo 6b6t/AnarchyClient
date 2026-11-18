@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.command;
 
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -34,7 +35,7 @@ public final class CreativeItemFactory {
         ItemStack stack = new ItemStack(Items.PLAYER_HEAD);
         String name = sanitizeName(playerName, "Player");
         stack.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(name));
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal(name + "'s Head"));
+        stack.set(DataComponents.CUSTOM_NAME, Translations.component("anarchyclient.message.creative_item_factory.s_head", "%s's Head", name));
         return stack;
     }
 
@@ -63,7 +64,7 @@ public final class CreativeItemFactory {
     public static ItemStack randomItem(final int index) {
         Item item = RANDOM_ITEMS.get(Math.floorMod(index, RANDOM_ITEMS.size()));
         ItemStack stack = new ItemStack(item);
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Anarchy Item " + Math.floorMod(index, 10_000)));
+        stack.set(DataComponents.CUSTOM_NAME, Translations.component("anarchyclient.message.creative_item_factory.anarchy_item", "Anarchy Item %s", Math.floorMod(index, 10_000)));
         if (item == Items.PLAYER_HEAD) {
             stack.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("AnarchyClient"));
         }

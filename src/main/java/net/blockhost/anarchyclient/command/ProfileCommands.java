@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.profile.ProfileManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -57,12 +58,12 @@ final class ProfileCommands {
     private static int listProfiles(final CommandContext<FabricClientCommandSource> context) {
         List<ProfileManager.ProfileSummary> profiles = AnarchyClient.PROFILES.summaries();
         if (profiles.isEmpty()) {
-            context.getSource().sendFeedback(Component.literal("No saved profiles."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.no_saved_profiles", "No saved profiles."));
             return SUCCESS;
         }
         for (ProfileManager.ProfileSummary profile : profiles) {
             String updated = profile.updatedAt().isBlank() ? "unknown" : profile.updatedAt();
-            context.getSource().sendFeedback(Component.literal(profile.name() + " | modules: " + profile.modules() + " | updated: " + updated));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.modules_updated", "%s | modules: %s | updated: %s", profile.name(), profile.modules(), updated));
         }
         return SUCCESS;
     }
@@ -71,7 +72,7 @@ final class ProfileCommands {
         String name = StringArgumentType.getString(context, "name");
         try {
             ProfileManager.Profile profile = AnarchyClient.PROFILES.capture(name, AnarchyClient.MODULES);
-            context.getSource().sendFeedback(Component.literal("Saved profile " + profile.name + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.saved_profile", "Saved profile %s.", profile.name));
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));
@@ -83,20 +84,20 @@ final class ProfileCommands {
         String name = StringArgumentType.getString(context, "name");
         int changed = AnarchyClient.PROFILES.apply(name, AnarchyClient.MODULES);
         if (changed < 0) {
-            context.getSource().sendError(Component.literal("Unknown profile: " + name));
+            context.getSource().sendError(Translations.component("anarchyclient.message.profile.unknown_profile", "Unknown profile: %s", name));
             return 0;
         }
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal("Loaded profile " + name + " and changed " + changed + " value" + (changed == 1 ? "" : "s") + "."));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.loaded_profile_and_changed_value", "Loaded profile %s and changed %s value%s.", name, changed, (changed == 1 ? "" : "s")));
         return SUCCESS;
     }
 
     private static int deleteProfile(final CommandContext<FabricClientCommandSource> context) {
         String name = StringArgumentType.getString(context, "name");
         if (AnarchyClient.PROFILES.delete(name)) {
-            context.getSource().sendFeedback(Component.literal("Deleted profile " + name + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.deleted_profile", "Deleted profile %s.", name));
         } else {
-            context.getSource().sendFeedback(Component.literal("No saved profile named " + name + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.no_saved_profile_named", "No saved profile named %s.", name));
         }
         return SUCCESS;
     }
@@ -112,13 +113,13 @@ final class ProfileCommands {
         }
         try {
             if (!AnarchyClient.PROFILES.exportProfile(name, output)) {
-                context.getSource().sendError(Component.literal("Unknown profile: " + name));
+                context.getSource().sendError(Translations.component("anarchyclient.message.profile.unknown_profile", "Unknown profile: %s", name));
                 return 0;
             }
-            context.getSource().sendFeedback(Component.literal("Exported profile " + name + " to " + output + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.exported_profile_to", "Exported profile %s to %s.", name, output));
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to export profile: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.profile.failed_to_export_profile", "Failed to export profile: %s", exception.getMessage()));
             return 0;
         }
     }
@@ -133,10 +134,10 @@ final class ProfileCommands {
         }
         try {
             ProfileManager.Profile profile = AnarchyClient.PROFILES.importProfile(input);
-            context.getSource().sendFeedback(Component.literal("Imported profile " + profile.name + "."));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.imported_profile", "Imported profile %s.", profile.name));
             return SUCCESS;
         } catch (IOException exception) {
-            context.getSource().sendError(Component.literal("Failed to import profile: " + exception.getMessage()));
+            context.getSource().sendError(Translations.component("anarchyclient.message.profile.failed_to_import_profile", "Failed to import profile: %s", exception.getMessage()));
             return 0;
         }
     }
