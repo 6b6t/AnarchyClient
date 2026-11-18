@@ -88,7 +88,7 @@ final class ProfileCommands {
             return 0;
         }
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.loaded_profile_and_changed_value", "Loaded profile %s and changed %s value%s.", name, changed, (changed == 1 ? "" : "s")));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.profile.loaded_profile", "Loaded profile %s. Values changed: %s.", name, changed));
         return SUCCESS;
     }
 

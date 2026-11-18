@@ -62,7 +62,7 @@ final class WaypointCommands {
     }
 
     private static int addWaypoint(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "add a waypoint");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }

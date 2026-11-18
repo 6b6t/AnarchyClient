@@ -39,7 +39,7 @@ final class ChatCommands {
     }
 
     private static int runMacro(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "run a macro");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }

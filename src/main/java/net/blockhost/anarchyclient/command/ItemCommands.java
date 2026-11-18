@@ -99,7 +99,7 @@ final class ItemCommands {
             giveToSlot(client, slot, CreativeItemFactory.randomItem(index));
             given++;
         }
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_random_item", "Gave %s random item%s.", given, (given == 1 ? "" : "s")));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_random_items", "Random items given: %s.", given));
         return SUCCESS;
     }
 
@@ -139,7 +139,7 @@ final class ItemCommands {
     }
 
     private static int dropSelected(final CommandContext<FabricClientCommandSource> context, final boolean all) {
-        Minecraft client = requireInGame(context, "drop the selected item");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -157,7 +157,7 @@ final class ItemCommands {
     }
 
     private static int inventorySummary(final CommandContext<FabricClientCommandSource> context, final InventoryView view) {
-        Minecraft client = requireInGame(context, "inspect inventory");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -173,7 +173,7 @@ final class ItemCommands {
     }
 
     private static int peekHeldItem(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "peek at the held item");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -187,7 +187,7 @@ final class ItemCommands {
     }
 
     private static int heldItemNbt(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "inspect held item data");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }

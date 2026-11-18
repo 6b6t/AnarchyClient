@@ -48,18 +48,17 @@ final class CommandSupport {
         return sanitized.isBlank() ? "skin" : sanitized;
     }
 
-    static Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context,
-                                   final String action) {
+    static Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.you_must_be_in_game_to", "You must be in-game to %s.", action));
+            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.must_be_in_game", "You must be in a world to use this command."));
             return null;
         }
         return client;
     }
 
     static Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "send creative item packets");
+        Minecraft client = requireInGame(context);
         if (client == null || client.player == null || !client.player.getAbilities().instabuild) {
             context.getSource().sendError(Translations.component("anarchyclient.message.command_support.you_must_be_in_creative_mode", "You must be in creative mode to use this command."));
             return null;

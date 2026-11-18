@@ -200,7 +200,7 @@ final class PlayerCommands {
     }
 
     private static int setVelocityY(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "set velocity");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -210,7 +210,7 @@ final class PlayerCommands {
     }
 
     private static int setVelocityXZ(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "set velocity");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -223,7 +223,7 @@ final class PlayerCommands {
     }
 
     private static int setVelocityXYZ(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "set velocity");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -236,7 +236,7 @@ final class PlayerCommands {
     }
 
     private static int hclip(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "clip horizontally");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -247,7 +247,7 @@ final class PlayerCommands {
     }
 
     private static int vclip(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "clip vertically");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -255,7 +255,7 @@ final class PlayerCommands {
     }
 
     private static int damage(final CommandContext<FabricClientCommandSource> context, final double amount) {
-        Minecraft client = requireInGame(context, "send damage packets");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -284,7 +284,7 @@ final class PlayerCommands {
     }
 
     private static int dismount(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "dismount");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -298,7 +298,7 @@ final class PlayerCommands {
     }
 
     private static int movePlayer(final CommandContext<FabricClientCommandSource> context, final Vec3 target) {
-        Minecraft client = requireInGame(context, "move");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -334,7 +334,7 @@ final class PlayerCommands {
     }
 
     private static int teleport(final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
-        Minecraft client = requireInGame(context, "teleport");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }

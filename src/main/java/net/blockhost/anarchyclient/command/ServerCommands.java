@@ -130,7 +130,7 @@ final class ServerCommands {
         ServerList list = ServerListTools.load(Minecraft.getInstance());
         int removed = ServerListTools.cleanup(list);
         list.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.removed_duplicate_server", "Removed %s duplicate server%s.", removed, (removed == 1 ? "" : "s")));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.removed_duplicate_servers", "Duplicate servers removed: %s.", removed));
         return SUCCESS;
     }
 
@@ -139,7 +139,7 @@ final class ServerCommands {
         Path path = serverExportPath();
         try {
             ServerListTools.exportJson(list, path);
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.exported_server_to", "Exported %s server%s to ", list.size(), (list.size() == 1 ? "" : "s"))
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.exported_servers", "Servers exported: %s. File: ", list.size())
                     .append(CommandFeedback.copyable(path.toString(), path.toString())));
             return SUCCESS;
         } catch (IOException exception) {
@@ -161,7 +161,7 @@ final class ServerCommands {
             int added = ServerListTools.importJson(list, path);
             int duplicates = ServerListTools.cleanup(list);
             list.save();
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.imported_new_server_and_removed_duplicate", "Imported %s new server%s and removed %s duplicate%s.", added, (added == 1 ? "" : "s"), duplicates, (duplicates == 1 ? "" : "s")));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.imported_servers", "New servers imported: %s. Duplicates removed: %s.", added, duplicates));
             return SUCCESS;
         } catch (IOException exception) {
             context.getSource().sendError(Translations.component("anarchyclient.message.server.failed_to_import_servers", "Failed to import servers: %s", exception.getMessage()));
@@ -218,7 +218,7 @@ final class ServerCommands {
     }
 
     private static int kickDisconnect(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "kick yourself");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -227,7 +227,7 @@ final class ServerCommands {
     }
 
     private static int kickPosition(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "kick yourself");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }

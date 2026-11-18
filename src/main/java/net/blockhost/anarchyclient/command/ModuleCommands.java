@@ -126,7 +126,9 @@ final class ModuleCommands {
         }
         module.toggle();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.is_now", "%s is now %s.", module.name(), (module.enabled() ? "on" : "off")));
+        context.getSource().sendFeedback((module.enabled()
+                ? Translations.component("anarchyclient.message.module.is_now_on", "%s is now on.", module.name())
+                : Translations.component("anarchyclient.message.module.is_now_off", "%s is now off.", module.name())));
         return SUCCESS;
     }
 
@@ -136,7 +138,7 @@ final class ModuleCommands {
                 .peek(module -> module.enabled(false))
                 .count();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.disabled_module", "Disabled %s module%s.", disabled, (disabled == 1 ? "" : "s")));
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.disabled_modules", "Modules disabled: %s.", disabled));
         return SUCCESS;
     }
 
@@ -146,7 +148,7 @@ final class ModuleCommands {
     }
 
     private static int notebotPlayNote(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "preview a note");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }

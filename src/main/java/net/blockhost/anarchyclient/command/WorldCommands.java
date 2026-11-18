@@ -180,7 +180,7 @@ final class WorldCommands {
     }
 
     private static int locateSlimeChunk(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "locate a slime chunk");
+        Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
@@ -239,7 +239,7 @@ final class WorldCommands {
     }
 
     private static int ghostBlocks(final CommandContext<FabricClientCommandSource> context, final int radius) {
-        Minecraft client = requireInGame(context, "refresh ghost blocks");
+        Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
@@ -262,7 +262,7 @@ final class WorldCommands {
     }
 
     private static int setBlock(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = requireInGame(context, "set a client block");
+        Minecraft client = requireInGame(context);
         if (client == null || client.level == null) {
             return 0;
         }
@@ -282,7 +282,7 @@ final class WorldCommands {
     }
 
     private static int fill(final CommandContext<FabricClientCommandSource> context, final boolean replaceOnly) {
-        Minecraft client = requireInGame(context, "fill client blocks");
+        Minecraft client = requireInGame(context);
         if (client == null || client.level == null) {
             return 0;
         }
@@ -318,7 +318,7 @@ final class WorldCommands {
                     }
                 }
             }
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.changed_client_block", "Changed %s client block%s.", changed, (changed == 1 ? "" : "s")));
+            context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.changed_client_blocks", "Client blocks changed: %s.", changed));
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));
