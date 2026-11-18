@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_25",
   "client": [
     "AddressCheckMixin",
+    "AtmosphericFogEnvironmentMixin",
     "CameraMixin",
     "ChatComponentMixin",
     "ChatScreenMixin",
@@ -34,11 +35,14 @@
     "LocalPlayerPortalMixin",
     "MinecraftAccessor",
     "MinecraftActionsMixin",
+    "MinecraftDisconnectMixin",
     "MinecraftMissTimeMixin",
     "MouseHandlerMixin",
+    "MultiPlayerGameModeAccessor",
     "MultiPlayerGameModeMixin",
     "PlayerMixin",
-    "PlayerTabOverlayMixin"
+    "PlayerTabOverlayMixin",
+    "SkyRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

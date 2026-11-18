@@ -7,6 +7,9 @@ import net.blockhost.anarchyclient.module.impl.AutoMountModule;
 import net.blockhost.anarchyclient.module.impl.AutoNametagModule;
 import net.blockhost.anarchyclient.module.impl.AutoShearerModule;
 import net.blockhost.anarchyclient.module.impl.AutoSmelterModule;
+import net.blockhost.anarchyclient.module.impl.AutoSmithModule;
+import net.blockhost.anarchyclient.module.impl.AutoTameModule;
+import net.blockhost.anarchyclient.module.impl.AutoTradeModule;
 import net.blockhost.anarchyclient.module.impl.ChestAuraModule;
 import net.blockhost.anarchyclient.module.impl.ChestCleanerModule;
 import net.blockhost.anarchyclient.module.impl.ChestStealerModule;
@@ -14,6 +17,7 @@ import net.blockhost.anarchyclient.module.impl.ChestSwapModule;
 import net.blockhost.anarchyclient.module.impl.EasyPearlModule;
 import net.blockhost.anarchyclient.module.impl.ElytraSwapModule;
 import net.blockhost.anarchyclient.module.impl.InventoryCleanerModule;
+import net.blockhost.anarchyclient.module.impl.InventorySorterModule;
 import net.blockhost.anarchyclient.module.impl.LawnBotModule;
 import net.blockhost.anarchyclient.module.impl.MossBotModule;
 import net.blockhost.anarchyclient.module.impl.SpawnProoferModule;
@@ -52,5 +56,9 @@ final class AutomationModules {
         modules.register(new TreeAuraModule());
         modules.register(new MossBotModule());
         modules.register(new LawnBotModule());
+        modules.register(new AutoTameModule());
+        modules.register(new InventorySorterModule());
+        modules.register(new AutoTradeModule());
+        modules.register(new AutoSmithModule());
     }
 }

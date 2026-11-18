@@ -1,6 +1,10 @@
 package net.blockhost.anarchyclient.module;
 
+import net.blockhost.anarchyclient.module.impl.AnnouncerModule;
+import net.blockhost.anarchyclient.module.impl.AntiAimModule;
+import net.blockhost.anarchyclient.module.impl.AntiCyrillicModule;
 import net.blockhost.anarchyclient.module.impl.AntiPacketKickModule;
+import net.blockhost.anarchyclient.module.impl.AntiQuitModule;
 import net.blockhost.anarchyclient.module.impl.AntiVanishModule;
 import net.blockhost.anarchyclient.module.impl.AutoDisableModule;
 import net.blockhost.anarchyclient.module.impl.AutoGgModule;
@@ -10,6 +14,7 @@ import net.blockhost.anarchyclient.module.impl.BetterChatModule;
 import net.blockhost.anarchyclient.module.impl.BookBotModule;
 import net.blockhost.anarchyclient.module.impl.BungeeCordSpoofModule;
 import net.blockhost.anarchyclient.module.impl.ChatBotModule;
+import net.blockhost.anarchyclient.module.impl.ChatFilterModule;
 import net.blockhost.anarchyclient.module.impl.ChatSpammerModule;
 import net.blockhost.anarchyclient.module.impl.ColorSignsModule;
 import net.blockhost.anarchyclient.module.impl.CoordLoggerModule;
@@ -18,6 +23,7 @@ import net.blockhost.anarchyclient.module.impl.DebugRecorderModule;
 import net.blockhost.anarchyclient.module.impl.DiscordPresenceModule;
 import net.blockhost.anarchyclient.module.impl.FakePlayerModule;
 import net.blockhost.anarchyclient.module.impl.GamemodeNotifierModule;
+import net.blockhost.anarchyclient.module.impl.IllegalDisconnectModule;
 import net.blockhost.anarchyclient.module.impl.InteractionMenuModule;
 import net.blockhost.anarchyclient.module.impl.InventoryTrackerModule;
 import net.blockhost.anarchyclient.module.impl.ItemGeneratorModule;
@@ -29,8 +35,10 @@ import net.blockhost.anarchyclient.module.impl.NotebotModule;
 import net.blockhost.anarchyclient.module.impl.NotifierModule;
 import net.blockhost.anarchyclient.module.impl.NyanCatGifSpammerModule;
 import net.blockhost.anarchyclient.module.impl.PacketLoggerModule;
+import net.blockhost.anarchyclient.module.impl.PortalGodModeModule;
 import net.blockhost.anarchyclient.module.impl.ServerSpoofModule;
 import net.blockhost.anarchyclient.module.impl.SilentDisconnectModule;
+import net.blockhost.anarchyclient.module.impl.SkinFlickerModule;
 import net.blockhost.anarchyclient.module.impl.SoundBlockerModule;
 import net.blockhost.anarchyclient.module.impl.SwarmModule;
 import net.blockhost.anarchyclient.module.impl.TextFieldProtectModule;
@@ -80,5 +88,13 @@ final class MiscModules {
         modules.register(new SwarmModule());
         modules.register(new ItemGeneratorModule());
         modules.register(new NyanCatGifSpammerModule());
+        modules.register(new AntiCyrillicModule());
+        modules.register(new ChatFilterModule());
+        modules.register(new SkinFlickerModule());
+        modules.register(new PortalGodModeModule());
+        modules.register(new IllegalDisconnectModule());
+        modules.register(new AntiAimModule());
+        modules.register(new AnnouncerModule());
+        modules.register(new AntiQuitModule());
     }
 }

@@ -1,0 +1,278 @@
+package net.blockhost.anarchyclient.module.impl;
+
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.rotation.RotationManager;
+import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+public final class PistonCrystalModule extends Module {
+
+    private static final int STAGE_TIMEOUT_TICKS = 40;
+
+    private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("range")
+            .name("Range")
+            .defaultValue(5.0)
+            .min(2.0)
+            .max(6.0)
+            .step(0.5)
+            .build()));
+    private final NumberSetting maxSelfDamage = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("max_self_damage")
+            .name("Self Damage")
+            .defaultValue(8.0)
+            .min(0.0)
+            .max(36.0)
+            .step(1.0)
+            .description("Skips a setup when the crystal could deal more than this much damage to you, in HP.")
+            .build()));
+    private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("rotate")
+            .name("Rotate")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting reset = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("reset")
+            .name("Reset")
+            .defaultValue(true)
+            .description("Mines the redstone block after each blast so the piston can fire again.")
+            .build()));
+    private Plan plan;
+    private Stage stage = Stage.PISTON;
+    private int stageTicks;
+
+    public PistonCrystalModule() {
+        super("piston_crystal", "Piston Crystal", ModuleCategory.COMBAT,
+                "Places an end crystal beside the nearest enemy's head, pushes it into them with a powered piston, "
+                        + "and breaks it. Works on targets in holes. Needs pistons, end crystals, and redstone blocks in the hotbar.");
+    }
+
+    @Override
+    public void tick(final Minecraft client) {
+        LocalPlayer player = client.player;
+        ClientLevel level = client.level;
+        if (player == null || level == null || client.gameMode == null || client.gui.screen() != null) {
+            return;
+        }
+        Player target = CombatTargets.nearestEnemy(client, this.range.value() + 2.0);
+        if (target == null) {
+            this.resetPlan();
+            return;
+        }
+        if (this.plan == null || !this.plan.feet().equals(target.blockPosition()) || ++this.stageTicks > STAGE_TIMEOUT_TICKS) {
+            this.plan = this.choosePlan(level, player, target).orElse(null);
+            this.stage = Stage.PISTON;
+            this.stageTicks = 0;
+            if (this.plan == null) {
+                this.debugValue("stage", "no setup");
+                return;
+            }
+        }
+        this.debugValue("stage", this.stage);
+        switch (this.stage) {
+            case PISTON -> this.placePiston(client);
+            case CRYSTAL -> this.placeCrystal(client, level);
+            case POWER -> this.power(client);
+            case BREAK -> this.breakCrystal(client, level, player);
+            case RESET -> this.resetPower(client, level);
+        }
+    }
+
+    private void placePiston(final Minecraft client) {
+        double reach = Math.min(this.range.value(), client.player.blockInteractionRange());
+        switch (PistonPlacement.placePiston(client, this, this.plan.piston(), this.plan.pistonFacing(), reach)) {
+            case PRESENT -> this.advance(Stage.CRYSTAL);
+            case BLOCKED, MISSING_ITEM -> this.plan = null;
+            default -> {
+            }
+        }
+    }
+
+    private void placeCrystal(final Minecraft client, final ClientLevel level) {
+        if (crystalNear(level, this.plan.crystal()).isPresent()) {
+            this.advance(Stage.POWER);
+            return;
+        }
+        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, this.plan.crystal().below(),
+                Direction.UP, stack -> stack.is(Items.END_CRYSTAL), this.rotate.value());
+        if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.REFUSED) {
+            this.plan = null;
+        }
+    }
+
+    private void power(final Minecraft client) {
+        switch (PistonPlacement.placePower(client, this, this.plan.power(), this.rotate.value())) {
+            case PLACED, PRESENT -> this.advance(Stage.BREAK);
+            case BLOCKED, MISSING_ITEM -> this.plan = null;
+            default -> {
+            }
+        }
+    }
+
+    private void breakCrystal(final Minecraft client, final ClientLevel level, final LocalPlayer player) {
+        // The crystal may still be moving with the piston head, so look around both cells.
+        Optional<EndCrystal> crystal = crystalNear(level, this.plan.head())
+                .or(() -> crystalNear(level, this.plan.crystal()));
+        if (crystal.isEmpty()) {
+            if (this.stageTicks > 6) {
+                this.advance(this.reset.value() ? Stage.RESET : Stage.PISTON);
+            }
+            return;
+        }
+        EndCrystal entity = crystal.orElseThrow();
+        if (!CombatTargets.canReachEntity(player, entity)) {
+            return;
+        }
+        client.gameMode.attack(player, entity);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+        this.advance(this.reset.value() ? Stage.RESET : Stage.PISTON);
+    }
+
+    private void resetPower(final Minecraft client, final ClientLevel level) {
+        Optional<BlockPos> power = PistonPlacement.existingPower(level, this.plan.power());
+        if (power.isEmpty()) {
+            WorldInteraction.stopBreaking(client, this);
+            this.advance(Stage.PISTON);
+            return;
+        }
+        BlockPos pos = power.orElseThrow();
+        WorldInteraction.breakBlock(client, this, pos, nearestFace(client.player.getEyePosition(), pos));
+    }
+
+    private void advance(final Stage next) {
+        this.stage = next;
+        this.stageTicks = 0;
+    }
+
+    private Optional<Plan> choosePlan(final ClientLevel level, final LocalPlayer player, final Player target) {
+        double reach = Math.min(this.range.value(), player.blockInteractionRange());
+        double health = player.getHealth() + player.getAbsorptionAmount();
+        BlockPos feet = target.blockPosition();
+        Vec3 eye = player.getEyePosition();
+        for (Direction outward : candidates(level, feet, eye)) {
+            Plan candidate = Plan.of(feet, outward);
+            if (!CombatTargets.canReachBlock(player, candidate.piston(), reach)
+                    || !CombatTargets.canReachBlock(player, candidate.crystal().below(), reach)) {
+                continue;
+            }
+            double selfDamage = Math.max(
+                    DamageEstimator.explosionDamage(player, DamageEstimator.crystalCenter(candidate.crystal()),
+                            DamageEstimator.CRYSTAL_POWER),
+                    DamageEstimator.explosionDamage(player, DamageEstimator.crystalCenter(candidate.head()),
+                            DamageEstimator.CRYSTAL_POWER));
+            if (selfDamage > this.maxSelfDamage.value() || !CrystalAuraModule.isSafe(selfDamage, health)) {
+                continue;
+            }
+            return Optional.of(candidate);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the directions, pointing away from the target, where a piston crystal fits: the
+     * crystal cell beside the head and the cell above it are open, the block under the crystal is
+     * obsidian or bedrock, and the piston cell behind the crystal is open or holds a piston that
+     * faces the target. Setups nearest to {@code eye} come first.
+     */
+    static List<Direction> candidates(final BlockGetter level, final BlockPos feet, final Vec3 eye) {
+        List<Direction> directions = new ArrayList<>();
+        if (!PistonPlacement.isOpen(level, feet.above())) {
+            return directions;
+        }
+        for (Direction outward : Direction.Plane.HORIZONTAL) {
+            Plan plan = Plan.of(feet, outward);
+            BlockState base = level.getBlockState(plan.crystal().below());
+            BlockState piston = level.getBlockState(plan.piston());
+            if ((base.is(Blocks.OBSIDIAN) || base.is(Blocks.BEDROCK))
+                    && PistonPlacement.isOpen(level, plan.crystal())
+                    && PistonPlacement.isOpen(level, plan.crystal().above())
+                    && (PistonPlacement.isOpen(level, plan.piston())
+                    || PistonPlacement.isPistonFacing(piston, plan.pistonFacing()))) {
+                directions.add(outward);
+            }
+        }
+        directions.sort(Comparator.comparingDouble(direction ->
+                Vec3.atCenterOf(Plan.of(feet, direction).piston()).distanceToSqr(eye)));
+        return directions;
+    }
+
+    private static Optional<EndCrystal> crystalNear(final ClientLevel level, final BlockPos cell) {
+        AABB box = new AABB(cell).inflate(0.5, 0.0, 0.5);
+        for (Entity entity : level.getEntities(null, box)) {
+            if (entity instanceof EndCrystal crystal && crystal.isAlive()) {
+                return Optional.of(crystal);
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Direction nearestFace(final Vec3 eye, final BlockPos pos) {
+        return Direction.getApproximateNearest(eye.subtract(Vec3.atCenterOf(pos)));
+    }
+
+    private void resetPlan() {
+        if (this.plan != null) {
+            WorldInteraction.stopBreaking(Minecraft.getInstance(), this);
+        }
+        this.plan = null;
+        this.stage = Stage.PISTON;
+        this.stageTicks = 0;
+    }
+
+    @Override
+    protected void onDisable() {
+        this.resetPlan();
+        RotationManager.clear(this.id());
+    }
+
+    private enum Stage {
+        PISTON,
+        CRYSTAL,
+        POWER,
+        BREAK,
+        RESET
+    }
+
+    /**
+     * One piston crystal setup. {@code outward} points from the target to the crystal; the piston
+     * sits one block further out and faces back toward the target.
+     */
+    record Plan(BlockPos feet, Direction outward, BlockPos head, BlockPos crystal, BlockPos piston,
+                List<BlockPos> power) {
+
+        static Plan of(final BlockPos feet, final Direction outward) {
+            BlockPos head = feet.above();
+            BlockPos crystal = head.relative(outward);
+            BlockPos piston = crystal.relative(outward);
+            List<BlockPos> power = PistonPlacement.powerPositions(piston, outward.getOpposite(),
+                    List.of(crystal, head, crystal.above()));
+            return new Plan(feet.immutable(), outward, head, crystal, piston, power);
+        }
+
+        Direction pistonFacing() {
+            return this.outward.getOpposite();
+        }
+    }
+}

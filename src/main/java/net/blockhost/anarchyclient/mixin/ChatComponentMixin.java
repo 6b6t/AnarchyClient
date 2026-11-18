@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.mixin;
 
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.impl.BetterChatModule;
+import net.blockhost.anarchyclient.module.impl.ChatFilterModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.multiplayer.chat.GuiMessage;
@@ -34,6 +35,15 @@ public abstract class ChatComponentMixin {
     /** The last message this mixin saw added, after every module changed it. */
     @Unique
     private @Nullable Component anarchyclient$lastAdded;
+
+    @Inject(method = "addMessage", at = @At("HEAD"), cancellable = true)
+    private void anarchyclient$filterChatMessage(final Component contents, final @Nullable MessageSignature signature,
+                                                 final GuiMessageSource source, final @Nullable GuiMessageTag tag,
+                                                 final CallbackInfo info) {
+        if (ChatFilterModule.hides(contents)) {
+            info.cancel();
+        }
+    }
 
     @ModifyVariable(method = "addMessage", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private Component anarchyclient$modifyChatMessage(final Component message) {

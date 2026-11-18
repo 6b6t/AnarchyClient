@@ -17,6 +17,7 @@ import net.blockhost.anarchyclient.module.impl.EndermanLookModule;
 import net.blockhost.anarchyclient.module.impl.FastExpModule;
 import net.blockhost.anarchyclient.module.impl.FastUseModule;
 import net.blockhost.anarchyclient.module.impl.GhostModeModule;
+import net.blockhost.anarchyclient.module.impl.ItemSaverModule;
 import net.blockhost.anarchyclient.module.impl.NoJumpDelayModule;
 import net.blockhost.anarchyclient.module.impl.PotionSaverModule;
 import net.blockhost.anarchyclient.module.impl.SmartEatModule;
@@ -52,5 +53,6 @@ final class PlayerModules {
         modules.register(new EndermanLookModule());
         modules.register(new AntiAfkModule());
         modules.register(new NoJumpDelayModule());
+        modules.register(new ItemSaverModule());
     }
 }

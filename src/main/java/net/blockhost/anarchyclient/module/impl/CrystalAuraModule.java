@@ -11,9 +11,11 @@ import net.blockhost.anarchyclient.render.MarkerStyle;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
@@ -22,7 +24,9 @@ import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class CrystalAuraModule extends Module implements ModuleConfigMigration {
 
@@ -97,12 +101,48 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
             .name("Render")
             .defaultValue(true)
             .build()));
+    private final BooleanSetting idPredict = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("id_predict")
+            .name("ID Predict")
+            .defaultValue(false)
+            .description("Attacks the crystal the server is about to create right after placing it, before it appears. "
+                    + "Faster, but it can flag anti-cheats and misses when other entities spawn at the same time.")
+            .build()));
+    private final NumberSetting predictAttacks = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("predict_attacks")
+            .name("Predict Attacks")
+            .defaultValue(1.0)
+            .min(1.0)
+            .max(3.0)
+            .step(1.0)
+            .description("How many upcoming entity IDs to attack after each placement.")
+            .build()));
+    private final NumberSetting inhibitTicks = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("inhibit_ticks")
+            .name("Inhibit")
+            .defaultValue(3.0)
+            .min(0.0)
+            .max(20.0)
+            .step(1.0)
+            .description("Ticks to wait before attacking the same crystal again while the server removes it.")
+            .build()));
+    private final BooleanSetting setDead = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("set_dead")
+            .name("Set Dead")
+            .defaultValue(false)
+            .description("Removes an attacked crystal on your side at once, so the next one can be placed without "
+                    + "waiting for the server. A crystal the server did not break stays invisible until it updates.")
+            .build()));
+    private final Map<Integer, Integer> attackedAt = new HashMap<>();
+    private int highestEntityId = Integer.MIN_VALUE;
+    private int ticks;
     private int breakCooldown;
     private int placeCooldown;
 
     public CrystalAuraModule() {
         super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT,
                 "Places and breaks end crystals within reach near targets. Damage values are in HP and skip crystals that would kill you.");
+        this.predictAttacks.visibleWhen(this.idPredict::value);
     }
 
     /** Moves configs saved with the old defaults to the current ones. */
@@ -122,6 +162,9 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         if (player == null || target == null || client.level == null || client.gameMode == null) {
             return;
         }
+        this.ticks++;
+        int inhibit = this.inhibitTicks.value().intValue();
+        this.attackedAt.values().removeIf(tick -> this.ticks - tick > inhibit);
         if (this.breakCooldown > 0) {
             this.breakCooldown--;
         }
@@ -155,6 +198,9 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
                     stack -> stack.is(Items.END_CRYSTAL), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.placeCooldown = this.placeDelay.value().intValue();
+                if (this.idPredict.value()) {
+                    this.predictAttack(client, player);
+                }
                 this.debugValue("damage", String.format("%.1f/%.1f", best.targetDamage(), best.selfDamage()));
                 this.mark(best.pos());
             }
@@ -170,7 +216,7 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         // beyond the entity interaction range.
         double breakRange = player.blockInteractionRange();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof EndCrystal) || !entity.isAlive()
+            if (!(entity instanceof EndCrystal) || !entity.isAlive() || this.attackedAt.containsKey(entity.getId())
                     || !CombatTargets.canReachEntity(player, entity, breakRange)) {
                 continue;
             }
@@ -192,7 +238,54 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         }
         client.gameMode.attack(client.player, best);
         client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+        this.attackedAt.put(best.getId(), this.ticks);
+        if (this.setDead.value()) {
+            client.level.removeEntity(best.getId(), Entity.RemovalReason.KILLED);
+        }
         return true;
+    }
+
+    /** Attacks the entity IDs the server will most likely give the crystal that was just placed. */
+    private void predictAttack(final Minecraft client, final LocalPlayer player) {
+        if (this.highestEntityId == Integer.MIN_VALUE || client.getConnection() == null) {
+            return;
+        }
+        for (int id : predictedIds(this.highestEntityId, this.predictAttacks.value().intValue())) {
+            if (this.attackedAt.containsKey(id)) {
+                continue;
+            }
+            client.getConnection().send(new ServerboundAttackPacket(id));
+            this.attackedAt.put(id, this.ticks);
+        }
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
+    }
+
+    /** The server numbers new entities in order, so the next crystal gets the next free IDs. */
+    static int[] predictedIds(final int highestSeenId, final int count) {
+        int[] ids = new int[Math.max(0, count)];
+        for (int index = 0; index < ids.length; index++) {
+            ids[index] = highestSeenId + 1 + index;
+        }
+        return ids;
+    }
+
+    @Override
+    public void entityAdded(final Minecraft client, final Entity entity) {
+        // Client-only entities, such as fake players, use negative IDs and say nothing about the server.
+        if (entity.getId() > this.highestEntityId) {
+            this.highestEntityId = entity.getId();
+        }
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.highestEntityId = Integer.MIN_VALUE;
+        this.attackedAt.clear();
+    }
+
+    @Override
+    protected void onDisable() {
+        this.attackedAt.clear();
     }
 
     private void mark(final BlockPos pos) {

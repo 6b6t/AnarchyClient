@@ -74,6 +74,12 @@ public final class AutoLogModule extends Module {
             .max(16.0)
             .step(0.5)
             .build()));
+    private final BooleanSetting illegalDisconnect = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("illegal_disconnect")
+            .name("Illegal Disconnect")
+            .defaultValue(false)
+            .description("Also sends an invalid packet so the server kicks you at once, even behind a proxy.")
+            .build()));
     private int selfTotemPops;
     private boolean logged;
 
@@ -226,6 +232,9 @@ public final class AutoLogModule extends Module {
         }
         this.logged = true;
         safetyDisconnect = true;
+        if (this.illegalDisconnect.value()) {
+            IllegalDisconnect.send(connection);
+        }
         connection.disconnect(Translations.component("anarchyclient.message.auto_log.auto_log", "Auto Log: %s", reason));
     }
 

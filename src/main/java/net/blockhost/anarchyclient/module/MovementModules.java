@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module;
 import net.blockhost.anarchyclient.module.impl.AirJumpModule;
 import net.blockhost.anarchyclient.module.impl.AnchorModule;
 import net.blockhost.anarchyclient.module.impl.AntiVoidModule;
+import net.blockhost.anarchyclient.module.impl.AutoFireworkModule;
 import net.blockhost.anarchyclient.module.impl.AutoJumpModule;
 import net.blockhost.anarchyclient.module.impl.AutoSprintModule;
 import net.blockhost.anarchyclient.module.impl.AutoWalkModule;
@@ -26,6 +27,7 @@ import net.blockhost.anarchyclient.module.impl.FlightModule;
 import net.blockhost.anarchyclient.module.impl.FreecamModule;
 import net.blockhost.anarchyclient.module.impl.GlideModule;
 import net.blockhost.anarchyclient.module.impl.HighJumpModule;
+import net.blockhost.anarchyclient.module.impl.HoleSnapModule;
 import net.blockhost.anarchyclient.module.impl.InventoryMoveModule;
 import net.blockhost.anarchyclient.module.impl.JesusModule;
 import net.blockhost.anarchyclient.module.impl.JetpackModule;
@@ -43,6 +45,7 @@ import net.blockhost.anarchyclient.module.impl.SlippyModule;
 import net.blockhost.anarchyclient.module.impl.SneakModule;
 import net.blockhost.anarchyclient.module.impl.SpeedModule;
 import net.blockhost.anarchyclient.module.impl.SpiderModule;
+import net.blockhost.anarchyclient.module.impl.SpiralModule;
 import net.blockhost.anarchyclient.module.impl.StepModule;
 import net.blockhost.anarchyclient.module.impl.StrafeModule;
 import net.blockhost.anarchyclient.module.impl.TargetStrafeModule;
@@ -114,5 +117,8 @@ final class MovementModules {
         modules.register(new BlinkModule());
         modules.register(new FreecamModule());
         modules.register(new ParkourModule());
+        modules.register(new SpiralModule());
+        modules.register(new HoleSnapModule());
+        modules.register(new AutoFireworkModule());
     }
 }

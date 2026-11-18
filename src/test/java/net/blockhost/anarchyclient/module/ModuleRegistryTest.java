@@ -15,6 +15,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ModuleRegistryTest {
 
     @Test
+    void registersModulesAddedForZioParity() {
+        ModuleManager modules = new ModuleManager();
+
+        ModuleRegistry.registerDefaults(modules);
+
+        for (String id : List.of("anti_cyrillic", "chat_filter", "skin_flicker", "portal_god_mode",
+                "illegal_disconnect", "anti_aim", "announcer", "anti_quit", "heaven", "kill_effects", "hitmarker",
+                "skybox", "borders", "entity_list_hud", "welcomer_hud", "piston_push", "piston_crystal", "crawl_trap",
+                "crystal_blocker", "mainhand_totem", "arrow_swap", "spiral", "hole_snap", "auto_firework", "auto_tame",
+                "inventory_sorter", "auto_trade", "auto_smith", "item_saver")) {
+            assertTrue(modules.find(id).isPresent(), id + " is not registered");
+        }
+    }
+
+    @Test
     void registersExpandedDefaultModuleSet() {
         ModuleManager modules = new ModuleManager();
 

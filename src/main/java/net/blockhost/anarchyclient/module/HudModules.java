@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.impl.ArmorHudModule;
 import net.blockhost.anarchyclient.module.impl.CombatHudModule;
 import net.blockhost.anarchyclient.module.impl.CompassHudModule;
 import net.blockhost.anarchyclient.module.impl.CoordinatesHudModule;
+import net.blockhost.anarchyclient.module.impl.EntityListHudModule;
 import net.blockhost.anarchyclient.module.impl.FlagTimelineHudModule;
 import net.blockhost.anarchyclient.module.impl.HoleHudModule;
 import net.blockhost.anarchyclient.module.impl.InventoryHudModule;
@@ -20,6 +21,7 @@ import net.blockhost.anarchyclient.module.impl.RadarHudModule;
 import net.blockhost.anarchyclient.module.impl.ServerFingerprintHudModule;
 import net.blockhost.anarchyclient.module.impl.SilentHotbarModule;
 import net.blockhost.anarchyclient.module.impl.TextHudModule;
+import net.blockhost.anarchyclient.module.impl.WelcomerHudModule;
 
 /**
  * Registers the default HUD element modules.
@@ -52,5 +54,7 @@ final class HudModules {
         modules.register(new FlagTimelineHudModule());
         modules.register(new PacketDebugHudModule());
         modules.register(new SilentHotbarModule());
+        modules.register(new EntityListHudModule());
+        modules.register(new WelcomerHudModule());
     }
 }
