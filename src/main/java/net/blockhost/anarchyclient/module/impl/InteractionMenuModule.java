@@ -53,7 +53,7 @@ public final class InteractionMenuModule extends Module {
     private void execute(final Minecraft client) {
         String info = targetInfo(client);
         switch (this.mode.value()) {
-            case "Command" -> ChatActions.send(client, this.command.value()
+            case "Command" -> ChatActions.run(client, this.command.value()
                     .replace("{target}", targetName(client))
                     .replace("{info}", info));
             case "Friend" -> {

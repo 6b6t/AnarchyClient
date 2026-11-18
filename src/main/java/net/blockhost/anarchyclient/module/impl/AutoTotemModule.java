@@ -17,7 +17,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.List;
@@ -217,10 +216,19 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
         return TotemRiskEstimator.damageUntilThreshold(health, threshold);
     }
 
+    /**
+     * Finds the item, main inventory first, then the hotbar. The hotbar slot Mainhand Totem holds is skipped, so the
+     * two modules do not keep moving the same totem between the hands.
+     */
     private int findItemSlot(final Inventory inventory, final Item item) {
-        for (int slot = 0; slot < Inventory.INVENTORY_SIZE; slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (stack.is(item)) {
+        for (int slot = Inventory.getSelectionSize(); slot < Inventory.INVENTORY_SIZE; slot++) {
+            if (inventory.getItem(slot).is(item)) {
+                return slot;
+            }
+        }
+        int reserved = MainhandTotemModule.heldSlot();
+        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
+            if (slot != reserved && inventory.getItem(slot).is(item)) {
                 return slot;
             }
         }

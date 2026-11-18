@@ -49,19 +49,20 @@ public final class SkinFlickerModule extends Module {
 
     @Override
     protected void onEnable() {
-        Minecraft client = Minecraft.getInstance();
+        // Options do not exist yet when the module is restored from config at startup, so the layers are recorded
+        // on the first tick that has them.
         this.original.clear();
-        if (client.options != null) {
-            for (PlayerModelPart part : PlayerModelPart.values()) {
-                this.original.put(part, client.options.isModelPartEnabled(part));
-            }
-        }
         this.ticks = 0;
         this.step = 0;
     }
 
     @Override
     public void tick(final Minecraft client) {
+        if (client.options != null && this.original.isEmpty()) {
+            for (PlayerModelPart part : PlayerModelPart.values()) {
+                this.original.put(part, client.options.isModelPartEnabled(part));
+            }
+        }
         if (client.player == null || client.options == null || ++this.ticks < this.delay.value().intValue()) {
             return;
         }

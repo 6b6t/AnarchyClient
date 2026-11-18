@@ -6,8 +6,11 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.BlastFurnaceMenu;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -87,9 +90,10 @@ public final class AutoSmelterModule extends Module {
                 || ItemStack.isSameItemSameComponents(current, stack) && current.getCount() < current.getMaxStackSize();
     }
 
-    private static boolean hasRoomFor(final AbstractFurnaceMenu menu, final ItemStack output) {
-        for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
-            if (canStackInto(menu.getSlot(slot).getItem(), output)) {
+    /** Returns whether a shift-click could move {@code output} into one of the player's inventory slots. */
+    static boolean hasRoomFor(final AbstractContainerMenu menu, final ItemStack output) {
+        for (Slot slot : menu.slots) {
+            if (slot.container instanceof Inventory && canStackInto(slot.getItem(), output)) {
                 return true;
             }
         }

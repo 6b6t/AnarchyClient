@@ -7,7 +7,6 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -38,8 +37,9 @@ public final class ClickTpModule extends Module {
         }
         // Stand on top of the clicked block; the raw hit point on a side face is inside the wall.
         Vec3 target = Vec3.atBottomCenterOf(((BlockHitResult) client.hitResult).getBlockPos().above());
+        // Move locally only: vanilla sends the position in its next tick, and a second position packet in the
+        // same tick gets the player disconnected on 26.3.
         player.setPos(target);
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, player.onGround(), player.horizontalCollision));
         return true;
     }
 }

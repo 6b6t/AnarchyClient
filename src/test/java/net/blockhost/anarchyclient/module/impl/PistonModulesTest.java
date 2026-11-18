@@ -83,12 +83,16 @@ class PistonModulesTest {
     }
 
     @Test
-    void pistonCrystalNeedsRoomAboveTheCrystal() {
+    void pistonCrystalNeedsAnOpenCrystalCellButNotRoomAboveIt() {
         MapBlockGetter level = holeAround(FEET);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             level.set(FEET.above(2).relative(direction), Blocks.STONE);
         }
+        assertFalse(PistonCrystalModule.candidates(level, FEET, Vec3.ZERO).isEmpty());
 
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            level.set(FEET.above().relative(direction), Blocks.STONE);
+        }
         assertTrue(PistonCrystalModule.candidates(level, FEET, Vec3.ZERO).isEmpty());
     }
 

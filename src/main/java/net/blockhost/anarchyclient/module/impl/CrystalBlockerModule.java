@@ -114,10 +114,10 @@ public final class CrystalBlockerModule extends Module {
         return order.stream().map(spots::get).toList();
     }
 
+    /** Mirrors vanilla's End Crystal item: an air cell on obsidian or bedrock. The cell above is not checked. */
     static boolean isCrystalSpot(final BlockGetter level, final BlockPos spot) {
         BlockState base = level.getBlockState(spot.below());
         return (base.is(Blocks.OBSIDIAN) || base.is(Blocks.BEDROCK))
-                && level.getBlockState(spot).isAir()
-                && level.getBlockState(spot.above()).isAir();
+                && level.getBlockState(spot).isAir();
     }
 }

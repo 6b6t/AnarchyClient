@@ -56,9 +56,11 @@ public final class BordersModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        double x = client.player.getX();
-        double y = client.player.getY();
-        double z = client.player.getZ();
+        // Interpolated, like the camera the lines are drawn relative to; tick positions jittered at high FPS.
+        Vec3 position = client.player.getPosition(client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
+        double x = position.x;
+        double y = position.y;
+        double z = position.z;
         double reach = this.height.value();
         if (this.chunks.value()) {
             drawArea(matrices, submits, camera, cellStart(x, CHUNK_SIZE, 0), cellStart(z, CHUNK_SIZE, 0), CHUNK_SIZE,

@@ -69,7 +69,12 @@ final class WorldCommands {
                         .then(literal("list")
                                 .executes(WorldCommands::listSeeds))
                         .then(literal("delete")
-                                .executes(WorldCommands::deleteSeed)))
+                                .executes(context -> deleteSeed(context, SeedStore.worldKey(Minecraft.getInstance())))
+                                // Any saved key, including entries from before seeds were keyed per world.
+                                .then(argument("world", StringArgumentType.greedyString())
+                                        .suggests(WorldCommands::suggestSavedSeeds)
+                                        .executes(context -> deleteSeed(context,
+                                                StringArgumentType.getString(context, "world").trim())))))
                 .then(literal("locate")
                         .then(literal("slime-chunk")
                                 .executes(WorldCommands::locateSlimeChunk)))
@@ -157,9 +162,17 @@ final class WorldCommands {
         }
     }
 
-    private static int deleteSeed(final CommandContext<FabricClientCommandSource> context) {
-        Minecraft client = Minecraft.getInstance();
-        String world = SeedStore.worldKey(client);
+    private static CompletableFuture<Suggestions> suggestSavedSeeds(final CommandContext<FabricClientCommandSource> context,
+                                                                     final SuggestionsBuilder builder) {
+        try {
+            return SharedSuggestionProvider.suggest(SeedStore.list(seedPath()).stream()
+                    .map(SeedStore.SeedRecord::world), builder);
+        } catch (IOException exception) {
+            return builder.buildFuture();
+        }
+    }
+
+    private static int deleteSeed(final CommandContext<FabricClientCommandSource> context, final String world) {
         try {
             if (SeedStore.delete(seedPath(), world)) {
                 context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.deleted_saved_seed_for", "Deleted saved seed for %s.", world));

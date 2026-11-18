@@ -56,7 +56,7 @@ public final class MiddleClickActionModule extends Module {
             case "XP Bottle" -> useHotbarItem(client, player, Items.EXPERIENCE_BOTTLE);
             case "Command" -> {
                 String target = client.hitResult instanceof EntityHitResult hit ? hit.getEntity().getScoreboardName() : "";
-                ChatActions.send(client, this.command.value().replace("{target}", target));
+                ChatActions.run(client, this.command.value().replace("{target}", target));
             }
             case "Add Friend" -> {
                 if (client.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof Player target) {

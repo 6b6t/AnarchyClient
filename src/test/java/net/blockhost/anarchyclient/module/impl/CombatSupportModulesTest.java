@@ -57,13 +57,15 @@ class CombatSupportModulesTest {
     }
 
     @Test
-    void crystalBlockerIgnoresSpotsBelowTheDamageLimitOrWithoutRoom() {
+    void crystalBlockerIgnoresSpotsBelowTheDamageLimitOrFilled() {
         MapBlockGetter level = new MapBlockGetter()
                 .set(FEET.east().below(), Blocks.OBSIDIAN)
-                .set(FEET.east().above(), Blocks.STONE)
-                .set(FEET.west().below(), Blocks.BEDROCK);
+                .set(FEET.east(), Blocks.STONE)
+                .set(FEET.west().below(), Blocks.BEDROCK)
+                .set(FEET.west().above(), Blocks.STONE);
 
         assertFalse(CrystalBlockerModule.isCrystalSpot(level, FEET.east()));
+        // Like the End Crystal item, a block above the spot does not stop the placement.
         assertTrue(CrystalBlockerModule.isCrystalSpot(level, FEET.west()));
         assertTrue(CrystalBlockerModule.dangerousSpots(level, FEET, spot -> 1.0, 2.0).isEmpty());
     }

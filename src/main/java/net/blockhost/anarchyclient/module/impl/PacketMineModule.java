@@ -86,6 +86,7 @@ public final class PacketMineModule extends Module {
     private int cooldownTicks;
     private BlockPos lastTarget;
     private Target target;
+    private int lastSelectedSlot = -1;
 
     public PacketMineModule() {
         super("packet_mine", "Packet Mine", ModuleCategory.WORLD,
@@ -136,6 +137,15 @@ public final class PacketMineModule extends Module {
     }
 
     private void tickProgress(final Minecraft client, final LocalPlayer player) {
+        try {
+            this.tickProgressTarget(client, player);
+        } finally {
+            // What the server saw held at the end of this tick, for the next tick's finish check.
+            this.lastSelectedSlot = player.getInventory().getSelectedSlot();
+        }
+    }
+
+    private void tickProgressTarget(final Minecraft client, final LocalPlayer player) {
         Target current = this.target;
         if (current == null) {
             return;
@@ -170,12 +180,19 @@ public final class PacketMineModule extends Module {
                 return;
             }
         }
-        if (toolSlot.isPresent() && !SilentHotbar.select(player, this.id(), toolSlot.getAsInt(),
-                SilentHotbar.PRIORITY_NORMAL, 2, true)) {
-            return;
+        if (toolSlot.isPresent()) {
+            boolean heldSinceLastTick = toolSlot.getAsInt() == this.lastSelectedSlot
+                    && player.getInventory().getSelectedSlot() == toolSlot.getAsInt();
+            if (!SilentHotbar.select(player, this.id(), toolSlot.getAsInt(), SilentHotbar.PRIORITY_NORMAL, 3, true)) {
+                return;
+            }
+            ((MultiPlayerGameModeAccessor) client.gameMode).anarchyclient$ensureHasSentCarriedItem();
+            if (!heldSinceLastTick) {
+                // The server applies a tool's enchantments (Efficiency) in its next player tick, not when the slot
+                // changes. Finishing in the same tick would be checked without them and refused.
+                return;
+            }
         }
-        // The finish packet is checked against the held tool, so the server must see the switch first.
-        ((MultiPlayerGameModeAccessor) client.gameMode).anarchyclient$ensureHasSentCarriedItem();
         send(client, ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, current.pos(), current.face());
         this.swing(player);
         this.lastTarget = current.pos();

@@ -44,7 +44,7 @@ public final class MacroModule extends Module {
     private boolean handle(final Minecraft client, final int key, final String action, final boolean previous) {
         boolean pressed = InputStates.keyPressed(client, key);
         if (pressed && !previous) {
-            ChatActions.send(client, action);
+            ChatActions.run(client, action);
         }
         return pressed;
     }

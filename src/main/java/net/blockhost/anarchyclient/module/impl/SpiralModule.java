@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 
 public final class SpiralModule extends Module {
 
@@ -33,6 +34,7 @@ public final class SpiralModule extends Module {
     private double cornerZ;
     private int leg;
     private boolean started;
+    private Level level;
 
     public SpiralModule() {
         super("spiral", "Spiral", ModuleCategory.MOVEMENT,
@@ -50,6 +52,11 @@ public final class SpiralModule extends Module {
         LocalPlayer player = client.player;
         if (player == null) {
             return;
+        }
+        if (client.level != this.level) {
+            // A portal, respawn into another dimension or a new server: the old origin means nothing here.
+            this.level = client.level;
+            this.started = false;
         }
         if (!this.started) {
             this.originX = player.getX();
@@ -106,5 +113,6 @@ public final class SpiralModule extends Module {
     @Override
     protected void onDisable() {
         this.started = false;
+        this.level = null;
     }
 }

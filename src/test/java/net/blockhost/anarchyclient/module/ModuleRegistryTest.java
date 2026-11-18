@@ -155,7 +155,6 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("auto_trap").orElseThrow());
         assertNotNull(modules.find("auto_web").orElseThrow());
         assertNotNull(modules.find("bow_aimbot").orElseThrow());
-        assertNotNull(modules.find("criticals").orElseThrow());
         assertNotNull(modules.find("auto_shoot").orElseThrow());
         assertNotNull(modules.find("auto_tnt").orElseThrow());
         assertNotNull(modules.find("auto_wither").orElseThrow());

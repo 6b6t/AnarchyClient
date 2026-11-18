@@ -4,12 +4,15 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerboundAttackPacket;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 
 public final class HitmarkerModule extends Module {
 
@@ -52,16 +55,28 @@ public final class HitmarkerModule extends Module {
                 "Draws an X around your crosshair for a moment each time you hit a living entity. It turns red on a hit that should kill.");
     }
 
+    /**
+     * Reacts to the attack packet that was actually sent. The attack hook runs before modules registered later
+     * (Item Saver, No Interact) can cancel the attack, so it showed markers for hits that never happened.
+     */
     @Override
-    public boolean attackEntity(final Minecraft client, final Player player, final Entity target) {
-        if (target instanceof LivingEntity living && living.isAlive()) {
-            this.hitMillis = System.currentTimeMillis();
-            this.killHit = living.getHealth() + living.getAbsorptionAmount() <= 4.0F;
-            if (this.sound.value()) {
-                player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, 1.6F);
-            }
+    public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        if (packet instanceof ServerboundAttackPacket attack) {
+            MainThread.run(() -> this.onAttack(client, attack.entityId()));
         }
-        return false;
+    }
+
+    private void onAttack(final Minecraft client, final int entityId) {
+        LocalPlayer player = client.player;
+        if (player == null || client.level == null
+                || !(client.level.getEntity(entityId) instanceof LivingEntity living) || !living.isAlive()) {
+            return;
+        }
+        this.hitMillis = System.currentTimeMillis();
+        this.killHit = living.getHealth() + living.getAbsorptionAmount() <= 4.0F;
+        if (this.sound.value()) {
+            player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, 1.6F);
+        }
     }
 
     @Override

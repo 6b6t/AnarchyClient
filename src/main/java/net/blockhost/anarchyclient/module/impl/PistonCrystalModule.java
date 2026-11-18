@@ -19,13 +19,16 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public final class PistonCrystalModule extends Module {
@@ -60,9 +63,13 @@ public final class PistonCrystalModule extends Module {
             .defaultValue(true)
             .description("Mines the redstone block after each blast so the piston can fire again.")
             .build()));
+    /** Ticks a direction that failed is skipped, so the next setup gets a turn instead of the same one forever. */
+    private static final int FAILED_DIRECTION_TICKS = 40;
+
     private Plan plan;
     private Stage stage = Stage.PISTON;
     private int stageTicks;
+    private final Map<Direction, Integer> failedDirections = new EnumMap<>(Direction.class);
 
     public PistonCrystalModule() {
         super("piston_crystal", "Piston Crystal", ModuleCategory.COMBAT,
@@ -72,6 +79,8 @@ public final class PistonCrystalModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        this.failedDirections.replaceAll((direction, ticks) -> ticks - 1);
+        this.failedDirections.values().removeIf(ticks -> ticks <= 0);
         LocalPlayer player = client.player;
         ClientLevel level = client.level;
         if (player == null || level == null || client.gameMode == null || client.gui.screen() != null) {
@@ -106,10 +115,18 @@ public final class PistonCrystalModule extends Module {
         double reach = Math.min(this.range.value(), client.player.blockInteractionRange());
         switch (PistonPlacement.placePiston(client, this, this.plan.piston(), this.plan.pistonFacing(), reach)) {
             case PRESENT -> this.advance(Stage.CRYSTAL);
-            case BLOCKED, MISSING_ITEM -> this.plan = null;
+            case BLOCKED, MISSING_ITEM -> this.failPlan();
             default -> {
             }
         }
+    }
+
+    /** Drops the current setup and skips its direction for a while. */
+    private void failPlan() {
+        if (this.plan != null) {
+            this.failedDirections.put(this.plan.outward(), FAILED_DIRECTION_TICKS);
+        }
+        this.plan = null;
     }
 
     private void placeCrystal(final Minecraft client, final ClientLevel level) {
@@ -120,7 +137,7 @@ public final class PistonCrystalModule extends Module {
         WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, this.plan.crystal().below(),
                 Direction.UP, stack -> stack.is(Items.END_CRYSTAL), this.rotate.value());
         if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.REFUSED) {
-            this.plan = null;
+            this.failPlan();
         }
     }
 
@@ -129,7 +146,7 @@ public final class PistonCrystalModule extends Module {
         this.debugValue("power", result);
         switch (result) {
             case PLACED, PRESENT -> this.advance(Stage.BREAK);
-            case BLOCKED, MISSING_ITEM -> this.plan = null;
+            case BLOCKED, MISSING_ITEM -> this.failPlan();
             default -> {
             }
         }
@@ -146,6 +163,14 @@ public final class PistonCrystalModule extends Module {
             return;
         }
         EndCrystal entity = crystal.orElseThrow();
+        // The crystal's hitbox already overlaps the head cell before the push. Wait until the piston has extended
+        // or the crystal itself stands in the head cell; give up if the push never happens.
+        if (!pushed(level, this.plan, entity)) {
+            if (this.stageTicks > PUSH_TIMEOUT_TICKS) {
+                this.failPlan();
+            }
+            return;
+        }
         if (!CombatTargets.canReachEntity(player, entity)) {
             return;
         }
@@ -165,6 +190,9 @@ public final class PistonCrystalModule extends Module {
         WorldInteraction.breakBlock(client, this, pos, nearestFace(client.player.getEyePosition(), pos));
     }
 
+    /** How long to wait for the piston to push the crystal before trying another setup. */
+    private static final int PUSH_TIMEOUT_TICKS = 10;
+
     private void advance(final Stage next) {
         this.stage = next;
         this.stageTicks = 0;
@@ -176,6 +204,9 @@ public final class PistonCrystalModule extends Module {
         BlockPos feet = target.blockPosition();
         Vec3 eye = player.getEyePosition();
         for (Direction outward : candidates(level, feet, eye)) {
+            if (this.failedDirections.containsKey(outward)) {
+                continue;
+            }
             Plan candidate = Plan.of(feet, outward);
             if (!CombatTargets.canReachBlock(player, candidate.piston(), reach)
                     || !CombatTargets.canReachBlock(player, candidate.crystal().below(), reach)
@@ -222,17 +253,25 @@ public final class PistonCrystalModule extends Module {
             Plan plan = Plan.of(feet, outward);
             BlockState base = level.getBlockState(plan.crystal().below());
             BlockState piston = level.getBlockState(plan.piston());
+            // Vanilla's End Crystal item needs an empty (air) cell; grass, snow or water there refuse it.
             if ((base.is(Blocks.OBSIDIAN) || base.is(Blocks.BEDROCK))
-                    && PistonPlacement.isOpen(level, plan.crystal())
-                    && PistonPlacement.isOpen(level, plan.crystal().above())
+                    && level.getBlockState(plan.crystal()).isAir()
                     && (PistonPlacement.isOpen(level, plan.piston())
-                    || PistonPlacement.isPistonFacing(piston, plan.pistonFacing()))) {
+                    || PistonPlacement.isPistonFacing(piston, plan.pistonFacing()))
+                    && plan.power().stream().anyMatch(power -> PistonPlacement.isOpen(level, power)
+                    || PistonPlacement.existingPower(level, List.of(power)).isPresent())) {
                 directions.add(outward);
             }
         }
         directions.sort(Comparator.comparingDouble(direction ->
                 Vec3.atCenterOf(Plan.of(feet, direction).piston()).distanceToSqr(eye)));
         return directions;
+    }
+
+    static boolean pushed(final BlockGetter level, final Plan plan, final Entity crystal) {
+        BlockState piston = level.getBlockState(plan.piston());
+        return crystal.blockPosition().equals(plan.head())
+                || piston.getBlock() instanceof PistonBaseBlock && piston.getValue(PistonBaseBlock.EXTENDED);
     }
 
     private static Optional<EndCrystal> crystalNear(final ClientLevel level, final BlockPos cell) {
@@ -261,6 +300,7 @@ public final class PistonCrystalModule extends Module {
     @Override
     protected void onDisable() {
         this.resetPlan();
+        this.failedDirections.clear();
         RotationManager.clear(this.id());
     }
 

@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.inventory.InventoryAction;
+import net.blockhost.anarchyclient.inventory.InventoryActionChain;
+import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
+import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
+import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,6 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 public final class MainhandTotemModule extends Module {
@@ -50,12 +57,18 @@ public final class MainhandTotemModule extends Module {
             .defaultValue(true)
             .description("Returns to the previous hotbar slot once you are safe again.")
             .build()));
-    private int previousSlot = -1;
+    private static MainhandTotemModule active;
+    private int heldSlot = -1;
 
     public MainhandTotemModule() {
         super("mainhand_totem", "Mainhand Totem", ModuleCategory.COMBAT,
                 "Switches to a totem of undying in your main hand when you are about to die, so you hold one in each "
                         + "hand together with Auto Totem. Pulls a totem into the hotbar when needed.");
+    }
+
+    @Override
+    protected void onEnable() {
+        active = this;
     }
 
     @Override
@@ -68,18 +81,22 @@ public final class MainhandTotemModule extends Module {
         boolean danger = TotemRiskEstimator.needsTotem(player, client.level, true, false, this.health.value(),
                 this.falling.value() ? 12.0 : Double.MAX_VALUE, false, this.predictExplosions.value(), 8.0);
         if (!danger) {
-            this.restore(player);
+            this.release();
             return;
         }
-        if (isTotem(player.getMainHandItem())) {
-            return;
-        }
-        OptionalInt hotbarTotem = InventoryActions.findHotbarSlot(inventory, MainhandTotemModule::isTotem);
+        OptionalInt hotbarTotem = isTotem(player.getMainHandItem())
+                ? OptionalInt.of(inventory.getSelectedSlot())
+                : InventoryActions.findHotbarSlot(inventory, MainhandTotemModule::isTotem);
         if (hotbarTotem.isPresent()) {
-            this.select(player, hotbarTotem.orElseThrow());
+            // Renewed every tick at life priority, so combat modules' silent swaps cannot take the hand back.
+            // SilentHotbar switches back on its own once this stops, when Switch Back is on.
+            if (SilentHotbar.select(player, this.id(), hotbarTotem.getAsInt(), SilentHotbar.PRIORITY_LIFE, 3,
+                    this.switchBack.value())) {
+                this.heldSlot = hotbarTotem.getAsInt();
+            }
             return;
         }
-        if (!InventoryActions.canUseInventoryMenu(client, player)) {
+        if (!InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
         OptionalInt stored = storageTotemSlot(inventory);
@@ -88,28 +105,24 @@ public final class MainhandTotemModule extends Module {
             return;
         }
         int slot = this.totemSlot.value().intValue() - 1;
-        if (InventoryActions.pickupSwap(client, player, InventoryActions.toInventoryMenuSlot(stored.orElseThrow()),
-                InventoryActions.toInventoryMenuSlot(slot))) {
-            this.select(player, slot);
+        Optional<InventorySlotRef> source = InventorySlots.storageSlot(stored.getAsInt());
+        Optional<InventorySlotRef> target = InventorySlots.storageSlot(slot);
+        if (source.isPresent() && target.isPresent()) {
+            // Through the shared queue, so this never interleaves with Auto Totem's own offhand swap.
+            InventoryActionScheduler.schedule(InventoryActionChain.single(this.id(),
+                    InventoryActionScheduler.PRIORITY_LIFE, 2, InventoryAction.pickupSwap(source.get(), target.get())));
         }
     }
 
-    private void select(final LocalPlayer player, final int slot) {
-        int current = player.getInventory().getSelectedSlot();
-        if (current == slot) {
-            return;
-        }
-        if (this.previousSlot < 0) {
-            this.previousSlot = current;
-        }
-        InventoryActions.selectHotbarSlot(player, slot);
+    private void release() {
+        SilentHotbar.clear(this.id());
+        this.heldSlot = -1;
     }
 
-    private void restore(final LocalPlayer player) {
-        if (this.previousSlot >= 0 && this.switchBack.value() && isTotem(player.getMainHandItem())) {
-            InventoryActions.selectHotbarSlot(player, this.previousSlot);
-        }
-        this.previousSlot = -1;
+    /** The hotbar slot this module is holding a totem in, or -1. Auto Totem leaves that totem alone. */
+    static int heldSlot() {
+        MainhandTotemModule module = active;
+        return module == null ? -1 : module.heldSlot;
     }
 
     /** Finds a totem in the main inventory, skipping the hotbar, armor, and offhand slots. */
@@ -128,6 +141,9 @@ public final class MainhandTotemModule extends Module {
 
     @Override
     protected void onDisable() {
-        this.previousSlot = -1;
+        this.release();
+        if (active == this) {
+            active = null;
+        }
     }
 }

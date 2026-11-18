@@ -8,12 +8,15 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class PortalGodModeModule extends Module {
 
-    private final List<ServerboundAcceptTeleportationPacket> held = new ArrayList<>();
+    /**
+     * Only the latest confirmation: the server re-sends its teleport about once a second while waiting and only
+     * accepts the id of its current one, so keeping every confirmation grew without limit.
+     */
+    private final AtomicReference<ServerboundAcceptTeleportationPacket> held = new AtomicReference<>();
 
     public PortalGodModeModule() {
         super("portal_god_mode", "Portal God Mode", ModuleCategory.MISC,
@@ -24,9 +27,7 @@ public final class PortalGodModeModule extends Module {
     @Override
     public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         if (packet instanceof ServerboundAcceptTeleportationPacket confirm) {
-            synchronized (this.held) {
-                this.held.add(confirm);
-            }
+            this.held.set(confirm);
             return true;
         }
         return false;
@@ -34,30 +35,19 @@ public final class PortalGodModeModule extends Module {
 
     @Override
     public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
-        synchronized (this.held) {
-            this.held.clear();
-        }
+        this.held.set(null);
     }
 
     @Override
     protected void onDisable() {
-        List<ServerboundAcceptTeleportationPacket> packets;
-        synchronized (this.held) {
-            packets = List.copyOf(this.held);
-            this.held.clear();
-        }
+        ServerboundAcceptTeleportationPacket packet = this.held.getAndSet(null);
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
-        if (connection == null) {
-            return;
-        }
-        for (ServerboundAcceptTeleportationPacket packet : packets) {
+        if (packet != null && connection != null) {
             connection.send(packet);
         }
     }
 
     int heldCount() {
-        synchronized (this.held) {
-            return this.held.size();
-        }
+        return this.held.get() == null ? 0 : 1;
     }
 }

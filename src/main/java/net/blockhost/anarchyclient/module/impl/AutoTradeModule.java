@@ -59,7 +59,12 @@ public final class AutoTradeModule extends Module {
             return;
         }
         this.cooldown = this.delay.value().intValue();
-        if (!menu.getSlot(RESULT_SLOT).getItem().isEmpty()) {
+        ItemStack result = menu.getSlot(RESULT_SLOT).getItem();
+        if (!result.isEmpty()) {
+            if (!AutoSmelterModule.hasRoomFor(menu, result)) {
+                this.debugValue("state", "inventory full");
+                return;
+            }
             // Shift-clicking the result repeats the trade until stock or payment runs out.
             client.gameMode.handleContainerInput(menu.containerId, RESULT_SLOT, 0, ContainerInput.QUICK_MOVE, player);
             return;

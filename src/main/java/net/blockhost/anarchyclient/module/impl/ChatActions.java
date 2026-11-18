@@ -10,8 +10,23 @@ public final class ChatActions {
     private ChatActions() {
     }
 
-    /** Sends chat text, or a command when it starts with {@code /}, the way the chat screen would. */
+    /**
+     * Sends chat text, or a server command when it starts with {@code /}. Text that starts with the client command
+     * prefix is sent as chat: generated messages (spammer lines, replies, Swarm actions) must not run client commands.
+     */
     public static void send(final Minecraft client, final String message) {
+        send(client, message, false);
+    }
+
+    /**
+     * Like {@link #send}, but a line that starts with the client command prefix runs that client command, the way
+     * typing it into chat would. Only for actions the player configured themselves (macros, click actions).
+     */
+    public static void run(final Minecraft client, final String message) {
+        send(client, message, true);
+    }
+
+    private static void send(final Minecraft client, final String message, final boolean clientCommands) {
         if (client.getConnection() == null || message == null) {
             return;
         }
@@ -19,8 +34,7 @@ public final class ChatActions {
         if (normalized.isBlank() || normalized.equals("/")) {
             return;
         }
-        if (normalized.startsWith(CommandPrefix.get())) {
-            // A client command (".toggle killaura") in a macro: run it here instead of posting it to public chat.
+        if (clientCommands && normalized.startsWith(CommandPrefix.get())) {
             ClientCommands.execute(client.getConnection(), normalized.substring(1).trim());
         } else if (normalized.startsWith("/")) {
             client.getConnection().sendCommand(normalized.substring(1));

@@ -129,7 +129,9 @@ final class PistonPlacement {
         }
         OptionalInt slot = BlockPlacer.findPlaceableHotbarSlot(player.getInventory(), level, player, pos, PISTONS);
         if (slot.isEmpty()) {
-            return Result.MISSING_ITEM;
+            // A piston in the hotbar that cannot go here means the cell is obstructed (a player or crystal stands
+            // in it), not that pistons ran out.
+            return WorldInteraction.hasHotbarItem(player.getInventory(), PISTONS) ? Result.BLOCKED : Result.MISSING_ITEM;
         }
         if (!SilentHotbar.select(player, owner.id(), slot.orElseThrow(), SilentHotbar.PRIORITY_COMBAT, 3, true)) {
             return Result.WAITING;

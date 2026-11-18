@@ -43,7 +43,7 @@ final class ChatCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        ChatActions.send(client, StringArgumentType.getString(context, "message"));
+        ChatActions.run(client, StringArgumentType.getString(context, "message"));
         return SUCCESS;
     }
 }

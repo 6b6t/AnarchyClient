@@ -53,7 +53,7 @@ public final class EntityListHudModule extends HudElementModule {
             if (entity == client.player || client.player.distanceToSqr(entity) > rangeSqr) {
                 continue;
             }
-            counts.merge(label(entity, this.items.value()), count(entity), Integer::sum);
+            counts.merge(label(entity, this.items.value()), count(entity, this.items.value()), Integer::sum);
         }
         return format(counts, this.maxLines.value().intValue());
     }
@@ -65,8 +65,9 @@ public final class EntityListHudModule extends HudElementModule {
         return entity.getType().getDescription().getString();
     }
 
-    private static int count(final Entity entity) {
-        return entity instanceof ItemEntity item ? item.getItem().getCount() : 1;
+    /** Named item rows count items in the stacks; the shared Item row counts dropped entities. */
+    private static int count(final Entity entity, final boolean itemNames) {
+        return itemNames && entity instanceof ItemEntity item ? item.getItem().getCount() : 1;
     }
 
     /** Sorts entries by count, then name, and adds a summary line when some do not fit. */

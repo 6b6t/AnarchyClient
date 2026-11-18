@@ -34,7 +34,6 @@ import net.blockhost.anarchyclient.module.impl.BowAimbotModule;
 import net.blockhost.anarchyclient.module.impl.BowSpamModule;
 import net.blockhost.anarchyclient.module.impl.BurrowModule;
 import net.blockhost.anarchyclient.module.impl.CrawlTrapModule;
-import net.blockhost.anarchyclient.module.impl.CriticalsModule;
 import net.blockhost.anarchyclient.module.impl.CrystalAuraModule;
 import net.blockhost.anarchyclient.module.impl.CrystalBlockerModule;
 import net.blockhost.anarchyclient.module.impl.HitboxModule;
@@ -97,7 +96,6 @@ final class CombatModules {
         modules.register(new ProjectileAimbotModule());
         modules.register(new ProjectilePuncherModule());
         modules.register(new AutoShootModule());
-        modules.register(new CriticalsModule());
         modules.register(new MaceKillModule());
         modules.register(new AutoAnvilModule());
         modules.register(new AntiAnvilModule());

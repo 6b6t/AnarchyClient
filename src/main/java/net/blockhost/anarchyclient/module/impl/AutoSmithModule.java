@@ -56,8 +56,10 @@ public final class AutoSmithModule extends Module {
 
     /** Returns the menu slot to shift-click next, or -1 when there is nothing left to do. */
     static int nextClick(final SmithingMenu menu) {
-        if (!menu.getSlot(SmithingMenu.RESULT_SLOT).getItem().isEmpty()) {
-            return SmithingMenu.RESULT_SLOT;
+        ItemStack result = menu.getSlot(SmithingMenu.RESULT_SLOT).getItem();
+        if (!result.isEmpty()) {
+            // With a full inventory the shift-click moves nothing, and the next upgrade would have nowhere to go.
+            return AutoSmelterModule.hasRoomFor(menu, result) ? SmithingMenu.RESULT_SLOT : -1;
         }
         int base = inventorySlot(menu, AutoSmithModule::isDiamondGear);
         boolean baseReady = !menu.getSlot(SmithingMenu.BASE_SLOT).getItem().isEmpty();
