@@ -61,6 +61,15 @@ loom {
     }
 }
 
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "anarchyclient-gametest"
+        enableGameTests = false
+        enableClientGameTests = true
+    }
+}
+
 tasks.processResources {
     val modVersion = project.version.toString()
     inputs.property("version", modVersion)

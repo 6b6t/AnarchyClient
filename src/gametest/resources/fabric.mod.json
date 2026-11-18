@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "anarchyclient-gametest",
+  "version": "1.0.0",
+  "name": "AnarchyClient Game Tests",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "net.blockhost.anarchyclient.gametest.PistonCrystalGameTest"
+    ]
+  },
+  "depends": {
+    "anarchyclient": "*"
+  }
+}
