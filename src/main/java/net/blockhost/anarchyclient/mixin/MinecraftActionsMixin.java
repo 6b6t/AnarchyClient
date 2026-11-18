@@ -5,10 +5,12 @@ import net.blockhost.anarchyclient.module.impl.MultiActionsModule;
 import net.blockhost.anarchyclient.module.impl.NoMiningTraceModule;
 import net.blockhost.anarchyclient.world.MiningControl;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -24,12 +26,40 @@ public abstract class MinecraftActionsMixin {
     @Shadow
     public HitResult hitResult;
 
+    @Shadow
+    @Final
+    public Options options;
+
+    @Shadow
+    public LocalPlayer player;
+
+    @Shadow
+    private boolean startAttack() {
+        throw new AssertionError();
+    }
+
     @Unique
     private boolean anarchyclient$holdItemUse;
 
     @Inject(method = "handleKeybinds", at = @At("HEAD"))
     private void anarchyclient$checkItemUseHold(final CallbackInfo info) {
         this.anarchyclient$holdItemUse = ItemUseControl.suppressVanillaRelease();
+    }
+
+    /**
+     * Multi Actions: vanilla throws attack clicks away while an item is in use, so run them first. Only the
+     * isHandsBusy check in startAttack is bypassed further down.
+     */
+    @Inject(
+            method = "handleKeybinds",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z", ordinal = 0)
+    )
+    private void anarchyclient$attackWhileUsing(final CallbackInfo info) {
+        if (this.player != null && this.player.isUsingItem() && MultiActionsModule.attackWhileUsing()) {
+            while (this.options.keyAttack.consumeClick()) {
+                this.startAttack();
+            }
+        }
     }
 
     @Redirect(

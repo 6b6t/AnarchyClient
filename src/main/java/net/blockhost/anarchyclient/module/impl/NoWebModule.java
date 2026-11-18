@@ -15,13 +15,12 @@ import java.util.List;
 public final class NoWebModule extends Module {
 
     private static boolean active;
-    private static String activeMode = "Ignore";
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
             .name("Mode")
             .defaultValue("Ignore")
-            .addAllOptions(List.of("Ignore", "Motion", "Vanilla"))
+            .addAllOptions(List.of("Ignore", "Motion"))
             .build()));
     private final NumberSetting motionSpeed = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("motion_speed")
@@ -40,12 +39,10 @@ public final class NoWebModule extends Module {
     @Override
     protected void onEnable() {
         active = true;
-        activeMode = this.mode.value();
     }
 
     @Override
     public void tick(final Minecraft client) {
-        activeMode = this.mode.value();
         LocalPlayer player = client.player;
         if (player == null || client.level == null || !"Motion".equals(this.mode.value()) || !insideWeb(client, player)) {
             return;
@@ -59,11 +56,14 @@ public final class NoWebModule extends Module {
     @Override
     protected void onDisable() {
         active = false;
-        activeMode = "Ignore";
     }
 
+    /**
+     * Both modes skip vanilla's cobweb slowdown. Motion then sets its own speed; vanilla would otherwise scale
+     * that down to a quarter, and to a twentieth upward.
+     */
     public static boolean shouldIgnore(final BlockState state) {
-        return active && "Ignore".equals(activeMode) && state != null && state.is(Blocks.COBWEB);
+        return active && state != null && state.is(Blocks.COBWEB);
     }
 
     private static boolean insideWeb(final Minecraft client, final LocalPlayer player) {

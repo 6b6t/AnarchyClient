@@ -242,7 +242,8 @@ public final class SmartEatModule extends Module {
 
     private ConsumableChoice pickChoice(final LocalPlayer player, final Set<String> blacklist) {
         float health = player.getHealth();
-        if (this.allowSoup.value() && health <= this.soupHealth.value()) {
+        // Vanilla refuses most food at full hunger; picking it anyway would swap slots back and forth.
+        if (this.allowSoup.value() && health <= this.soupHealth.value() && player.canEat(false)) {
             return new ConsumableChoice(ConsumableKind.SOUP, SmartEatModule::isSoup);
         }
         if (this.allowGapples.value() && health <= this.gappleHealth.value()) {
@@ -255,7 +256,8 @@ public final class SmartEatModule extends Module {
                 this.healthThreshold.value(),
                 ThresholdMode.fromSetting(this.thresholdMode.value())
         )) {
-            return new ConsumableChoice(ConsumableKind.FOOD, stack -> isFood(stack, false, blacklist));
+            return new ConsumableChoice(ConsumableKind.FOOD,
+                    stack -> isFood(stack, false, blacklist) && canEatNow(player.canEat(false), stack));
         }
         return null;
     }
@@ -303,6 +305,12 @@ public final class SmartEatModule extends Module {
                 2,
                 InventoryAction.pickupSwap(source, target)
         ));
+    }
+
+    /** Whether vanilla lets the player start eating {@code stack}, given whether they are hungry at all. */
+    static boolean canEatNow(final boolean hungry, final ItemStack stack) {
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        return food != null && (hungry || food.canAlwaysEat());
     }
 
     static boolean shouldEat(final int hunger, final float health, final double hungerThreshold,

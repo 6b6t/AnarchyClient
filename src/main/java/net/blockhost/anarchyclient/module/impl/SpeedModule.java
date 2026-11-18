@@ -44,7 +44,11 @@ public final class SpeedModule extends Module {
         if (player == null
                 || !MovementVelocity.moving(client)
                 || player.isInWater()
-                || player.isInLava()) {
+                || player.isInLava()
+                || player.isFallFlying()
+                || player.getAbilities().flying
+                || player.isPassenger()
+                || player.onClimbable()) {
             return;
         }
         if ((this.groundOnly.value() || "Ground".equals(this.mode.value())) && !player.onGround()) {

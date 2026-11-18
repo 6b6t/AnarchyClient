@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.mixin;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.event.ItemStopUseEvent;
 import net.blockhost.anarchyclient.module.impl.AutoSprintModule;
+import net.blockhost.anarchyclient.module.impl.NoSlowModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
@@ -33,5 +34,14 @@ public abstract class LocalPlayerMixin {
     )
     private boolean anarchyclient$omniSprintImpulse(final ClientInput input) {
         return input.hasForwardImpulse() || AutoSprintModule.omniSprintImpulse((LocalPlayer) (Object) this);
+    }
+
+    // No Slow: vanilla scales the input down while using an item after the input is read, so skip that here.
+    @Redirect(
+            method = "modifyInput",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z")
+    )
+    private boolean anarchyclient$noSlowItemUse(final LocalPlayer player) {
+        return player.isUsingItem() && !NoSlowModule.ignoresItemSlowdown(player);
     }
 }

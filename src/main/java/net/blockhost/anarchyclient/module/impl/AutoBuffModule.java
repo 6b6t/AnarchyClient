@@ -83,14 +83,13 @@ public final class AutoBuffModule extends Module {
         if (effect == null) {
             return;
         }
-        OptionalInt slot = AutoPotModule.findPotionSlot(player.getInventory(), effect, true);
+        OptionalInt slot = this.splashOnly.value()
+                ? AutoPotModule.findSplashPotionSlot(player.getInventory(), effect)
+                : AutoPotModule.findPotionSlot(player.getInventory(), effect, true);
         if (slot.isEmpty()) {
             return;
         }
         boolean splash = player.getInventory().getItem(slot.orElseThrow()).is(Items.SPLASH_POTION);
-        if (this.splashOnly.value() && !splash) {
-            return;
-        }
         if (!SilentHotbar.select(player, this.id(), slot.orElseThrow(), SilentHotbar.PRIORITY_COMBAT,
                 SLOT_HOLD_TICKS, true)) {
             return;

@@ -1,11 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.mixin.ClientInputAccessor;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -91,13 +89,13 @@ public final class NoSlowModule extends Module {
         }
     }
 
-    @Override
-    public void updateInput(final Minecraft client, final ClientInput input) {
-        LocalPlayer player = client.player;
-        if (player == null || input == null || !player.isUsingItem() || !this.shouldBypass(player.getUseItem())) {
-            return;
-        }
-        ((ClientInputAccessor) input).anarchyclient$setMoveVector(InputStates.moveVector(input.keyPresses));
+    /**
+     * Whether vanilla should skip the item-use slowdown, which {@code LocalPlayer.modifyInput} applies after the
+     * input is read.
+     */
+    public static boolean ignoresItemSlowdown(final LocalPlayer player) {
+        NoSlowModule module = active;
+        return module != null && player.isUsingItem() && module.shouldBypass(player.getUseItem());
     }
 
     public static boolean shouldIgnoreStuckBlock(final BlockState state) {

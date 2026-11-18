@@ -67,7 +67,8 @@ public final class BoostModule extends Module {
             return;
         }
         Vec3 velocity = boostVector(player.getViewVector(0.0F), this.strength.value());
-        player.push(velocity.x, velocity.y, velocity.z);
+        // Not push(): No Push cancels pushes on the local player.
+        player.setDeltaMovement(player.getDeltaMovement().add(velocity));
     }
 
     static Vec3 boostVector(final Vec3 look, final double strength) {

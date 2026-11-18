@@ -180,6 +180,17 @@ public final class AutoPotModule extends Module {
         return OptionalInt.empty();
     }
 
+    /** Like {@link #findPotionSlot}, but only splash potions, so an earlier drinkable one does not hide them. */
+    static OptionalInt findSplashPotionSlot(final Inventory inventory, final Holder<MobEffect> effect) {
+        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(Items.SPLASH_POTION) && matchesPotion(stack, effect, true)) {
+                return OptionalInt.of(slot);
+            }
+        }
+        return OptionalInt.empty();
+    }
+
     static boolean matchesPotion(final ItemStack stack, final Holder<MobEffect> effect, final boolean allowSplash) {
         if (stack.isEmpty()) {
             return false;

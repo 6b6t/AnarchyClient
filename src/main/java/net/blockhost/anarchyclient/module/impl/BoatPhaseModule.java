@@ -4,6 +4,8 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -22,6 +24,15 @@ public final class BoatPhaseModule extends Module {
     public BoatPhaseModule() {
         super("boat_phase", "Boat Phase", ModuleCategory.MOVEMENT,
                 "Disables collision on your ridden vehicle and steers it with movement, jump, and sneak keys so it passes through blocks.");
+    }
+
+    /** Sneak descends instead of dismounting: vanilla and the server stop riding when the input has shift. */
+    @Override
+    public void updateInput(final Minecraft client, final ClientInput input) {
+        LocalPlayer player = client.player;
+        if (player != null && input == player.input && player.isPassenger()) {
+            input.keyPresses = InputStates.withShift(input.keyPresses, false);
+        }
     }
 
     @Override

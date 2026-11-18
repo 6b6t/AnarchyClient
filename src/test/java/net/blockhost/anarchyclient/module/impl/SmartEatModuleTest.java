@@ -91,4 +91,12 @@ class SmartEatModuleTest {
         assertEquals(InteractionHand.OFF_HAND, SmartEatModule.soupHand(sword, stew));
         assertNull(SmartEatModule.soupHand(sword, ItemStack.EMPTY));
     }
+
+    @Test
+    void onlyAlwaysEdibleFoodWorksAtFullHunger() {
+        assertFalse(SmartEatModule.canEatNow(false, new ItemStack(Items.BREAD)));
+        assertTrue(SmartEatModule.canEatNow(false, new ItemStack(Items.GOLDEN_APPLE)));
+        assertTrue(SmartEatModule.canEatNow(true, new ItemStack(Items.BREAD)));
+        assertFalse(SmartEatModule.canEatNow(true, new ItemStack(Items.STONE)));
+    }
 }

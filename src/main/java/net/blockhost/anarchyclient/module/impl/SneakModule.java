@@ -38,7 +38,8 @@ public final class SneakModule extends Module {
     @Override
     public void updateInput(final Minecraft client, final ClientInput input) {
         LocalPlayer player = client.player;
-        if (player == null || player.input != input) {
+        if (player == null || player.input != input || player.isPassenger()) {
+            // While riding, shift means dismount.
             return;
         }
         if (this.pauseInGui.value() && client.gui.screen() != null) {
