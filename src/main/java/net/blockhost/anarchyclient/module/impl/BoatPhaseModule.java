@@ -42,6 +42,10 @@ public final class BoatPhaseModule extends Module {
             return;
         }
         Entity vehicle = client.player.getVehicle();
+        if (vehicle != this.lastVehicle) {
+            // Switching straight to another vehicle never passes through "no vehicle"; restore the old one.
+            clearVehicle();
+        }
         this.lastVehicle = vehicle;
         vehicle.noPhysics = true;
         Vec3 horizontal = MovementVelocity.fromKeys(client, client.player.getYRot(), this.speed.value());

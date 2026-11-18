@@ -25,6 +25,7 @@ public final class FreecamModule extends Module {
 
     private Vec3 position;
     private Vec3 previousPosition;
+    private LocalPlayer anchorPlayer;
     private Input cameraInput = Input.EMPTY;
 
     public FreecamModule() {
@@ -34,10 +35,14 @@ public final class FreecamModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null) {
+        if (player == null || player != this.anchorPlayer) {
+            // Respawn and portals replace the player; start again from the new body, not the old coordinates.
             this.position = null;
             this.previousPosition = null;
-            return;
+            this.anchorPlayer = player;
+            if (player == null) {
+                return;
+            }
         }
         if (this.position == null) {
             this.position = player.getEyePosition();
@@ -93,6 +98,7 @@ public final class FreecamModule extends Module {
         }
         this.position = null;
         this.previousPosition = null;
+        this.anchorPlayer = null;
         this.cameraInput = Input.EMPTY;
     }
 

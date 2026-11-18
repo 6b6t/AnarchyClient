@@ -56,6 +56,8 @@ public final class ChestSwapModule extends Module {
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
         if (player == null) {
+            // Enabled with no world (for example from config at startup): nothing to swap.
+            this.enabled(false);
             return;
         }
         boolean wearingGlider = isGlider(player.getItemBySlot(EquipmentSlot.CHEST));

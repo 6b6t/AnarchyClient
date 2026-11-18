@@ -132,6 +132,13 @@ class TextValueSettingsTest {
                 new SettingColor(0, 0, 255, 64)
         ), list.value());
         assertEquals("#ff0000,#00ff00,#0000ff40", list.valueString());
+
+        list.valueFromString("#ff0000, #00ff00");
+        assertEquals(List.of(SettingColor.rgb(255, 0, 0), SettingColor.rgb(0, 255, 0)), list.value());
+        list.valueFromString("255, 0, 0");
+        assertEquals(List.of(SettingColor.rgb(255, 0, 0)), list.value());
+        list.valueFromString("255, 0, 0; 0, 0, 255");
+        assertEquals(List.of(SettingColor.rgb(255, 0, 0), SettingColor.rgb(0, 0, 255)), list.value());
         assertThrows(IllegalArgumentException.class, () -> setting.valueFromString("not-a-color"));
     }
 }

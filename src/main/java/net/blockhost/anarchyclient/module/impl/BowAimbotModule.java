@@ -82,6 +82,8 @@ public final class BowAimbotModule extends Module {
                 RotationTurnMode.STEPPED,
                 true
         )), () -> RotationManager.clear(this.id()));
+        // A request does nothing until it is applied; nothing else applies it for this module.
+        RotationManager.apply(player);
     }
 
     static double arrowVelocity(final ItemStack stack, final int ticksUsing) {

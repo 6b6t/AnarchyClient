@@ -35,13 +35,45 @@ public final class ColorListSetting extends Setting<List<SettingColor>> implemen
             return;
         }
         List<SettingColor> colors = new ArrayList<>();
-        for (String token : value.split("[;\\s]+|,(?=#)")) {
-            String trimmed = token.trim();
-            if (!trimmed.isBlank()) {
-                colors.add(SettingColor.parse(trimmed));
-            }
+        for (String token : colorTokens(value)) {
+            colors.add(SettingColor.parse(token));
         }
         this.value(colors);
+    }
+
+    /**
+     * Splits a list of colors on semicolons, on spaces, and on commas before a {@code #}, so {@code #ff0000,
+     * #00ff00} and {@code #ff0000,#00ff00 0,0,255} both work. Semicolons separate RGB colors written with spaces
+     * ({@code 255, 0, 0; 0, 0, 255}), and a single such color works on its own.
+     */
+    static List<String> colorTokens(final String value) {
+        String trimmed = value.trim();
+        if (trimmed.contains(";")) {
+            return split(trimmed, ";");
+        }
+        if (!trimmed.contains("#")) {
+            try {
+                SettingColor.parse(trimmed);
+                return List.of(trimmed);
+            } catch (IllegalArgumentException exception) {
+                // Not a single color: split it as a list below.
+            }
+        }
+        return split(trimmed, "\\s+|,\\s*(?=#)");
+    }
+
+    private static List<String> split(final String value, final String separator) {
+        List<String> tokens = new ArrayList<>();
+        for (String token : value.split(separator)) {
+            String cleaned = token.trim();
+            if (cleaned.endsWith(",")) {
+                cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
+            }
+            if (!cleaned.isBlank()) {
+                tokens.add(cleaned);
+            }
+        }
+        return tokens;
     }
 
     @Override

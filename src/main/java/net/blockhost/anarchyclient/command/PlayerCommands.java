@@ -50,6 +50,8 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
  */
 final class PlayerCommands {
 
+    /** Farthest a single move packet may go on a vanilla server before it sets the player back. */
+    static final double MAX_MOVE_DISTANCE = 10.0;
     private static final int TRACKED_INVENTORY_LIMIT = 10;
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(15);
 
@@ -275,7 +277,9 @@ final class PlayerCommands {
             ));
         }
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(pos, true, client.player.horizontalCollision));
-        context.getSource().sendFeedback(Component.literal("Sent " + packets + " damage packet pairs."));
+        // Vanilla 26.3 servers reset fall distance on every upward move, so this only works on servers that do not.
+        context.getSource().sendFeedback(Component.literal("Sent " + packets
+                + " fall packet pairs. Vanilla servers reset fall distance on upward moves, so they deal no damage there."));
         return SUCCESS;
     }
 
@@ -298,11 +302,34 @@ final class PlayerCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
+        if (!withinMoveLimit(context, client.player.position(), target)) {
+            return 0;
+        }
         client.player.absSnapTo(target.x, target.y, target.z);
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, client.player.onGround(), client.player.horizontalCollision));
-        context.getSource().sendFeedback(Component.literal("Moved to "
-                + formatCoordinate(target.x) + ", " + formatCoordinate(target.y) + ", " + formatCoordinate(target.z) + "."));
+        context.getSource().sendFeedback(Component.literal("Sent a move to "
+                + formatCoordinate(target.x) + ", " + formatCoordinate(target.y) + ", " + formatCoordinate(target.z)
+                + ". The server can still set you back."));
         return SUCCESS;
+    }
+
+    /**
+     * A vanilla server sets you back when one move packet goes more than 10 blocks past your velocity. Refuse such
+     * moves up front instead of reporting a move that will not stick.
+     */
+    private static boolean withinMoveLimit(final CommandContext<FabricClientCommandSource> context, final Vec3 from,
+                                           final Vec3 to) {
+        double distance = from.distanceTo(to);
+        if (exceedsMoveLimit(distance)) {
+            context.getSource().sendError(Component.literal("That is " + formatCoordinate(distance)
+                    + " blocks; the server only accepts moves of up to " + (int) MAX_MOVE_DISTANCE + " blocks."));
+            return false;
+        }
+        return true;
+    }
+
+    static boolean exceedsMoveLimit(final double distance) {
+        return distance > MAX_MOVE_DISTANCE;
     }
 
     private static String formatCoordinate(final double value) {
@@ -329,6 +356,9 @@ final class PlayerCommands {
         double x = pos.x;
         double y = pos.y;
         double z = pos.z;
+        if (!withinMoveLimit(context, client.player.position(), pos)) {
+            return 0;
+        }
         if (includeRotation) {
             float yaw = FloatArgumentType.getFloat(context, "yaw");
             float pitch = FloatArgumentType.getFloat(context, "pitch");

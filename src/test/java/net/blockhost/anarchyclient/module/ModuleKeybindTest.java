@@ -6,8 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModuleKeybindTest {
 
@@ -56,5 +59,11 @@ class ModuleKeybindTest {
         ModuleKeybind loaded = new ModuleKeybind(InputConstants.KEY_A, ModuleBindAction.TOGGLE);
         loaded.fromJson(ModuleKeybind.unbound().toJson());
         assertFalse(loaded.bound());
+    }
+
+    @Test
+    void rejectsUnknownBindActionsWhenParsedStrictly() {
+        assertEquals(Optional.of(ModuleBindAction.HOLD), ModuleBindAction.tryParse(" Hold "));
+        assertTrue(ModuleBindAction.tryParse("hodl").isEmpty());
     }
 }

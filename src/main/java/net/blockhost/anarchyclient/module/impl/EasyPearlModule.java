@@ -6,6 +6,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 
@@ -23,6 +24,11 @@ public final class EasyPearlModule extends Module {
             .build()));
     private boolean pending;
 
+    /** How long a press waits for a usable pearl (for example while a screen closes) before giving up. */
+    private static final int ARMED_TICKS = 20;
+
+    private int ticksLeft;
+
     public EasyPearlModule() {
         super("easy_pearl", "Easy Pearl", ModuleCategory.PLAYER,
                 "Throws an ender pearl from either hand at a set pitch with one keypress, then turns itself off.");
@@ -31,12 +37,23 @@ public final class EasyPearlModule extends Module {
     @Override
     protected void onEnable() {
         this.pending = true;
+        this.ticksLeft = ARMED_TICKS;
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (!this.pending || player == null || client.gameMode == null || client.gui.screen() != null) {
+        // A one-shot throw must not stay armed: with no world (enabled from config at startup), or once the short
+        // window passes without a usable pearl, turn off instead of throwing a pearl picked up much later.
+        if (!this.pending || player == null || client.gameMode == null || --this.ticksLeft < 0) {
+            if (player != null && this.pending) {
+                player.sendSystemMessage(Component.literal("Easy Pearl: no ender pearl to throw."));
+            }
+            this.pending = false;
+            this.enabled(false);
+            return;
+        }
+        if (client.gui.screen() != null) {
             return;
         }
         Optional<InteractionHand> hand = SilentHotbar.usableHand(player, this.id(),

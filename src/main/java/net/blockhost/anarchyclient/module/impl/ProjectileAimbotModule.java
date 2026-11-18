@@ -61,6 +61,8 @@ public final class ProjectileAimbotModule extends Module {
                 RotationTurnMode.STEPPED,
                 true
         )), () -> RotationManager.clear(this.id()));
+        // A request does nothing until it is applied; nothing else applies it for this module.
+        RotationManager.apply(player);
     }
 
     static boolean isProjectile(final ItemStack stack) {

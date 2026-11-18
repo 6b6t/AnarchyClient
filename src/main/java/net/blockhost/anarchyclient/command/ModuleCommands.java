@@ -25,6 +25,7 @@ import org.lwjgl.sdl.SDLScancode;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
@@ -185,8 +186,14 @@ final class ModuleCommands {
     }
 
     private static int bindModule(final CommandContext<FabricClientCommandSource> context) {
-        ModuleBindAction action = ModuleBindAction.parse(StringArgumentType.getString(context, "action"));
-        return bindModule(context, action);
+        String name = StringArgumentType.getString(context, "action");
+        Optional<ModuleBindAction> action = ModuleBindAction.tryParse(name);
+        if (action.isEmpty()) {
+            context.getSource().sendError(Component.literal("Unknown bind action '" + name
+                    + "'. Use toggle, hold, or smart."));
+            return 0;
+        }
+        return bindModule(context, action.get());
     }
 
     private static int bindModule(final CommandContext<FabricClientCommandSource> context, final ModuleBindAction action) {
@@ -329,8 +336,10 @@ final class ModuleCommands {
     private static CompletableFuture<Suggestions> suggestSettingValues(final CommandContext<FabricClientCommandSource> context,
                                                                       final SuggestionsBuilder builder) {
         Module module = AnarchyClient.MODULES.find(StringArgumentType.getString(context, "module")).orElse(null);
+        String typed = StringArgumentType.getString(context, "setting");
+        // Match aliases too, like the set command itself does.
         Setting<?> setting = module == null ? null : module.settings().stream()
-                .filter(candidate -> candidate.id().equals(StringArgumentType.getString(context, "setting")))
+                .filter(candidate -> candidate.id().equals(typed) || candidate.aliases().contains(typed))
                 .findFirst()
                 .orElse(null);
         if (setting instanceof BooleanSetting) {
