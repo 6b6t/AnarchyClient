@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.gametest;
 
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 
 /** Anti Quit asks before Save and Quit leaves the world, and No keeps the player in it. */
-public final class AntiQuitGameTest implements FabricClientGameTest {
+public final class AntiQuitGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.arena(context, world);
             GameTestSupport.enable(context, "anti_quit", true);

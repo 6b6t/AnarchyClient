@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "net.blockhost.anarchyclient.gametest.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "ChatComponentAccessor",
+    "EntityAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

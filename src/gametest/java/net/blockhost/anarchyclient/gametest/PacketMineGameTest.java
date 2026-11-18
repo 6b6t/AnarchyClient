@@ -2,7 +2,6 @@ package net.blockhost.anarchyclient.gametest;
 
 import com.google.gson.JsonPrimitive;
 import net.blockhost.anarchyclient.module.DebugValueRegistry;
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
@@ -11,10 +10,10 @@ import net.minecraft.core.BlockPos;
  * Packet Mine's Progress mode mines a clicked obsidian block in the background while the player
  * looks away and holds dirt, and finishes it with the pickaxe from another hotbar slot.
  */
-public final class PacketMineGameTest implements FabricClientGameTest {
+public final class PacketMineGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos block = arena.origin().offset(2, 1, 0);

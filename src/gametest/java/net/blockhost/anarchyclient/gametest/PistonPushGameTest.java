@@ -1,7 +1,6 @@
 package net.blockhost.anarchyclient.gametest;
 
 import net.blockhost.anarchyclient.module.DebugValueRegistry;
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
@@ -10,10 +9,10 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Piston Push places a piston at the target's head height and powers it toward the target. */
-public final class PistonPushGameTest implements FabricClientGameTest {
+public final class PistonPushGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos target = arena.origin().offset(3, 0, 0);

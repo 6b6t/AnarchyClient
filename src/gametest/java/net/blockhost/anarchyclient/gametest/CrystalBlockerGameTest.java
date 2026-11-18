@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.gametest;
 
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
@@ -11,12 +10,12 @@ import net.minecraft.world.level.block.Blocks;
  * Crystal Blocker fills the crystal spots around a player standing on an obsidian floor while an
  * enemy is near, and never builds inside the player.
  */
-public final class CrystalBlockerGameTest implements FabricClientGameTest {
+public final class CrystalBlockerGameTest implements GameScenario {
 
     private static final int REQUIRED_BLOCKS = 4;
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos feet = arena.origin();

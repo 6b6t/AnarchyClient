@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.gametest;
 
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.world.item.Items;
@@ -9,10 +8,10 @@ import net.minecraft.world.item.Items;
  * Mainhand Totem pulls a totem from storage into the totem slot and holds it at low health, then
  * returns to the previous slot once the player is healed.
  */
-public final class MainhandTotemGameTest implements FabricClientGameTest {
+public final class MainhandTotemGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             arena.hotbar(0, "dirt");

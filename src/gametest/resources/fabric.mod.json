@@ -6,17 +6,13 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "net.blockhost.anarchyclient.gametest.PistonCrystalGameTest",
-      "net.blockhost.anarchyclient.gametest.PistonPushGameTest",
-      "net.blockhost.anarchyclient.gametest.PacketMineGameTest",
-      "net.blockhost.anarchyclient.gametest.AutoSmithGameTest",
-      "net.blockhost.anarchyclient.gametest.AntiQuitGameTest",
-      "net.blockhost.anarchyclient.gametest.HoleSnapGameTest",
-      "net.blockhost.anarchyclient.gametest.MainhandTotemGameTest",
-      "net.blockhost.anarchyclient.gametest.CrystalBlockerGameTest"
+      "net.blockhost.anarchyclient.gametest.AnarchyClientGameTests"
     ]
   },
   "depends": {
     "anarchyclient": "*"
-  }
+  },
+  "mixins": [
+    "anarchyclient-gametest.mixins.json"
+  ]
 }

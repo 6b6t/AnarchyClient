@@ -1,7 +1,6 @@
 package net.blockhost.anarchyclient.gametest;
 
 import net.blockhost.anarchyclient.module.DebugValueRegistry;
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
@@ -15,12 +14,12 @@ import org.slf4j.LoggerFactory;
  * block west of T at head height, the piston one block further west on an obsidian support, and
  * the player stands two blocks south of the piston, within reach of the pushed crystal.
  */
-public final class PistonCrystalGameTest implements FabricClientGameTest {
+public final class PistonCrystalGameTest implements GameScenario {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PistonCrystalGameTest.class);
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos target = arena.origin().offset(3, 0, 0);

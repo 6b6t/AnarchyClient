@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.gametest;
 
 import com.google.gson.JsonPrimitive;
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.core.BlockPos;
 
 /** Hole Snap pulls a player standing on a surround wall down into the hole next to it. */
-public final class HoleSnapGameTest implements FabricClientGameTest {
+public final class HoleSnapGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos hole = arena.origin().offset(3, 0, 0);

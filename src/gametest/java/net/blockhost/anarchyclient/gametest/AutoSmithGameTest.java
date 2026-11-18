@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.gametest;
 
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
@@ -12,10 +11,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 /** Auto Smith upgrades a diamond sword to netherite once a smithing table is open. */
-public final class AutoSmithGameTest implements FabricClientGameTest {
+public final class AutoSmithGameTest implements GameScenario {
 
     @Override
-    public void runTest(final ClientGameTestContext context) {
+    public void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos table = arena.origin().offset(2, 0, 0);

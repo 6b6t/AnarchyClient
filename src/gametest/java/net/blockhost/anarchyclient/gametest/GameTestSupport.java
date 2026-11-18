@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.gametest;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.gametest.mixin.EntityAccessor;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -16,6 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -83,6 +85,14 @@ final class GameTestSupport {
         if (!condition) {
             throw new AssertionError(message);
         }
+    }
+
+    /**
+     * Clears the short invulnerability after a hit. Stand-in players never tick, so it would never
+     * wear off by itself.
+     */
+    static void resetInvulnerability(final Entity entity) {
+        ((EntityAccessor) entity).anarchyclientGametest$setInvulnerableTime(0);
     }
 
     /** The target's health plus absorption, or -1 when it is gone. Call it on the server thread. */
