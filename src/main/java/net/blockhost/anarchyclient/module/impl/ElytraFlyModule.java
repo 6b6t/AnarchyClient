@@ -69,10 +69,10 @@ public final class ElytraFlyModule extends Module {
         }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.horizontalSpeed.value());
         double y = this.preserveY.value() ? player.getDeltaMovement().y : 0.0;
-        if (client.options.keyJump.isDown()) {
+        if (MovementKeys.jump(client)) {
             y += this.verticalSpeed.value();
         }
-        if (client.options.keyShift.isDown()) {
+        if (MovementKeys.sneak(client)) {
             y -= this.verticalSpeed.value();
         }
         switch (this.mode.value()) {

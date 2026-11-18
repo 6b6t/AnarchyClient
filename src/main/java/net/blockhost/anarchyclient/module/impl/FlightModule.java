@@ -67,10 +67,10 @@ public final class FlightModule extends Module {
             case "Damage" -> player.hurtTime > 0 ? this.vertical.value() : -0.02;
             default -> 0.0;
         };
-        if (client.options.keyJump.isDown()) {
+        if (MovementKeys.jump(client)) {
             y += this.vertical.value();
         }
-        if (client.options.keyShift.isDown()) {
+        if (MovementKeys.sneak(client)) {
             y -= this.vertical.value();
         }
         player.setDeltaMovement(horizontalVelocity.x, y, horizontalVelocity.z);

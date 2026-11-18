@@ -6,7 +6,6 @@ import net.blockhost.anarchyclient.module.impl.AntiAnchorModule;
 import net.blockhost.anarchyclient.module.impl.AntiAnvilModule;
 import net.blockhost.anarchyclient.module.impl.AntiBedModule;
 import net.blockhost.anarchyclient.module.impl.AntiBotModule;
-import net.blockhost.anarchyclient.module.impl.AntiCrashModule;
 import net.blockhost.anarchyclient.module.impl.AntiSpawnpointModule;
 import net.blockhost.anarchyclient.module.impl.ArrowDamageModule;
 import net.blockhost.anarchyclient.module.impl.ArrowDodgeModule;
@@ -119,6 +118,5 @@ final class CombatModules {
         modules.register(new AutoWebModule());
         modules.register(new VehicleOneHitModule());
         modules.register(new AntiSpawnpointModule());
-        modules.register(new AntiCrashModule());
     }
 }

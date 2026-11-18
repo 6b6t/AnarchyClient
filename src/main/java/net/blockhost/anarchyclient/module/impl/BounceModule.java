@@ -26,7 +26,7 @@ public final class BounceModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !player.onGround() || client.options.keyShift.isDown()) {
+        if (player == null || !player.onGround() || MovementKeys.sneak(client)) {
             return;
         }
         Vec3 movement = player.getDeltaMovement();

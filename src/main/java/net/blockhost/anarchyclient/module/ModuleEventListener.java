@@ -37,6 +37,10 @@ import net.minecraft.network.protocol.Packet;
 /**
  * Forwards events to one module while it is enabled.
  *
+ * <p>Once a module cancels an event, later modules no longer see it ({@code handleCancelled = false}).
+ * LambdaEvents would otherwise keep delivering it, so a module could act on, or re-inject, a packet another
+ * module already dropped.
+ *
  * <p>The module manager registers one listener per module at registration time, so dispatch follows
  * registry order no matter when modules are enabled.
  */
@@ -64,7 +68,7 @@ public final class ModuleEventListener {
         this.module.updateInput(event.client(), event.input());
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handlePreventEdgeFall(final PreventEdgeFallEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -74,7 +78,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleMouseClick(final MouseClickEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -84,7 +88,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleAttackEntity(final AttackEntityEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -94,7 +98,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleBlockAttack(final BlockAttackEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -169,7 +173,7 @@ public final class ModuleEventListener {
         this.module.blockBreakingProgress(event.client(), event.breakerId(), event.pos(), event.progress());
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleBlockInteract(final BlockInteractEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -179,7 +183,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleEntityInteract(final EntityInteractEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -189,7 +193,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleItemUse(final ItemUseEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -207,7 +211,7 @@ public final class ModuleEventListener {
         this.module.itemStopUse(event.client(), event.hand(), event.stack(), event.remainingTicks());
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleOpenScreen(final OpenScreenEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -217,7 +221,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleMouseScroll(final MouseScrollInputEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -227,7 +231,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handleParticle(final ParticleEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -287,7 +291,7 @@ public final class ModuleEventListener {
         this.module.soundPacket(event.client(), event.packet());
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handlePacketReceive(final PacketReceiveEvent event) {
         if (!this.module.enabled()) {
             return;
@@ -297,7 +301,7 @@ public final class ModuleEventListener {
         }
     }
 
-    @EventHandler
+    @EventHandler(handleCancelled = false)
     public void handlePacketSend(final PacketSendEvent event) {
         if (!this.module.enabled()) {
             return;

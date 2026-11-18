@@ -26,7 +26,7 @@ public final class FastClimbModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !player.onClimbable() || !client.options.keyUp.isDown()) {
+        if (player == null || !player.onClimbable() || !MovementKeys.forward(client)) {
             return;
         }
         Vec3 velocity = player.getDeltaMovement();

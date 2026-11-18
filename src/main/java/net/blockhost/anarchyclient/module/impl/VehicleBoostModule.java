@@ -25,7 +25,7 @@ public final class VehicleBoostModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.player.getVehicle() == null || !client.options.keyUp.isDown()) {
+        if (client.player == null || client.player.getVehicle() == null || !MovementKeys.forward(client)) {
             return;
         }
         Entity vehicle = client.player.getVehicle();

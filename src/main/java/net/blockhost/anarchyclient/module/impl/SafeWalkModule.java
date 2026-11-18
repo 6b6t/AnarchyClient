@@ -35,6 +35,6 @@ public final class SafeWalkModule extends Module {
         return client.player == player
                 && (!this.pauseInGui.value() || client.gui.screen() == null)
                 && (!this.blocksOnly.value() || player.getMainHandItem().getItem() instanceof BlockItem)
-                && (!this.sneakOnly.value() || client.options.keyShift.isDown());
+                && (!this.sneakOnly.value() || MovementKeys.sneak(client));
     }
 }

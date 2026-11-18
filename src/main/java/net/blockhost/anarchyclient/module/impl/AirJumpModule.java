@@ -33,7 +33,7 @@ public final class AirJumpModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        boolean pressed = player != null && client.options.keyJump.isDown();
+        boolean pressed = player != null && MovementKeys.jump(client);
         if (player != null && pressed && !this.jumpDown && !player.onGround() && !player.isFallFlying()) {
             Vec3 movement = player.getDeltaMovement();
             player.setDeltaMovement(movement.x, this.velocity.value(), movement.z);

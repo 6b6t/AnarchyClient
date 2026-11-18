@@ -267,9 +267,15 @@ class ModuleRegistryTest {
         for (String inputModule : List.of("auto_walk", "sneak", "eagle", "inventory_move", "no_slow", "avoid_hazards")) {
             assertRegisteredBefore(order, inputModule, "freecam");
         }
-        for (String packetModule : List.of("velocity", "pop_chams", "new_chunks")) {
+        // Modules that queue, replay, or rebuild packets must not see packets the filters drop.
+        for (String packetModule : List.of("velocity", "pop_chams", "new_chunks", "backtrack", "fake_lag",
+                "ping_spoof", "blink")) {
             assertRegisteredBefore(order, "anti_crash", packetModule);
+            assertRegisteredBefore(order, "anti_exploit", packetModule);
+            assertRegisteredBefore(order, "packet_canceller", packetModule);
         }
+        // Blink holds every packet, so Fake Lag must not get to send one it already queued.
+        assertRegisteredBefore(order, "blink", "fake_lag");
     }
 
     private static void assertRegisteredBefore(final List<String> order, final String first, final String second) {

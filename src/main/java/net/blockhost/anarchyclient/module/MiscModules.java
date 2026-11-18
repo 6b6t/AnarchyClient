@@ -28,7 +28,6 @@ import net.blockhost.anarchyclient.module.impl.NameProtectModule;
 import net.blockhost.anarchyclient.module.impl.NotebotModule;
 import net.blockhost.anarchyclient.module.impl.NotifierModule;
 import net.blockhost.anarchyclient.module.impl.NyanCatGifSpammerModule;
-import net.blockhost.anarchyclient.module.impl.PacketCancellerModule;
 import net.blockhost.anarchyclient.module.impl.PacketLoggerModule;
 import net.blockhost.anarchyclient.module.impl.ServerSpoofModule;
 import net.blockhost.anarchyclient.module.impl.SilentDisconnectModule;
@@ -57,7 +56,6 @@ final class MiscModules {
         modules.register(new CustomPacketsModule());
         modules.register(new BungeeCordSpoofModule());
         modules.register(new ServerSpoofModule());
-        modules.register(new PacketCancellerModule());
         modules.register(new AntiPacketKickModule());
         modules.register(new DebugRecorderModule());
         modules.register(new ColorSignsModule());

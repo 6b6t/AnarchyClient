@@ -10,8 +10,8 @@ final class MovementVelocity {
     }
 
     static Vec3 fromKeys(final Minecraft client, final float yaw, final double speed) {
-        double forward = impulse(client.options.keyUp.isDown(), client.options.keyDown.isDown());
-        double strafe = impulse(client.options.keyLeft.isDown(), client.options.keyRight.isDown());
+        double forward = impulse(MovementKeys.forward(client), MovementKeys.backward(client));
+        double strafe = impulse(MovementKeys.left(client), MovementKeys.right(client));
         return fromInput(yaw, forward, strafe, speed);
     }
 
@@ -32,10 +32,10 @@ final class MovementVelocity {
     }
 
     static boolean moving(final Minecraft client) {
-        return client.options.keyUp.isDown()
-                || client.options.keyDown.isDown()
-                || client.options.keyLeft.isDown()
-                || client.options.keyRight.isDown();
+        return MovementKeys.forward(client)
+                || MovementKeys.backward(client)
+                || MovementKeys.left(client)
+                || MovementKeys.right(client);
     }
 
     private static int impulse(final boolean positive, final boolean negative) {

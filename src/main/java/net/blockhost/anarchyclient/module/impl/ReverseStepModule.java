@@ -35,7 +35,7 @@ public final class ReverseStepModule extends Module {
         this.rising = airborneAfterRising(this.rising, player.onGround(), velocity.y);
         if (player.onGround() || this.rising || player.isInWater() || player.isInLava() || player.isFallFlying()
                 || player.getAbilities().flying || player.isPassenger() || player.onClimbable()
-                || client.options.keyJump.isDown()) {
+                || MovementKeys.jump(client)) {
             return;
         }
         if (velocity.y < 0.0) {

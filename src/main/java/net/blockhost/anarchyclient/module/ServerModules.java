@@ -1,9 +1,11 @@
 package net.blockhost.anarchyclient.module;
 
 import net.blockhost.anarchyclient.module.impl.AntiCheatDetectModule;
+import net.blockhost.anarchyclient.module.impl.AntiCrashModule;
 import net.blockhost.anarchyclient.module.impl.AntiExploitModule;
 import net.blockhost.anarchyclient.module.impl.AutoConfigModule;
 import net.blockhost.anarchyclient.module.impl.FlagCheckModule;
+import net.blockhost.anarchyclient.module.impl.PacketCancellerModule;
 import net.blockhost.anarchyclient.module.impl.PayloadInspectorModule;
 import net.blockhost.anarchyclient.module.impl.PluginScannerModule;
 import net.blockhost.anarchyclient.module.impl.ServerObserverModule;
@@ -21,6 +23,10 @@ final class ServerModules {
     }
 
     static void register(final ModuleManager modules) {
+        // Packet filters come first, so no module queues, replays, or rebuilds a packet they would drop.
+        modules.register(new AntiCrashModule());
+        modules.register(new AntiExploitModule());
+        modules.register(new PacketCancellerModule());
         modules.register(new ServerObserverModule());
         modules.register(new AutoConfigModule(modules));
         modules.register(new AntiCheatDetectModule());
@@ -28,7 +34,6 @@ final class ServerModules {
         modules.register(new PayloadInspectorModule());
         modules.register(new FlagCheckModule());
         modules.register(new StaffAlertModule(modules));
-        modules.register(new AntiExploitModule());
         modules.register(new YggdrasilSignatureFixModule());
     }
 }

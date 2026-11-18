@@ -48,15 +48,17 @@ public final class InventoryMoveModule extends Module {
             // A focused text field (anvil name, sign, book, creative search, command block) takes the keys.
             return;
         }
-        // Vanilla releases every key mapping while a screen is open, so read the physical key state instead.
+        // Vanilla releases every key mapping while a screen is open, so read the physical key state instead. Keep
+        // what earlier modules set (Auto Walk's forward, Sneak's sneak) rather than replacing it.
+        Input current = input.keyPresses;
         input.keyPresses = new Input(
-                physicallyDown(client, client.options.keyUp),
-                physicallyDown(client, client.options.keyDown),
-                physicallyDown(client, client.options.keyLeft),
-                physicallyDown(client, client.options.keyRight),
-                this.allowJump.value() && physicallyDown(client, client.options.keyJump),
-                this.allowSneak.value() && physicallyDown(client, client.options.keyShift),
-                physicallyDown(client, client.options.keySprint)
+                current.forward() || physicallyDown(client, client.options.keyUp),
+                current.backward() || physicallyDown(client, client.options.keyDown),
+                current.left() || physicallyDown(client, client.options.keyLeft),
+                current.right() || physicallyDown(client, client.options.keyRight),
+                current.jump() || this.allowJump.value() && physicallyDown(client, client.options.keyJump),
+                current.shift() || this.allowSneak.value() && physicallyDown(client, client.options.keyShift),
+                current.sprint() || physicallyDown(client, client.options.keySprint)
         );
         InputStates.refreshMoveVector(input);
     }

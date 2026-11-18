@@ -48,8 +48,8 @@ public final class NoWebModule extends Module {
             return;
         }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.motionSpeed.value());
-        double y = client.options.keyJump.isDown() ? this.motionSpeed.value()
-                : client.options.keyShift.isDown() ? -this.motionSpeed.value() : player.getDeltaMovement().y;
+        double y = MovementKeys.jump(client) ? this.motionSpeed.value()
+                : MovementKeys.sneak(client) ? -this.motionSpeed.value() : player.getDeltaMovement().y;
         player.setDeltaMovement(horizontal.x, y, horizontal.z);
     }
 

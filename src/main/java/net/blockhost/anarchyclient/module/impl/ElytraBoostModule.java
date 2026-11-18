@@ -26,7 +26,7 @@ public final class ElytraBoostModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !player.isFallFlying() || !client.options.keyUp.isDown()) {
+        if (player == null || !player.isFallFlying() || !MovementKeys.forward(client)) {
             return;
         }
         Vec3 boost = player.getViewVector(0.0F).normalize().scale(this.strength.value());

@@ -35,7 +35,7 @@ public final class JetpackModule extends Module {
         if (player == null || client.gui.screen() != null) {
             return;
         }
-        boolean active = !this.requireJump.value() || client.options.keyJump.isDown();
+        boolean active = !this.requireJump.value() || MovementKeys.jump(client);
         if (active) {
             player.setDeltaMovement(jetpackVelocity(player.getDeltaMovement(), this.speed.value(), true));
         }

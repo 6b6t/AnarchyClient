@@ -68,7 +68,7 @@ public final class ExtraElytraModule extends Module {
             this.controlHeight(client, player);
             return;
         }
-        if (this.instantFly.value() && client.options.keyJump.isDown()) {
+        if (this.instantFly.value() && MovementKeys.jump(client)) {
             this.startFallFlying(player);
         }
     }
@@ -79,9 +79,9 @@ public final class ExtraElytraModule extends Module {
         }
         Vec3 forward = horizontalForward(player.getYRot()).scale(0.05);
         Vec3 velocity = player.getDeltaMovement();
-        if (client.options.keyUp.isDown()) {
+        if (MovementKeys.forward(client)) {
             player.setDeltaMovement(velocity.add(forward));
-        } else if (client.options.keyDown.isDown()) {
+        } else if (MovementKeys.backward(client)) {
             player.setDeltaMovement(velocity.subtract(forward));
         }
     }
@@ -91,9 +91,9 @@ public final class ExtraElytraModule extends Module {
             return;
         }
         Vec3 velocity = player.getDeltaMovement();
-        if (client.options.keyJump.isDown()) {
+        if (MovementKeys.jump(client)) {
             player.setDeltaMovement(velocity.x, velocity.y + 0.08, velocity.z);
-        } else if (client.options.keyShift.isDown()) {
+        } else if (MovementKeys.sneak(client)) {
             player.setDeltaMovement(velocity.x, velocity.y - 0.04, velocity.z);
         }
     }

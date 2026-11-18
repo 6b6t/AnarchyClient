@@ -175,6 +175,25 @@ class ModuleManagerTest {
     }
 
     @Test
+    void laterModulesDoNotSeeAPacketAnEarlierModuleCancelled() {
+        ModuleManager manager = new ModuleManager();
+        TestModule filter = new TestModule("filter", ModuleCategory.MISC);
+        TestModule later = new TestModule("later", ModuleCategory.MISC);
+        manager.register(filter);
+        manager.register(later);
+        filter.enabled(true);
+        later.enabled(true);
+        filter.cancelPackets = true;
+
+        manager.call(new PacketReceiveEvent(null, null, null));
+        manager.call(new PacketSendEvent(null, null, null));
+
+        assertEquals(1, filter.packetsReceived);
+        assertEquals(0, later.packetsReceived);
+        assertEquals(0, later.packetsSending);
+    }
+
+    @Test
     void keepsFlatSettingsViewWhileSupportingGroups() {
         GroupedModule module = new GroupedModule();
 

@@ -35,7 +35,7 @@ public final class JesusModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || (!player.isInWater() && !player.isInLava()) || client.options.keyShift.isDown()) {
+        if (player == null || (!player.isInWater() && !player.isInLava()) || MovementKeys.sneak(client)) {
             return;
         }
         Vec3 velocity = player.getDeltaMovement();
