@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.profile;
 
+import com.google.gson.JsonObject;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -90,6 +92,53 @@ class ProfileManagerTest {
         ProfileManager reloaded = new ProfileManager(path);
         reloaded.load();
         assertTrue(reloaded.find("fresh").isPresent());
+    }
+
+    @Test
+    void migratesOldDefaultsOnlyInProfilesFromOlderBuilds() throws Exception {
+        Path path = this.tempDir.resolve("profiles.json");
+        Files.writeString(path, """
+                {
+                  "profiles": {
+                    "old": {"name": "old", "settings": {"migrating_module": {"range": 2.0}}},
+                    "new": {"name": "new", "version": 2, "settings": {"migrating_module": {"range": 2.0}}}
+                  }
+                }
+                """);
+        ModuleManager modules = new ModuleManager();
+        MigratingModule module = new MigratingModule();
+        modules.register(module);
+        ProfileManager manager = new ProfileManager(path);
+        manager.load();
+
+        manager.apply("old", modules);
+        assertEquals(4.0, module.range.value());
+
+        manager.apply("new", modules);
+        assertEquals(2.0, module.range.value());
+    }
+
+    private static final class MigratingModule extends Module implements ModuleConfigMigration {
+
+        private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
+                .id("range")
+                .name("Range")
+                .defaultValue(4.0)
+                .min(0.0)
+                .max(6.0)
+                .step(0.5)
+                .build()));
+
+        private MigratingModule() {
+            super("migrating_module", "Migrating Module", ModuleCategory.MISC, "Test module.");
+        }
+
+        @Override
+        public void migrateConfig(final JsonObject moduleJson, final int savedVersion) {
+            if (savedVersion < VANILLA_DAMAGE_DEFAULTS) {
+                ModuleConfigMigration.upgradeDefault(moduleJson, "range", 2.0, 4.0);
+            }
+        }
     }
 
     private static final class TestModule extends Module {

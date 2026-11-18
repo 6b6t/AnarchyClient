@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class ClientConfig {
 
     /** Bump when a {@link ModuleConfigMigration} needs to know which files predate a change. */
-    static final int CONFIG_VERSION = ModuleConfigMigration.VANILLA_DAMAGE_DEFAULTS;
+    static final int CONFIG_VERSION = ModuleConfigMigration.CURRENT_VERSION;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfig.class);
     private static final long SAVE_DELAY_NANOS = TimeUnit.MILLISECONDS.toNanos(500);

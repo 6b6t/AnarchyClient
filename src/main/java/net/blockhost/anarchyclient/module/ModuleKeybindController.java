@@ -15,12 +15,21 @@ final class ModuleKeybindController {
     // release must not turn off a HOLD module.
     private final Set<Module> acceptedPresses = Collections.newSetFromMap(new IdentityHashMap<>());
 
-    void update(final Module module, final boolean pressed, final boolean allowNewPresses) {
+    /**
+     * Updates one module's bind once per tick.
+     *
+     * @param pressed    whether the key is down now
+     * @param freshPress whether a press that input could accept (no screen open) arrived since the last tick.
+     *                   A tap that is already released by now still counts.
+     */
+    void update(final Module module, final boolean pressed, final boolean freshPress) {
         boolean previous = this.previousPressed.getOrDefault(module, false);
-        if (pressed && !previous) {
-            if (allowNewPresses) {
-                this.acceptedPresses.add(module);
-                this.handlePress(module);
+        if (freshPress && !previous) {
+            this.acceptedPresses.add(module);
+            this.handlePress(module);
+            if (!pressed && this.acceptedPresses.remove(module)) {
+                // Pressed and released between two ticks.
+                this.handleRelease(module);
             }
         } else if (!pressed && previous) {
             if (this.acceptedPresses.remove(module)) {

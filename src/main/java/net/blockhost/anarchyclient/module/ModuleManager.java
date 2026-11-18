@@ -25,16 +25,19 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class ModuleManager {
 
     private final AnarchyEventBus events = new AnarchyEventBus();
     private final Map<String, Module> modules = new LinkedHashMap<>();
     private final ModuleKeybindController keybindController = new ModuleKeybindController();
+    private final Set<Integer> freshPresses = new HashSet<>();
     private Runnable activationObserver = () -> {
     };
 
@@ -93,16 +96,27 @@ public final class ModuleManager {
         this.call(new ClientTickEvent(client));
     }
 
+    /**
+     * Records a key press as it arrives, before vanilla handles it. Polling once per tick would miss quick
+     * taps, and would see a screen that the same key just opened (chat, inventory, the client menu).
+     */
+    public void recordKeyPress(final int key, final boolean inputAllowed) {
+        if (inputAllowed) {
+            this.freshPresses.add(key);
+        }
+    }
+
     public void handleKeybinds(final Minecraft client) {
-        boolean allowNewPresses = client != null && client.gui.screen() == null;
         for (Module module : this.modules.values()) {
             ModuleKeybind keybind = module.keybind();
             if (!keybind.bound()) {
                 this.keybindController.clear(module);
                 continue;
             }
-            this.keybindController.update(module, keyPressed(client, keybind.key()), allowNewPresses);
+            this.keybindController.update(module, keyPressed(client, keybind.key()),
+                    client != null && this.freshPresses.contains(keybind.key()));
         }
+        this.freshPresses.clear();
     }
 
     public void updateInput(final Minecraft client, final ClientInput input) {

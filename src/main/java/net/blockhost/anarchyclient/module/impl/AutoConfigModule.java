@@ -81,9 +81,11 @@ public final class AutoConfigModule extends Module {
         if (this.waitForDetection.value() && snapshot.antiCheat().isEmpty() && this.pendingTicks-- > 0) {
             return;
         }
-        this.applySafety(snapshot);
-        this.apply(client, this.pendingDomain);
+        String domain = this.pendingDomain;
+        // Clear first, so a failure while applying is not retried every tick.
         this.clear();
+        this.applySafety(snapshot);
+        this.apply(client, domain);
     }
 
     @Override

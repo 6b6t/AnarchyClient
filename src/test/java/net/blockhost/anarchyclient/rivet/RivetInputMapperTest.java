@@ -38,12 +38,20 @@ class RivetInputMapperTest {
     }
 
     @Test
-    void readsThePhysicalScancodeFromKeyEvents() {
-        var event = new KeyEvent(InputConstants.KEY_A, InputConstants.KEYCODE_A, InputConstants.MOD_CONTROL);
+    void readsLettersFromTheLayoutKeycode() {
+        // On AZERTY the key in QWERTY's Q position types "a", so Ctrl+that key must select all.
+        var event = new KeyEvent(InputConstants.KEY_Q, InputConstants.KEYCODE_A, InputConstants.MOD_CONTROL);
         var mapped = RivetInputMapper.key(event).orElseThrow();
 
         assertEquals(Key.A, mapped.key());
         assertEquals(Set.of(ModifierKey.CONTROL), mapped.modifiers());
+    }
+
+    @Test
+    void readsNonLetterKeysFromTheScancode() {
+        var event = new KeyEvent(InputConstants.KEY_BACKSPACE, 8, 0);
+
+        assertEquals(Key.BACKSPACE, RivetInputMapper.key(event).orElseThrow().key());
     }
 
     @ParameterizedTest

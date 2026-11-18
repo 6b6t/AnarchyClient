@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -35,6 +35,8 @@ public final class HudLayout {
     private static final Map<String, int[]> positions = new LinkedHashMap<>();
     /** Bounds recorded during the most recent render pass, for the editor. */
     private static final Map<String, Element> bounds = new LinkedHashMap<>();
+    /** Set when an unreadable file could not be backed up. Saving would then destroy the layout. */
+    private static boolean saveBlocked;
 
     private HudLayout() {
     }
@@ -99,23 +101,37 @@ public final class HudLayout {
 
     public static void load() {
         positions.clear();
+        saveBlocked = false;
         if (!Files.exists(PATH)) {
             return;
         }
+        JsonObject root;
         try (Reader reader = Files.newBufferedReader(PATH)) {
-            JsonObject root = GSON.fromJson(reader, JsonObject.class);
-            if (root == null) {
-                return;
-            }
-            for (String id : root.keySet()) {
-                JsonObject entry = root.getAsJsonObject(id);
-                if (entry != null && entry.has("x") && entry.has("y")) {
-                    positions.put(id, new int[]{entry.get("x").getAsInt(), entry.get("y").getAsInt()});
-                }
-            }
+            root = GSON.fromJson(reader, JsonObject.class);
         } catch (RuntimeException | IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to load HUD layout from {}", PATH, exception);
+            saveBlocked = !ConfigFiles.backUpUnreadable(PATH);
+            return;
         }
+        if (root != null) {
+            positions.putAll(readPositions(root));
+        }
+    }
+
+    /** Reads each element's position, skipping only the entries that are malformed. */
+    static Map<String, int[]> readPositions(final JsonObject root) {
+        Map<String, int[]> read = new LinkedHashMap<>();
+        for (String id : root.keySet()) {
+            try {
+                JsonObject entry = root.getAsJsonObject(id);
+                if (entry != null && entry.has("x") && entry.has("y")) {
+                    read.put(id, new int[]{entry.get("x").getAsInt(), entry.get("y").getAsInt()});
+                }
+            } catch (RuntimeException exception) {
+                AnarchyClient.LOGGER.warn("Skipping invalid HUD layout entry {}", id, exception);
+            }
+        }
+        return read;
     }
 
     public static void save() {
@@ -126,14 +142,12 @@ public final class HudLayout {
             value.addProperty("y", entry.getValue()[1]);
             root.add(entry.getKey(), value);
         }
+        if (saveBlocked) {
+            AnarchyClient.LOGGER.warn("Not saving HUD layout: {} could not be read or backed up", PATH);
+            return;
+        }
         try {
-            Path parent = PATH.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            try (Writer writer = Files.newBufferedWriter(PATH)) {
-                GSON.toJson(root, writer);
-            }
+            ConfigFiles.writeAtomically(PATH, GSON.toJson(root));
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save HUD layout to {}", PATH, exception);
         }

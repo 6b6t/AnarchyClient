@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -11,7 +12,6 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -27,6 +27,8 @@ public final class ServerProfileStore {
     private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-server-profiles.json");
     private static final Map<String, ServerProfile> PROFILES = new LinkedHashMap<>();
     private static boolean loaded;
+    // Set when an unreadable file could not be backed up. Saving would then destroy the stored profiles.
+    private static boolean saveBlocked;
 
     private ServerProfileStore() {
     }
@@ -34,6 +36,7 @@ public final class ServerProfileStore {
     public static synchronized void load() {
         PROFILES.clear();
         loaded = true;
+        saveBlocked = false;
         if (!Files.exists(PATH)) {
             return;
         }
@@ -47,19 +50,19 @@ public final class ServerProfileStore {
             }
         } catch (IOException | RuntimeException exception) {
             AnarchyClient.LOGGER.warn("Failed to load AnarchyClient server profiles from {}", PATH, exception);
+            PROFILES.clear();
+            saveBlocked = !ConfigFiles.backUpUnreadable(PATH);
         }
     }
 
     public static synchronized void save() {
         ensureLoaded();
+        if (saveBlocked) {
+            AnarchyClient.LOGGER.warn("Not saving AnarchyClient server profiles: {} could not be read or backed up", PATH);
+            return;
+        }
         try {
-            Path parent = PATH.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            try (Writer writer = Files.newBufferedWriter(PATH)) {
-                GSON.toJson(new ProfileRoot(PROFILES), writer);
-            }
+            ConfigFiles.writeAtomically(PATH, GSON.toJson(new ProfileRoot(PROFILES)));
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save AnarchyClient server profiles to {}", PATH, exception);
         }
@@ -88,20 +91,16 @@ public final class ServerProfileStore {
         if (domain == null || domain.isBlank() || plugins == null || plugins.isEmpty()) {
             return;
         }
-        getOrCreate(domain).knownPlugins = new LinkedHashSet<>(plugins);
-        save();
+        if (getOrCreate(domain).knownPlugins.addAll(plugins)) {
+            save();
+        }
     }
 
     public static synchronized void recordFingerprint(final ServerObserver.Fingerprint fingerprint) {
         if (fingerprint == null || fingerprint.rootDomain().isBlank()) {
             return;
         }
-        ServerProfile profile = getOrCreate(fingerprint.rootDomain());
-        profile.antiCheat = fingerprint.antiCheat();
-        profile.knownPlugins = new LinkedHashSet<>(fingerprint.plugins());
-        profile.payloadChannels = new LinkedHashSet<>(fingerprint.payloadChannels());
-        profile.environmentLabels = new LinkedHashSet<>(fingerprint.labels());
-        profile.lastSafetyScore = fingerprint.safetyScore();
+        getOrCreate(fingerprint.rootDomain()).merge(fingerprint);
         save();
     }
 
@@ -112,19 +111,11 @@ public final class ServerProfileStore {
         }
         ServerProfile profile = maybeProfile.get();
         int changed = 0;
-        if (profile.moduleStates != null) {
-            for (Map.Entry<String, Boolean> entry : profile.moduleStates.entrySet()) {
-                Module module = modules.find(entry.getKey()).orElse(null);
-                if (module != null && module.enabled() != entry.getValue()) {
-                    module.enabled(entry.getValue());
-                    changed++;
-                }
-            }
-        }
+        // Settings first, so modules enabled below start with the profile's values.
         if (profile.settings != null) {
             for (Map.Entry<String, Map<String, JsonElement>> moduleEntry : profile.settings.entrySet()) {
                 Module module = modules.find(moduleEntry.getKey()).orElse(null);
-                if (module == null) {
+                if (module == null || moduleEntry.getValue() == null) {
                     continue;
                 }
                 for (Map.Entry<String, JsonElement> settingEntry : moduleEntry.getValue().entrySet()) {
@@ -132,10 +123,25 @@ public final class ServerProfileStore {
                             .filter(candidate -> candidate.id().equals(settingEntry.getKey()))
                             .findFirst()
                             .orElse(null);
-                    if (setting != null) {
+                    if (setting == null || settingEntry.getValue() == null) {
+                        continue;
+                    }
+                    try {
                         setting.fromJson(settingEntry.getValue());
                         changed++;
+                    } catch (RuntimeException exception) {
+                        AnarchyClient.LOGGER.warn("Skipping invalid server profile value {}.{}",
+                                moduleEntry.getKey(), settingEntry.getKey(), exception);
                     }
+                }
+            }
+        }
+        if (profile.moduleStates != null) {
+            for (Map.Entry<String, Boolean> entry : profile.moduleStates.entrySet()) {
+                Module module = modules.find(entry.getKey()).orElse(null);
+                if (module != null && entry.getValue() != null && module.enabled() != entry.getValue()) {
+                    module.enabled(entry.getValue());
+                    changed++;
                 }
             }
         }
@@ -172,6 +178,20 @@ public final class ServerProfileStore {
         public Map<String, Map<String, JsonElement>> settings = new LinkedHashMap<>();
         public int lastSafetyScore;
         public String notes = "";
+
+        /**
+         * Adds what this session observed. A new session starts with an empty fingerprint, so blank or empty
+         * values never replace what earlier sessions found.
+         */
+        void merge(final ServerObserver.Fingerprint fingerprint) {
+            if (!fingerprint.antiCheat().isBlank()) {
+                this.antiCheat = fingerprint.antiCheat();
+            }
+            this.knownPlugins.addAll(fingerprint.plugins());
+            this.payloadChannels.addAll(fingerprint.payloadChannels());
+            this.environmentLabels.addAll(fingerprint.labels());
+            this.lastSafetyScore = fingerprint.safetyScore();
+        }
 
         private ServerProfile normalized() {
             if (this.knownPlugins == null) {

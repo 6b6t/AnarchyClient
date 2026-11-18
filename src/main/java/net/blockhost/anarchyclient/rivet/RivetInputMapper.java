@@ -18,8 +18,26 @@ public final class RivetInputMapper {
     private RivetInputMapper() {
     }
 
+    /**
+     * Maps a vanilla key event to Rivet. Letters come from the layout key code, not the physical key, so
+     * Ctrl+A/C/V/X follow the user's layout (AZERTY, Dvorak). The edit shortcut modifier (Cmd on macOS)
+     * counts as Control, which is what Rivet's text fields check.
+     */
     public static Optional<KeyEvent> key(final net.minecraft.client.input.KeyEvent event) {
-        return fromScancode(event.key()).map(key -> new KeyEvent(key, modifiers(event.modifiers())));
+        Set<ModifierKey> modifiers = modifiers(event.modifiers());
+        if (event.hasControlDownWithQuirk()) {
+            modifiers.add(ModifierKey.CONTROL);
+        }
+        return fromKeycode(event.keycode())
+                .or(() -> fromScancode(event.key()))
+                .map(key -> new KeyEvent(key, modifiers));
+    }
+
+    static Optional<Key> fromKeycode(final int keycode) {
+        if (keycode < 'a' || keycode > 'z') {
+            return Optional.empty();
+        }
+        return Optional.of(Key.valueOf(String.valueOf((char) Character.toUpperCase(keycode))));
     }
 
     /**

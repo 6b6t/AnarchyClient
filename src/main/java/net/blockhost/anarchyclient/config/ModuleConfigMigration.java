@@ -10,6 +10,9 @@ public interface ModuleConfigMigration {
     /** Config format version where combat damage defaults were rescaled for vanilla explosion damage. */
     int VANILLA_DAMAGE_DEFAULTS = 2;
 
+    /** Format version written by this build, for the client config and saved profiles. */
+    int CURRENT_VERSION = VANILLA_DAMAGE_DEFAULTS;
+
     /**
      * Migrates one module's saved JSON before it loads.
      *

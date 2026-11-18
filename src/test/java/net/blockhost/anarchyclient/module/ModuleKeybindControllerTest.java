@@ -67,6 +67,23 @@ class ModuleKeybindControllerTest {
     }
 
     @Test
+    void tapBetweenTwoTicksStillCounts() {
+        TestModule toggle = new TestModule();
+        toggle.keybind().key(InputConstants.KEY_K);
+        toggle.keybind().action(ModuleBindAction.TOGGLE);
+        TestModule hold = new TestModule();
+        hold.keybind().key(InputConstants.KEY_J);
+        hold.keybind().action(ModuleBindAction.HOLD);
+        ModuleKeybindController controller = new ModuleKeybindController();
+
+        controller.update(toggle, false, true);
+        controller.update(hold, false, true);
+
+        assertTrue(toggle.enabled());
+        assertFalse(hold.enabled());
+    }
+
+    @Test
     void ignoresNewPressesWhenInputIsBlocked() {
         ModuleKeybindController controller = new ModuleKeybindController();
         TestModule module = new TestModule();

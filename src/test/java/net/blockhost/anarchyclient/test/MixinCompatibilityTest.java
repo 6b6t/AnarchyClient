@@ -17,6 +17,7 @@ class MixinCompatibilityTest {
             "net.minecraft.client.DeltaTracker$Timer",
             "net.minecraft.client.Minecraft",
             "net.minecraft.client.MouseHandler",
+            "net.minecraft.client.KeyboardHandler",
             "net.minecraft.client.gui.Gui",
             "net.minecraft.client.gui.components.ChatComponent",
             "net.minecraft.client.gui.components.CommandSuggestions",

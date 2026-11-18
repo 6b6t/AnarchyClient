@@ -3,8 +3,10 @@ package net.blockhost.anarchyclient.profile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -84,6 +86,7 @@ public final class ProfileManager {
     public synchronized Profile capture(final String name, final ModuleManager modules) {
         Profile profile = new Profile();
         profile.name = normalizeName(name);
+        profile.version = ModuleConfigMigration.CURRENT_VERSION;
         profile.updatedAt = Instant.now().toString();
         for (Module module : modules.all()) {
             profile.modules.put(module.id(), module.enabled());
@@ -163,7 +166,8 @@ public final class ProfileManager {
         }
         int changed = 0;
         for (Module module : modules.all()) {
-            Map<String, JsonElement> settings = profile.settings.get(module.id());
+            Map<String, JsonElement> settings = migratedSettings(module, profile.settings.get(module.id()),
+                    profile.version);
             if (settings == null) {
                 continue;
             }
@@ -196,6 +200,35 @@ public final class ProfileManager {
         return changed;
     }
 
+    /**
+     * Runs the module's config migration over settings from a profile saved by an older build, so applying it
+     * does not bring back defaults the client config already moved past.
+     */
+    static Map<String, JsonElement> migratedSettings(final Module module, final Map<String, JsonElement> settings,
+                                                     final int savedVersion) {
+        if (settings == null || savedVersion >= ModuleConfigMigration.CURRENT_VERSION
+                || !(module instanceof ModuleConfigMigration migration)) {
+            return settings;
+        }
+        JsonObject settingsJson = new JsonObject();
+        settings.forEach((id, value) -> {
+            if (value != null) {
+                settingsJson.add(id, value.deepCopy());
+            }
+        });
+        JsonObject moduleJson = new JsonObject();
+        moduleJson.add("settings", settingsJson);
+        try {
+            migration.migrateConfig(moduleJson, savedVersion);
+        } catch (RuntimeException exception) {
+            AnarchyClient.LOGGER.warn("Failed to migrate profile settings for module {}", module.id(), exception);
+            return settings;
+        }
+        Map<String, JsonElement> migrated = new LinkedHashMap<>();
+        settingsJson.entrySet().forEach(entry -> migrated.put(entry.getKey(), entry.getValue()));
+        return migrated;
+    }
+
     private static String normalizeName(final String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Profile name cannot be blank.");
@@ -216,6 +249,8 @@ public final class ProfileManager {
     public static final class Profile {
 
         public String name = "";
+        /** Format version the profile was saved with; profiles from before versioning count as 1. */
+        public int version = 1;
         public String updatedAt = "";
         public Map<String, Boolean> modules = new LinkedHashMap<>();
         public Map<String, Map<String, JsonElement>> settings = new LinkedHashMap<>();
@@ -240,6 +275,7 @@ public final class ProfileManager {
         private Profile copy() {
             Profile copy = new Profile();
             copy.name = this.name;
+            copy.version = this.version;
             copy.updatedAt = this.updatedAt;
             copy.modules = new LinkedHashMap<>(this.modules);
             for (Map.Entry<String, Map<String, JsonElement>> entry : this.settings.entrySet()) {
