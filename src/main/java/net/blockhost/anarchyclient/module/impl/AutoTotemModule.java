@@ -151,11 +151,14 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
                 source,
                 InventorySlots.offhandSlot()
         );
+        boolean totem = desiredItem == Items.TOTEM_OF_UNDYING;
         InventoryActionScheduler.schedule(InventoryActionChain.single(
-                this.id(),
+                // Totem swaps use their own owner, so the delay after swapping in a gapple or crystal never holds
+                // back an emergency totem.
+                totem ? this.id() + ":totem" : this.id(),
                 InventoryActionScheduler.PRIORITY_LIFE,
                 // A totem may be needed again soon after a pop; other items can wait longer between swaps.
-                desiredItem == Items.TOTEM_OF_UNDYING ? 2 : 5,
+                totem ? 2 : 5,
                 action
         ));
     }

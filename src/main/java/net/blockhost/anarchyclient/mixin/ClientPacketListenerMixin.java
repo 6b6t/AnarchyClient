@@ -6,11 +6,14 @@ import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.SendChatEvent;
 import net.blockhost.anarchyclient.event.SoundPacketEvent;
 import net.blockhost.anarchyclient.module.impl.NoRotateSetModule;
+import net.blockhost.anarchyclient.module.impl.TimeChangerModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.util.StringUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,6 +50,12 @@ public abstract class ClientPacketListenerMixin {
         NoRotateSetModule.afterSetback(Minecraft.getInstance().player);
     }
 
+    // Runs on the client thread only: off it, vanilla re-queues the packet before reaching TAIL.
+    @Inject(method = "handleSetTime", at = @At("TAIL"))
+    private void anarchyclient$afterSetTime(final ClientboundSetTimePacket packet, final CallbackInfo info) {
+        TimeChangerModule.afterServerTime(Minecraft.getInstance().level);
+    }
+
     @Inject(method = "handleLogin", at = @At("RETURN"))
     private void anarchyclient$handleLogin(final ClientboundLoginPacket packet, final CallbackInfo info) {
         AnarchyClient.MODULES.call(new GameJoinedEvent(Minecraft.getInstance(), (ClientPacketListener) (Object) this));
@@ -59,7 +68,10 @@ public abstract class ClientPacketListenerMixin {
 
     @ModifyVariable(method = "sendChat", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String anarchyclient$sendChat(final String message) {
-        return AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), message, false)).message();
+        String changed = AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), message, false)).message();
+        // Modules may lengthen the message (Better Chat's suffix); past 256 characters the chat packet cannot be
+        // encoded and the client disconnects.
+        return changed == null ? message : StringUtil.trimChatMessage(changed);
     }
 
     @ModifyVariable(method = "sendCommand", at = @At("HEAD"), argsOnly = true, ordinal = 0)

@@ -189,7 +189,8 @@ public final class ServerObserver {
     }
 
     public static synchronized boolean pluginScanPending() {
-        return expectedSuggestionId >= 0 || pluginChatDeadlineMillis > 0;
+        // Compare with the clock too: the expiry check runs only while the Server Observer module ticks.
+        return expectedSuggestionId >= 0 || pluginChatDeadlineMillis > System.currentTimeMillis();
     }
 
     public static synchronized void recordFlag(final FlagReason reason, final Vec3 position, final float yaw, final float pitch,
@@ -424,8 +425,8 @@ public final class ServerObserver {
             Set<String> merged = new LinkedHashSet<>(plugins);
             merged.addAll(parsed);
             storePlugins(merged);
-            pluginChatDeadlineMillis = Math.min(pluginChatDeadlineMillis,
-                    System.currentTimeMillis() + PLUGIN_CHAT_GRACE_MILLIS);
+            // Each new line gives the next one the full grace window.
+            pluginChatDeadlineMillis = System.currentTimeMillis() + PLUGIN_CHAT_GRACE_MILLIS;
         }
     }
 

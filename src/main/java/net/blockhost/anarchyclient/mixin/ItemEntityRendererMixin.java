@@ -26,9 +26,9 @@ public abstract class ItemEntityRendererMixin {
             + "Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;"
             + "Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V";
 
-    /** Height that keeps a flat item's model just above the ground. */
+    /** Gap between a flat item's lowest point and the ground, to avoid z-fighting. */
     @Unique
-    private static final float FLAT_LIFT = 0.02F;
+    private static final float FLAT_GAP = 0.005F;
 
     @Unique
     private ItemEntityRenderState anarchyclient$state;
@@ -62,7 +62,10 @@ public abstract class ItemEntityRendererMixin {
         float bob = Mth.sin(state.ageInTicks / 10.0F + state.bobOffset) * 0.1F + 0.1F;
         float groundOffset = y - bob;
         if ("Flat".equals(mode)) {
-            poseStack.translate(x, FLAT_LIFT, z);
+            // Laying the model on its side turns its depth into height, so lift it by its back half: a sprite is
+            // about 1/32 deep, a block model about 1/4.
+            float halfDepth = (float) state.item.getModelBoundingBox().maxZ;
+            poseStack.translate(x, halfDepth + FLAT_GAP, z);
         } else {
             poseStack.translate(x, groundOffset + 0.1F + Mth.sin(state.ageInTicks * 0.08F) * 0.08F, z);
         }

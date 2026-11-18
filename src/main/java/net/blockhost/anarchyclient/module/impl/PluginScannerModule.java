@@ -67,7 +67,8 @@ public final class PluginScannerModule extends Module {
             this.enabled(false);
             return;
         }
-        if (this.hasNewResult()) {
+        // Paper sends the list over several messages; wait until the observer stops collecting them.
+        if (this.hasNewResult() && !ServerObserver.pluginScanPending()) {
             this.finish(client, ServerObserver.snapshot().plugins());
             return;
         }

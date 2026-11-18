@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class TimeChangerModule extends Module {
 
+    private static TimeChangerModule active;
+
     private final NumberSetting time = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("time")
             .name("Time")
@@ -44,8 +46,27 @@ public final class TimeChangerModule extends Module {
     }
 
     @Override
+    protected void onEnable() {
+        active = this;
+    }
+
+    @Override
     public void tick(final Minecraft client) {
-        ClientLevel level = client.level;
+        this.sync(client.level);
+    }
+
+    /**
+     * Called on the client thread right after vanilla applied a server time packet. Packets are handled every
+     * frame but ticks are not, so waiting for the tick would render the server time in between.
+     */
+    public static void afterServerTime(final ClientLevel level) {
+        TimeChangerModule module = active;
+        if (module != null) {
+            module.sync(level);
+        }
+    }
+
+    private void sync(final ClientLevel level) {
         if (level == null) {
             this.forget();
             return;
@@ -71,8 +92,8 @@ public final class TimeChangerModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        // Vanilla still applies the packet: it carries the game time and other clocks too. The tick, which runs
-        // after packets are handled and before the frame renders, puts the frozen time back on the default clock.
+        // Vanilla still applies the packet: it carries the game time and other clocks too. afterServerTime then
+        // puts the frozen time back on the default clock before the frame renders.
         if (packet instanceof ClientboundSetTimePacket timePacket) {
             this.pendingServerUpdates.putAll(timePacket.clockUpdates());
         }
@@ -86,6 +107,9 @@ public final class TimeChangerModule extends Module {
 
     @Override
     protected void onDisable() {
+        if (active == this) {
+            active = null;
+        }
         Minecraft client = Minecraft.getInstance();
         if (client != null && client.level != null) {
             this.restore(client.level);

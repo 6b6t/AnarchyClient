@@ -18,7 +18,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -241,14 +240,6 @@ public final class ProfileManager {
         return name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
     }
 
-    static boolean savedAfter(final String updatedAt, final Instant instant) {
-        try {
-            return updatedAt != null && Instant.parse(updatedAt).isAfter(instant);
-        } catch (DateTimeParseException exception) {
-            return false;
-        }
-    }
-
     private record ProfileRoot(Map<String, Profile> profiles) {
     }
 
@@ -264,17 +255,7 @@ public final class ProfileManager {
         public Map<String, Boolean> modules = new LinkedHashMap<>();
         public Map<String, Map<String, JsonElement>> settings = new LinkedHashMap<>();
 
-        /**
-         * When the combat damage defaults changed. Dev builds from then until profiles stored a version
-         * saved profiles without one, so an unversioned profile saved after this already has the new
-         * defaults and must not be migrated again.
-         */
-        private static final Instant DAMAGE_DEFAULTS_CHANGED = Instant.parse("2026-11-17T23:05:43Z");
-
         private Profile normalized(final String fallbackName) {
-            if (this.version < ModuleConfigMigration.VANILLA_DAMAGE_DEFAULTS && savedAfter(this.updatedAt, DAMAGE_DEFAULTS_CHANGED)) {
-                this.version = ModuleConfigMigration.VANILLA_DAMAGE_DEFAULTS;
-            }
             if (this.name == null || this.name.isBlank()) {
                 this.name = fallbackName;
             }
