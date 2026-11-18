@@ -43,15 +43,14 @@ final class NumberSettingRow extends Container implements LayoutDebugLabel {
         this.description = settingDescription(setting);
         this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        // Step 0: Rivet passes the raw position through, and the setting snaps it once, from its minimum. Letting
-        // Rivet snap too (from 0) put the value up to a step away from the pointer.
-        this.slider = slider(setting.min(), setting.max(), 0.0, setting.value());
-        this.slider.valueChangeListener().add(value -> {
-            double snapped = setting.snap(value);
-            // Keep the thumb on the grid; value() does not fire this listener again.
-            this.slider.value(snapped);
-            if (snapped != setting.value()) {
-                setting.value(snapped);
+        // The slider counts steps from the setting's minimum (0, 1, 2, ...). Rivet snaps to multiples of its step
+        // counted from 0, which drifts off the grid of a setting whose minimum is not a multiple of its step, and
+        // it cannot run without a step at all (it divides by it).
+        this.slider = slider(0.0, stepCount(setting), 1.0, stepIndex(setting, setting.value()));
+        this.slider.valueChangeListener().add(index -> {
+            double value = setting.snap(setting.min() + index * stepSize(setting));
+            if (value != setting.value()) {
+                setting.value(value);
                 this.save.run();
             }
         });
@@ -62,6 +61,21 @@ final class NumberSettingRow extends Container implements LayoutDebugLabel {
         }
         this.addChild(this.value);
         this.addChild(this.slider);
+    }
+
+    static double stepSize(final NumberSetting setting) {
+        double range = setting.max() - setting.min();
+        return setting.step() > 0.0 ? setting.step() : range / 1000.0;
+    }
+
+    static int stepCount(final NumberSetting setting) {
+        double size = stepSize(setting);
+        return size <= 0.0 ? 0 : (int) Math.ceil((setting.max() - setting.min()) / size - 1.0E-9);
+    }
+
+    static double stepIndex(final NumberSetting setting, final double value) {
+        double size = stepSize(setting);
+        return size <= 0.0 ? 0.0 : Math.round((value - setting.min()) / size);
     }
 
     @Override
