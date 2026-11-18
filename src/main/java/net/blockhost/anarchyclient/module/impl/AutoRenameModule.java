@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.item.Item;
@@ -67,7 +68,14 @@ public final class AutoRenameModule extends Module {
             this.cooldown--;
             return;
         }
-        if (menu.getSlot(AnvilMenu.RESULT_SLOT).hasItem() && player.experienceLevel >= 1) {
+        if (menu.getSlot(AnvilMenu.RESULT_SLOT).hasItem()) {
+            if (!canTakeResult(player.hasInfiniteMaterials(), player.experienceLevel, menu.getCost())) {
+                // Retrying would never succeed, and the same item would be put back in after moving it out.
+                player.sendSystemMessage(Component.literal("Auto Rename stopped: the rename costs "
+                        + menu.getCost() + " levels."));
+                this.enabled(false);
+                return;
+            }
             ContainerActions.quickMove(client, menu, AnvilMenu.RESULT_SLOT);
             this.cooldown = this.delayTicks.value().intValue();
             return;
@@ -93,6 +101,11 @@ public final class AutoRenameModule extends Module {
                 return;
             }
         }
+    }
+
+    /** Mirrors vanilla {@code AnvilMenu.mayPickup}. */
+    static boolean canTakeResult(final boolean infiniteMaterials, final int experienceLevel, final int cost) {
+        return cost > 0 && (infiniteMaterials || experienceLevel >= cost);
     }
 
     static boolean shouldRename(final ItemStack stack, final Set<Item> targets, final String name,

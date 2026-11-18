@@ -71,7 +71,7 @@ public final class AutoReplenishModule extends Module {
             if (!shouldReplenish(stack, cappedThreshold)) {
                 continue;
             }
-            OptionalInt source = findReplacementStack(inventory, stack, cappedThreshold);
+            OptionalInt source = findReplacementStack(inventory, stack);
             if (source.isPresent()) {
                 return new ReplenishMove(hotbarSlot, source.orElseThrow());
             }
@@ -86,9 +86,13 @@ public final class AutoReplenishModule extends Module {
                 && stack.getCount() < stack.getMaxStackSize();
     }
 
-    private static OptionalInt findReplacementStack(final Inventory inventory, final ItemStack target, final int threshold) {
+    /**
+     * Finds the largest matching stack in the main inventory. The move swaps the two stacks, so any stack larger
+     * than the hotbar one helps, even when it is below the threshold (16-stack items such as ender pearls).
+     */
+    private static OptionalInt findReplacementStack(final Inventory inventory, final ItemStack target) {
         int bestSlot = -1;
-        int bestCount = threshold;
+        int bestCount = target.getCount();
         for (int slot = Inventory.getSelectionSize(); slot < Inventory.INVENTORY_SIZE; slot++) {
             ItemStack stack = inventory.getItem(slot);
             if (stack.isEmpty()

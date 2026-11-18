@@ -36,7 +36,8 @@ public final class AutoSignModule extends Module {
             .defaultValue(true)
             .build()));
     private volatile ClientboundOpenSignEditorPacket pendingEditor;
-    private int placementTicks;
+    // Read on the network thread.
+    private volatile int placementTicks;
 
     public AutoSignModule() {
         super("auto_sign", "Auto Sign", ModuleCategory.WORLD,
@@ -53,8 +54,9 @@ public final class AutoSignModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        // Runs on the network thread, so hand the editor request to the client tick.
-        if (packet instanceof ClientboundOpenSignEditorPacket editor) {
+        // Runs on the network thread, so hand the editor request to the client tick. Only requests right
+        // after placing a sign are taken over; everything else goes to vanilla untouched.
+        if (packet instanceof ClientboundOpenSignEditorPacket editor && this.placementTicks > 0) {
             this.pendingEditor = editor;
             return true;
         }
@@ -65,8 +67,9 @@ public final class AutoSignModule extends Module {
     public void tick(final Minecraft client) {
         ClientboundOpenSignEditorPacket editor = this.pendingEditor;
         this.pendingEditor = null;
-        if (editor != null) {
-            this.handleEditor(client, editor);
+        if (editor != null && !this.handleEditor(client, editor)) {
+            // The sign's block entity has not arrived yet; try again next tick.
+            this.pendingEditor = editor;
         }
         if (this.placementTicks > 0) {
             this.placementTicks--;
@@ -81,20 +84,33 @@ public final class AutoSignModule extends Module {
 
     @Override
     protected void onDisable() {
+        // A request taken over but not handled yet still has to open the editor.
+        ClientboundOpenSignEditorPacket editor = this.pendingEditor;
+        Minecraft client = Minecraft.getInstance();
+        if (editor != null && client.getConnection() != null) {
+            client.getConnection().handleOpenSignEditor(editor);
+        }
         this.pendingEditor = null;
         this.placementTicks = 0;
     }
 
-    private void handleEditor(final Minecraft client, final ClientboundOpenSignEditorPacket editor) {
+    /** Handles the request, or returns false to retry while the sign's block entity is still missing. */
+    private boolean handleEditor(final Minecraft client, final ClientboundOpenSignEditorPacket editor) {
         LocalPlayer player = client.player;
         ClientPacketListener connection = client.getConnection();
-        if (player == null || client.level == null || connection == null
-                || !(client.level.getBlockEntity(editor.pos()) instanceof SignBlockEntity sign)) {
-            return;
+        if (player == null || client.level == null || connection == null) {
+            return true;
+        }
+        if (!(client.level.getBlockEntity(editor.pos()) instanceof SignBlockEntity sign)) {
+            if (this.placementTicks > 0) {
+                return false;
+            }
+            connection.handleOpenSignEditor(editor);
+            return true;
         }
         if (!isFreshlyPlaced(this.placementTicks > 0, sign.getText(editor.slot()), client.isTextFilteringEnabled())) {
-            player.openTextEdit(sign, editor.slot());
-            return;
+            connection.handleOpenSignEditor(editor);
+            return true;
         }
         connection.send(new ServerboundSignUpdatePacket(
                 editor.pos(),
@@ -102,6 +118,7 @@ public final class AutoSignModule extends Module {
                 this.front.value() ? SignTextSlot.FRONT : SignTextSlot.BACK
         ));
         this.placementTicks = 0;
+        return true;
     }
 
     static boolean isSignItem(final ItemStack stack) {

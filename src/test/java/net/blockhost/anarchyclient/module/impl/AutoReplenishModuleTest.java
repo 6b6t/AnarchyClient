@@ -44,4 +44,26 @@ class AutoReplenishModuleTest {
 
         assertNull(AutoReplenishModule.findReplenishMove(inventory, 8));
     }
+
+    @Test
+    void refillsSixteenStackItemsAtTheDefaultThreshold() {
+        ItemStack[] slots = new ItemStack[Inventory.getSelectionSize() + 1];
+        Arrays.fill(slots, ItemStack.EMPTY);
+        slots[0] = new ItemStack(Items.ENDER_PEARL, 2);
+        slots[Inventory.getSelectionSize()] = new ItemStack(Items.ENDER_PEARL, 16);
+
+        AutoReplenishModule.ReplenishMove move = AutoReplenishModule.findReplenishMove(TestInventories.withSlots(slots), 16);
+
+        assertEquals(new AutoReplenishModule.ReplenishMove(0, Inventory.getSelectionSize()), move);
+    }
+
+    @Test
+    void neverSwapsInASmallerStack() {
+        ItemStack[] slots = new ItemStack[Inventory.getSelectionSize() + 1];
+        Arrays.fill(slots, ItemStack.EMPTY);
+        slots[0] = new ItemStack(Items.COBBLESTONE, 5);
+        slots[Inventory.getSelectionSize()] = new ItemStack(Items.COBBLESTONE, 3);
+
+        assertNull(AutoReplenishModule.findReplenishMove(TestInventories.withSlots(slots), 8));
+    }
 }

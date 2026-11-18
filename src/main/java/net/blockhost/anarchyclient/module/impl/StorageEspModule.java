@@ -13,6 +13,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BarrelBlockEntity;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -65,6 +66,7 @@ public final class StorageEspModule extends Module {
             .build()));
     private List<MergedBox> cachedBoxes = List.of();
     private int scanCooldownTicks;
+    private Level level;
 
     public StorageEspModule() {
         super("storage_esp", "Storage ESP", ModuleCategory.RENDER, "Highlights storage blocks in the world so chests, shulkers, and similar containers are easier to find.");
@@ -72,12 +74,25 @@ public final class StorageEspModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        if (client.level != this.level) {
+            // Boxes from another dimension or server would be drawn at the wrong place; rescan now.
+            this.level = client.level;
+            this.cachedBoxes = List.of();
+            this.scanCooldownTicks = 0;
+        }
         if (this.scanCooldownTicks > 0) {
             this.scanCooldownTicks--;
             return;
         }
         this.cachedBoxes = this.scan(client);
         this.scanCooldownTicks = 20;
+    }
+
+    @Override
+    protected void onDisable() {
+        this.cachedBoxes = List.of();
+        this.scanCooldownTicks = 0;
+        this.level = null;
     }
 
     @Override

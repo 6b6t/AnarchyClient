@@ -29,8 +29,7 @@ public final class ArmorHudModule extends HudElementModule {
         HudPosition position = this.position(graphics, width, height);
         int x = position.x();
         int y = position.y();
-        graphics.fill(x, y, x + width, y + height, 0xAA101418);
-        graphics.outline(x, y, width, height, 0x55FFFFFF);
+        this.drawBackground(graphics, x, y, width, height, 0xAA101418);
         for (int index = 0; index < ARMOR.size(); index++) {
             ArmorLine armor = ARMOR.get(index);
             ItemStack stack = client.player.getItemBySlot(armor.slot());

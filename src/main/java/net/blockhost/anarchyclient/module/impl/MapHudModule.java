@@ -29,8 +29,7 @@ public final class MapHudModule extends HudElementModule {
         double scale = (size - 12) / (range * 2.0);
         BlockPos playerPos = client.player.blockPosition();
 
-        graphics.fill(x, y, x + size, y + size + footer, 0x66000000);
-        graphics.outline(x, y, size, size + footer, 0x55FFFFFF);
+        this.drawBackground(graphics, x, y, size, size + footer, 0x66000000);
         graphics.fill(x + center - 1, y + 4, x + center + 1, y + size - 4, 0x33FFFFFF);
         graphics.fill(x + 4, y + center - 1, x + size - 4, y + center + 1, 0x33FFFFFF);
 

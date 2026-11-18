@@ -42,4 +42,12 @@ class AutoRenameModuleTest {
         assertEquals("Fallback", AutoRenameModule.targetName(shulker, "Fallback", false, false));
         assertTrue(AutoRenameModule.shouldRename(shulker, Set.of(), "", true, false));
     }
+
+    @Test
+    void takesTheResultOnlyWhenThePlayerCanPay() {
+        assertTrue(AutoRenameModule.canTakeResult(false, 5, 5));
+        assertFalse(AutoRenameModule.canTakeResult(false, 3, 5));
+        assertTrue(AutoRenameModule.canTakeResult(true, 0, 5));
+        assertFalse(AutoRenameModule.canTakeResult(true, 30, 0));
+    }
 }

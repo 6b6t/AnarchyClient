@@ -24,7 +24,7 @@ public final class LagNotifierHudModule extends HudElementModule {
             .name("Only Lagging")
             .defaultValue(true)
             .build()));
-    private long lastPacketNanos = System.nanoTime();
+    private volatile long lastPacketNanos = System.nanoTime();
 
     public LagNotifierHudModule() {
         super("lag_notifier_hud", "Lag Notifier",
@@ -35,6 +35,12 @@ public final class LagNotifierHudModule extends HudElementModule {
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         this.lastPacketNanos = System.nanoTime();
         return false;
+    }
+
+    @Override
+    protected void onEnable() {
+        // Packets are only timed while enabled, so start counting from now.
+        this.lastPacketNanos = System.nanoTime();
     }
 
     @Override

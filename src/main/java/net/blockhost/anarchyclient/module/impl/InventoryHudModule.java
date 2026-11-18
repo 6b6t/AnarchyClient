@@ -32,8 +32,7 @@ public final class InventoryHudModule extends HudElementModule {
         HudPosition position = this.position(graphics, width, height);
         int x = position.x();
         int y = position.y();
-        graphics.fill(x, y, x + width, y + height, 0xAA101418);
-        graphics.outline(x, y, width, height, 0x55FFFFFF);
+        this.drawBackground(graphics, x, y, width, height, 0xAA101418);
         for (int row = 0; row < rows; row++) {
             for (int column = 0; column < columns; column++) {
                 int slot = row == rows - 1 ? column : 9 + row * columns + column;

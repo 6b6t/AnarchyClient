@@ -26,8 +26,7 @@ public final class ItemHudModule extends HudElementModule {
         HudPosition position = this.position(graphics, width, height);
         int x = position.x();
         int y = position.y();
-        graphics.fill(x, y, x + width, y + height, 0xAA101418);
-        graphics.outline(x, y, width, height, 0x55FFFFFF);
+        this.drawBackground(graphics, x, y, width, height, 0xAA101418);
         drawSlot(client, graphics, main, x + 6, y + 7);
         drawSlot(client, graphics, offhand, x + 32, y + 7);
     }

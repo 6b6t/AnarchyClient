@@ -45,6 +45,15 @@ abstract class HudElementModule extends Module {
         HudText.panelAt(client, graphics, lines, position.x(), position.y(), this.color(client), this.background.value());
     }
 
+    /** Draws the element's panel, unless the player turned the Background setting off. */
+    protected void drawBackground(final GuiGraphicsExtractor graphics, final int x, final int y, final int width,
+                                  final int height, final int fillColor) {
+        if (this.background.value()) {
+            graphics.fill(x, y, x + width, y + height, fillColor);
+            graphics.outline(x, y, width, height, 0x55FFFFFF);
+        }
+    }
+
     protected int color(final Minecraft client) {
         return HudText.textColor();
     }

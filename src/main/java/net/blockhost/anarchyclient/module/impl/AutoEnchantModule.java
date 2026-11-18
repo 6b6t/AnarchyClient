@@ -84,7 +84,8 @@ public final class AutoEnchantModule extends Module {
             return;
         }
         Set<Item> targets = ItemScan.parseItems(this.items.value());
-        if (this.moveFirst(client, menu, stack -> shouldEnchantCandidate(stack, targets))) {
+        boolean filtered = !this.items.value().isBlank();
+        if (this.moveFirst(client, menu, stack -> shouldEnchantCandidate(stack, targets, filtered))) {
             return;
         }
     }
@@ -101,8 +102,12 @@ public final class AutoEnchantModule extends Module {
         return false;
     }
 
-    static boolean shouldEnchantCandidate(final ItemStack stack, final Set<Item> targets) {
-        return !stack.isEmpty() && stack.isEnchantable() && (targets.isEmpty() || targets.contains(stack.getItem()));
+    /**
+     * Whether to enchant {@code stack}. A blank item list means every enchantable item; a list whose IDs all failed
+     * to resolve (a typo) matches nothing rather than everything.
+     */
+    static boolean shouldEnchantCandidate(final ItemStack stack, final Set<Item> targets, final boolean filtered) {
+        return !stack.isEmpty() && stack.isEnchantable() && (!filtered || targets.contains(stack.getItem()));
     }
 
     static boolean canUseChoice(final int[] costs, final int level, final int playerLevel,

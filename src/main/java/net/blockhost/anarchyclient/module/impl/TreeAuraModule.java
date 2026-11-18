@@ -11,11 +11,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SaplingBlock;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 
 public final class TreeAuraModule extends Module {
 
@@ -62,6 +69,12 @@ public final class TreeAuraModule extends Module {
             .defaultValue("Farthest")
             .addAllOptions(List.of("Closest", "Farthest", "Random"))
             .build()));
+    /** Bone meal uses after which a sapling counts as blocked: a tree that has room grows well before this. */
+    static final int MAX_BONE_MEAL_USES = 16;
+
+    private final Map<BlockPos, Integer> boneMealUses = new HashMap<>();
+    private final Set<BlockPos> skipped = new HashSet<>();
+    private Level level;
     private int plantTimer;
     private int bonemealTimer;
 
@@ -74,6 +87,18 @@ public final class TreeAuraModule extends Module {
     protected void onEnable() {
         this.plantTimer = 0;
         this.bonemealTimer = 0;
+        this.forgetTargets();
+    }
+
+    @Override
+    protected void onDisable() {
+        this.forgetTargets();
+    }
+
+    private void forgetTargets() {
+        this.boneMealUses.clear();
+        this.skipped.clear();
+        this.level = null;
     }
 
     @Override
@@ -81,6 +106,10 @@ public final class TreeAuraModule extends Module {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
+        }
+        if (client.level != this.level) {
+            this.forgetTargets();
+            this.level = client.level;
         }
         if (this.plantTimer > 0) {
             this.plantTimer--;
@@ -90,7 +119,8 @@ public final class TreeAuraModule extends Module {
         }
         BlockTargetScanner.SortMode sortMode = BlockTargetScanner.SortMode.fromSetting(this.sort.value());
         if (this.plantTimer <= 0) {
-            BlockPos plantPos = findPlantLocation(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode);
+            BlockPos plantPos = findPlantLocation(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode,
+                    pos -> CombatTargets.canReachBlock(player, pos) && !this.skipped.contains(pos));
             if (plantPos != null) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
                         client,
@@ -105,13 +135,17 @@ public final class TreeAuraModule extends Module {
                     this.enabled(false);
                     return;
                 }
+                if (result == WorldInteraction.ActionResult.REFUSED) {
+                    this.skipped.add(plantPos);
+                }
                 if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
                     this.plantTimer = this.plantDelay.value().intValue();
                 }
             }
         }
         if (this.bonemealTimer <= 0) {
-            BlockPos sapling = findSapling(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode);
+            BlockPos sapling = findSapling(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode,
+                    pos -> CombatTargets.canReachBlock(player, pos) && !this.skipped.contains(pos));
             if (sapling != null) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
                         client,
@@ -126,6 +160,12 @@ public final class TreeAuraModule extends Module {
                     this.enabled(false);
                     return;
                 }
+                // A refused or endlessly accepted sapling cannot grow (no room, or a lone 2x2 sapling); move on.
+                if (result == WorldInteraction.ActionResult.REFUSED
+                        || result == WorldInteraction.ActionResult.DONE
+                        && this.boneMealUses.merge(sapling, 1, Integer::sum) >= MAX_BONE_MEAL_USES) {
+                    this.skipped.add(sapling);
+                }
                 if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
                     this.bonemealTimer = this.bonemealDelay.value().intValue();
                 }
@@ -134,9 +174,9 @@ public final class TreeAuraModule extends Module {
     }
 
     static BlockPos findPlantLocation(final Minecraft client, final int radius, final int yRange,
-                                      final BlockTargetScanner.SortMode sortMode) {
+                                      final BlockTargetScanner.SortMode sortMode, final Predicate<BlockPos> usable) {
         return BlockTargetScanner.scan(client, radius, yRange, sortMode, 1,
-                        target -> canPlant(client, target.pos()))
+                        target -> usable.test(target.pos()) && canPlant(client, target.pos()))
                 .stream()
                 .map(BlockTargetScanner.BlockTarget::pos)
                 .findFirst()
@@ -144,13 +184,34 @@ public final class TreeAuraModule extends Module {
     }
 
     static BlockPos findSapling(final Minecraft client, final int radius, final int yRange,
-                                final BlockTargetScanner.SortMode sortMode) {
+                                final BlockTargetScanner.SortMode sortMode, final Predicate<BlockPos> usable) {
         return BlockTargetScanner.scan(client, radius, yRange, sortMode, 1,
-                        target -> target.state().getBlock() instanceof SaplingBlock)
+                        target -> target.state().getBlock() instanceof SaplingBlock
+                                && usable.test(target.pos())
+                                && canGrow(client.level, target.pos(), target.state().getBlock()))
                 .stream()
                 .map(BlockTargetScanner.BlockTarget::pos)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /** Dark oak and pale oak saplings only grow as a 2x2 group; bone meal on a lone one is refused. */
+    static boolean canGrow(final BlockGetter level, final BlockPos pos, final Block sapling) {
+        if (sapling != Blocks.DARK_OAK_SAPLING && sapling != Blocks.PALE_OAK_SAPLING) {
+            return true;
+        }
+        for (int dx = -1; dx <= 0; dx++) {
+            for (int dz = -1; dz <= 0; dz++) {
+                BlockPos corner = pos.offset(dx, 0, dz);
+                if (level.getBlockState(corner).is(sapling)
+                        && level.getBlockState(corner.east()).is(sapling)
+                        && level.getBlockState(corner.south()).is(sapling)
+                        && level.getBlockState(corner.south().east()).is(sapling)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     static boolean canPlant(final Minecraft client, final BlockPos ground) {

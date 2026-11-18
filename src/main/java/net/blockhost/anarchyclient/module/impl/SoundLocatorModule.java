@@ -92,7 +92,8 @@ public final class SoundLocatorModule extends Module {
             this.lastSounds = this.sounds.value();
         }
         Identifier id = SoundScan.soundId(packet);
-        if (!this.parsedSounds.isEmpty() && !this.parsedSounds.contains(id)) {
+        // A blank filter shows every sound; one with only unknown IDs (a typo) shows none.
+        if (!this.lastSounds.isBlank() && !this.parsedSounds.contains(id)) {
             return;
         }
         Vec3 position = new Vec3(packet.getX(), packet.getY(), packet.getZ());

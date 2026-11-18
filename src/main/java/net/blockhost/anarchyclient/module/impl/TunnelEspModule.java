@@ -11,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -37,6 +38,7 @@ public final class TunnelEspModule extends Module {
             .build()));
     private List<BlockPos> tunnels = List.of();
     private int cooldownTicks;
+    private Level level;
 
     public TunnelEspModule() {
         super("tunnel_esp", "Tunnel ESP", ModuleCategory.RENDER,
@@ -50,12 +52,24 @@ public final class TunnelEspModule extends Module {
             this.tunnels = List.of();
             return;
         }
+        if (client.level != this.level) {
+            this.level = client.level;
+            this.tunnels = List.of();
+            this.cooldownTicks = 0;
+        }
         if (this.cooldownTicks > 0) {
             this.cooldownTicks--;
             return;
         }
         this.cooldownTicks = 30;
         this.tunnels = scan(client, player.blockPosition(), this.range.value().intValue(), this.maxBlocks.value().intValue());
+    }
+
+    @Override
+    protected void onDisable() {
+        this.tunnels = List.of();
+        this.cooldownTicks = 0;
+        this.level = null;
     }
 
     @Override

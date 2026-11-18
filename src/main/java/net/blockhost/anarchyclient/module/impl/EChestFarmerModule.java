@@ -12,9 +12,12 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 public final class EChestFarmerModule extends Module {
 
@@ -47,7 +50,11 @@ public final class EChestFarmerModule extends Module {
         }
         if (this.target == null || !CombatTargets.canReachBlock(player, this.target)) {
             this.miner.stop(client);
-            this.target = player.blockPosition().relative(player.getDirection()).immutable();
+            this.target = chooseTarget(client.level, player.blockPosition(), player.getDirection());
+            if (this.target == null) {
+                this.debugValue("status", "no free spot next to you");
+                return;
+            }
         }
         BlockPos pos = this.target;
         BlockState state = client.level.getBlockState(pos);
@@ -65,7 +72,7 @@ public final class EChestFarmerModule extends Module {
             return;
         }
         if (!state.canBeReplaced()) {
-            // Something else is in the spot; choose a new one next tick.
+            // Something else took the spot; choose another one next tick.
             this.target = null;
             return;
         }
@@ -80,6 +87,28 @@ public final class EChestFarmerModule extends Module {
         this.miner.stop(Minecraft.getInstance());
         this.target = null;
         this.cooldown = 0;
+    }
+
+    /**
+     * Picks the spot to farm at: an ender chest already beside the player, else a free spot, trying the facing
+     * direction first and then the other sides.
+     */
+    static BlockPos chooseTarget(final BlockGetter level, final BlockPos feet, final Direction facing) {
+        List<Direction> directions = List.of(facing, facing.getClockWise(), facing.getCounterClockWise(),
+                facing.getOpposite());
+        for (Direction direction : directions) {
+            BlockPos pos = feet.relative(direction);
+            if (level.getBlockState(pos).is(Blocks.ENDER_CHEST)) {
+                return pos.immutable();
+            }
+        }
+        for (Direction direction : directions) {
+            BlockPos pos = feet.relative(direction);
+            if (level.getBlockState(pos).canBeReplaced() && !level.getBlockState(pos.below()).canBeReplaced()) {
+                return pos.immutable();
+            }
+        }
+        return null;
     }
 
     /** A pickaxe that drops obsidian from an ender chest; Silk Touch would drop the chest itself. */
