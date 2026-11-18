@@ -106,7 +106,10 @@ final class CombatPlacementPlanner {
             return Optional.empty();
         }
         for (BlockPos support : supportPositions(client.level, target)) {
+            // A support inside a player or mob can never be placed, so it would block the target forever
+            // even with Allow Entity Support; try the next side instead.
             if (shouldTry(client, player, support, options.placeRange(), options.avoidSelf(), !options.allowEntitySupport())
+                    && !livingInside(client.level, support)
                     && BlockPlacer.findPlacementTarget(client.level, support).isPresent()) {
                 return Optional.of(support);
             }
@@ -142,6 +145,16 @@ final class CombatPlacementPlanner {
                 continue;
             }
             return true;
+        }
+        return false;
+    }
+
+    static boolean livingInside(final ClientLevel level, final BlockPos pos) {
+        AABB box = new AABB(pos).deflate(0.001);
+        for (Entity entity : level.getEntities(null, box)) {
+            if (entity instanceof LivingEntity && entity.isAlive() && !entity.isSpectator()) {
+                return true;
+            }
         }
         return false;
     }
