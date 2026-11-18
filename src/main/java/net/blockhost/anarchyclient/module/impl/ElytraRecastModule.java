@@ -19,6 +19,7 @@ public final class ElytraRecastModule extends Module {
             .step(1.0)
             .build()));
     private int cooldownTicks;
+    private boolean wasGliding;
 
     public ElytraRecastModule() {
         super("elytra_recast", "Elytra Recast", ModuleCategory.MOVEMENT,
@@ -28,8 +29,18 @@ public final class ElytraRecastModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || player.connection == null || player.onGround() || player.isFallFlying()
-                || !ExtraElytraModule.canGlide(player.getItemBySlot(EquipmentSlot.CHEST))) {
+        if (player == null || player.connection == null) {
+            this.wasGliding = false;
+            return;
+        }
+        if (player.isFallFlying()) {
+            this.wasGliding = true;
+            return;
+        }
+        // Only restart a glide that stopped mid-air; otherwise every jump or ladder climb would start gliding.
+        if (!this.wasGliding || player.onGround() || player.onClimbable() || player.getAbilities().flying
+                || player.isInWater() || !ExtraElytraModule.canGlide(player.getItemBySlot(EquipmentSlot.CHEST))) {
+            this.wasGliding = false;
             return;
         }
         if (this.cooldownTicks > 0) {
@@ -38,5 +49,11 @@ public final class ElytraRecastModule extends Module {
         }
         player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
         this.cooldownTicks = this.cooldown.value().intValue();
+    }
+
+    @Override
+    protected void onDisable() {
+        this.wasGliding = false;
+        this.cooldownTicks = 0;
     }
 }

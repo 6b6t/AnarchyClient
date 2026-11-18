@@ -24,6 +24,14 @@ public final class BreakDelayModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        ((MinecraftAccessor) client).anarchyclient$setRightClickDelay(this.delay.value().intValue());
+        // Only shorten the delay vanilla set after a use. Writing the value every tick kept it from ever counting
+        // down to 0, which is when vanilla repeats a held use.
+        MinecraftAccessor accessor = (MinecraftAccessor) client;
+        accessor.anarchyclient$setRightClickDelay(
+                shortenedDelay(accessor.anarchyclient$rightClickDelay(), this.delay.value().intValue()));
+    }
+
+    static int shortenedDelay(final int current, final int configured) {
+        return Math.min(current, configured);
     }
 }

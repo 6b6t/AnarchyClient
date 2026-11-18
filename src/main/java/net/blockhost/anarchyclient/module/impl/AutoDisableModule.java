@@ -20,7 +20,7 @@ public final class AutoDisableModule extends Module {
     private final StringSetting moduleList = this.setting(StringSetting.from(StringSetting.builder()
             .id("modules")
             .name("Modules")
-            .defaultValue("kill_aura, auto_clicker, velocity, fly, glide, boost")
+            .defaultValue("kill_aura, auto_clicker, velocity, flight, glide, boost")
             .build()));
     private final BooleanSetting onDeath = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("on_death")

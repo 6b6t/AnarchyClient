@@ -37,7 +37,8 @@ public final class TargetQuery {
                 && TargetClassifier.looksLikeBot(entity.getScoreboardName(), entity.tickCount)) {
             return false;
         }
-        if (!TeamsModule.allows(entity, player)) {
+        // The Teams module only filters callers that ask for team filtering; ESP or Nametags may want allies shown.
+        if (policy.ignoreTeams() && !TeamsModule.allows(entity, player)) {
             return false;
         }
         return policy.allows(TargetClassifier.kind(entity));

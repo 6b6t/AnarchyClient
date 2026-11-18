@@ -59,7 +59,8 @@ public final class AutoWalkModule extends Module {
         input.keyPresses = "Backward".equals(this.direction.value())
                 ? InputStates.withBackward(input.keyPresses, true)
                 : InputStates.withForward(input.keyPresses, true);
-        if (this.sprint.value()) {
+        // Vanilla only sprints forward; sprinting backward just toggled sprint on and off every tick.
+        if (this.sprint.value() && !"Backward".equals(this.direction.value())) {
             input.keyPresses = InputStates.withSprint(input.keyPresses, true);
             player.setSprinting(true);
         }

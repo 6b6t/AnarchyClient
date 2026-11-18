@@ -33,4 +33,13 @@ class RotationTest {
         assertEquals(6.0F, stepped.yaw(), 0.0001F);
         assertEquals(8.0F, stepped.pitch(), 0.0001F);
     }
+
+    @Test
+    void turnsFromStraightUpToStraightDown() {
+        Rotation up = new Rotation(0.0F, -90.0F);
+        Rotation down = new Rotation(0.0F, 90.0F);
+
+        assertEquals(-60.0F, up.stepToward(down, 30.0F).pitch(), 1.0E-4F);
+        assertEquals(180.0, up.angleTo(down), 1.0E-4);
+    }
 }

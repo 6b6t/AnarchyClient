@@ -185,9 +185,12 @@ public final class BlockPlacer {
         return Math.max(1, value);
     }
 
+    /**
+     * Whether a block can go at {@code target}. Water and lava are already replaceable; a waterlogged slab, stair or
+     * fence is not, and treating its fluid as free space made placement retry it forever.
+     */
     public static boolean needsPlacement(final ClientLevel level, final BlockPos target) {
-        BlockState state = level.getBlockState(target);
-        return state.canBeReplaced() || !state.getFluidState().isEmpty();
+        return level.getBlockState(target).canBeReplaced();
     }
 
     public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,

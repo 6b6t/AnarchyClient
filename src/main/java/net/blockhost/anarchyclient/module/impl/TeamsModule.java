@@ -46,7 +46,13 @@ public final class TeamsModule extends Module {
                 && entity.getTeam().isAlliedTo(player.getTeam())) {
             return false;
         }
-        return !module.namePrefix.value() || !samePrefix(entity.getScoreboardName(), player.getScoreboardName());
+        // Clan tags live in the team prefix shown before the name; usernames cannot contain brackets.
+        return !module.namePrefix.value()
+                || !samePrefix(shownName(entity), shownName(player));
+    }
+
+    static String shownName(final Entity entity) {
+        return entity.getDisplayName().getString().strip();
     }
 
     static boolean samePrefix(final String first, final String second) {

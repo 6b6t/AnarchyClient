@@ -18,8 +18,8 @@ final class CombatTargets {
     private CombatTargets() {
     }
 
-    /** Players only, friends skipped; {@link TargetQuery#allowed} also applies the Teams module. */
-    private static final TargetPolicy ENEMY_PLAYERS = TargetPolicy.of(true, false, false, true, true, false, false);
+    /** Players only, friends and teammates (scoreboard allies and the Teams module) skipped. */
+    private static final TargetPolicy ENEMY_PLAYERS = TargetPolicy.of(true, false, false, true, true, true, false);
 
     /** The locked target when Target Lock holds a player in range, else the nearest allowed player. */
     static Player nearestEnemy(final Minecraft client, final double range) {

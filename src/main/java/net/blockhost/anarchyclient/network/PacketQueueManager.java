@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.network;
 
 import net.blockhost.anarchyclient.event.PacketEventSilencer;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.PacketListener;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.RunningOnDifferentThreadException;
 
 import java.util.ArrayDeque;
 import java.util.Comparator;
@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -120,9 +121,9 @@ public final class PacketQueueManager {
             return;
         }
         try {
-            handle(entry.packet, listener);
-        } catch (RunningOnDifferentThreadException ignored) {
-            // Vanilla handlers reschedule themselves on the client thread, as in Connection.channelRead0.
+            schedule(entry.packet, listener);
+        } catch (RejectedExecutionException ignored) {
+            // The client is shutting down.
         }
     }
 
@@ -130,9 +131,14 @@ public final class PacketQueueManager {
         PacketEventSilencer.runSilently(() -> entry.connection.send(entry.packet));
     }
 
+    /**
+     * Released packets always go through vanilla's packet queue, from any thread. Handling some directly and some
+     * through the queue could apply an older packet after a newer one, and the queue also skips packets after a
+     * disconnect and reports handler errors the vanilla way.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private static void handle(final Packet packet, final PacketListener listener) {
-        packet.handle(listener);
+    private static void schedule(final Packet packet, final PacketListener listener) {
+        Minecraft.getInstance().packetProcessor().scheduleIfPossible(listener, packet);
     }
 
     /** One direction's queues, one per owner. Package-private for tests. */

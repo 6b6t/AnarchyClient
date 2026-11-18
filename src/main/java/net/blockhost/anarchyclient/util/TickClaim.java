@@ -32,6 +32,19 @@ public final class TickClaim {
         return held;
     }
 
+    /**
+     * Claims only when nobody else holds the claim. The owner keeps it while it renews every tick, so two modules
+     * can no longer take turns and undo each other's work.
+     */
+    public boolean tryClaim(final String owner) {
+        Objects.requireNonNull(owner, "owner");
+        if (this.owner != null && !this.owner.equals(owner)) {
+            return false;
+        }
+        this.claim(owner);
+        return true;
+    }
+
     public boolean isHeld() {
         return this.owner != null;
     }

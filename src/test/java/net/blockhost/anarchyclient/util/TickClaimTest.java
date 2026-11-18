@@ -37,4 +37,18 @@ class TickClaimTest {
         assertTrue(claim.release("nuker"));
         assertFalse(claim.consume());
     }
+
+    @Test
+    void theCurrentOwnerKeepsTheClaimWhileItRenews() {
+        TickClaim claim = new TickClaim();
+        assertTrue(claim.tryClaim("nuker"));
+        claim.consume();
+
+        assertFalse(claim.tryClaim("packet_mine"));
+        assertTrue(claim.tryClaim("nuker"));
+        claim.consume();
+        claim.consume();
+
+        assertTrue(claim.tryClaim("packet_mine"));
+    }
 }

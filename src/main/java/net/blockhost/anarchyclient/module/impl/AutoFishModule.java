@@ -58,6 +58,11 @@ public final class AutoFishModule extends Module {
     private int recastCooldownTicks;
     private int reelDelayTicks;
     private boolean caughtFish;
+    private static final int NO_HOOK = Integer.MIN_VALUE;
+    /** Ticks a hook must float in water before its motion counts as a bite. */
+    private static final int SETTLE_TICKS = 10;
+    private int reeledHookId = NO_HOOK;
+    private int inWaterTicks;
 
     public AutoFishModule() {
         super("auto_fish", "Auto Fish", ModuleCategory.PLAYER,
@@ -77,6 +82,8 @@ public final class AutoFishModule extends Module {
         if (player.fishing == null) {
             this.caughtFish = false;
             this.reelDelayTicks = 0;
+            this.reeledHookId = NO_HOOK;
+            this.inWaterTicks = 0;
             if (this.autoCast.value() && this.isRecastReady()) {
                 client.gameMode.useItem(player, hand);
                 this.resetRecastCooldown();
@@ -84,9 +91,15 @@ public final class AutoFishModule extends Module {
             return;
         }
 
+        if (player.fishing.getId() == this.reeledHookId) {
+            // Already reeled: the client keeps this hook until the server removes it, and it keeps sinking.
+            return;
+        }
+        this.inWaterTicks = player.fishing.isInWater() ? this.inWaterTicks + 1 : 0;
+        // A hook that just landed still sinks from its fall; only a settled hook that dips means a bite.
         if (player.fishing.tickCount >= this.minHookTicks.value()
-                && player.fishing.getDeltaMovement().y < -0.08
-                && player.fishing.isInWater()) {
+                && this.inWaterTicks >= SETTLE_TICKS
+                && player.fishing.getDeltaMovement().y < -0.08) {
             this.triggerReel();
         }
         if (this.caughtFish) {
@@ -94,6 +107,7 @@ public final class AutoFishModule extends Module {
                 this.reelDelayTicks--;
                 return;
             }
+            this.reeledHookId = player.fishing.getId();
             client.gameMode.useItem(player, hand);
             this.caughtFish = false;
             this.resetRecastCooldown();
@@ -107,6 +121,7 @@ public final class AutoFishModule extends Module {
                 || player == null
                 || player.fishing == null
                 || player.fishing.isRemoved()
+                || player.fishing.getId() == this.reeledHookId
                 || !packet.getSound().value().equals(SoundEvents.FISHING_BOBBER_SPLASH)) {
             return;
         }

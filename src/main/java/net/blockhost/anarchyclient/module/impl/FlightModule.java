@@ -39,7 +39,9 @@ public final class FlightModule extends Module {
     private int antiKickTicks;
 
     public FlightModule() {
-        super("flight", "Flight", ModuleCategory.MOVEMENT, "Provides configurable flight movement for creative-style travel or server-specific modes.");
+        // "fly" is the id Auto Disable's default list used, and saved lists may still name it.
+        super("flight", "Flight", ModuleCategory.MOVEMENT,
+                "Provides configurable flight movement for creative-style travel or server-specific modes.", List.of("fly"));
     }
 
     @Override

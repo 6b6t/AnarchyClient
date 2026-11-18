@@ -57,7 +57,8 @@ public final class NoInteractModule extends Module {
     private final SelectSetting blockMode = this.setting(this.blocksGroup, SelectSetting.from(SelectSetting.builder()
             .id("block_mode")
             .name("Use Mode")
-            .defaultValue("All")
+            // "Listed" by default: "All" blocked every use, including other modules' block placement.
+            .defaultValue("Listed")
             .addAllOptions(LIST_MODES)
             .build()));
     private final BlockListSetting blockList = this.setting(this.blocksGroup, BlockListSetting.from(BlockListSetting.builder()
@@ -100,7 +101,8 @@ public final class NoInteractModule extends Module {
     private final SelectSetting entityMode = this.setting(this.entitiesGroup, SelectSetting.from(SelectSetting.builder()
             .id("entity_mode")
             .name("Use Mode")
-            .defaultValue("All")
+            // "Listed" by default: "All" blocked every use, including other modules' block placement.
+            .defaultValue("Listed")
             .addAllOptions(LIST_MODES)
             .build()));
     private final EntityTypeListSetting entityTypes = this.setting(this.entitiesGroup, EntityTypeListSetting.from(EntityTypeListSetting.builder()

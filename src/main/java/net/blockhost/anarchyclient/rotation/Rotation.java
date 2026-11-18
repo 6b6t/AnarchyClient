@@ -13,9 +13,11 @@ public record Rotation(float yaw, float pitch) {
         ).clampPitch();
     }
 
+    // Pitch is never wrapped: it stays within [-90, 90], and wrapping a full 180 degree turn (straight up to
+    // straight down) to -180 sent the step the wrong way, where clampPitch then held it forever.
     public Rotation stepToward(final Rotation target, final float maxStep) {
         float yawDelta = wrapDegrees(target.yaw - this.yaw);
-        float pitchDelta = wrapDegrees(target.pitch - this.pitch);
+        float pitchDelta = target.pitch - this.pitch;
         return new Rotation(
                 this.yaw + clamp(yawDelta, maxStep),
                 this.pitch + clamp(pitchDelta, maxStep)
@@ -29,7 +31,7 @@ public record Rotation(float yaw, float pitch) {
         }
         double factor = maxStep / angle;
         float yawDelta = wrapDegrees(target.yaw - this.yaw);
-        float pitchDelta = wrapDegrees(target.pitch - this.pitch);
+        float pitchDelta = target.pitch - this.pitch;
         return new Rotation(
                 this.yaw + (float) (yawDelta * factor),
                 this.pitch + (float) (pitchDelta * factor)
@@ -38,7 +40,7 @@ public record Rotation(float yaw, float pitch) {
 
     public double angleTo(final Rotation target) {
         double yawDelta = wrapDegrees(target.yaw - this.yaw);
-        double pitchDelta = wrapDegrees(target.pitch - this.pitch);
+        double pitchDelta = target.pitch - this.pitch;
         return Math.sqrt(yawDelta * yawDelta + pitchDelta * pitchDelta);
     }
 

@@ -132,14 +132,6 @@ public final class KillAuraModule extends Module {
             .defaultValue("Stepped")
             .addAllOptions(List.of("Stepped", "Linear", "Instant"))
             .build()));
-    private final NumberSetting rotationResetThreshold = this.setting(NumberSetting.from(NumberSetting.builder()
-            .id("rotation_reset_threshold")
-            .name("Aim Reset")
-            .defaultValue(1.0)
-            .min(0.0)
-            .max(15.0)
-            .step(0.5)
-            .build()));
     private final BooleanSetting pauseRotationsInInventory = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("pause_rotations_in_inventory")
             .name("Inv Pause")
@@ -190,7 +182,9 @@ public final class KillAuraModule extends Module {
                     player,
                     entity,
                     this.maxTurnDegrees.value().floatValue(),
-                    this.rotationResetThreshold.value().floatValue(),
+                    // Kill Aura sets no "reached" callback, so the threshold has no effect; it was a setting
+                    // that did nothing.
+                    1.0F,
                     turnMode,
                     this.pauseRotationsInInventory.value()
             );

@@ -27,16 +27,28 @@ public final class SilentHotbar {
         if (player == null || owner == null || owner.isBlank() || !Inventory.isHotbarSlot(slot)) {
             return false;
         }
-        if (active != null && !active.owner().equals(owner) && active.priority() > priority) {
+        if (active != null && !active.owner().equals(owner) && !canTakeOver(active, priority)) {
             return false;
         }
         int selected = player.getInventory().getSelectedSlot();
-        if (previousSlot < 0 && selected != slot && restore) {
+        if (!restore) {
+            // This owner asked not to restore; an older owner's saved slot must not snap back when it ends.
+            previousSlot = -1;
+        } else if (previousSlot < 0 && selected != slot) {
             previousSlot = selected;
         }
         active = new Request(owner, slot, priority, Math.max(1, ticks), restore);
         player.getInventory().setSelectedSlot(slot);
         return true;
+    }
+
+    /**
+     * A higher priority always wins. An equal one only wins while the current owner is not using an item: switching
+     * slots makes the server stop the use (a potion being drunk, a bow being drawn).
+     */
+    private static boolean canTakeOver(final Request current, final int priority) {
+        return priority > current.priority()
+                || priority == current.priority() && !ItemUseControl.isHolding(current.owner());
     }
 
     public static OptionalInt selectMatching(final LocalPlayer player, final String owner,

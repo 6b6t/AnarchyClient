@@ -26,7 +26,7 @@ public final class MiningControl {
     /**
      * Starts or continues breaking {@code pos} and claims mining control for this tick. Call it
      * once per tick for the same block until it breaks. Returns whether a break packet was sent
-     * or progress was made.
+     * or progress was made; false while another module holds the claim.
      */
     public static boolean mine(final Minecraft client, final String owner, final BlockPos pos, final Direction face) {
         LocalPlayer player = client.player;
@@ -37,7 +37,10 @@ public final class MiningControl {
             release(client, owner);
             return false;
         }
-        CLAIM.claim(owner);
+        // Another module is mining: breaking a second block would abort its progress every tick.
+        if (!CLAIM.tryClaim(owner)) {
+            return false;
+        }
         if (!client.gameMode.continueDestroyBlock(pos, face)) {
             return false;
         }
