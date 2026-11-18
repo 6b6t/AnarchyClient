@@ -35,6 +35,9 @@ public final class AnarchyClientRenderPipelines {
     private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/lines_no_depth"))
+                    // The lines snippet declares no color target; without one every draw fails the
+                    // render pass's attachment check and crashes the frame.
+                    .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                     .withDepthStencilState(NO_DEPTH)
                     .build()
     );
