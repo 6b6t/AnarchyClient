@@ -7,8 +7,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BetterChatModuleTest {
 
@@ -38,15 +38,15 @@ class BetterChatModuleTest {
         this.module.enabled(true);
         Component message = Component.literal("hello");
 
-        Component first = this.module.chatMessage(null, message);
-        assertNull(BetterChatModule.takeReplacedMessage());
-
-        Component second = this.module.chatMessage(null, message);
-        assertSame(first, BetterChatModule.takeReplacedMessage());
-        assertNull(BetterChatModule.takeReplacedMessage());
+        this.module.chatMessage(null, message);
+        assertFalse(BetterChatModule.takeReplacesPrevious());
 
         this.module.chatMessage(null, message);
-        assertSame(second, BetterChatModule.takeReplacedMessage());
+        assertTrue(BetterChatModule.takeReplacesPrevious());
+        assertFalse(BetterChatModule.takeReplacesPrevious());
+
+        this.module.chatMessage(null, message);
+        assertTrue(BetterChatModule.takeReplacesPrevious());
     }
 
     @Test
@@ -56,6 +56,6 @@ class BetterChatModuleTest {
         this.module.chatMessage(null, Component.literal("hello"));
         this.module.chatMessage(null, Component.literal("world"));
 
-        assertNull(BetterChatModule.takeReplacedMessage());
+        assertFalse(BetterChatModule.takeReplacesPrevious());
     }
 }

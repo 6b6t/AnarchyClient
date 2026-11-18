@@ -6,10 +6,12 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.setting.StringSetting;
+import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
 import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
@@ -51,17 +53,57 @@ public final class WaypointsModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        List<Waypoint> waypoints = new ArrayList<>(AnarchyClient.WAYPOINTS.byWorld(WaypointStore.currentWorld(client)));
-        waypoints.addAll(this.legacy);
-        for (Waypoint waypoint : waypoints) {
+        for (Waypoint waypoint : this.waypoints(client)) {
             BlockPos pos = waypoint.pos();
+            WorldLineRenderer.Color color = lineColor(waypoint.color());
             AABB box = new AABB(pos).inflate(0.08).move(camera.scale(-1));
-            WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(120, 230, 255, 210));
+            WorldLineRenderer.boxNoDepth(matrices, submits, box, color);
             WorldLineRenderer.lineNoDepth(matrices, submits,
                     new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5).subtract(camera),
                     new Vec3(pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5).subtract(camera),
-                    new WorldLineRenderer.Color(120, 230, 255, 160));
+                    color);
         }
+    }
+
+    @Override
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
+        if (client.player == null || client.level == null || client.gui.screen() instanceof AnarchyClientScreen) {
+            return;
+        }
+        for (Waypoint waypoint : this.waypoints(client)) {
+            BlockPos pos = waypoint.pos();
+            Vec3 labelPos = new Vec3(pos.getX() + 0.5, pos.getY() + 2.3, pos.getZ() + 0.5);
+            Vec3 projected = client.gameRenderer.projectPointToScreen(labelPos);
+            if (projected.z > 1.0) {
+                continue;
+            }
+            String text = label(waypoint.name(), Math.sqrt(client.player.distanceToSqr(labelPos)));
+            int screenX = (int) ((projected.x + 1.0) * 0.5 * graphics.guiWidth());
+            int screenY = (int) ((1.0 - projected.y) * 0.5 * graphics.guiHeight());
+            int halfWidth = client.font.width(text) / 2;
+            graphics.fill(screenX - halfWidth - 2, screenY - 2, screenX + halfWidth + 2, screenY + 9, 0x60000000);
+            graphics.text(client.font, text, screenX - halfWidth, screenY, textColor(waypoint.color()));
+        }
+    }
+
+    private List<Waypoint> waypoints(final Minecraft client) {
+        List<Waypoint> waypoints = new ArrayList<>(AnarchyClient.WAYPOINTS.byWorld(WaypointStore.currentWorld(client)));
+        waypoints.addAll(this.legacy);
+        return waypoints;
+    }
+
+    static String label(final String name, final double distance) {
+        return name + " " + Math.round(distance) + "m";
+    }
+
+    /** Waypoint colors are stored as RGBA. */
+    static WorldLineRenderer.Color lineColor(final int rgba) {
+        return new WorldLineRenderer.Color(rgba >>> 24, rgba >>> 16 & 0xFF, rgba >>> 8 & 0xFF, rgba & 0xFF);
+    }
+
+    /** Opaque ARGB text color for an RGBA waypoint color. */
+    static int textColor(final int rgba) {
+        return 0xFF000000 | rgba >>> 8;
     }
 
     static List<Waypoint> parse(final String value) {

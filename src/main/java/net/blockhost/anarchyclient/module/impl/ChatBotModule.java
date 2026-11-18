@@ -11,11 +11,15 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 
 public final class ChatBotModule extends Module {
+
+    /** Replies waiting at once. Anyone spamming a trigger would otherwise make the bot spam for them. */
+    static final int MAX_QUEUED_REPLIES = 3;
 
     private final StringSetting prefix = this.setting(StringSetting.from(StringSetting.builder()
             .id("prefix")
@@ -64,10 +68,10 @@ public final class ChatBotModule extends Module {
         }
         String reply = parseReplies(this.replies.value()).get(command.toLowerCase(Locale.ROOT));
         if (reply != null) {
-            this.queue.add(new QueuedReply(
-                    Math.max(0, this.delay.value().intValue()),
-                    PlaceholderFormatter.format(reply, placeholders(client))
-            ));
+            String formatted = PlaceholderFormatter.format(reply, placeholders(client));
+            if (canQueue(this.queue.stream().map(queued -> queued.message).toList(), formatted)) {
+                this.queue.add(new QueuedReply(Math.max(0, this.delay.value().intValue()), formatted));
+            }
         }
         return message;
     }
@@ -75,6 +79,11 @@ public final class ChatBotModule extends Module {
     @Override
     public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
         this.queue.clear();
+    }
+
+    /** A reply is queued only when the queue has room and the same reply is not already waiting. */
+    static boolean canQueue(final List<String> queued, final String reply) {
+        return queued.size() < MAX_QUEUED_REPLIES && !queued.contains(reply);
     }
 
     static Map<String, String> parseReplies(final String value) {

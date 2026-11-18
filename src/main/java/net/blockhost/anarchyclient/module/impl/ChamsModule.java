@@ -50,12 +50,13 @@ public final class ChamsModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double rangeSqr = this.range.value() * this.range.value();
         for (Entity entity : client.level.entitiesForRendering()) {
             if (entity == client.player || entity.distanceToSqr(client.player) > rangeSqr || !this.shouldRender(entity)) {
                 continue;
             }
-            AABB box = entity.getBoundingBox().inflate(0.05).move(camera.scale(-1));
+            AABB box = WorldLineRenderer.interpolatedBox(entity, partialTick, 0.05, camera);
             WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(120, 230, 255, 35));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(120, 230, 255, 170));
         }

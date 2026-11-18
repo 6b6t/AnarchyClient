@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
@@ -121,18 +122,23 @@ public final class AutoLogModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (this.logged || client.level == null || client.player == null
-                || !(packet instanceof ClientboundEntityEventPacket event)
-                || event.getEventId() != EntityEvent.PROTECTED_FROM_DEATH) {
-            return false;
-        }
-        if (event.getEntity(client.level) == client.player) {
-            this.selfTotemPops++;
-            if (shouldDisconnectForTotemPops(this.selfTotemPops, this.totemPopThreshold.value().intValue())) {
-                this.disconnect(connection, "totem popped " + this.selfTotemPops + " times");
-            }
+        if (packet instanceof ClientboundEntityEventPacket event && event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH) {
+            // Runs on the network thread; entity lookups and the disconnect belong on the client thread.
+            MainThread.run(() -> this.handleTotemPop(client, connection, event));
         }
         return false;
+    }
+
+    private void handleTotemPop(final Minecraft client, final Connection connection,
+                                final ClientboundEntityEventPacket event) {
+        if (this.logged || client.level == null || client.player == null
+                || event.getEntity(client.level) != client.player) {
+            return;
+        }
+        this.selfTotemPops++;
+        if (shouldDisconnectForTotemPops(this.selfTotemPops, this.totemPopThreshold.value().intValue())) {
+            this.disconnect(connection, "totem popped " + this.selfTotemPops + " times");
+        }
     }
 
     @Override

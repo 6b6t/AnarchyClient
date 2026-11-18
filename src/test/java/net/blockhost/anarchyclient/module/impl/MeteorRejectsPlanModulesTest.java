@@ -7,6 +7,7 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,6 +23,13 @@ class MeteorRejectsPlanModulesTest {
         assertEquals(Map.of("ping", "Pong", "coords", "{player.pos}"),
                 ChatBotModule.parseReplies("ping=Pong\\ncoords={player.pos}"));
         assertEquals("Hello Steve", PlaceholderFormatter.format("Hello {player}", Map.of("player", "Steve")));
+    }
+
+    @Test
+    void chatBotSkipsRepeatedRepliesAndCapsTheQueue() {
+        assertTrue(ChatBotModule.canQueue(List.of(), "Pong"));
+        assertFalse(ChatBotModule.canQueue(List.of("Pong"), "Pong"));
+        assertFalse(ChatBotModule.canQueue(List.of("a", "b", "c"), "d"));
     }
 
     @Test

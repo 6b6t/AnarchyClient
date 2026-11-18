@@ -6,7 +6,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.entity.Entity;
 
 public final class FreeLookModule extends Module {
 
@@ -20,6 +20,7 @@ public final class FreeLookModule extends Module {
             .build()));
     private float cameraYaw;
     private float cameraPitch;
+    private boolean initialized;
 
     public FreeLookModule() {
         super("free_look", "Free Look", ModuleCategory.RENDER,
@@ -28,11 +29,8 @@ public final class FreeLookModule extends Module {
 
     @Override
     protected void onEnable() {
-        Minecraft client = Minecraft.getInstance();
-        if (client.player != null) {
-            this.cameraYaw = client.player.getYRot();
-            this.cameraPitch = client.player.getXRot();
-        }
+        // The player may not exist yet (enabled from config at startup), so take its facing on first use.
+        this.initialized = false;
         active = this;
     }
 
@@ -43,10 +41,32 @@ public final class FreeLookModule extends Module {
         }
     }
 
-    @Override
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                           final float pitch) {
-        return new CameraTransform(position, this.cameraYaw, this.cameraPitch);
+    /** Returns the yaw the camera follows: the free-look yaw for the local player, else {@code vanillaYaw}. */
+    public static float viewYaw(final Entity entity, final float vanillaYaw) {
+        FreeLookModule module = active;
+        if (module == null || !(entity instanceof LocalPlayer player)) {
+            return vanillaYaw;
+        }
+        module.initialize(player);
+        return module.cameraYaw;
+    }
+
+    /** Returns the pitch the camera follows: the free-look pitch for the local player, else {@code vanillaPitch}. */
+    public static float viewPitch(final Entity entity, final float vanillaPitch) {
+        FreeLookModule module = active;
+        if (module == null || !(entity instanceof LocalPlayer player)) {
+            return vanillaPitch;
+        }
+        module.initialize(player);
+        return module.cameraPitch;
+    }
+
+    private void initialize(final LocalPlayer player) {
+        if (!this.initialized) {
+            this.cameraYaw = player.getYRot();
+            this.cameraPitch = player.getXRot();
+            this.initialized = true;
+        }
     }
 
     public static boolean handleTurn(final Minecraft client, final LocalPlayer player,
@@ -56,6 +76,7 @@ public final class FreeLookModule extends Module {
             return false;
         }
         // The camera always follows the mouse; only a locked player is kept from turning with it.
+        module.initialize(player);
         module.cameraYaw += (float) xOffset * 0.15F;
         module.cameraPitch = clampedPitch(module.cameraPitch + (float) yOffset * 0.15F);
         return module.lockPlayer.value();

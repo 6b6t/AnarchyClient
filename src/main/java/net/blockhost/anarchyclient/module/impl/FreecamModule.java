@@ -21,7 +21,10 @@ public final class FreecamModule extends Module {
             .max(3.0)
             .step(0.1)
             .build()));
+    private static FreecamModule active;
+
     private Vec3 position;
+    private Vec3 previousPosition;
     private Input cameraInput = Input.EMPTY;
 
     public FreecamModule() {
@@ -33,12 +36,20 @@ public final class FreecamModule extends Module {
         LocalPlayer player = client.player;
         if (player == null) {
             this.position = null;
+            this.previousPosition = null;
             return;
         }
         if (this.position == null) {
             this.position = player.getEyePosition();
         }
+        this.previousPosition = this.position;
         this.position = move(this.position, player.getYRot(), this.cameraInput, this.speed.value());
+    }
+
+    /** Whether the camera is away from the player, so vanilla draws the player's body and hides the held item. */
+    public static boolean detachesCamera() {
+        FreecamModule module = active;
+        return module != null && module.position != null;
     }
 
     @Override
@@ -55,12 +66,27 @@ public final class FreecamModule extends Module {
     @Override
     public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
                                            final float pitch) {
-        return this.position == null ? new CameraTransform(position, yaw, pitch) : new CameraTransform(this.position, yaw, pitch);
+        if (this.position == null) {
+            return new CameraTransform(position, yaw, pitch);
+        }
+        // The camera moves once per tick; interpolate so it stays smooth at high frame rates.
+        Vec3 previous = this.previousPosition == null ? this.position : this.previousPosition;
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        return new CameraTransform(previous.lerp(this.position, partialTick), yaw, pitch);
+    }
+
+    @Override
+    protected void onEnable() {
+        active = this;
     }
 
     @Override
     protected void onDisable() {
+        if (active == this) {
+            active = null;
+        }
         this.position = null;
+        this.previousPosition = null;
         this.cameraInput = Input.EMPTY;
     }
 

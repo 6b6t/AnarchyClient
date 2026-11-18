@@ -115,7 +115,9 @@ public final class TracersModule extends Module {
         }
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        Vec3 start = player.getEyePosition().subtract(camera);
+        float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
+        // Start just in front of the interpolated camera so the line stays put while moving.
+        Vec3 start = new Vec3(client.gameRenderer.mainCamera().forwardVector());
         TargetPolicy policy = this.targetPolicy();
         for (LivingEntity entity : RenderedEntityCache.entities()) {
             if (!TargetQuery.allowed(entity, player, policy)) {
@@ -125,7 +127,7 @@ public final class TracersModule extends Module {
             if (entity.distanceToSqr(player) > rangeValue * rangeValue) {
                 continue;
             }
-            Vec3 end = entity.getBoundingBox().getCenter().subtract(camera);
+            Vec3 end = WorldLineRenderer.interpolatedBox(entity, partialTick, 0.0, camera).getCenter();
             WorldLineRenderer.lineNoDepth(matrices, submits, start, end, this.color(entity));
         }
     }

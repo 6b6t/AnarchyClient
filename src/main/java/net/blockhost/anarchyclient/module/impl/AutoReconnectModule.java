@@ -32,6 +32,9 @@ public final class AutoReconnectModule extends Module {
 
     private static final SystemToast.SystemToastId RECONNECT_TOAST = new SystemToast.SystemToastId();
 
+    /** Set when Silent Disconnect skipped the disconnected screen that would otherwise start a reconnect. */
+    private static boolean silentDisconnect;
+
     private ServerData lastServer;
     private int reconnectTicks;
 
@@ -51,12 +54,19 @@ public final class AutoReconnectModule extends Module {
             this.reconnectTicks = this.delaySeconds.value().intValue() * 20;
             return;
         }
-        if (!(client.gui.screen() instanceof DisconnectedScreen) || this.lastServer == null) {
+        if (client.gui.screen() instanceof ConnectScreen) {
+            // The player is already joining a server, so a reconnect would only interrupt it.
+            silentDisconnect = false;
+            return;
+        }
+        boolean disconnected = client.gui.screen() instanceof DisconnectedScreen || silentDisconnect;
+        if (!disconnected || this.lastServer == null) {
             return;
         }
         if (AutoLogModule.consumeSafetyDisconnect()) {
             // Auto Log left on purpose; rejoining would put the player back into the same danger.
             this.lastServer = null;
+            silentDisconnect = false;
             return;
         }
         if (this.reconnectTicks > 0) {
@@ -67,6 +77,7 @@ public final class AutoReconnectModule extends Module {
             SystemToast.addOrUpdate(client.gui.toastManager(), RECONNECT_TOAST, Component.literal("Auto Reconnect"),
                     Component.literal("Reconnecting to " + this.lastServer.ip + "..."));
         }
+        silentDisconnect = false;
         ConnectScreen.startConnecting(
                 new TitleScreen(),
                 client,
@@ -82,6 +93,22 @@ public final class AutoReconnectModule extends Module {
     public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
         // A new session started, so an Auto Log disconnect from an earlier session no longer applies.
         AutoLogModule.clearSafetyDisconnect();
+        silentDisconnect = false;
+    }
+
+    @Override
+    protected void onEnable() {
+        silentDisconnect = false;
+    }
+
+    @Override
+    protected void onDisable() {
+        silentDisconnect = false;
+    }
+
+    /** Called on the client thread when the server dropped the connection but Silent Disconnect hid the screen. */
+    public static void noteSilentDisconnect() {
+        silentDisconnect = true;
     }
 
     static ServerData copyServer(final ServerData server) {

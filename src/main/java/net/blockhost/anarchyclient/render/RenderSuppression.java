@@ -11,8 +11,13 @@ public final class RenderSuppression {
     private RenderSuppression() {
     }
 
+    /** Replaces the owner's suppressed effects with {@code kinds}. No kinds removes the owner's request. */
     public static void enable(final String owner, final Kind... kinds) {
-        if (owner == null || owner.isBlank() || kinds == null || kinds.length == 0) {
+        if (owner == null || owner.isBlank()) {
+            return;
+        }
+        if (kinds == null || kinds.length == 0) {
+            REQUESTS.remove(owner);
             return;
         }
         EnumSet<Kind> set = EnumSet.noneOf(Kind.class);

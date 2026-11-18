@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
+import net.blockhost.anarchyclient.module.impl.AutoReconnectModule;
 import net.blockhost.anarchyclient.module.impl.SilentDisconnectModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -52,6 +53,7 @@ public abstract class ClientCommonPacketListenerMixin {
             return;
         }
         this.anarchyclient$silentReason = details.reason();
+        AutoReconnectModule.noteSilentDisconnect();
         info.setReturnValue(Objects.requireNonNullElseGet(
                 this.postDisconnectScreen,
                 () -> this.serverData != null ? new JoinMultiplayerScreen(new TitleScreen()) : new TitleScreen()

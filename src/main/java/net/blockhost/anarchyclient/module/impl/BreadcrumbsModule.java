@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ public final class BreadcrumbsModule extends Module {
             .step(5.0)
             .build()));
     private final List<TrailPoint> points = new ArrayList<>();
+    private Level level;
 
     public BreadcrumbsModule() {
         super("breadcrumbs", "Breadcrumbs", ModuleCategory.RENDER,
@@ -59,9 +61,13 @@ public final class BreadcrumbsModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null) {
+        if (player == null || client.level == null || client.level != this.level) {
+            // A new level means a new dimension or server; old points would be drawn at the wrong place.
             this.points.clear();
-            return;
+            this.level = client.level;
+            if (player == null || client.level == null) {
+                return;
+            }
         }
         this.points.replaceAll(TrailPoint::tick);
         this.points.removeIf(point -> point.age() > this.lifetime.value().intValue());
@@ -101,6 +107,7 @@ public final class BreadcrumbsModule extends Module {
     @Override
     protected void onDisable() {
         this.points.clear();
+        this.level = null;
     }
 
     static TrailPoint tick(final TrailPoint point) {

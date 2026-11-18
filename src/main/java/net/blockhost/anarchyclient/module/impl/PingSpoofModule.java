@@ -19,7 +19,7 @@ public final class PingSpoofModule extends Module {
             .name("Delay")
             .defaultValue(500.0)
             .min(0.0)
-            .max(25_000.0)
+            .max(10_000.0)
             .step(50.0)
             .build()));
     private final NumberSetting maxPackets = this.setting(NumberSetting.from(NumberSetting.builder()

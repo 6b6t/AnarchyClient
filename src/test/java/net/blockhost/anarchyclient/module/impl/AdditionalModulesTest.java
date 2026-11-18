@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import net.blockhost.anarchyclient.render.WorldLineRenderer;
 import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -469,6 +470,13 @@ class AdditionalModulesTest {
         assertEquals("home", points.getFirst().name());
         assertEquals(new BlockPos(1, 64, -3), points.getFirst().pos());
         assertEquals("stash", points.get(1).name());
+    }
+
+    @Test
+    void waypointsUseTheirStoredColorAndShowDistance() {
+        assertEquals(new WorldLineRenderer.Color(0x12, 0x34, 0x56, 0x78), WaypointsModule.lineColor(0x12345678));
+        assertEquals(0xFF123456, WaypointsModule.textColor(0x12345678));
+        assertEquals("home 42m", WaypointsModule.label("home", 41.6));
     }
 
     @Test

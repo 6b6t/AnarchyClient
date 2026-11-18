@@ -62,6 +62,8 @@ public final class SwarmModule extends Module {
     private volatile ServerSocket serverSocket;
     private volatile Socket workerSocket;
     private volatile boolean running;
+    /** Bumped on every start and stop, so a thread from an earlier service stops even after a quick restart. */
+    private volatile int generation;
     private volatile long retryAfterMillis;
     private Thread serviceThread;
     private String lastStatus = "stopped";
@@ -126,16 +128,23 @@ public final class SwarmModule extends Module {
             return;
         }
         this.running = true;
+        int serviceGeneration = ++this.generation;
         this.lastStatus = "starting";
         if ("Host".equals(this.role.value())) {
-            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Host").start(this::runHost);
+            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Host")
+                    .start(() -> this.runHost(serviceGeneration));
         } else {
-            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Worker").start(this::runWorker);
+            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Worker")
+                    .start(() -> this.runWorker(serviceGeneration));
         }
     }
 
     private synchronized void stopService() {
         this.running = false;
+        this.generation++;
+        if (this.serviceThread != null) {
+            this.serviceThread.interrupt();
+        }
         closeQuietly(this.serverSocket);
         closeQuietly(this.workerSocket);
         for (PeerConnection peer : this.peers) {
@@ -148,22 +157,36 @@ public final class SwarmModule extends Module {
         this.lastStatus = "stopped";
     }
 
-    private void runHost() {
+    private boolean isCurrent(final int serviceGeneration) {
+        return this.running && this.generation == serviceGeneration;
+    }
+
+    private void runHost(final int serviceGeneration) {
         try (ServerSocket server = new ServerSocket(this.port.value().intValue())) {
-            this.serverSocket = server;
+            synchronized (this) {
+                if (!this.isCurrent(serviceGeneration)) {
+                    return;
+                }
+                this.serverSocket = server;
+            }
             this.lastStatus = "listening";
-            while (this.running) {
+            while (this.isCurrent(serviceGeneration)) {
                 Socket socket = server.accept();
                 Thread.ofVirtual().name("AnarchyClient Swarm Peer").start(() -> this.handlePeer(socket));
             }
         } catch (IOException exception) {
-            if (this.running) {
+            if (this.isCurrent(serviceGeneration)) {
                 this.lastStatus = "host error " + exception.getClass().getSimpleName();
                 // A failed bind (port in use) would otherwise start a new host thread every tick.
                 this.retryAfterMillis = System.currentTimeMillis() + HOST_RETRY_MILLIS;
             }
         } finally {
-            this.running = false;
+            synchronized (this) {
+                // Only the current host may mark the service stopped; a newer one may already be running.
+                if (this.generation == serviceGeneration) {
+                    this.running = false;
+                }
+            }
         }
     }
 
@@ -190,20 +213,25 @@ public final class SwarmModule extends Module {
         }
     }
 
-    private void runWorker() {
-        while (this.running) {
+    private void runWorker(final int serviceGeneration) {
+        while (this.isCurrent(serviceGeneration)) {
             try (Socket socket = new Socket(this.host.value(), this.port.value().intValue())) {
-                this.workerSocket = socket;
+                synchronized (this) {
+                    if (!this.isCurrent(serviceGeneration)) {
+                        return;
+                    }
+                    this.workerSocket = socket;
+                }
                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                 writer.println("HELLO\t" + this.channel.value());
                 this.lastStatus = "connected";
                 String line;
-                while (this.running && (line = reader.readLine()) != null) {
+                while (this.isCurrent(serviceGeneration) && (line = reader.readLine()) != null) {
                     decodeRun(line).ifPresent(this.pendingActions::add);
                 }
             } catch (IOException exception) {
-                if (this.running) {
+                if (this.isCurrent(serviceGeneration)) {
                     this.lastStatus = "retrying";
                     sleep(2000L);
                 }

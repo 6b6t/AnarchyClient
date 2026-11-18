@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.BundlePacket;
 import net.minecraft.network.protocol.Packet;
 
 import java.util.Locale;
@@ -57,6 +58,13 @@ public final class PacketLoggerModule extends Module {
     }
 
     private void log(final Minecraft client, final String direction, final Packet<?> packet) {
+        if (packet instanceof BundlePacket<?> bundle) {
+            // Entity spawns and similar arrive inside bundles; log what they carry, not just the wrapper.
+            for (Packet<?> subPacket : bundle.subPackets()) {
+                this.log(client, direction, subPacket);
+            }
+            return;
+        }
         String name = packetName(packet);
         if (!matchesFilter(name, this.filter.value())) {
             return;

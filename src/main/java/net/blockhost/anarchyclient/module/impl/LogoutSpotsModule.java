@@ -16,8 +16,10 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -60,6 +62,7 @@ public final class LogoutSpotsModule extends Module {
             .build()));
     private Map<UUID, LogoutSpot> lastSeen = Map.of();
     private final Map<UUID, LogoutSpot> spots = new LinkedHashMap<>();
+    private Level level;
 
     public LogoutSpotsModule() {
         super("logout_spots", "Logout Spots", ModuleCategory.RENDER,
@@ -72,6 +75,11 @@ public final class LogoutSpotsModule extends Module {
         if (player == null || client.level == null) {
             this.clear();
             return;
+        }
+        if (client.level != this.level) {
+            // Players seen in the previous level did not log out when we left it.
+            this.lastSeen = Map.of();
+            this.level = client.level;
         }
         this.ageSpots(this.lifetimeSeconds.value().intValue() * 20);
         this.lastSeen = snapshotPlayers(client, player, this.ignoreFriends.value());
@@ -110,10 +118,14 @@ public final class LogoutSpotsModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
+        ResourceKey<Level> dimension = client.player.level().dimension();
         int alpha = this.opacity.value().intValue();
         WorldLineRenderer.Color fill = new WorldLineRenderer.Color(255, 70, 90, Math.max(20, alpha / 3));
         WorldLineRenderer.Color outline = new WorldLineRenderer.Color(255, 95, 120, alpha);
         for (LogoutSpot spot : this.spots.values()) {
+            if (!spot.dimension().equals(dimension)) {
+                continue;
+            }
             WorldLineRenderer.fillNoDepth(matrices, submits, spot.box().move(camera.scale(-1)), fill);
             WorldLineRenderer.boxNoDepth(matrices, submits, spot.box().move(camera.scale(-1)), outline);
         }
@@ -154,6 +166,7 @@ public final class LogoutSpotsModule extends Module {
         return new LogoutSpot(
                 player.getUUID(),
                 player.getScoreboardName(),
+                player.level().dimension(),
                 player.position(),
                 player.getBoundingBox(),
                 player.getHealth() + player.getAbsorptionAmount(),
@@ -182,12 +195,14 @@ public final class LogoutSpotsModule extends Module {
     private void clear() {
         this.lastSeen = Map.of();
         this.spots.clear();
+        this.level = null;
     }
 
-    record LogoutSpot(UUID id, String name, Vec3 position, AABB box, float health, int ageTicks) {
+    record LogoutSpot(UUID id, String name, ResourceKey<Level> dimension, Vec3 position, AABB box, float health,
+                      int ageTicks) {
 
         LogoutSpot withAge(final int ageTicks) {
-            return new LogoutSpot(this.id, this.name, this.position, this.box, this.health, ageTicks);
+            return new LogoutSpot(this.id, this.name, this.dimension, this.position, this.box, this.health, ageTicks);
         }
     }
 }

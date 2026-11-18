@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -30,6 +31,10 @@ public abstract class ChatComponentMixin {
     @Shadow
     protected abstract void refreshTrimmedMessages();
 
+    /** The last message this mixin saw added, after every module changed it. */
+    @Unique
+    private @Nullable Component anarchyclient$lastAdded;
+
     @ModifyVariable(method = "addMessage", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private Component anarchyclient$modifyChatMessage(final Component message) {
         return AnarchyClient.MODULES.chatMessage(Minecraft.getInstance(), message);
@@ -45,8 +50,10 @@ public abstract class ChatComponentMixin {
     private void anarchyclient$replaceDuplicateMessage(final Component contents, final @Nullable MessageSignature signature,
                                                        final GuiMessageSource source, final @Nullable GuiMessageTag tag,
                                                        final CallbackInfo info) {
-        Component replaced = BetterChatModule.takeReplacedMessage();
-        if (replaced != null && !this.allMessages.isEmpty() && this.allMessages.getFirst().content() == replaced) {
+        Component previous = this.anarchyclient$lastAdded;
+        this.anarchyclient$lastAdded = contents;
+        if (BetterChatModule.takeReplacesPrevious() && previous != null
+                && !this.allMessages.isEmpty() && this.allMessages.getFirst().content() == previous) {
             this.allMessages.removeFirst();
             this.refreshTrimmedMessages();
         }
@@ -63,7 +70,7 @@ public abstract class ChatComponentMixin {
             cancellable = true
     )
     private void anarchyclient$preventChatClear(final boolean history, final CallbackInfo info) {
-        if (BetterChatModule.shouldPreventClearMessages()) {
+        if (BetterChatModule.shouldPreventClearMessages(history)) {
             info.cancel();
         }
     }
