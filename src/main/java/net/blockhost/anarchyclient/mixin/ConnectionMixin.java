@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.blockhost.anarchyclient.event.PacketReceiveEvent;
 import net.blockhost.anarchyclient.event.PacketSendEvent;
 import net.blockhost.anarchyclient.event.PacketSentEvent;
+import net.blockhost.anarchyclient.network.PositionPacketLimiter;
 import net.blockhost.anarchyclient.rotation.ServerRotationTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
@@ -60,21 +61,32 @@ public abstract class ConnectionMixin {
     )
     private void anarchyclient$sendPacket(final Packet<?> packet, final ChannelFutureListener listener,
                                           final boolean flush, final CallbackInfo info) {
-        if (PacketEventSilencer.silent() || !this.anarchyclient$isClientConnection()) {
+        if (anarchyclient$resending.get() || !this.anarchyclient$isClientConnection()) {
             return;
         }
-        PacketSendEvent event = AnarchyClient.MODULES.call(new PacketSendEvent(
-                Minecraft.getInstance(),
-                (Connection) (Object) this,
-                packet
-        ));
-        if (event.isCancelled()) {
-            info.cancel();
-            return;
+        Packet<?> outgoing = packet;
+        if (!PacketEventSilencer.silent()) {
+            PacketSendEvent event = AnarchyClient.MODULES.call(new PacketSendEvent(
+                    Minecraft.getInstance(),
+                    (Connection) (Object) this,
+                    packet
+            ));
+            if (event.isCancelled()) {
+                info.cancel();
+                return;
+            }
+            outgoing = event.packet();
         }
-        if (event.packet() != packet) {
+        // Applies to silent sends too, such as packets a lag module releases together.
+        Packet<?> limited = PositionPacketLimiter.limit(outgoing);
+        if (limited != packet) {
             info.cancel();
-            PacketEventSilencer.runSilently(() -> ((Connection) (Object) this).send(event.packet(), listener, flush));
+            anarchyclient$resending.set(true);
+            try {
+                PacketEventSilencer.runSilently(() -> ((Connection) (Object) this).send(limited, listener, flush));
+            } finally {
+                anarchyclient$resending.set(false);
+            }
         }
     }
 
@@ -93,6 +105,10 @@ public abstract class ConnectionMixin {
             AnarchyClient.MODULES.call(new PacketSentEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
         }
     }
+
+    /** Set while this mixin sends a replaced packet, so the replacement is not handled twice. */
+    @Unique
+    private static final ThreadLocal<Boolean> anarchyclient$resending = ThreadLocal.withInitial(() -> false);
 
     @Unique
     private boolean anarchyclient$isClientConnection() {
