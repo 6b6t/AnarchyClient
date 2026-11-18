@@ -1,0 +1,68 @@
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - site/**
+      - src/main/java/net/blockhost/anarchyclient/module/**
+      - .github/workflows/pages.yml
+  pull_request:
+    paths:
+      - site/**
+      - src/main/java/net/blockhost/anarchyclient/module/**
+      - .github/workflows/pages.yml
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # A published release rebuilds the current site to refresh its download.
+          ref: ${{ github.event_name == 'release' && 'main' || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun run test
+      - name: Build static site
+        run: bun run build
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Install test browser
+        run: bunx --no-install playwright install --with-deps chromium --only-shell
+      - run: bun run test:e2e
+      - if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/dist/client
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,49 @@
+---
+title: Build from source
+description: Build AnarchyClient locally, run the development client, and inspect Minecraft sources.
+---
+
+This guide is for developers. To play, follow the [install guide](/getting-started/).
+
+## Requirements
+
+Install Git and JDK 25 or later. The Gradle wrapper in the repository downloads the correct Gradle version.
+
+## Build the mod
+
+```bash
+git clone https://github.com/6b6t/AnarchyClient.git
+cd AnarchyClient
+./gradlew build
+```
+
+The build compiles the mod, validates the access widener, and runs the tests. The JAR goes to `build/libs/`.
+
+## Run the development client
+
+```bash
+./gradlew runClient
+```
+
+This starts Minecraft with the mod from the `run/` directory. Press <kbd>Right Shift</kbd> in game to open the menu.
+
+## Inspect Minecraft sources
+
+```bash
+./gradlew genSources
+```
+
+Fabric Loom decompiles Minecraft into a sources JAR under `.gradle/loom-cache/`. Use it to check Minecraft internals before you change mixins or access wideners.
+
+## Project layout
+
+| Path                             | Contents                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| `src/main/java/.../module/`      | The module base classes, categories, and registration.                    |
+| `src/main/java/.../module/impl/` | One class for each module.                                                |
+| `src/main/java/.../setting/`     | Typed module settings.                                                    |
+| `src/main/java/.../ui/`          | The in-game menu, built with [Rivet](https://github.com/Lenni0451/rivet). |
+| `src/main/java/.../rivet/`       | The bridge from Rivet to Minecraft input, text, and Blaze3D rendering.    |
+| `site/`                          | This website.                                                             |
+
+The [module list](/modules/) on this site reads the module classes when the site builds. A new module appears there after the next site build.

@@ -25,7 +25,15 @@ RULES = [
             "buildSrc/*",
         ],
         [(".", ["./gradlew", "check", "--max-workers=6", "--no-configuration-cache"])],
-    )
+    ),
+    (
+        ["site/*"],
+        [
+            ("site", ["bun", "install", "--frozen-lockfile"]),
+            ("site", ["bun", "run", "check"]),
+            ("site", ["bun", "run", "test"]),
+        ],
+    ),
 ]
 
 

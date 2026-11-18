@@ -1,0 +1,43 @@
+{
+  "name": "@anarchyclient/site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun scripts/prepare.ts && vite --host 0.0.0.0 --port 3000",
+    "build": "bun scripts/prepare.ts && vite build && bun scripts/verify-build.ts",
+    "preview": "bun scripts/serve.ts",
+    "test": "bun test test",
+    "test:e2e": "playwright test",
+    "check": "fumadocs-mdx && tsc --noEmit && oxlint --deny-warnings src scripts e2e test vite.config.ts source.config.ts playwright.config.ts && oxfmt --check src scripts e2e test content package.json tsconfig.json .oxlintrc.json .oxfmtrc.json vite.config.ts source.config.ts playwright.config.ts",
+    "format": "oxfmt --write src scripts e2e test content package.json tsconfig.json .oxlintrc.json .oxfmtrc.json vite.config.ts source.config.ts playwright.config.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/onest": "5.2.8",
+    "@fontsource-variable/space-grotesk": "5.2.10",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-start": "1.169.5",
+    "fumadocs-core": "16.19.3",
+    "fumadocs-mdx": "15.6.2",
+    "fumadocs-ui": "16.19.3",
+    "lucide-react": "1.73.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/bun": "1.4.4",
+    "@types/mdx": "2.0.14",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "discord-api-types": "0.38.55",
+    "oxfmt": "0.79.0",
+    "oxlint": "1.94.0",
+    "oxlint-tsgolint": "7.0.2007",
+    "tailwindcss": "4.3.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

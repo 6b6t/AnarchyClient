@@ -1,0 +1,22 @@
+---
+title: Downloads
+description: Download the latest AnarchyClient release and verify the JAR before you run it.
+---
+
+## Verify your download
+
+GitHub Actions builds every release JAR from this repository and signs it with build provenance. To confirm that a JAR came from that build, install the [GitHub CLI](https://cli.github.com/) and run:
+
+```bash
+gh attestation verify anarchyclient-mc-MINECRAFT-VERSION.jar --repo 6b6t/AnarchyClient
+```
+
+Replace the file name with the name of your download. The command fails if someone changed the file after the build.
+
+## Older releases
+
+The [GitHub releases page](https://github.com/6b6t/AnarchyClient/releases) has every release and its notes. Each release works with one Minecraft version, which the JAR name gives after `mc-`.
+
+## Build it yourself
+
+To build the JAR from source, follow [Build from source](/build-from-source/).

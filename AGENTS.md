@@ -25,6 +25,8 @@ Main Java code lives in `src/main/java`. Project-owned classes are rooted under 
 - `ui/` contains the Rivet-backed menu, panels, setting controls, and theme code.
 - `rivet/` adapts Rivet to Minecraft input, shaped text, textures, and Blaze3D rendering.
 
+The website for `client.6b6t.org` lives in `site/`. It is a TanStack Start and Fumadocs app built with Bun. See `site/README.md` for its commands.
+
 Resources live in `src/main/resources`. Key files are `fabric.mod.json`, `anarchyclient.mixins.json`, `anarchyclient.accesswidener`, and assets under `assets/anarchyclient`. Tests live in `src/test/java` and mirror the production package layout.
 
 Rivet is consumed through `com.github.Lenni0451.rivet:core:8dfcc3dd17`, with upstream source at `https://github.com/Lenni0451/rivet`. Prefer project-owned bridge changes in `net.blockhost.anarchyclient.rivet` over vendoring or rewriting Rivet internals.

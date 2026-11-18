@@ -12,7 +12,7 @@ Fabric `26.3` utility mod for 6b6t.
 
 Preview of how it looks in-game.
 
-![Demo Preview](assets/demo.png)
+![Demo Preview](site/public/assets/images/demo.png)
 
 ## Features
 
@@ -35,6 +35,10 @@ Preview of how it looks in-game.
 ```
 
 The client menu opens with `Right Shift`. Rivet is pulled from `com.github.Lenni0451.rivet:core:8dfcc3dd17`; upstream source is available at `https://github.com/Lenni0451/rivet`.
+
+## Website
+
+The source of [client.6b6t.org](https://client.6b6t.org) is in [`site/`](site/README.md).
 
 ## License
 

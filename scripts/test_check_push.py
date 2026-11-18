@@ -162,6 +162,12 @@ class PushChecksTest(unittest.TestCase):
         self.assertEqual(len(commands), 1)
         self.assertIn("test_check_push.py", commands[0][1])
 
+    def test_site_change_runs_site_checks_without_gradle(self):
+        selected = hooks.checks_for({"site/content/docs/getting-started.mdx"})
+        self.assertIn(("site", ["bun", "run", "check"]), selected)
+        self.assertIn(("site", ["bun", "run", "test"]), selected)
+        self.assertFalse(any(command[0] == "./gradlew" for _, command in selected))
+
     def test_source_change_selects_checks_and_consumers(self):
         selected = hooks.checks_for(
             {"src/main/java/net/blockhost/anarchyclient/Example.java"}

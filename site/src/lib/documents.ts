@@ -1,0 +1,39 @@
+import type { Root } from "fumadocs-core/page-tree";
+import { pageUrl, type PageMetadata } from "./site";
+
+const metadata = import.meta.glob<{ frontmatter: PageMetadata }>("../../content/docs/*.mdx", {
+  eager: true,
+  query: "?only=frontmatter",
+});
+
+export const documents = Object.entries(metadata).map(([path, { frontmatter }]) => ({
+  ...frontmatter,
+  path,
+  slug: path.split("/").at(-1)!.slice(0, -4),
+}));
+
+export function getDocument(slug: string) {
+  return documents.find((page) => page.slug === slug);
+}
+
+/** Sidebar labels that differ from the page title. */
+const labels: Record<string, string> = { "getting-started": "Install", releases: "Downloads" };
+
+export const pageTree: Root = {
+  name: "Documentation",
+  children: [
+    { type: "separator", name: "Use" },
+    item("getting-started"),
+    item("releases"),
+    { type: "page", name: "Modules", url: "/modules/" },
+    { type: "separator", name: "Develop" },
+    item("build-from-source"),
+    item("contributing"),
+  ],
+};
+
+function item(slug: string) {
+  const page = getDocument(slug);
+  if (!page) throw new Error(`Missing documentation: ${slug}`);
+  return { type: "page" as const, name: labels[slug] ?? page.title, url: pageUrl(slug) };
+}

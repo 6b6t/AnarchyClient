@@ -1,0 +1,31 @@
+---
+title: Contribute
+description: Open a focused pull request for AnarchyClient and pass the local checks.
+---
+
+Contributions go through pull requests on [GitHub](https://github.com/6b6t/AnarchyClient). Read `CONTRIBUTING.md` and `AGENTS.md` in the repository for the complete rules.
+
+## Before you write code
+
+- Keep one logical change in each pull request, such as one module or one fix.
+- Base the pull request on `main`.
+- Open an issue first for new shared systems or architecture changes.
+- If you used AI tools, say which ones in the pull request.
+
+## Set up the Git hooks
+
+Install [Lefthook](https://lefthook.dev/installation/) and Python 3.10 or later. Then run this once in your clone:
+
+```bash
+lefthook install
+```
+
+The commit hook checks whitespace. The push hook runs the checks for the files you changed. For example, Java changes run `./gradlew check`, and website changes run the website checks.
+
+## Write commit messages
+
+Use [Conventional Commits](https://www.conventionalcommits.org/): `type(scope): description`. For example, `feat(module): add auto totem settings` or `fix(config): persist disabled modules`. CI checks every commit in a pull request.
+
+## Edit this website
+
+The website source is in `site/`. Guides are MDX files in `site/content/docs/`. See `site/README.md` to run and check the site locally.
