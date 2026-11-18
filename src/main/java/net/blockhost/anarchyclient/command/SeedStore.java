@@ -8,6 +8,8 @@ import com.google.gson.JsonParser;
 import net.blockhost.anarchyclient.config.ConfigFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -94,8 +96,12 @@ final class SeedStore {
         if (server != null) {
             return worldKey(server.ip);
         }
-        if (client.level != null) {
-            return "singleplayer:" + client.level.dimension().identifier();
+        IntegratedServer singleplayer = client.getSingleplayerServer();
+        if (singleplayer != null) {
+            // One key per save folder: a world has one seed in every dimension, and different worlds must not
+            // share a saved seed.
+            Path folder = singleplayer.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize().getFileName();
+            return "singleplayer:" + (folder == null ? "world" : folder);
         }
         return "unknown";
     }

@@ -35,18 +35,18 @@ final class ProfileCommands {
                         .then(literal("list")
                                 .executes(ProfileCommands::listProfiles))
                         .then(literal("save")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .executes(ProfileCommands::saveProfile)))
                         .then(literal("load")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .suggests(ProfileCommands::suggestProfiles)
                                         .executes(ProfileCommands::loadProfile)))
                         .then(literal("delete")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .suggests(ProfileCommands::suggestProfiles)
                                         .executes(ProfileCommands::deleteProfile)))
                         .then(literal("export")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .suggests(ProfileCommands::suggestProfiles)
                                         .then(argument("path", StringArgumentType.greedyString())
                                                 .executes(ProfileCommands::exportProfile))))
@@ -145,6 +145,7 @@ final class ProfileCommands {
     private static CompletableFuture<Suggestions> suggestProfiles(final CommandContext<FabricClientCommandSource> context,
                                                                   final SuggestionsBuilder builder) {
         return SharedSuggestionProvider.suggest(AnarchyClient.PROFILES.summaries().stream()
-                .map(ProfileManager.ProfileSummary::name), builder);
+                .map(ProfileManager.ProfileSummary::name)
+                .map(StringArgumentType::escapeIfRequired), builder);
     }
 }

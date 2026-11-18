@@ -37,10 +37,10 @@ final class WaypointCommands {
                         .then(literal("list")
                                 .executes(WaypointCommands::listWaypoints))
                         .then(literal("add")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .executes(WaypointCommands::addWaypoint)))
                         .then(literal("remove")
-                                .then(argument("name", StringArgumentType.word())
+                                .then(argument("name", StringArgumentType.string())
                                         .suggests(WaypointCommands::suggestWaypoints)
                                         .executes(WaypointCommands::removeWaypoint))));
     }
@@ -90,6 +90,7 @@ final class WaypointCommands {
                                                                    final SuggestionsBuilder builder) {
         String world = WaypointStore.currentWorld(Minecraft.getInstance());
         return SharedSuggestionProvider.suggest(AnarchyClient.WAYPOINTS.byWorld(world).stream()
-                .map(Waypoint::name), builder);
+                .map(Waypoint::name)
+                .map(StringArgumentType::escapeIfRequired), builder);
     }
 }

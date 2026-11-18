@@ -17,7 +17,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -46,7 +45,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 /**
- * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip}, {@code damage},
+ * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip},
  * {@code dismount}, {@code teleport}, {@code save-skin}, and {@code inventory} subcommands.
  */
 final class PlayerCommands {
@@ -83,13 +82,11 @@ final class PlayerCommands {
                 .then(literal("vclip")
                         .then(argument("distance", DoubleArgumentType.doubleArg())
                                 .executes(PlayerCommands::vclip)))
-                .then(literal("damage")
-                        .executes(context -> damage(context, 1.0))
-                        .then(argument("amount", DoubleArgumentType.doubleArg(0.5, 20.0))
-                                .executes(context -> damage(context, DoubleArgumentType.getDouble(context, "amount")))))
                 .then(literal("dismount")
                         .executes(PlayerCommands::dismount))
-                .then(literal("inventory")
+                // "tracked", not "inventory": ItemCommands registers "inventory" too, and Brigadier merged the two
+                // nodes so the Inventory Tracker listing could not be reached.
+                .then(literal("tracked")
                         .executes(PlayerCommands::listTrackedInventories)
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(CommandSupport::suggestOnlinePlayers)
@@ -167,14 +164,8 @@ final class PlayerCommands {
         }
         double x = mode.coordinate(client.player.getX());
         double z = mode.coordinate(client.player.getZ());
+        // Move locally only; vanilla sends the one position packet the server allows per tick.
         client.player.setPos(x, client.player.getY(), z);
-        client.player.connection.send(new ServerboundMovePlayerPacket.Pos(
-                x,
-                client.player.getY(),
-                z,
-                client.player.onGround(),
-                client.player.horizontalCollision
-        ));
         context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.centered_player", "Centered player."));
         return SUCCESS;
     }
@@ -254,35 +245,6 @@ final class PlayerCommands {
         return movePlayer(context, client.player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
     }
 
-    private static int damage(final CommandContext<FabricClientCommandSource> context, final double amount) {
-        Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
-            return 0;
-        }
-        Vec3 pos = client.player.position();
-        int packets = Math.max(4, Math.min(80, (int) Math.ceil(amount * 8.0)));
-        for (int index = 0; index < packets; index++) {
-            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
-                    pos.x,
-                    pos.y + 0.0625,
-                    pos.z,
-                    false,
-                    client.player.horizontalCollision
-            ));
-            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
-                    pos.x,
-                    pos.y,
-                    pos.z,
-                    false,
-                    client.player.horizontalCollision
-            ));
-        }
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(pos, true, client.player.horizontalCollision));
-        // Vanilla 26.3 servers reset fall distance on every upward move, so this only works on servers that do not.
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.sent_fall_packet_pairs_vanilla_servers", "Sent %s fall packet pairs. Vanilla servers reset fall distance on upward moves, so they deal no damage there.", packets));
-        return SUCCESS;
-    }
-
     private static int dismount(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
         if (client == null) {
@@ -305,8 +267,9 @@ final class PlayerCommands {
         if (!withinMoveLimit(context, client.player.position(), target)) {
             return 0;
         }
+        // Move locally only. A second position packet before the tick ends gets the player disconnected on 26.3,
+        // and vanilla sends one with the new position in its next tick.
         client.player.absSnapTo(target.x, target.y, target.z);
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(target, client.player.onGround(), client.player.horizontalCollision));
         context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.sent_a_move_to_the_server", "Sent a move to %s, %s, %s. The server can still set you back.", formatCoordinate(target.x), formatCoordinate(target.y), formatCoordinate(target.z)));
         return SUCCESS;
     }
@@ -359,15 +322,10 @@ final class PlayerCommands {
         if (includeRotation) {
             float yaw = FloatArgumentType.getFloat(context, "yaw");
             float pitch = FloatArgumentType.getFloat(context, "pitch");
+            // Vanilla's next tick sends the new position (and rotation); see movePlayer.
             client.player.absSnapTo(x, y, z, yaw, pitch);
-            client.getConnection().send(new ServerboundMovePlayerPacket.PosRot(
-                    x, y, z, yaw, pitch, client.player.onGround(), client.player.horizontalCollision
-            ));
         } else {
             client.player.absSnapTo(x, y, z);
-            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
-                    x, y, z, client.player.onGround(), client.player.horizontalCollision
-            ));
         }
         return SUCCESS;
     }

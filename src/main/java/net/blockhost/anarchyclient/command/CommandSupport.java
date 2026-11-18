@@ -147,11 +147,18 @@ final class CommandSupport {
     }
 
     static double parseDouble(final String token, final String original) {
+        double value;
         try {
-            return Double.parseDouble(token);
+            value = Double.parseDouble(token);
         } catch (NumberFormatException exception) {
             throw new IllegalArgumentException("Invalid coordinate: " + original, exception);
         }
+        // Java also parses "NaN" and "Infinity"; a NaN position passes every distance check and the server
+        // disconnects the player for it.
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid coordinate: " + original);
+        }
+        return value;
     }
 
     record BlockArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int count) {

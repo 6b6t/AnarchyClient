@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import net.blockhost.anarchyclient.command.ClientCommands;
+import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringUtil;
 
@@ -17,7 +19,10 @@ public final class ChatActions {
         if (normalized.isBlank() || normalized.equals("/")) {
             return;
         }
-        if (normalized.startsWith("/")) {
+        if (normalized.startsWith(CommandPrefix.get())) {
+            // A client command (".toggle killaura") in a macro: run it here instead of posting it to public chat.
+            ClientCommands.execute(client.getConnection(), normalized.substring(1).trim());
+        } else if (normalized.startsWith("/")) {
             client.getConnection().sendCommand(normalized.substring(1));
         } else {
             client.getConnection().sendChat(normalized);

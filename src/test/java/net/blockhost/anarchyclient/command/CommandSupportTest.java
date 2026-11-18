@@ -93,4 +93,12 @@ class CommandSupportTest {
         assertEquals("Bad_Name__", CommandSupport.sanitizeFileName("Bad/Name:*"));
         assertEquals("skin", CommandSupport.sanitizeFileName("   "));
     }
+
+    @Test
+    void rejectsCoordinatesThatAreNotFinite() {
+        // A NaN position passes every distance check and the server disconnects the player for it.
+        assertThrows(IllegalArgumentException.class, () -> CommandSupport.parseCoordinate("NaN", 0.0));
+        assertThrows(IllegalArgumentException.class, () -> CommandSupport.parseCoordinate("~NaN", 0.0));
+        assertThrows(IllegalArgumentException.class, () -> CommandSupport.parseCoordinate("Infinity", 0.0));
+    }
 }

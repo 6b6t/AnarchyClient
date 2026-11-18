@@ -109,8 +109,8 @@ final class ModuleCommands {
 
     private static int setPrefix(final CommandContext<FabricClientCommandSource> context) {
         String prefix = StringArgumentType.getString(context, "prefix").trim();
-        if (prefix.length() != 1 || prefix.equals("/")) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.the_prefix_must_be_a_single", "The prefix must be a single character other than /."));
+        if (!CommandPrefix.isAllowed(prefix)) {
+            context.getSource().sendError(Translations.component("anarchyclient.message.module.prefix_must_be_a_symbol", "The prefix must be a single symbol, not a letter, digit, or /."));
             return 0;
         }
         CommandPrefix.set(prefix);
@@ -207,7 +207,13 @@ final class ModuleCommands {
         module.keybind().key(key);
         module.keybind().action(action);
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.bound_to_key_as", "Bound %s to key %s as %s.", module.name(), key, action.name().toLowerCase(Locale.ROOT)));
+        // Literal keys, one per action, so the language files can list them.
+        String actionLabel = switch (action) {
+            case TOGGLE -> Translations.text("anarchyclient.ui.bind_action.toggle", "toggle");
+            case HOLD -> Translations.text("anarchyclient.ui.bind_action.hold", "hold");
+            case SMART -> Translations.text("anarchyclient.ui.bind_action.smart", "smart");
+        };
+        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.bound_to_key_as", "Bound %s to key %s as %s.", module.name(), key, actionLabel));
         return SUCCESS;
     }
 

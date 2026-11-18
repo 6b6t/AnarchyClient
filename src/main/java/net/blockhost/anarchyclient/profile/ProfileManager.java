@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class ProfileManager {
@@ -147,9 +148,11 @@ public final class ProfileManager {
             String fallback = input.getFileName() == null ? "imported" : input.getFileName().toString().replaceFirst("\\.json$", "");
             profile = profile.normalized(fallback);
             profile.updatedAt = Instant.now().toString();
+            // Copy before storing: if anything in the file is still unusable, nothing is kept or saved.
+            Profile result = profile.copy();
             this.profiles.put(key(profile.name), profile);
             this.save();
-            return profile.copy();
+            return result;
         } catch (RuntimeException exception) {
             throw new IOException("Invalid profile file: " + input, exception);
         }
@@ -269,6 +272,10 @@ public final class ProfileManager {
             if (this.settings == null) {
                 this.settings = new LinkedHashMap<>();
             }
+            // Null entries from a hand-edited or imported file would fail later, after the profile was saved.
+            this.modules.values().removeIf(Objects::isNull);
+            this.settings.values().removeIf(Objects::isNull);
+            this.settings.values().forEach(values -> values.values().removeIf(Objects::isNull));
             return this;
         }
 

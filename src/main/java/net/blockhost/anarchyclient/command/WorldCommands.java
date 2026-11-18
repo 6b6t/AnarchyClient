@@ -15,10 +15,8 @@ import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
@@ -48,7 +46,7 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 /**
- * Registers and handles the {@code seed}, {@code locate}, {@code terrain-export}, {@code save-map}, {@code ghost}, {@code setblock}, and {@code fill} subcommands.
+ * Registers and handles the {@code seed}, {@code locate}, {@code terrain-export}, {@code save-map}, {@code setblock}, and {@code fill} subcommands.
  */
 final class WorldCommands {
 
@@ -78,10 +76,6 @@ final class WorldCommands {
                 .then(literal("terrain-export")
                         .then(argument("distance", IntegerArgumentType.integer(1, MAX_EXPORT_DISTANCE))
                                 .executes(WorldCommands::terrainExport)))
-                .then(literal("ghost")
-                        .executes(context -> ghostBlocks(context, 4))
-                        .then(argument("radius", IntegerArgumentType.integer(1, 16))
-                                .executes(context -> ghostBlocks(context, IntegerArgumentType.getInteger(context, "radius")))))
                 .then(literal("save-map")
                         .then(argument("distance", IntegerArgumentType.integer(1, MAX_EXPORT_DISTANCE))
                                 .executes(WorldCommands::terrainExport)))
@@ -235,29 +229,6 @@ final class WorldCommands {
             }
             source.sendError(Translations.component("anarchyclient.message.world.failed_to_export_terrain", "Failed to export terrain: %s", cause.getMessage()));
         }, client);
-        return SUCCESS;
-    }
-
-    private static int ghostBlocks(final CommandContext<FabricClientCommandSource> context, final int radius) {
-        Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
-            return 0;
-        }
-        BlockPos center = client.player.blockPosition();
-        int sent = 0;
-        for (int dx = -radius; dx <= radius; dx++) {
-            for (int dy = -radius; dy <= radius; dy++) {
-                for (int dz = -radius; dz <= radius; dz++) {
-                    client.getConnection().send(new ServerboundPlayerActionPacket(
-                            ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                            center.offset(dx, dy, dz),
-                            Direction.UP
-                    ));
-                    sent++;
-                }
-            }
-        }
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.world.sent_ghost_block_refresh_packets", "Sent %s ghost-block refresh packets.", sent));
         return SUCCESS;
     }
 

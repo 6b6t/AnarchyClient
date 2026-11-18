@@ -49,12 +49,15 @@ final class ServerListTools {
         for (int index = 0; index < list.size(); index++) {
             ServerData existing = list.get(index);
             if (normalizeAddress(existing.ip).equals(entry.address())) {
-                existing.name = entry.name();
-                existing.ip = entry.address();
+                // Without a name, keep the existing one instead of renaming the entry to its address. Keep the
+                // stored address as written too: vanilla matches saved servers by exact address.
+                if (name != null && !name.isBlank()) {
+                    existing.name = entry.name();
+                }
                 return 0;
             }
         }
-        list.add(new ServerData(entry.name(), entry.address(), ServerData.Type.OTHER), false);
+        list.add(new ServerData(entry.name(), address.trim(), ServerData.Type.OTHER), false);
         return 1;
     }
 

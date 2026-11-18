@@ -14,7 +14,9 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -194,14 +196,18 @@ final class ServerCommands {
             context.getSource().sendError(Translations.component("anarchyclient.message.server.you_must_be_connected_to_a", "You must be connected to a multiplayer server to scan ports."));
             return 0;
         }
-        String host = ServerAddress.parseString(server.ip).getHost();
+        ServerAddress address = ServerAddress.parseString(server.ip);
+        String host = address.getHost();
         if (host.isBlank()) {
             context.getSource().sendError(Translations.component("anarchyclient.message.server.could_not_resolve_server_host_from", "Could not resolve server host from %s.", server.ip));
             return 0;
         }
         context.getSource().sendFeedback(Translations.component("anarchyclient.message.server.scanning_on", "Scanning %s on %s...", label, host));
+        // Resolve like a real connection (SRV records included) off the client thread, then scan that host.
         CompletableFuture
-                .supplyAsync(() -> ServerPortScanner.scan(host, ports))
+                .supplyAsync(() -> ServerPortScanner.scan(ServerNameResolver.DEFAULT.resolveAddress(address)
+                        .map(ResolvedServerAddress::getHostIp)
+                        .orElse(host), ports))
                 .thenAccept(results -> client.execute(() -> sendPortResults(context, results)));
         return SUCCESS;
     }

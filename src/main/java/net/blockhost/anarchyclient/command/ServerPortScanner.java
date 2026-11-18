@@ -12,11 +12,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 
 final class ServerPortScanner {
 
     static final int MAX_RANGE_SIZE = 512;
-    private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(250);
+    /** Long enough for distant servers; 250 ms reported open ports as closed beyond about 250 ms round trip. */
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(1500);
+    /** Connections attempted at once, so a 512-port range does not open 512 sockets together. */
+    private static final int MAX_CONCURRENT = 64;
 
     private ServerPortScanner() {
     }
@@ -51,13 +55,17 @@ final class ServerPortScanner {
 
     static List<PortResult> scan(final String host, final List<PortCheck> checks) {
         List<PortResult> results = new ArrayList<>();
+        Semaphore permits = new Semaphore(MAX_CONCURRENT);
         try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
             List<Future<PortResult>> futures = checks.stream()
-                    .map(check -> executor.submit(() -> new PortResult(
-                            check.port(),
-                            check.label(),
-                            open(host, check.port(), DEFAULT_TIMEOUT)
-                    )))
+                    .map(check -> executor.submit(() -> {
+                        permits.acquire();
+                        try {
+                            return new PortResult(check.port(), check.label(), open(host, check.port(), DEFAULT_TIMEOUT));
+                        } finally {
+                            permits.release();
+                        }
+                    }))
                     .toList();
             for (int index = 0; index < futures.size(); index++) {
                 Future<PortResult> future = futures.get(index);

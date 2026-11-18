@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -73,7 +74,15 @@ final class ItemCommands {
     }
 
     private static int giveHead(final CommandContext<FabricClientCommandSource> context) {
-        return giveCreativeStack(context, CreativeItemFactory.playerHead(StringArgumentType.getString(context, "player")));
+        String player = StringArgumentType.getString(context, "player");
+        // The profile in the item is encoded with a 16-character name limit; a longer name throws while the
+        // packet is written, and the client disconnects.
+        if (!StringUtil.isValidPlayerName(player)) {
+            context.getSource().sendError(Translations.component("anarchyclient.message.item.invalid_player_name",
+                    "%s is not a valid player name.", player));
+            return 0;
+        }
+        return giveCreativeStack(context, CreativeItemFactory.playerHead(player));
     }
 
     private static int giveHologram(final CommandContext<FabricClientCommandSource> context) {
@@ -145,7 +154,9 @@ final class ItemCommands {
         }
         if (client.gameMode != null && !client.player.getMainHandItem().isEmpty()) {
             client.gameMode.dropItem(client.player, all);
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.dropped_selected", "Dropped selected %s.", (all ? "stack" : "item")));
+            context.getSource().sendFeedback(all
+                    ? Translations.component("anarchyclient.message.item.dropped_selected_stack", "Dropped the selected stack.")
+                    : Translations.component("anarchyclient.message.item.dropped_selected_item", "Dropped one selected item."));
             return SUCCESS;
         }
         context.getSource().sendError(Translations.component("anarchyclient.message.item.no_selected_item_to_drop", "No selected item to drop."));

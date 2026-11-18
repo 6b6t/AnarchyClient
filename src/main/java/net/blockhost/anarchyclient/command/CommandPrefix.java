@@ -29,10 +29,18 @@ public final class CommandPrefix {
     }
 
     public static void set(final String value) {
-        if (value == null || value.isBlank()) {
-            return;
+        if (value != null && isAllowed(value.trim())) {
+            prefix = value.trim();
         }
-        prefix = value.trim().substring(0, 1);
+    }
+
+    /**
+     * One symbol other than {@code /}. A letter or digit would turn every chat line starting with it into a
+     * command, so ordinary messages would never be sent.
+     */
+    public static boolean isAllowed(final String value) {
+        return value != null && value.length() == 1 && value.charAt(0) != '/'
+                && !Character.isLetterOrDigit(value.charAt(0)) && !Character.isWhitespace(value.charAt(0));
     }
 
     /** Advance to the next common prefix (wraps). Used by the Theme tab button. */
