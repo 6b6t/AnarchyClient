@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
 
@@ -28,6 +29,9 @@ public final class AvoidHazardsModule extends Module {
             Blocks.WITHER_ROSE,
             Blocks.POWDER_SNOW
     );
+
+    /** Blocks ahead of the player to check, before adding the distance their speed carries them. */
+    private static final double LOOK_AHEAD = 0.6;
 
     private final BooleanSetting stopMovement = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("stop_movement")
@@ -65,18 +69,43 @@ public final class AvoidHazardsModule extends Module {
             // Already in a hazard: let the player walk out instead of freezing them in place.
             return;
         }
-        BlockPos next = BlockPos.containing(player.position().add(player.getDeltaMovement().multiply(4.0, 0.0, 4.0)));
+        // Look ahead where the player is trying to walk. Looking ahead by velocity alone lets a stopped
+        // player creep forward: their speed drops, the look-ahead falls back into the current block, and
+        // the stop releases until they are already over the edge.
+        Vec3 wish = wishDirection(input.getMoveVector(), player.getYRot());
+        if (wish.lengthSqr() < 1.0E-4) {
+            return;
+        }
+        double reach = LOOK_AHEAD + player.getDeltaMovement().horizontalDistance() * 3.0;
+        BlockPos next = BlockPos.containing(player.position().add(wish.scale(reach)));
         boolean grounded = player.onGround() && !player.getAbilities().flying;
         if (isHazard(client.level.getBlockState(next).getBlock())
                 || isHazard(client.level.getBlockState(next.below()).getBlock())
                 || this.unloadedChunks.value() && !client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4)
                 // An unloaded chunk reads as void air, so only loaded columns count as void; the Unloaded Chunks
                 // setting decides about the others.
-                || this.voidEdges.value() && grounded && !next.equals(current)
+                || this.voidEdges.value() && grounded
                 && client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4) && isVoidColumn(client.level, next)) {
             input.keyPresses = new Input(false, false, false, false, input.keyPresses.jump(), input.keyPresses.shift(), false);
             ((ClientInputAccessor) input).anarchyclient$setMoveVector(Vec2.ZERO);
         }
+    }
+
+    /**
+     * Returns the horizontal unit direction the movement keys push toward, using vanilla's rotation
+     * of the input vector by the player's yaw, or zero when no key is held.
+     */
+    static Vec3 wishDirection(final Vec2 move, final float yaw) {
+        double length = Math.sqrt(move.x * move.x + move.y * move.y);
+        if (length < 1.0E-4) {
+            return Vec3.ZERO;
+        }
+        double strafe = move.x / length;
+        double forward = move.y / length;
+        double radians = Math.toRadians(yaw);
+        double sin = Math.sin(radians);
+        double cos = Math.cos(radians);
+        return new Vec3(strafe * cos - forward * sin, 0.0, forward * cos + strafe * sin);
     }
 
     /** Returns whether nothing below {@code pos} down to the bottom of the world can stop a fall. */

@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +58,18 @@ class MovementAssistModulesTest {
         assertFalse(AutoFireworkModule.nearlyBroken(elytra));
         elytra.setDamageValue(elytra.getMaxDamage() - 5);
         assertTrue(AutoFireworkModule.nearlyBroken(elytra));
+    }
+
+    @Test
+    void wishDirectionFollowsKeysAndYaw() {
+        Vec3 southForward = AvoidHazardsModule.wishDirection(new Vec2(0.0F, 1.0F), 0.0F);
+        Vec3 eastForward = AvoidHazardsModule.wishDirection(new Vec2(0.0F, 1.0F), -90.0F);
+        Vec3 strafeLeftFacingSouth = AvoidHazardsModule.wishDirection(new Vec2(1.0F, 0.0F), 0.0F);
+
+        assertEquals(1.0, southForward.z, 1.0E-9);
+        assertEquals(1.0, eastForward.x, 1.0E-9);
+        assertEquals(1.0, strafeLeftFacingSouth.x, 1.0E-9);
+        assertEquals(Vec3.ZERO, AvoidHazardsModule.wishDirection(Vec2.ZERO, 45.0F));
     }
 
     @Test
