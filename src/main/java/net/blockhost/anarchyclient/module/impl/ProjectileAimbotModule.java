@@ -47,7 +47,7 @@ public final class ProjectileAimbotModule extends Module {
             return;
         }
         TargetPolicy policy = TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true);
-        String type = projectileType(player.getMainHandItem());
+        String type = ProjectileAim.typeOf(player.getMainHandItem());
         Optional<LivingEntity> target = TargetQuery.closest(client.level.entitiesForRendering(), player, policy,
                 this.range.value(), Comparator.comparingDouble(player::distanceToSqr));
         target.ifPresentOrElse(entity -> RotationManager.request(new RotationRequest(
@@ -66,18 +66,11 @@ public final class ProjectileAimbotModule extends Module {
     static boolean isProjectile(final ItemStack stack) {
         return stack.is(Items.ENDER_PEARL)
                 || stack.is(Items.SNOWBALL)
-                || stack.is(Items.EGG)
+                || AutoShootModule.isEgg(stack)
                 || stack.is(Items.SPLASH_POTION)
+                || stack.is(Items.LINGERING_POTION)
+                || stack.is(Items.EXPERIENCE_BOTTLE)
                 || stack.is(Items.TRIDENT);
     }
 
-    private static String projectileType(final ItemStack stack) {
-        if (stack.is(Items.TRIDENT)) {
-            return "trident";
-        }
-        if (stack.is(Items.SPLASH_POTION)) {
-            return "potion";
-        }
-        return "throwable";
-    }
 }

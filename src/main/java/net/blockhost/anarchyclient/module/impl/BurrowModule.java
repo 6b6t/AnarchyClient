@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
 
@@ -55,8 +56,12 @@ public final class BurrowModule extends Module {
             .max(8.0)
             .step(0.1)
             .build()));
+    /** Ticks to keep trying to place before giving up, so a failed burrow does not leave the module on. */
+    private static final int PLACE_TIMEOUT_TICKS = 20;
+
     private Phase phase = Phase.CENTERING;
     private BlockPos target;
+    private int placingTicks;
 
     public BurrowModule() {
         super("burrow", "Burrow", ModuleCategory.COMBAT,
@@ -67,6 +72,7 @@ public final class BurrowModule extends Module {
     protected void onEnable() {
         this.phase = Phase.CENTERING;
         this.target = null;
+        this.placingTicks = 0;
     }
 
     @Override
@@ -99,6 +105,12 @@ public final class BurrowModule extends Module {
                         .withAvoidEntities(false));
         this.debugValue("phase", "placing");
         this.debugValue("placed", placed);
+        if (CombatPlacementPlanner.isReplaceable(client.level, this.target) && ++this.placingTicks > PLACE_TIMEOUT_TICKS) {
+            // No blocks, or the cell is still occupied by the player (Jump off): it will never work.
+            player.sendSystemMessage(Component.literal("Burrow failed: could not place a block in your cell."));
+            this.enabled(false);
+            return;
+        }
         if (!CombatPlacementPlanner.isReplaceable(client.level, this.target)) {
             if (this.rubberband.value() && client.getConnection() != null) {
                 Vec3 position = player.position();

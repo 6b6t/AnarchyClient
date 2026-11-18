@@ -23,6 +23,7 @@ import net.minecraft.world.item.Items;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 public final class AutoShootModule extends Module {
 
@@ -83,11 +84,15 @@ public final class AutoShootModule extends Module {
         if (target.isEmpty()) {
             return;
         }
-        if (SilentHotbar.selectMatching(player, this.id(), stack -> this.matchesProjectile(stack),
-                SilentHotbar.PRIORITY_COMBAT, 6, true).isEmpty()) {
+        OptionalInt slot = SilentHotbar.selectMatching(player, this.id(), stack -> this.matchesProjectile(stack),
+                SilentHotbar.PRIORITY_COMBAT, 6, true);
+        if (slot.isEmpty()) {
             return;
         }
-        Rotation aim = ProjectileAim.rotationToHit(player.getEyePosition(), target.orElseThrow(), 1.5, 0.03);
+        // Each item flies differently: experience bottles are slower, heavier, and leave 20 degrees above the view.
+        String type = ProjectileAim.typeOf(player.getInventory().getItem(slot.getAsInt()));
+        Rotation aim = ProjectileAim.viewForLaunch(ProjectileAim.rotationToHit(player.getEyePosition(),
+                target.orElseThrow(), ProjectileAim.throwableVelocity(type), ProjectileAim.gravity(type)), type);
         RotationManager.request(new RotationRequest(
                 this.id(),
                 aim,
@@ -113,9 +118,13 @@ public final class AutoShootModule extends Module {
 
     static boolean isThrowable(final ItemStack stack) {
         return stack.is(Items.SNOWBALL)
-                || stack.is(Items.EGG)
+                || isEgg(stack)
                 || stack.is(Items.ENDER_PEARL)
                 || stack.is(Items.EXPERIENCE_BOTTLE);
+    }
+
+    static boolean isEgg(final ItemStack stack) {
+        return stack.is(Items.EGG) || stack.is(Items.BLUE_EGG) || stack.is(Items.BROWN_EGG);
     }
 
     private boolean matchesProjectile(final ItemStack stack) {

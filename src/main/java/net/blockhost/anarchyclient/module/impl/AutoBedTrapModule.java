@@ -96,6 +96,10 @@ public final class AutoBedTrapModule extends Module {
 
         List<BlockPlacer.PlacementRequest> requests = new ArrayList<>();
         for (BlockPos pos : positions) {
+            // An unreachable shell block would stay "rotating" forever and stop the batch at it.
+            if (!CombatTargets.canReachBlock(player, pos)) {
+                continue;
+            }
             requests.add(new BlockPlacer.PlacementRequest(pos, stack -> matchesAny(stack, this.parsedBlocks)));
         }
         BlockPlacer.placeBatch(client, this.id(), requests, this.blocksPerTick.value().intValue(),

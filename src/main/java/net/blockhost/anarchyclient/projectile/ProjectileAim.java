@@ -3,6 +3,8 @@ package net.blockhost.anarchyclient.projectile;
 import net.blockhost.anarchyclient.rotation.Rotation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 public final class ProjectileAim {
@@ -35,6 +37,20 @@ public final class ProjectileAim {
     public static Vec3 tickMovement(final Entity target) {
         Vec3 movement = new Vec3(target.getX() - target.xo, target.getY() - target.yo, target.getZ() - target.zo);
         return movement.lengthSqr() > MAX_TICK_MOVEMENT_SQR ? Vec3.ZERO : movement;
+    }
+
+    /** Projectile type name for a thrown or fired item, as used by the speed, gravity and pitch helpers. */
+    public static String typeOf(final ItemStack stack) {
+        if (stack.is(Items.TRIDENT)) {
+            return "trident";
+        }
+        if (stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION)) {
+            return "potion";
+        }
+        if (stack.is(Items.EXPERIENCE_BOTTLE)) {
+            return "experience_bottle";
+        }
+        return "throwable";
     }
 
     /** Launch speed in blocks per tick, matching the vanilla item that throws the projectile. */

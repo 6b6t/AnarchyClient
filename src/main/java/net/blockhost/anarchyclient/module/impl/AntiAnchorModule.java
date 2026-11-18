@@ -2,10 +2,10 @@ package net.blockhost.anarchyclient.module.impl;
 
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Items;
@@ -26,9 +26,11 @@ public final class AntiAnchorModule extends Module {
             .defaultValue(true)
             .build()));
 
+    private boolean placingSlab;
+
     public AntiAnchorModule() {
         super("anti_anchor", "Anti Anchor", ModuleCategory.COMBAT,
-                "Places a slab between you and a respawn anchor above your head, and blocks you from using anchors yourself.");
+                "While you crouch, places a slab between you and a respawn anchor above your head, and blocks you from using anchors yourself.");
     }
 
     @Override
@@ -39,16 +41,29 @@ public final class AntiAnchorModule extends Module {
         BlockPos feet = client.player.blockPosition();
         BlockPos middle = feet.above();
         BlockPos anchor = feet.above(2);
-        if (client.level.getBlockState(anchor).getBlock() instanceof RespawnAnchorBlock
-                && client.level.getBlockState(middle).canBeReplaced()) {
-            BlockPlacement.place(client, this, middle, this.rotate.value(), 60.0F,
-                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock, BlockPlacer.PlacementOptions.NON_FULL);
+        if (!(client.level.getBlockState(anchor).getBlock() instanceof RespawnAnchorBlock)
+                || !client.level.getBlockState(middle).canBeReplaced()) {
+            return;
+        }
+        // Only a top slab (upper half of the head cell) fits, and only above a crouching player (1.5 blocks tall).
+        // Clicking the anchor's underside places exactly that.
+        if (!client.player.isCrouching()) {
+            this.debugValue("status", "crouch to place the slab");
+            return;
+        }
+        this.placingSlab = true;
+        try {
+            WorldInteraction.useOnBlock(client, this, anchor, Direction.DOWN,
+                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock, this.rotate.value());
+        } finally {
+            this.placingSlab = false;
         }
     }
 
     @Override
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
-        return client.level != null && client.level.getBlockState(hitResult.getBlockPos()).getBlock() instanceof RespawnAnchorBlock;
+        return !this.placingSlab && client.level != null
+                && client.level.getBlockState(hitResult.getBlockPos()).getBlock() instanceof RespawnAnchorBlock;
     }
 
     @Override

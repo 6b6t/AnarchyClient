@@ -5,12 +5,14 @@ import net.minecraft.world.InteractionHand;
 import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.render.CuboidMarker;
 import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.render.MarkerStyle;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,11 +22,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -243,12 +247,22 @@ public final class AnchorAuraModule extends Module implements ModuleConfigMigrat
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             for (int y = 0; y <= 1; y++) {
                 BlockPos pos = center.relative(direction).above(y);
-                if (CombatTargets.canReachBlock(client.player, pos) && CombatPlacementPlanner.isReplaceable(client.level, pos)) {
+                if (CombatTargets.canReachBlock(client.player, pos) && canPlaceAnchor(client.level, pos)) {
                     score(client, target, pos, maxSelfDamage, minDamage).ifPresent(scores::add);
                 }
             }
         }
         return best(scores);
+    }
+
+    /**
+     * A spot an anchor can actually go: replaceable, clear of entities (a target standing off-centre overlaps the
+     * neighbouring cell), and with a face to click. Otherwise the best-scoring spot would be retried forever.
+     */
+    private static boolean canPlaceAnchor(final ClientLevel level, final BlockPos pos) {
+        return CombatPlacementPlanner.isReplaceable(level, pos)
+                && level.isUnobstructed(Blocks.RESPAWN_ANCHOR.defaultBlockState(), pos, CollisionContext.empty())
+                && BlockPlacer.findPlacementTarget(level, pos).isPresent();
     }
 
     private static Optional<ScoredAnchor> score(final Minecraft client, final Player target, final BlockPos pos,

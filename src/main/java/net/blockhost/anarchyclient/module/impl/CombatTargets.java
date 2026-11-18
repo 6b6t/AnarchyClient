@@ -1,32 +1,41 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.target.TargetPolicy;
+import net.blockhost.anarchyclient.target.TargetQuery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Optional;
 
 final class CombatTargets {
 
     private CombatTargets() {
     }
 
+    /** Players only, friends skipped; {@link TargetQuery#allowed} also applies the Teams module. */
+    private static final TargetPolicy ENEMY_PLAYERS = TargetPolicy.of(true, false, false, true, true, false, false);
+
+    /** The locked target when Target Lock holds a player in range, else the nearest allowed player. */
     static Player nearestEnemy(final Minecraft client, final double range) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null) {
             return null;
         }
+        Optional<LivingEntity> locked = TargetLockModule.preferred(client.level.players(), player, ENEMY_PLAYERS, range);
+        if (locked.isPresent() && locked.get() instanceof Player lockedPlayer) {
+            return lockedPlayer;
+        }
         double rangeSqr = range * range;
         Player best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Player target : client.level.players()) {
-            if (target == player
-                    || !target.isAlive()
-                    || target.isSpectator()
-                    || AnarchyClient.FRIENDS.isFriend(target.getScoreboardName())) {
+            if (!TargetQuery.allowed(target, player, ENEMY_PLAYERS)) {
                 continue;
             }
             double distance = player.distanceToSqr(target);

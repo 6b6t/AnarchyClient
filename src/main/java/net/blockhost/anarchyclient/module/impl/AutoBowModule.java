@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.projectile.ProjectileAim;
+import net.blockhost.anarchyclient.rotation.Rotation;
 import net.blockhost.anarchyclient.rotation.RotationManager;
 import net.blockhost.anarchyclient.rotation.RotationRequest;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
@@ -50,11 +51,14 @@ public final class AutoBowModule extends Module {
                 TargetPolicy.of(true, false, false, true, true, true, true),
                 this.range.value(), Comparator.comparingDouble(player::distanceToSqr))
                 .ifPresent(target -> {
-                    RotationManager.request(new RotationRequest(this.id(),
-                            ProjectileAim.rotationToHit(player.getEyePosition(), target, 3.0, 0.05),
+                    Rotation aim = ProjectileAim.rotationToHit(player.getEyePosition(), target, 3.0, 0.05);
+                    RotationManager.request(new RotationRequest(this.id(), aim,
                             90, 60.0F, 1, 1.0F, RotationTurnMode.STEPPED, true));
                     RotationManager.apply(player);
-                    if (player.getTicksUsingItem() >= this.chargeTicks.value()) {
+                    // The release packet has no rotation: the arrow flies where the server last saw us look, so
+                    // wait until that matches the aim.
+                    if (player.getTicksUsingItem() >= this.chargeTicks.value()
+                            && AutoShootModule.isAimed(RotationManager.serverRotation(player), aim)) {
                         client.gameMode.releaseUsingItem(player);
                     }
                 });

@@ -221,6 +221,12 @@ public final class AutoWitherModule extends Module {
     }
 
     private static boolean hasRoom(final ClientLevel level, final WitherBuild build) {
+        // The first soul block needs something to stand on; a floating base has no face to click and would
+        // wait forever.
+        BlockPos foot = build.steps().getFirst().pos();
+        if (!level.getBlockState(foot.below()).isFaceSturdy(level, foot.below(), Direction.UP)) {
+            return false;
+        }
         for (WitherStep step : build.steps()) {
             if (!level.isLoaded(step.pos())
                     || !BlockPlacer.needsPlacement(level, step.pos())

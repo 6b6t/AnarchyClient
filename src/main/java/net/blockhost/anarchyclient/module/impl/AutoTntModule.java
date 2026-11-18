@@ -87,6 +87,7 @@ public final class AutoTntModule extends Module {
                 BlockTargetScanner.SortMode.CLOSEST,
                 scanLimit(horizontal, vertical),
                 candidate -> candidate.state().getBlock() instanceof TntBlock
+                        && CombatTargets.canReachBlock(player, candidate.pos())
         )) {
             WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
                     client,
@@ -100,7 +101,8 @@ public final class AutoTntModule extends Module {
                 this.cooldownTicks = this.delay.value().intValue();
                 return;
             }
-            if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
+            // WAITING: still rotating to this TNT; trying the next one would replace the rotation request.
+            if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.WAITING) {
                 return;
             }
         }
