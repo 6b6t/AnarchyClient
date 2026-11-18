@@ -50,7 +50,9 @@ public final class MessageAuraModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        this.cooldowns.replaceAll((ignored, value) -> Math.max(0, value - 1));
+        this.cooldowns.replaceAll((ignored, value) -> value - 1);
+        // Expired entries are dropped so the map does not grow with every player ever seen.
+        this.cooldowns.values().removeIf(value -> value <= 0);
         if (client.player == null || client.level == null || client.getConnection() == null || client.gui.screen() != null) {
             return;
         }

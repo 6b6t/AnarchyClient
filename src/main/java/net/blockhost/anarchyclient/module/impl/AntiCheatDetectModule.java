@@ -35,10 +35,12 @@ public final class AntiCheatDetectModule extends Module {
     public void tick(final Minecraft client) {
         ServerObserver.Snapshot snapshot = ServerObserver.snapshot();
         String antiCheat = snapshot.antiCheat().orElse("");
-        if (antiCheat.isBlank() || antiCheat.equals(this.lastAlert) || "Unknown".equals(antiCheat) && !this.showUnknown.value()) {
+        // Keyed by server too, so joining another server with the same anti-cheat still alerts and records it.
+        String key = snapshot.rootDomain() + "|" + antiCheat;
+        if (antiCheat.isBlank() || key.equals(this.lastAlert) || "Unknown".equals(antiCheat) && !this.showUnknown.value()) {
             return;
         }
-        this.lastAlert = antiCheat;
+        this.lastAlert = key;
         if (client.player != null) {
             String labels = snapshot.environmentLabels().isEmpty() ? "" : " " + snapshot.environmentLabels();
             client.player.sendSystemMessage(Component.literal(

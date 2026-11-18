@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.command;
 
+import net.blockhost.anarchyclient.module.impl.ChatActions;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -42,19 +43,7 @@ final class ChatCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        sendChatAction(client, StringArgumentType.getString(context, "message"));
+        ChatActions.send(client, StringArgumentType.getString(context, "message"));
         return SUCCESS;
-    }
-
-    private static void sendChatAction(final Minecraft client, final String message) {
-        if (client.getConnection() == null || message == null || message.isBlank()) {
-            return;
-        }
-        String trimmed = message.trim();
-        if (trimmed.startsWith("/")) {
-            client.getConnection().sendCommand(trimmed.substring(1));
-        } else {
-            client.getConnection().sendChat(trimmed);
-        }
     }
 }

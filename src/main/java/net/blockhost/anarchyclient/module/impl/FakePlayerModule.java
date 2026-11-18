@@ -12,6 +12,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Entity.RemovalReason;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -53,7 +54,9 @@ public final class FakePlayerModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (this.fakePlayer == null && client.player != null && client.level != null) {
+        // Respawn when something removed the clone or a portal replaced the level it lived in.
+        if (client.player != null && client.level != null
+                && (this.fakePlayer == null || this.fakePlayer.isRemoved() || this.fakeLevel != client.level)) {
             this.spawn(client.player, client.level);
         }
     }
@@ -75,6 +78,11 @@ public final class FakePlayerModule extends Module {
     protected void onDisable() {
         this.despawn();
         this.clearDebugValues();
+    }
+
+    /** Client-only entities get negative IDs; real server entities never do. */
+    static boolean isClientOnly(final Entity entity) {
+        return entity.getId() < 0;
     }
 
     private void spawn(final LocalPlayer source, final ClientLevel level) {

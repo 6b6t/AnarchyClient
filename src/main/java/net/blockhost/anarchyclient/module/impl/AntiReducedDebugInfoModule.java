@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.world.entity.EntityEvent;
 
 public final class AntiReducedDebugInfoModule extends Module {
 
@@ -23,10 +24,9 @@ public final class AntiReducedDebugInfoModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        return client.level != null
-                && client.player != null
-                && packet instanceof ClientboundEntityEventPacket event
-                && event.getEventId() == 22
-                && event.getEntity(client.level) == client.player;
+        // Runs on the network thread, so no entity lookup: the flag only matters for the local player, and the tick
+        // clears it anyway if one slips through.
+        return packet instanceof ClientboundEntityEventPacket event
+                && event.getEventId() == EntityEvent.REDUCED_DEBUG_INFO;
     }
 }

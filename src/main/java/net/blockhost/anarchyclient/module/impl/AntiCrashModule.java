@@ -22,6 +22,9 @@ public final class AntiCrashModule extends Module {
             .name("Log")
             .defaultValue(false)
             .build()));
+    /** Largest coordinate inside the world border's maximum size. */
+    static final double WORLD_COORDINATE_LIMIT = 30_000_000.0;
+
     private final NumberSetting maxCoordinate = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("max_coordinate")
             .name("Coords")
@@ -122,7 +125,9 @@ public final class AntiCrashModule extends Module {
                 return SuspiciousPacket.PARTICLES;
             }
         } else if (packet instanceof ClientboundPlayerPositionPacket position) {
-            if (outsideLimit(position.change().position(), maxCoordinate)
+            // Dropping a teleport leaves it unconfirmed and freezes the player on the server, so only drop positions
+            // no real teleport can have (non-finite or outside the world), whatever the Coords setting is.
+            if (outsideLimit(position.change().position(), WORLD_COORDINATE_LIMIT)
                     || outsideLimit(position.change().deltaMovement(), maxVelocity)) {
                 return SuspiciousPacket.PLAYER_POSITION;
             }

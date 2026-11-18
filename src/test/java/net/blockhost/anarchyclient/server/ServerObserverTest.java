@@ -18,6 +18,11 @@ class ServerObserverTest {
     void normalizesRootDomains() {
         assertEquals("example.org", ServerObserver.rootDomain("play.example.org:25565"));
         assertEquals("example.org", ServerObserver.rootDomain("example.org"));
+        assertEquals("example.co.uk", ServerObserver.rootDomain("play.example.co.uk"));
+        assertEquals("10.0.1.5", ServerObserver.rootDomain("10.0.1.5:25565"));
+        assertEquals("192.168.1.5", ServerObserver.rootDomain("192.168.1.5"));
+        assertEquals("2001:db8::1", ServerObserver.rootDomain("[2001:db8::1]:25565"));
+        assertEquals("localhost", ServerObserver.rootDomain("localhost:25565"));
     }
 
     @Test
@@ -45,6 +50,14 @@ class ServerObserverTest {
     void extractsPluginNamesFromChatMessages() {
         assertEquals(Set.of("grimac", "viaversion", "worldedit"),
                 ServerObserver.extractPluginsFromMessage("Plugins (3): GrimAC, ViaVersion, WorldEdit"));
+    }
+
+    @Test
+    void extractsPluginNamesFromPaperListLines() {
+        assertEquals(Set.of("luckperms", "worldedit"),
+                ServerObserver.extractPluginsFromMessage("Server Plugins (2):\nBukkit Plugins:\n - LuckPerms, WorldEdit"));
+        assertEquals(Set.of("essentials"), ServerObserver.extractPluginsFromMessage(" - Essentials"));
+        assertEquals(Set.of(), ServerObserver.extractPluginsFromMessage("Bukkit Plugins:"));
     }
 
     @Test

@@ -7,6 +7,10 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.handshake.ClientIntent;
+import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -29,6 +33,8 @@ public final class AutoLoginModule extends Module {
             .build()));
     private String pendingCommand;
     private int pendingTicks;
+    /** Host of the latest handshake when it came from a server transfer; set on the connecting thread. */
+    private volatile String transferHost;
 
     public AutoLoginModule() {
         super("auto_login", "Auto Login", ModuleCategory.MISC,
@@ -39,6 +45,17 @@ public final class AutoLoginModule extends Module {
     public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
         this.pendingCommand = this.commandFor(client);
         this.pendingTicks = this.pendingCommand == null ? 0 : this.delay.value().intValue();
+    }
+
+    @Override
+    public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        if (packet instanceof ClientIntentionPacket intention && intention.intention() != ClientIntent.STATUS) {
+            // After a transfer vanilla keeps the original server's ServerData, so remember the real host.
+            this.transferHost = intention.intention() == ClientIntent.TRANSFER
+                    ? handshakeHost(intention.hostName(), intention.port())
+                    : null;
+        }
+        return false;
     }
 
     @Override
@@ -69,6 +86,14 @@ public final class AutoLoginModule extends Module {
         if (entries.isEmpty()) {
             return null;
         }
+        String transferred = this.transferHost;
+        if (transferred != null) {
+            // Never send the original server's login to the host it transferred us to.
+            String host = transferred.substring(0, transferred.lastIndexOf(':'));
+            String command = entries.getOrDefault(transferred, entries.get(host));
+            command = command == null ? entries.get("*") : command;
+            return command == null || command.isBlank() ? null : command;
+        }
         ServerIdentity server = serverIdentity(client);
         String command = entries.get(server.address());
         if (command == null) {
@@ -86,6 +111,13 @@ public final class AutoLoginModule extends Module {
     private void clearPending() {
         this.pendingCommand = null;
         this.pendingTicks = 0;
+    }
+
+    /** {@code host:port}, without the forwarding data BungeeCord Spoof may append to the handshake host. */
+    static String handshakeHost(final String hostName, final int port) {
+        int forwarding = hostName.indexOf('\0');
+        String host = forwarding < 0 ? hostName : hostName.substring(0, forwarding);
+        return normalize(host) + ":" + port;
     }
 
     static Map<String, String> parseCommands(final String value) {

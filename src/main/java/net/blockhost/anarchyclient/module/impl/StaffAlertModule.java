@@ -12,16 +12,22 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.target.TargetClassifier;
 import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public final class StaffAlertModule extends Module {
 
@@ -55,7 +61,10 @@ public final class StaffAlertModule extends Module {
             .name("Modules")
             .defaultValue("kill_aura, auto_clicker, velocity, glide, boost")
             .build()));
-    private final Set<String> alerted = new LinkedHashSet<>();
+    /** Staff whose join was announced this session, by UUID so a leave can reset them. */
+    private final Map<UUID, String> joinAlerted = new HashMap<>();
+    /** Staff within proximity range last tick; a name alerts again after it leaves the range. */
+    private Set<String> nearby = Set.of();
 
     public StaffAlertModule(final ModuleManager modules) {
         super("staff_alert", "Staff Alert", ModuleCategory.MISC,
@@ -65,7 +74,22 @@ public final class StaffAlertModule extends Module {
 
     @Override
     protected void onEnable() {
-        this.alerted.clear();
+        this.reset();
+    }
+
+    @Override
+    public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
+        this.reset();
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.reset();
+    }
+
+    private void reset() {
+        this.joinAlerted.clear();
+        this.nearby = Set.of();
     }
 
     @Override
@@ -74,20 +98,28 @@ public final class StaffAlertModule extends Module {
             return;
         }
         double rangeSqr = this.proximityRange.value() * this.proximityRange.value();
+        Set<String> nearNow = new HashSet<>();
         for (Entity entity : client.level.entitiesForRendering()) {
             if (entity instanceof Player player && player != client.player
                     && client.player.distanceToSqr(player) <= rangeSqr
-                    && this.isStaff(player.getScoreboardName())
-                    && this.alerted.add(("near:" + player.getScoreboardName()).toLowerCase(Locale.ROOT))) {
-                this.alert(client, player.getScoreboardName() + " nearby");
+                    && this.isStaff(player.getScoreboardName())) {
+                String key = player.getScoreboardName().toLowerCase(Locale.ROOT);
+                nearNow.add(key);
+                if (!this.nearby.contains(key)) {
+                    this.alert(client, player.getScoreboardName() + " nearby");
+                }
             }
         }
+        this.nearby = nearNow;
     }
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         if (packet instanceof ClientboundPlayerInfoUpdatePacket info) {
             MainThread.run(() -> this.checkNewEntries(client, info));
+        } else if (packet instanceof ClientboundPlayerInfoRemovePacket remove) {
+            // A staff member who leaves and rejoins is announced again.
+            MainThread.run(() -> remove.profileIds().forEach(this.joinAlerted::remove));
         }
         return false;
     }
@@ -98,7 +130,8 @@ public final class StaffAlertModule extends Module {
         }
         for (ClientboundPlayerInfoUpdatePacket.Entry entry : info.newEntries()) {
             GameProfile profile = entry.profile();
-            if (profile != null && this.isStaff(profile.name()) && this.alerted.add(profile.name().toLowerCase(Locale.ROOT))) {
+            if (profile != null && this.isStaff(profile.name())
+                    && this.joinAlerted.putIfAbsent(profile.id(), profile.name()) == null) {
                 this.alert(client, profile.name());
             }
         }

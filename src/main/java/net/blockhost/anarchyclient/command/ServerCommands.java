@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
@@ -231,13 +232,16 @@ final class ServerCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
+        ServerboundMovePlayerPacket packet = new ServerboundMovePlayerPacket.Pos(
                 Double.NaN,
                 Double.POSITIVE_INFINITY,
                 Double.NaN,
                 client.player.onGround(),
                 client.player.horizontalCollision
-        ));
+        );
+        // Skip module packet hooks: Anti Packet Kick exists to drop exactly this packet, and the user asked for it.
+        ClientPacketListener connection = client.getConnection();
+        PacketEventSilencer.runSilently(() -> connection.send(packet));
         context.getSource().sendFeedback(Component.literal("Sent invalid position packet."));
         return SUCCESS;
     }

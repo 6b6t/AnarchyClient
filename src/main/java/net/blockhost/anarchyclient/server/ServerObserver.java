@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.server;
 
+import com.google.common.net.HostAndPort;
+import com.google.common.net.InetAddresses;
+import com.google.common.net.InternetDomainName;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
@@ -72,6 +75,8 @@ public final class ServerObserver {
     private static int expectedSuggestionId = -1;
     private static long suggestionDeadlineMillis;
     private static long pluginChatDeadlineMillis;
+    /** How long to keep reading {@code /plugins} lines after the first one arrives. */
+    private static final long PLUGIN_CHAT_GRACE_MILLIS = 500L;
     private static Set<String> plugins = Set.of();
     private static int pluginScanSequence;
     private static int flagSequence;
@@ -292,17 +297,34 @@ public final class ServerObserver {
         return Optional.of("Unknown");
     }
 
+    /**
+     * Key that groups one network's addresses: the registrable domain ({@code play.example.co.uk} becomes
+     * {@code example.co.uk}). IP addresses and hosts without a public suffix stay whole, so unrelated servers
+     * never share a key.
+     */
     public static String rootDomain(final String address) {
-        String host = normalizeAddress(address);
-        int colon = host.indexOf(':');
-        if (colon >= 0) {
-            host = host.substring(0, colon);
+        String normalized = normalizeAddress(address);
+        if (normalized.isEmpty()) {
+            return "";
         }
-        String[] parts = host.split("\\.");
-        if (parts.length <= 2) {
+        String host;
+        try {
+            host = HostAndPort.fromString(normalized).getHost();
+        } catch (IllegalArgumentException exception) {
+            host = normalized;
+        }
+        if (InetAddresses.isInetAddress(host)) {
             return host;
         }
-        return parts[parts.length - 2] + "." + parts[parts.length - 1];
+        try {
+            InternetDomainName name = InternetDomainName.from(host);
+            if (name.isUnderPublicSuffix()) {
+                return name.topPrivateDomain().toString();
+            }
+        } catch (IllegalArgumentException exception) {
+            // Not a valid domain name; use the host as it is.
+        }
+        return host;
     }
 
     static Set<String> extractPluginsFromSuggestions(final List<ClientboundCommandSuggestionsPacket.Entry> suggestions) {
@@ -328,21 +350,33 @@ public final class ServerObserver {
         return Set.copyOf(names);
     }
 
+    /**
+     * Reads plugin names from {@code /plugins} output: Spigot's single line ({@code Plugins (3): A, B, C}) and
+     * Paper's list, where headers such as {@code Bukkit Plugins:} are followed by {@code - A, B, C} lines.
+     */
     static Set<String> extractPluginsFromMessage(final String message) {
         if (message == null) {
             return Set.of();
         }
-        String plain = message.strip();
-        int pluginsIndex = plain.toLowerCase(Locale.ROOT).indexOf("plugins");
-        int separator = plain.indexOf(':', Math.max(0, pluginsIndex));
-        if (pluginsIndex < 0 || separator < 0 || separator >= plain.length() - 1) {
-            return Set.of();
-        }
         Set<String> names = new LinkedHashSet<>();
-        for (String token : plain.substring(separator + 1).split(",")) {
-            String plugin = normalizePluginName(token);
-            if (!plugin.isBlank()) {
-                names.add(plugin);
+        for (String line : message.split("\\R")) {
+            String plain = line.strip();
+            String list = null;
+            int pluginsIndex = plain.toLowerCase(Locale.ROOT).indexOf("plugins");
+            int separator = pluginsIndex < 0 ? -1 : plain.indexOf(':', pluginsIndex);
+            if (separator >= 0 && separator < plain.length() - 1) {
+                list = plain.substring(separator + 1);
+            } else if (plain.startsWith("-") || plain.startsWith("\u2022")) {
+                list = plain.substring(1);
+            }
+            if (list == null) {
+                continue;
+            }
+            for (String token : list.split(",")) {
+                String plugin = normalizePluginName(token);
+                if (!plugin.isBlank()) {
+                    names.add(plugin);
+                }
             }
         }
         return Set.copyOf(names);
@@ -386,8 +420,12 @@ public final class ServerObserver {
         }
         Set<String> parsed = extractPluginsFromMessage(component.getString());
         if (!parsed.isEmpty()) {
-            pluginChatDeadlineMillis = 0;
-            storePlugins(parsed);
+            // Paper sends the list over several messages, so keep collecting briefly after the first one.
+            Set<String> merged = new LinkedHashSet<>(plugins);
+            merged.addAll(parsed);
+            storePlugins(merged);
+            pluginChatDeadlineMillis = Math.min(pluginChatDeadlineMillis,
+                    System.currentTimeMillis() + PLUGIN_CHAT_GRACE_MILLIS);
         }
     }
 

@@ -31,7 +31,7 @@ public final class TimeChangerModule extends Module {
             .step(500.0)
             .build()));
     /**
-     * Clock updates from blocked time packets. Packets arrive on the network thread, so the client tick applies them.
+     * Clock updates from server time packets. Packets arrive on the network thread, so the client tick applies them.
      */
     private final Map<Holder<WorldClock>, ClockNetworkState> pendingServerUpdates = new ConcurrentHashMap<>();
     private @Nullable Holder<WorldClock> clock;
@@ -71,9 +71,10 @@ public final class TimeChangerModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
+        // Vanilla still applies the packet: it carries the game time and other clocks too. The tick, which runs
+        // after packets are handled and before the frame renders, puts the frozen time back on the default clock.
         if (packet instanceof ClientboundSetTimePacket timePacket) {
             this.pendingServerUpdates.putAll(timePacket.clockUpdates());
-            return true;
         }
         return false;
     }

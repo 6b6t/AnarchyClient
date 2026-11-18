@@ -75,7 +75,7 @@ public final class ServerSpoofModule extends Module {
             @SuppressWarnings("deprecation")
             ClientIntentionPacket spoofed = new ClientIntentionPacket(
                     intention.protocolVersion(),
-                    this.host.value(),
+                    spoofedHost(intention.hostName(), this.host.value()),
                     intention.port(),
                     intention.intention()
             );
@@ -87,6 +87,15 @@ public final class ServerSpoofModule extends Module {
             return new ServerboundCustomPayloadPacket(new BrandPayload(this.brand.value()));
         }
         return packet;
+    }
+
+    /**
+     * Replaces only the host part. BungeeCord Spoof appends {@code \0ip\0uuid\0properties} forwarding data to the
+     * host, and the backend rejects the login without it.
+     */
+    static String spoofedHost(final String original, final String replacement) {
+        int forwarding = original.indexOf('\0');
+        return forwarding < 0 ? replacement : replacement + original.substring(forwarding);
     }
 
     @Override

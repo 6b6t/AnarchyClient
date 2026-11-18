@@ -9,11 +9,12 @@ import net.minecraft.client.Minecraft;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.ProtocolFamily;
+import java.io.RandomAccessFile;
 import java.net.StandardProtocolFamily;
 import java.net.UnixDomainSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -137,23 +138,22 @@ public final class DiscordPresenceModule extends Module {
         private static final int OP_FRAME = 1;
         private static final int OP_CLOSE = 2;
 
-        private final SocketChannel channel;
+        /** A Unix domain socket, or on Windows the channel of a named pipe opened as a file. */
+        private final GatheringByteChannel channel;
 
-        private DiscordIpcClient(final SocketChannel channel) {
+        private DiscordIpcClient(final GatheringByteChannel channel) {
             this.channel = channel;
         }
 
         private static DiscordIpcClient connect(final String applicationId) throws IOException {
             IOException lastException = null;
-            ProtocolFamily family = StandardProtocolFamily.UNIX;
-            for (Path path : ipcPaths()) {
-                if (!Files.exists(path)) {
-                    continue;
-                }
+            boolean windows = System.getProperty("os.name", "").startsWith("Windows");
+            for (int index = 0; index < 10; index++) {
                 try {
-                    SocketChannel channel = SocketChannel.open(family);
-                    channel.connect(UnixDomainSocketAddress.of(path));
-                    DiscordIpcClient client = new DiscordIpcClient(channel);
+                    DiscordIpcClient client = windows ? openPipe(index) : openSocket(index);
+                    if (client == null) {
+                        continue;
+                    }
                     JsonObject handshake = new JsonObject();
                     handshake.addProperty("v", 1);
                     handshake.addProperty("client_id", applicationId);
@@ -167,6 +167,29 @@ public final class DiscordPresenceModule extends Module {
                 throw lastException;
             }
             throw new IOException("Discord IPC socket not found");
+        }
+
+        /** Windows Discord listens on the named pipe {@code \\.\pipe\discord-ipc-N}. */
+        private static DiscordIpcClient openPipe(final int index) throws IOException {
+            RandomAccessFile pipe = new RandomAccessFile("\\\\.\\pipe\\discord-ipc-" + index, "rw");
+            return new DiscordIpcClient(pipe.getChannel());
+        }
+
+        private static DiscordIpcClient openSocket(final int index) throws IOException {
+            for (Path base : ipcBases()) {
+                Path path = base.resolve("discord-ipc-" + index);
+                if (Files.exists(path)) {
+                    SocketChannel channel = SocketChannel.open(StandardProtocolFamily.UNIX);
+                    try {
+                        channel.connect(UnixDomainSocketAddress.of(path));
+                    } catch (IOException exception) {
+                        channel.close();
+                        throw exception;
+                    }
+                    return new DiscordIpcClient(channel);
+                }
+            }
+            return null;
         }
 
         private void setActivity(final String details, final String state, final long startEpochSeconds) throws IOException {
@@ -210,18 +233,19 @@ public final class DiscordPresenceModule extends Module {
             this.channel.close();
         }
 
-        private static List<Path> ipcPaths() {
+        /** Directories that can hold the socket, including the Flatpak and Snap sandboxes inside each. */
+        static List<Path> ipcBases() {
+            List<Path> roots = new ArrayList<>();
+            addBase(roots, System.getenv("XDG_RUNTIME_DIR"));
+            addBase(roots, System.getenv("TMPDIR"));
+            addBase(roots, "/tmp");
             List<Path> bases = new ArrayList<>();
-            addBase(bases, System.getenv("XDG_RUNTIME_DIR"));
-            addBase(bases, System.getenv("TMPDIR"));
-            addBase(bases, "/tmp");
-            List<Path> paths = new ArrayList<>();
-            for (Path base : bases) {
-                for (int i = 0; i < 10; i++) {
-                    paths.add(base.resolve("discord-ipc-" + i));
-                }
+            for (Path root : roots) {
+                bases.add(root);
+                bases.add(root.resolve("app").resolve("com.discordapp.Discord"));
+                bases.add(root.resolve("snap.discord"));
             }
-            return paths;
+            return bases;
         }
 
         private static void addBase(final List<Path> bases, final String value) {

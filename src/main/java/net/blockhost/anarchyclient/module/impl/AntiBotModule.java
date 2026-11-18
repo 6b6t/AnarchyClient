@@ -58,7 +58,9 @@ public final class AntiBotModule extends Module {
         }
         List<Player> bots = new ArrayList<>();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (entity instanceof Player other && other != player && this.shouldRemove(other, connection)) {
+            // Client-only players (Fake Player) have no tab entry by design.
+            if (entity instanceof Player other && other != player && !FakePlayerModule.isClientOnly(other)
+                    && this.shouldRemove(other, connection)) {
                 bots.add(other);
             }
         }
