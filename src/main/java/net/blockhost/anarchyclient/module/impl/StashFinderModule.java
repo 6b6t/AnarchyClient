@@ -18,7 +18,12 @@ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public final class StashFinderModule extends Module {
@@ -68,24 +73,59 @@ public final class StashFinderModule extends Module {
         this.cooldownTicks = 60;
         int chunkRadius = Math.max(1, (int) Math.ceil(this.range.value() / 16.0));
         ChunkPos center = player.chunkPosition();
+        Map<Long, Integer> counts = new HashMap<>();
         for (int chunkX = center.x() - chunkRadius; chunkX <= center.x() + chunkRadius; chunkX++) {
             for (int chunkZ = center.z() - chunkRadius; chunkZ <= center.z() + chunkRadius; chunkZ++) {
-                if (!client.level.hasChunk(chunkX, chunkZ)) {
-                    continue;
-                }
-                long key = ChunkPos.pack(chunkX, chunkZ);
-                if (this.reportedChunks.contains(key)) {
-                    continue;
-                }
-                LevelChunk chunk = client.level.getChunk(chunkX, chunkZ);
-                int count = storageCount(chunk);
-                if (count >= this.threshold.value().intValue()) {
-                    this.reportedChunks.add(key);
-                    BlockPos pos = chunk.getPos().getWorldPosition();
-                    player.sendSystemMessage(Translations.component("anarchyclient.message.stash_finder.possible_stash_containers_near", "Possible stash: %s containers near %s, %s", count, pos.getX(), pos.getZ()));
+                if (client.level.hasChunk(chunkX, chunkZ)) {
+                    int count = storageCount(client.level.getChunk(chunkX, chunkZ));
+                    if (count > 0) {
+                        counts.put(ChunkPos.pack(chunkX, chunkZ), count);
+                    }
                 }
             }
         }
+        for (Stash stash : findStashes(counts, this.threshold.value().intValue(), this.reportedChunks)) {
+            BlockPos pos = ChunkPos.unpack(stash.chunk()).getWorldPosition();
+            player.sendSystemMessage(Translations.component("anarchyclient.message.stash_finder.possible_stash_containers_near",
+                    "Possible stash: %s containers near %s, %s", stash.containers(), pos.getX(), pos.getZ()));
+        }
+    }
+
+    /**
+     * Returns the chunks whose 3x3 neighborhood holds at least {@code threshold} containers, busiest
+     * first. Counting neighbors finds stashes that cross a chunk border. Each report marks its whole
+     * neighborhood in {@code reported}, so one stash is reported once.
+     */
+    static List<Stash> findStashes(final Map<Long, Integer> counts, final int threshold, final Set<Long> reported) {
+        List<Long> chunks = new ArrayList<>(counts.keySet());
+        chunks.sort(Comparator.comparingInt((Long chunk) -> counts.get(chunk)).reversed().thenComparing(chunk -> chunk));
+        List<Stash> stashes = new ArrayList<>();
+        for (long chunk : chunks) {
+            if (reported.contains(chunk)) {
+                continue;
+            }
+            int x = ChunkPos.getX(chunk);
+            int z = ChunkPos.getZ(chunk);
+            int total = 0;
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    total += counts.getOrDefault(ChunkPos.pack(x + dx, z + dz), 0);
+                }
+            }
+            if (total < threshold) {
+                continue;
+            }
+            stashes.add(new Stash(chunk, total));
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    reported.add(ChunkPos.pack(x + dx, z + dz));
+                }
+            }
+        }
+        return stashes;
+    }
+
+    record Stash(long chunk, int containers) {
     }
 
     @Override
