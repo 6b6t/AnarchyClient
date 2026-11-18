@@ -4,11 +4,11 @@ import { Suspense } from "react";
 import { DownloadCard } from "../components/download-card";
 import { InstallSteps } from "../components/install-steps";
 import { documentLoader } from "../lib/document-content";
-import { getDocument } from "../lib/documents";
+import { requireDocument } from "../lib/documents";
 import { pageHead } from "../lib/metadata";
 import { site } from "../lib/site";
 
-const page = getDocument("releases")!;
+const page = requireDocument("releases");
 
 export const Route = createFileRoute("/releases")({
   loader: async () => {

@@ -9,7 +9,7 @@ export function installSteps(minecraft?: string) {
   ];
 }
 
-export function InstallSteps({ minecraft }: { minecraft?: string }) {
+export function InstallSteps({ minecraft }: { minecraft?: string | undefined }) {
   return (
     <ol className="install-steps">
       {installSteps(minecraft).map((step, index) => (

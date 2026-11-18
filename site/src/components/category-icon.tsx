@@ -8,11 +8,12 @@ import {
   Shapes,
   Target,
   User,
+  type LucideIcon,
   type LucideProps,
 } from "lucide-react";
 
 // The same Lucide glyphs as the in-game dock (ModuleIcons.java).
-const icons = {
+const icons: Partial<Record<string, LucideIcon>> = {
   combat: Target,
   render: Eye,
   movement: Move,
@@ -21,9 +22,9 @@ const icons = {
   hud: LayoutList,
   misc: Settings,
   fun: Gamepad2,
-} as const;
+};
 
 export function CategoryIcon({ category, ...props }: { category: string } & LucideProps) {
-  const Icon = icons[category as keyof typeof icons] ?? Shapes;
+  const Icon = icons[category] ?? Shapes;
   return <Icon aria-hidden="true" {...props} />;
 }

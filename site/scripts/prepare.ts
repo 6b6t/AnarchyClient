@@ -5,7 +5,7 @@ import { publicPages } from "./pages";
 
 async function fetchRelease() {
   try {
-    const token = process.env.GITHUB_TOKEN;
+    const token = process.env["GITHUB_TOKEN"];
     const response = await fetch(
       "https://api.github.com/repos/6b6t/AnarchyClient/releases/latest",
       {

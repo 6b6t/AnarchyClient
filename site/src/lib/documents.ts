@@ -9,11 +9,18 @@ const metadata = import.meta.glob<{ frontmatter: PageMetadata }>("../../content/
 export const documents = Object.entries(metadata).map(([path, { frontmatter }]) => ({
   ...frontmatter,
   path,
-  slug: path.split("/").at(-1)!.slice(0, -4),
+  slug: path.slice(path.lastIndexOf("/") + 1, -4),
 }));
 
 export function getDocument(slug: string) {
   return documents.find((page) => page.slug === slug);
+}
+
+/** Returns a documentation page that the site cannot work without. */
+export function requireDocument(slug: string) {
+  const page = getDocument(slug);
+  if (!page) throw new Error(`Missing documentation: ${slug}`);
+  return page;
 }
 
 /** Sidebar labels that differ from the page title. */
@@ -33,7 +40,6 @@ export const pageTree: Root = {
 };
 
 function item(slug: string) {
-  const page = getDocument(slug);
-  if (!page) throw new Error(`Missing documentation: ${slug}`);
+  const page = requireDocument(slug);
   return { type: "page" as const, name: labels[slug] ?? page.title, url: pageUrl(slug) };
 }

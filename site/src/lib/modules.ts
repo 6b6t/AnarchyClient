@@ -13,16 +13,16 @@ export interface ModuleCategory {
 
 /** Reads the categories and their display names from `ModuleCategory.java`, in menu order. */
 export function parseCategories(source: string) {
-  return [...source.matchAll(/^\s*([A-Z_]+)\("((?:[^"\\]|\\.)*)"\)[,;]/gm)].map(([, id, name]) => ({
-    id: id!,
-    name: unescape(name!),
-  }));
+  return [...source.matchAll(/^\s*([A-Z_]+)\("((?:[^"\\]|\\.)*)"\)[,;]/gm)].flatMap(
+    ([, id, name]) =>
+      id === undefined || name === undefined ? [] : [{ id, name: unescape(name) }],
+  );
 }
 
 /** Collects the module classes that the `*Modules.java` registration files construct. */
 export function parseRegistrations(sources: readonly string[]) {
   return new Set(
-    sources.flatMap((source) => [...source.matchAll(/new (\w+)\(/g)].map((m) => m[1]!)),
+    sources.flatMap((source) => [...source.matchAll(/new (\w+)\(/g)].flatMap((m) => m[1] ?? [])),
   );
 }
 
@@ -31,19 +31,20 @@ export function parseModule(source: string): (ClientModule & { className: string
   const declaration = /\bfinal class (\w+) extends (Module|HudElementModule)\b/.exec(source);
   if (!declaration) return undefined;
   const [, className, base] = declaration;
+  if (!className) return undefined;
   const call = source.indexOf("super(", declaration.index);
   if (call < 0) return undefined;
   const args = splitArguments(source, call + "super(".length);
   if (base === "HudElementModule") {
     const [id, name, description] = args.map(stringValue);
     if (id === undefined || name === undefined || description === undefined) return undefined;
-    return { className: className!, id, name, category: "HUD", description };
+    return { className, id, name, category: "HUD", description };
   }
   const [id, name, description] = [args[0], args[1], args[3]].map((arg) => stringValue(arg));
   const category = /^ModuleCategory\.([A-Z_]+)$/.exec(args[2] ?? "")?.[1];
   if (id === undefined || name === undefined || description === undefined || !category)
     return undefined;
-  return { className: className!, id, name, category, description };
+  return { className, id, name, category, description };
 }
 
 /** Groups registered modules by category, keeping the in-game category order. */
@@ -84,7 +85,7 @@ function splitArguments(source: string, start: number) {
   let depth = 0;
   let current = "";
   for (let index = start; index < source.length; index++) {
-    const char = source[index]!;
+    const char = source.charAt(index);
     if (char === '"') {
       const end = stringEnd(source, index);
       current += source.slice(index, end + 1);

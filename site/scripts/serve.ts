@@ -2,7 +2,7 @@ import { resolve, sep } from "node:path";
 
 // Serve the exported files without an application server, matching GitHub Pages.
 const root = resolve("dist/client");
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env["PORT"] ?? 3000);
 const server = Bun.serve({
   hostname: "0.0.0.0",
   port,

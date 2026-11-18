@@ -22,13 +22,14 @@ export function searchModules(categories: readonly ModuleCategory[], query: stri
 
 /** A browsable copy of the in-game menu: category dock, module grid, and inspector. */
 export function ModuleExplorer({ categories }: { categories: readonly ModuleCategory[] }) {
-  const [categoryId, setCategoryId] = useState(categories[0]!.id);
+  const [categoryId, setCategoryId] = useState(categories[0]?.id);
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query.trim());
-  const category = categories.find((item) => item.id === categoryId) ?? categories[0]!;
+  const category = categories.find((item) => item.id === categoryId) ?? categories[0];
+  const [selected, setSelected] = useState<ClientModule | undefined>(category?.modules[0]);
+  if (!category) return null;
   const modules = deferredQuery ? searchModules(categories, deferredQuery) : category.modules;
-  const [selected, setSelected] = useState<ClientModule>(category.modules[0]!);
-  const selectedCategory = categories.find((item) => item.id === selected.category);
+  const selectedCategory = categories.find((item) => item.id === selected?.category);
 
   return (
     <div className="explorer">
@@ -45,7 +46,7 @@ export function ModuleExplorer({ categories }: { categories: readonly ModuleCate
             onClick={() => {
               setQuery("");
               setCategoryId(item.id);
-              setSelected(item.modules[0]!);
+              setSelected(item.modules[0]);
             }}
           >
             <CategoryIcon category={item.id} size={20} />
@@ -73,7 +74,7 @@ export function ModuleExplorer({ categories }: { categories: readonly ModuleCate
               <button
                 type="button"
                 className="module-card"
-                aria-pressed={module.id === selected.id}
+                aria-pressed={module.id === selected?.id}
                 onClick={() => setSelected(module)}
               >
                 <CategoryIcon category={module.category} size={16} />
@@ -86,21 +87,25 @@ export function ModuleExplorer({ categories }: { categories: readonly ModuleCate
         </ul>
       </section>
       <aside className="inspector glass" aria-live="polite" aria-label="Selected module">
-        <h3>{selected.name}</h3>
-        <p className="inspector-category">
-          <CategoryIcon category={selected.category} size={16} />
-          {selectedCategory?.name}
-        </p>
-        <p className="inspector-description">{selected.description}</p>
-        <Link
-          className="inspector-link"
-          to="/modules/"
-          hash={moduleAnchor(selected)}
-          hashScrollIntoView
-        >
-          Open in the module list
-          <ArrowRight size={16} aria-hidden="true" />
-        </Link>
+        {selected && (
+          <>
+            <h3>{selected.name}</h3>
+            <p className="inspector-category">
+              <CategoryIcon category={selected.category} size={16} />
+              {selectedCategory?.name}
+            </p>
+            <p className="inspector-description">{selected.description}</p>
+            <Link
+              className="inspector-link"
+              to="/modules/"
+              hash={moduleAnchor(selected)}
+              hashScrollIntoView
+            >
+              Open in the module list
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </>
+        )}
       </aside>
     </div>
   );

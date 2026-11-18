@@ -20,9 +20,11 @@ function virtualModule(
     name: `anarchyclient-${name}`,
     resolveId(source) {
       if (source === id) return `\0${id}`;
+      return null;
     },
     load(source) {
       if (source === `\0${id}`) return load(this);
+      return null;
     },
   };
 }

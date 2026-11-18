@@ -17,6 +17,6 @@ export default defineConfig({
     command: "bun run preview",
     url: "http://localhost:4173",
     env: { PORT: "4173" },
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env["CI"],
   },
 });

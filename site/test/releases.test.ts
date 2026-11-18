@@ -29,7 +29,8 @@ test("the release offers its one mod JAR and reads the Minecraft version from it
   );
   expect(parsed?.jar?.name).toBe("anarchyclient-mc-26.3-0.3.0.jar");
   expect(parsed?.minecraft).toBe("26.3");
-  expect(formatSize(parsed!.jar!.size)).toBe("4.9 MB");
+  if (!parsed?.jar) throw new Error("Expected the release JAR");
+  expect(formatSize(parsed.jar.size)).toBe("4.9 MB");
 });
 
 test("ambiguous, foreign, or other-tag JARs fall back to the release page", () => {

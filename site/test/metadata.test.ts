@@ -38,6 +38,7 @@ test("Discord preview JSON cannot close its containing script element", () => {
     { title: "</script><script>alert(1)</script>", description: "A guide" },
     "contributing",
   );
-  expect(head.scripts[0]?.children).not.toContain("</script>");
-  expect(() => JSON.parse(head.scripts[0]!.children)).not.toThrow();
+  const [script] = head.scripts;
+  expect(script?.children).not.toContain("</script>");
+  expect(() => JSON.parse(script?.children ?? "")).not.toThrow();
 });
