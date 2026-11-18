@@ -51,4 +51,14 @@ class TickClaimTest {
 
         assertTrue(claim.tryClaim("packet_mine"));
     }
+
+    @Test
+    void anOwnerThatStoppedRenewingLosesTheClaimWithoutAVanillaCheck() {
+        // With a screen open, consume() never runs; the claim must still lapse once the owner stops.
+        TickClaim claim = new TickClaim();
+        assertTrue(claim.tryClaim("nuker", 0L));
+
+        assertFalse(claim.tryClaim("packet_mine", 50_000_000L));
+        assertTrue(claim.tryClaim("packet_mine", 200_000_000L));
+    }
 }

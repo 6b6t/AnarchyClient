@@ -55,12 +55,12 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
                 padding(PADDING, 0F, 8F, 0F), null, 18F));
         place(this.modules, cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                 padding(PADDING, 0F, 8F, 0F), null, 18F));
-        // Size each action to its text, right-aligned in its column: a click on the empty space next to
-        // Translations.text("anarchyclient.ui.apply", "Apply") used to land on Translations.text("anarchyclient.ui.delete", "Delete").
+        // Size each action to its text (no fixed column width): a click on the empty space next to "Apply" used to
+        // land on "Delete", and fixed widths cut off longer translations.
         place(this.apply, cell(1, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
-                padding(0F, 0F, 10F, 0F), 52F, null));
+                padding(0F, 0F, 10F, 0F), null, null));
         place(this.delete, cell(2, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
-                padding(0F, 0F, PADDING, 0F), 50F, null));
+                padding(0F, 0F, PADDING, 0F), null, null));
         this.addChild(this.background);
         this.addChild(this.name);
         this.addChild(this.modules);

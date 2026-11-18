@@ -18,8 +18,11 @@ final class CombatTargets {
     private CombatTargets() {
     }
 
-    /** Players only, friends and teammates (scoreboard allies and the Teams module) skipped. */
-    private static final TargetPolicy ENEMY_PLAYERS = TargetPolicy.of(true, false, false, true, true, true, false);
+    /**
+     * Players only, friends skipped. Teammates are left to the Teams module (checked in {@link #nearestEnemy}), so a
+     * server that puts everyone in one scoreboard team still has targets while Teams is off.
+     */
+    private static final TargetPolicy ENEMY_PLAYERS = TargetPolicy.of(true, false, false, true, true, false, false);
 
     /** The locked target when Target Lock holds a player in range, else the nearest allowed player. */
     static Player nearestEnemy(final Minecraft client, final double range) {
@@ -28,14 +31,14 @@ final class CombatTargets {
             return null;
         }
         Optional<LivingEntity> locked = TargetLockModule.preferred(client.level.players(), player, ENEMY_PLAYERS, range);
-        if (locked.isPresent() && locked.get() instanceof Player lockedPlayer) {
+        if (locked.isPresent() && locked.get() instanceof Player lockedPlayer && TeamsModule.allows(lockedPlayer, player)) {
             return lockedPlayer;
         }
         double rangeSqr = range * range;
         Player best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Player target : client.level.players()) {
-            if (!TargetQuery.allowed(target, player, ENEMY_PLAYERS)) {
+            if (!TargetQuery.allowed(target, player, ENEMY_PLAYERS) || !TeamsModule.allows(target, player)) {
                 continue;
             }
             double distance = player.distanceToSqr(target);

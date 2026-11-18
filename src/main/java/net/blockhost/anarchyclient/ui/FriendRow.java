@@ -48,9 +48,10 @@ final class FriendRow extends Container implements LayoutDebugLabel {
                 padding(PADDING, 0F, 0F, 0F), (float) HEAD_SIZE, (float) HEAD_SIZE));
         place(this.name, cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
                 padding(10F, 0F, 8F, 0F), null, null));
-        // Size the action to its text so only the visible Translations.text("anarchyclient.ui.remove", "Remove") reacts to clicks.
+        // Size the action to its text (no fixed column width) so only the visible "Remove" reacts to clicks and
+        // longer translations are not cut off.
         place(this.remove, cell(2, 0, 1, 1, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE,
-                padding(0F, 0F, PADDING, 0F), 76F, null));
+                padding(0F, 0F, PADDING, 0F), null, null));
         this.addChild(this.background);
         this.addChild(this.head);
         this.addChild(this.name);

@@ -43,14 +43,16 @@ final class NumberSettingRow extends Container implements LayoutDebugLabel {
         this.description = settingDescription(setting);
         this.value = textNode(() -> SettingControls.displayValue(this.setting), () -> TEXT)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        this.slider = slider(setting.min(), setting.max(), setting.step(), setting.value());
+        // Step 0: Rivet passes the raw position through, and the setting snaps it once, from its minimum. Letting
+        // Rivet snap too (from 0) put the value up to a step away from the pointer.
+        this.slider = slider(setting.min(), setting.max(), 0.0, setting.value());
         this.slider.valueChangeListener().add(value -> {
             double snapped = setting.snap(value);
-            setting.value(snapped);
-            this.save.run();
-            if (snapped != value) {
-                // Show the snapped value; the listener runs once more with it and finds nothing to change.
-                this.slider.value(snapped);
+            // Keep the thumb on the grid; value() does not fire this listener again.
+            this.slider.value(snapped);
+            if (snapped != setting.value()) {
+                setting.value(snapped);
+                this.save.run();
             }
         });
         this.addChild(this.divider);

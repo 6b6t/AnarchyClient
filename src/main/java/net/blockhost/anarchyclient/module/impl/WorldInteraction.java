@@ -102,6 +102,10 @@ final class WorldInteraction {
         if (player == null || client.level == null || client.gameMode == null) {
             return false;
         }
+        // Another module is mining: switching to this module's tool would flip the held item every tick.
+        if (!MiningControl.canMine(owner)) {
+            return false;
+        }
         if (tools != null) {
             ToolSelector.bestHotbarTool(player.getInventory(), client.level.getBlockState(pos), tools)
                     .ifPresent(slot -> InventoryActions.selectHotbarSlot(player, slot));

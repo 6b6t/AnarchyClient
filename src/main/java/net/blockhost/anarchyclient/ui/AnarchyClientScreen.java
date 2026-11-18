@@ -59,6 +59,7 @@ public final class AnarchyClientScreen extends Screen {
     @Override
     protected void init() {
         Minecraft client = Minecraft.getInstance();
+        this.forgetPointer();
         GlassBackdrop.activate();
         // Typed characters only arrive while SDL text input runs, and opening a screen stops it. Vanilla starts it
         // for its own text widgets; the menu's Rivet text fields need it for the whole screen, as signs do.
@@ -91,6 +92,7 @@ public final class AnarchyClientScreen extends Screen {
      */
     @Override
     protected void repositionElements() {
+        this.forgetPointer();
         if (this.rivet == null) {
             super.repositionElements();
             return;
@@ -134,6 +136,12 @@ public final class AnarchyClientScreen extends Screen {
         // Triggers the vanilla blur pass. GlassBackdrop captures the blurred frame for the glass
         // panels and restores the sharp frame, so the game stays fully visible behind the menu.
         graphics.blurBeforeThisStratum();
+    }
+
+    /** A resize can change the GUI scale; the stored pointer is in the old units until the mouse moves again. */
+    private void forgetPointer() {
+        this.lastMouseX = Double.NaN;
+        this.lastMouseY = Double.NaN;
     }
 
     @Override

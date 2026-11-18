@@ -49,6 +49,11 @@ public final class MiningControl {
         return true;
     }
 
+    /** Whether {@code owner} may mine now, so a refused module does not switch tools first. */
+    public static boolean canMine(final String owner) {
+        return CLAIM.canClaim(owner);
+    }
+
     /** Releases the claim and aborts the break in progress if {@code owner} held it. */
     public static void release(final Minecraft client, final String owner) {
         if (CLAIM.release(owner) && client.gameMode != null && client.gameMode.isDestroying()) {

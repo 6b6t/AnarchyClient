@@ -14,12 +14,21 @@ import java.util.Objects;
  */
 public final class TickClaim {
 
+    /** An owner that has not renewed for this long (two ticks) has stopped, even if no vanilla check ran. */
+    private static final long STALE_NANOS = 100_000_000L;
+
     private @Nullable String owner;
     private boolean renewed;
+    private long renewedAtNanos;
 
     public void claim(final String owner) {
+        this.claim(owner, System.nanoTime());
+    }
+
+    void claim(final String owner, final long nowNanos) {
         this.owner = Objects.requireNonNull(owner, "owner");
         this.renewed = true;
+        this.renewedAtNanos = nowNanos;
     }
 
     /** Returns whether the claim was renewed since the previous call, then waits for the next renewal. */
@@ -37,12 +46,29 @@ public final class TickClaim {
      * can no longer take turns and undo each other's work.
      */
     public boolean tryClaim(final String owner) {
-        Objects.requireNonNull(owner, "owner");
-        if (this.owner != null && !this.owner.equals(owner)) {
+        return this.tryClaim(owner, System.nanoTime());
+    }
+
+    boolean tryClaim(final String owner, final long nowNanos) {
+        if (!this.canClaim(owner, nowNanos)) {
             return false;
         }
-        this.claim(owner);
+        this.claim(owner, nowNanos);
         return true;
+    }
+
+    /**
+     * Whether {@code owner} could claim now. A different owner is refused only while it keeps renewing: {@link
+     * #consume()} runs from a vanilla hook that skips ticks with a screen open, so an owner that stopped would
+     * otherwise block everyone until the screen closed.
+     */
+    public boolean canClaim(final String owner) {
+        return this.canClaim(owner, System.nanoTime());
+    }
+
+    boolean canClaim(final String owner, final long nowNanos) {
+        Objects.requireNonNull(owner, "owner");
+        return this.owner == null || this.owner.equals(owner) || nowNanos - this.renewedAtNanos > STALE_NANOS;
     }
 
     public boolean isHeld() {
