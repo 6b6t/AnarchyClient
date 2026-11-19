@@ -1,39 +1,67 @@
 import { describe, expect, test } from "bun:test";
-import { ComponentType } from "discord-api-types/v10";
+import { ButtonStyle, ComponentType } from "discord-api-types/v10";
 import { createDiscordEmbed, serializeDiscordEmbed } from "../src/lib/discord-embed";
 
-function discordEmbedScript(options: Parameters<typeof createDiscordEmbed>[0]) {
+type EmbedOptions = Parameters<typeof createDiscordEmbed>[0];
+
+function discordEmbedScript(options: EmbedOptions) {
   const component = createDiscordEmbed(options);
   return component ? [{ children: serializeDiscordEmbed(component) }] : [];
 }
 
+/** Builds the embed and checks that its script JSON decodes to the same component. */
+function serializedEmbed(options: EmbedOptions) {
+  const component = createDiscordEmbed(options);
+  if (!component) throw new Error("Expected a component embed");
+  const [script] = discordEmbedScript(options);
+  const payload: unknown = JSON.parse(script?.children ?? "");
+  expect(payload).toEqual({ component });
+  return { component, children: script?.children ?? "" };
+}
+
 describe("Discord component embeds", () => {
   test("renders current page data and link-only actions", () => {
-    const scripts = discordEmbedScript({
+    const { component } = serializedEmbed({
       title: "A new post",
       description: "By Alice",
       url: "https://example.com/post/42",
       links: [{ label: "Author", url: "https://example.com/user/alice" }],
       images: ["https://example.com/art.png"],
     });
-    const payload = JSON.parse(scripts[0]?.children ?? "");
-    expect(payload.component.type).toBe(ComponentType.Container);
-    expect(payload.component.components[0].content).toContain("A new post");
-    expect(payload.component.components[0].content).toContain("By Alice");
-    expect(payload.component.components[1].items[0].media.url).toBe("https://example.com/art.png");
-    expect(payload.component.components.at(-1).components).toEqual([
-      { type: 2, style: 5, label: "View page", url: "https://example.com/post/42" },
-      { type: 2, style: 5, label: "Author", url: "https://example.com/user/alice" },
+    expect(component.type).toBe(ComponentType.Container);
+    const [text, gallery] = component.components;
+    const actions = component.components.at(-1);
+    if (text?.type !== ComponentType.TextDisplay) throw new Error("Expected a text display");
+    expect(text.content).toContain("A new post");
+    expect(text.content).toContain("By Alice");
+    if (gallery?.type !== ComponentType.MediaGallery) throw new Error("Expected a media gallery");
+    expect(gallery.items[0]?.media.url).toBe("https://example.com/art.png");
+    if (actions?.type !== ComponentType.ActionRow) throw new Error("Expected an action row");
+    expect(actions.components).toEqual([
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label: "View page",
+        url: "https://example.com/post/42",
+      },
+      {
+        type: ComponentType.Button,
+        style: ButtonStyle.Link,
+        label: "Author",
+        url: "https://example.com/user/alice",
+      },
     ]);
   });
 
   test("escapes script terminators without changing the JSON data", () => {
-    const [script] = discordEmbedScript({
+    const { component, children } = serializedEmbed({
       title: "</script><script>alert(1)</script>",
       url: "https://example.com",
     });
-    expect(script?.children ?? "").not.toContain("<");
-    expect(JSON.parse(script?.children ?? "").component.components[0].content).toContain("script");
+    expect(children).not.toContain("<");
+    const [text] = component.components;
+    if (text?.type !== ComponentType.TextDisplay) throw new Error("Expected a text display");
+    expect(text.content).toContain("script");
   });
 
   test("keeps Unicode and long media URLs within the serialized byte limit", () => {
@@ -67,12 +95,12 @@ describe("Discord component embeds", () => {
     expect(
       discordEmbedScript({ title: "Private", url: "https://user:password@example.com" }),
     ).toEqual([]);
-    const [script] = discordEmbedScript({
+    const { component } = serializedEmbed({
       title: "Safe",
       url: "https://example.com",
       images: ["file:///tmp/image.png"],
       links: [{ label: "Bad", url: "javascript:alert(1)" }],
     });
-    expect(JSON.parse(script?.children ?? "").component.components).toHaveLength(2);
+    expect(component.components).toHaveLength(2);
   });
 });

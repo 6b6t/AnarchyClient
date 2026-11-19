@@ -1,4 +1,5 @@
 import { site } from "./site";
+import { parseUrl } from "./url";
 
 export interface ReleaseAsset {
   name: string;
@@ -17,21 +18,17 @@ export interface Release {
 }
 
 const repository = "/6b6t/AnarchyClient/releases/";
-const jarPattern = /^anarchyclient-mc-([\d.]+)-(.+)\.jar$/;
+const jarPattern = /^anarchyclient-mc-([\d.]+)-(.+)\.jar$/u;
 
 function githubUrl(value: unknown, prefix: string) {
-  if (typeof value !== "string") return undefined;
-  try {
-    const url = new URL(value);
-    return url.origin === "https://github.com" &&
-      url.pathname.startsWith(prefix) &&
-      !url.username &&
-      !url.password
-      ? url.href
-      : undefined;
-  } catch {
-    return undefined;
-  }
+  if (typeof value !== "string") return;
+  const url = parseUrl(value);
+  return url?.origin === "https://github.com" &&
+    url.pathname.startsWith(prefix) &&
+    !url.username &&
+    !url.password
+    ? url.href
+    : undefined;
 }
 
 /** Reads the GitHub API response for the latest release. Returns `null` for unusable data. */
@@ -58,7 +55,7 @@ export function parseRelease(value: unknown): Release | null {
       !("name" in asset) ||
       typeof asset.name !== "string" ||
       !jarPattern.test(asset.name) ||
-      /-(?:sources|javadoc|dev)\.jar$/.test(asset.name) ||
+      /-(?:sources|javadoc|dev)\.jar$/u.test(asset.name) ||
       !("size" in asset) ||
       typeof asset.size !== "number" ||
       asset.size < 0 ||

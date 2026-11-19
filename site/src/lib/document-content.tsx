@@ -36,7 +36,7 @@ export const documentLoader = createClientLoader<
       );
     return (
       <DocsPage toc={toc}>
-        <DocsTitle id={frontmatter.title.toLowerCase().replaceAll(/\s+/g, "-")}>
+        <DocsTitle id={frontmatter.title.toLowerCase().replaceAll(/\s+/gu, "-")}>
           {frontmatter.title}
         </DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>

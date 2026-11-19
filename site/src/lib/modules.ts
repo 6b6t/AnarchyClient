@@ -13,7 +13,7 @@ export interface ModuleCategory {
 
 /** Reads the categories and their display names from `ModuleCategory.java`, in menu order. */
 export function parseCategories(source: string) {
-  return [...source.matchAll(/^\s*([A-Z_]+)\("((?:[^"\\]|\\.)*)"\)[,;]/gm)].flatMap(
+  return [...source.matchAll(/^\s*([A-Z_]+)\("((?:[^"\\]|\\.)*)"\)[,;]/gmu)].flatMap(
     ([, id, name]) =>
       id === undefined || name === undefined ? [] : [{ id, name: unescape(name) }],
   );
@@ -22,13 +22,13 @@ export function parseCategories(source: string) {
 /** Collects the module classes that the `*Modules.java` registration files construct. */
 export function parseRegistrations(sources: readonly string[]) {
   return new Set(
-    sources.flatMap((source) => [...source.matchAll(/new (\w+)\(/g)].flatMap((m) => m[1] ?? [])),
+    sources.flatMap((source) => [...source.matchAll(/new (\w+)\(/gu)].flatMap((m) => m[1] ?? [])),
   );
 }
 
 /** Reads one module class. Returns `undefined` for helpers and abstract bases. */
 export function parseModule(source: string): (ClientModule & { className: string }) | undefined {
-  const declaration = /\bfinal class (\w+) extends (Module|HudElementModule)\b/.exec(source);
+  const declaration = /\bfinal class (\w+) extends (Module|HudElementModule)\b/u.exec(source);
   if (!declaration) return undefined;
   const [, className, base] = declaration;
   if (!className) return undefined;
@@ -36,12 +36,12 @@ export function parseModule(source: string): (ClientModule & { className: string
   if (call < 0) return undefined;
   const args = splitArguments(source, call + "super(".length);
   if (base === "HudElementModule") {
-    const [id, name, description] = args.map(stringValue);
+    const [id, name, description] = args.map((arg) => stringValue(arg));
     if (id === undefined || name === undefined || description === undefined) return undefined;
     return { className, id, name, category: "HUD", description };
   }
   const [id, name, description] = [args[0], args[1], args[3]].map((arg) => stringValue(arg));
-  const category = /^ModuleCategory\.([A-Z_]+)$/.exec(args[2] ?? "")?.[1];
+  const category = /^ModuleCategory\.([A-Z_]+)$/u.exec(args[2] ?? "")?.[1];
   if (id === undefined || name === undefined || description === undefined || !category)
     return undefined;
   return { className, id, name, category, description };
@@ -117,17 +117,17 @@ function stringEnd(source: string, start: number) {
 
 /** Evaluates a Java string literal or a `+` concatenation of string literals. */
 function stringValue(expression: string | undefined) {
-  if (!expression) return undefined;
-  const parts = expression.split(/"\s*\+\s*"/);
+  if (!expression) return;
+  const parts = expression.split(/"\s*\+\s*"/u);
   const joined = parts.join("");
-  if (!/^"(?:[^"\\]|\\.)*"$/s.test(joined)) return undefined;
-  return unescape(joined.slice(1, -1)).replaceAll(/\s+/g, " ").trim();
+  if (!/^"(?:[^"\\]|\\.)*"$/su.test(joined)) return;
+  return unescape(joined.slice(1, -1)).replaceAll(/\s+/gu, " ").trim();
 }
 
 function unescape(value: string) {
-  return value.replaceAll(/\\(u[0-9a-fA-F]{4}|.)/g, (_, escaped: string) => {
+  return value.replaceAll(/\\(u[0-9a-fA-F]{4}|.)/gu, (_, escaped: string) => {
     if (escaped.startsWith("u") && escaped.length === 5)
-      return String.fromCharCode(Number.parseInt(escaped.slice(1), 16));
+      return String.fromCodePoint(Number.parseInt(escaped.slice(1), 16));
     return { n: "\n", t: "\t" }[escaped] ?? escaped;
   });
 }

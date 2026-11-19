@@ -71,7 +71,7 @@ test("the real sources produce a complete catalog with unique anchors", () => {
   const modules = catalog.flatMap((category) => category.modules);
   expect(catalog.map((category) => category.name)).toContain("Combat");
   expect(modules.length).toBeGreaterThan(100);
-  expect(new Set(modules.map(moduleAnchor)).size).toBe(modules.length);
+  expect(new Set(modules.map((module) => moduleAnchor(module))).size).toBe(modules.length);
   for (const module of modules) expect(module.description.length).toBeGreaterThan(10);
 });
 

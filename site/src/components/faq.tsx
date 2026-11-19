@@ -15,7 +15,9 @@ export function Faq({ items }: { items: { question: string; answer: string }[] }
                 aria-expanded={expanded}
                 aria-controls={`faq-${index}`}
                 id={`faq-q-${index}`}
-                onClick={() => setOpen(expanded ? null : index)}
+                onClick={() => {
+                  setOpen(expanded ? null : index);
+                }}
               >
                 {question}
                 <Plus className="faq-icon" size={20} aria-hidden="true" />

@@ -11,7 +11,7 @@ export function readModuleCatalog() {
   const read = (name: string, dir = moduleRoot) => readFileSync(new URL(name, dir), "utf8");
   const impl = new URL("impl/", moduleRoot);
   const registrations = readdirSync(moduleRoot)
-    .filter((file) => /^[A-Z]\w*Modules\.java$/.test(file))
+    .filter((file) => /^[A-Z]\w*Modules\.java$/u.test(file))
     .map((file) => read(file));
   const modules = readdirSync(impl)
     .filter((file) => file.endsWith(".java"))

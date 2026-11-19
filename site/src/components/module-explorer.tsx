@@ -5,7 +5,7 @@ import { moduleAnchor, type ClientModule, type ModuleCategory } from "../lib/mod
 import { CategoryIcon } from "./category-icon";
 
 export function searchModules(categories: readonly ModuleCategory[], query: string) {
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const terms = query.toLowerCase().split(/\s+/u).filter(Boolean);
   return categories
     .flatMap((category) => category.modules)
     .filter((module) => {
@@ -65,7 +65,9 @@ export function ModuleExplorer({ categories }: { categories: readonly ModuleCate
             type="search"
             placeholder="Search all modules…"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
           />
         </label>
         <ul className="module-grid" aria-label="Modules">
@@ -75,7 +77,9 @@ export function ModuleExplorer({ categories }: { categories: readonly ModuleCate
                 type="button"
                 className="module-card"
                 aria-pressed={module.id === selected?.id}
-                onClick={() => setSelected(module)}
+                onClick={() => {
+                  setSelected(module);
+                }}
               >
                 <CategoryIcon category={module.category} size={16} />
                 <span>{module.name}</span>

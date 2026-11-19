@@ -8,14 +8,14 @@ test("the module explorer switches categories, searches, and links to the module
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("requestfailed", (request) => failed.push(request.url()));
   await page.goto("/");
-  await page.getByRole("button", { name: /^Movement, \d+ modules$/ }).click();
+  await page.getByRole("button", { name: /^Movement, \d+ modules$/u }).click();
   await expect(page.getByRole("heading", { name: "Movement", exact: true })).toBeVisible();
   await page.getByRole("searchbox", { name: "Search all modules" }).fill("totem");
   const card = page.getByRole("button", { name: "Auto Totem", exact: true });
   await card.click();
   await expect(card).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("link", { name: "Open in the module list" }).click();
-  await expect(page).toHaveURL(/\/modules\/#module-auto-totem$/);
+  await expect(page).toHaveURL(/\/modules\/#module-auto-totem$/u);
   await expect(page.locator("#module-auto-totem")).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
@@ -30,11 +30,11 @@ test("static search finds guides and modules without a server", async ({ page })
   const input = page.getByRole("combobox", { name: "Search", exact: true });
   await input.fill("Kill Aura");
   await page.getByRole("option").filter({ hasText: "Kill Aura" }).first().click();
-  await expect(page).toHaveURL(/\/modules\/#module-kill-aura$/);
+  await expect(page).toHaveURL(/\/modules\/#module-kill-aura$/u);
   await page.getByRole("button", { name: "Search the site", exact: true }).click();
   await input.fill("provenance");
   await page.getByRole("option").filter({ hasText: "provenance" }).first().click();
-  await expect(page).toHaveURL(/\/releases\/#verify-your-download$/);
+  await expect(page).toHaveURL(/\/releases\/#verify-your-download$/u);
   expect(errors).toEqual([]);
 });
 
