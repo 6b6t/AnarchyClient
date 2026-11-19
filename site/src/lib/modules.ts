@@ -122,10 +122,10 @@ function stringEnd(source: string, start: number) {
 
 /** Evaluates a Java string literal or a `+` concatenation of string literals. */
 function stringValue(expression: string | undefined) {
-  if (!expression) return;
+  if (!expression) return undefined;
   const parts = expression.split(/"\s*\+\s*"/u);
   const joined = parts.join("");
-  if (!/^"(?:[^"\\]|\\.)*"$/su.test(joined)) return;
+  if (!/^"(?:[^"\\]|\\.)*"$/su.test(joined)) return undefined;
   return unescape(joined.slice(1, -1)).replaceAll(/\s+/gu, " ").trim();
 }
 

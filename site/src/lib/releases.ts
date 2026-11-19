@@ -21,7 +21,7 @@ const repository = "/6b6t/AnarchyClient/releases/";
 const jarPattern = /^anarchyclient-mc-([\d.]+)-(.+)\.jar$/u;
 
 function githubUrl(value: unknown, prefix: string) {
-  if (typeof value !== "string") return;
+  if (typeof value !== "string") return undefined;
   const url = parseUrl(value);
   return url?.origin === "https://github.com" &&
     url.pathname.startsWith(prefix) &&
