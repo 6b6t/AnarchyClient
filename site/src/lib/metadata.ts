@@ -3,7 +3,7 @@ import type { Release } from "./releases";
 import { homePage, pageUrl, site, type PageMetadata } from "./site";
 
 /** The accent color of the in-game menu, used for link previews. */
-const accent = 0x00ba94;
+const accent = 0x00_ba_94;
 
 export function pageEmbed(
   page: { title: string; description?: string },

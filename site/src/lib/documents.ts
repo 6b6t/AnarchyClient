@@ -6,11 +6,9 @@ const metadata = import.meta.glob<{ frontmatter: PageMetadata }>("../../content/
   query: "?only=frontmatter",
 });
 
-export const documents = Object.entries(metadata).map(([path, { frontmatter }]) => ({
-  ...frontmatter,
-  path,
-  slug: path.slice(path.lastIndexOf("/") + 1, -4),
-}));
+export const documents = Object.entries(metadata).map(([path, { frontmatter }]) =>
+  Object.assign({}, frontmatter, { path, slug: path.slice(path.lastIndexOf("/") + 1, -4) }),
+);
 
 export function getDocument(slug: string) {
   return documents.find((page) => page.slug === slug);

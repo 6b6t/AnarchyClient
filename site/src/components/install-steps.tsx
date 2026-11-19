@@ -12,14 +12,17 @@ export function installSteps(minecraft?: string) {
 export function InstallSteps({ minecraft }: { minecraft?: string | undefined }) {
   return (
     <ol className="install-steps">
-      {installSteps(minecraft).map((step, index) => (
-        <li key={step} style={{ "--step": index } as CSSProperties}>
-          <span className="step-number mono" aria-hidden="true">
-            {index + 1}
-          </span>
-          <p>{step}</p>
-        </li>
-      ))}
+      {installSteps(minecraft).map((step, index) => {
+        const style: CSSProperties & { "--step": number } = { "--step": index };
+        return (
+          <li key={step} style={style}>
+            <span className="step-number mono" aria-hidden="true">
+              {index + 1}
+            </span>
+            <p>{step}</p>
+          </li>
+        );
+      })}
     </ol>
   );
 }

@@ -91,7 +91,9 @@ describe("Discord component embeds", () => {
   });
 
   test("rejects unsafe URLs and omits invalid media and buttons", () => {
-    expect(discordEmbedScript({ title: "Private", url: "javascript:alert(1)" })).toEqual([]);
+    // oxlint-disable-next-line eslint/no-script-url -- This fixture exercises rejection of script URLs.
+    const scriptUrl = "javascript:alert(1)";
+    expect(discordEmbedScript({ title: "Private", url: scriptUrl })).toEqual([]);
     expect(
       discordEmbedScript({ title: "Private", url: "https://user:password@example.com" }),
     ).toEqual([]);
@@ -99,7 +101,7 @@ describe("Discord component embeds", () => {
       title: "Safe",
       url: "https://example.com",
       images: ["file:///tmp/image.png"],
-      links: [{ label: "Bad", url: "javascript:alert(1)" }],
+      links: [{ label: "Bad", url: scriptUrl }],
     });
     expect(component.components).toHaveLength(2);
   });

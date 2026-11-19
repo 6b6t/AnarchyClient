@@ -37,7 +37,7 @@ export default defineConfig({
       try {
         return `export default ${readFileSync(new URL("./.generated/release.json", import.meta.url), "utf8")};`;
       } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
         return "export default null;";
       }
     }),

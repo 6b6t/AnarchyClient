@@ -69,7 +69,12 @@ export function buildCatalog(
       name,
       modules: modules
         .filter((module) => module.category === id)
-        .map((module) => ({ ...module, category: id.toLowerCase() }))
+        .map((module) => ({
+          id: module.id,
+          name: module.name,
+          category: id.toLowerCase(),
+          description: module.description,
+        }))
         .toSorted((a, b) => a.name.localeCompare(b.name, "en")),
     }))
     .filter((category) => category.modules.length > 0);

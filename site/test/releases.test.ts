@@ -2,10 +2,10 @@ import { expect, test } from "bun:test";
 import { formatSize, parseRelease, releaseLink } from "../src/lib/releases";
 
 const tag = "0.3.0";
-function asset(name: string, release = tag) {
+function asset(name: string, releaseTag = tag) {
   return {
     name,
-    browser_download_url: `https://github.com/6b6t/AnarchyClient/releases/download/${release}/${name}`,
+    browser_download_url: `https://github.com/6b6t/AnarchyClient/releases/download/${releaseTag}/${name}`,
     size: 5_131_984,
     state: "uploaded",
   };
