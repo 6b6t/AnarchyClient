@@ -14,27 +14,32 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   set-version:
     name: Set Version
     runs-on: ubuntu-26.04
+    permissions:
+      # Push the version bump commit.
+      contents: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      # git-auto-commit-action pushes with the credentials that checkout persists.
+      - name: Checkout repository # zizmor: ignore[artipacked]
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set version
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          sed -i 's/^version = ".*"/version = "${{ inputs.version }}"/g' build.gradle.kts
+          sed -i "s/^version = \".*\"/version = \"${VERSION}\"/g" build.gradle.kts
 
       - name: Commit version
-        uses: stefanzweifel/git-auto-commit-action@v7
+        uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c # v7.2.1
         with:
           commit_message: "chore(release): bump version to ${{ inputs.version }}"
           file_pattern: build.gradle.kts

@@ -2,7 +2,8 @@
   "extends": [
     "config:base",
     "group:allNonMajor",
-    ":semanticCommits"
+    ":semanticCommits",
+    "helpers:pinGitHubActionDigests"
   ],
   "baseBranches": [
     "main"

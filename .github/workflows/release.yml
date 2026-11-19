@@ -9,20 +9,24 @@ on:
         type: boolean
         default: false
 
-permissions:
-  contents: write
-  id-token: write
-  attestations: write
+permissions: {}
 
 jobs:
   release:
     runs-on: ubuntu-26.04
+    permissions:
+      # Create the GitHub release and upload its jar.
+      contents: write
+      # Sign and store the build provenance attestation.
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
+          persist-credentials: false
 
       - name: Read release version
         id: release_version
@@ -36,13 +40,13 @@ jobs:
           echo "version=$release_version" >> "$GITHUB_OUTPUT"
 
       - name: Set up JDK 25
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
         with:
           distribution: temurin
           java-version: "27"
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         env:
           GRADLE_USER_HOME: ${{ runner.temp }}/gradle-setup-home
         with:
@@ -79,6 +83,9 @@ jobs:
 
       - name: Verify reproducible release jar
         shell: bash
+        env:
+          EXPECTED_NAME: ${{ steps.release_file.outputs.name }}
+          EXPECTED_SHA256: ${{ steps.release_file.outputs.sha256 }}
         run: |
           rm -f build/libs/*-sources.jar
           mapfile -t release_files < <(find build/libs -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort)
@@ -88,16 +95,16 @@ jobs:
             exit 1
           fi
 
-          if [ "${release_files[0]}" != "${{ steps.release_file.outputs.name }}" ]; then
-            echo "Release jar name changed between builds: ${{ steps.release_file.outputs.name }} != ${release_files[0]}" >&2
+          if [ "${release_files[0]}" != "$EXPECTED_NAME" ]; then
+            echo "Release jar name changed between builds: $EXPECTED_NAME != ${release_files[0]}" >&2
             exit 1
           fi
 
           actual_sha256="$(sha256sum "build/libs/${release_files[0]}" | awk '{print $1}')"
-          expected_sha256="${{ steps.release_file.outputs.sha256 }}"
+          expected_sha256="$EXPECTED_SHA256"
           if [ "$actual_sha256" != "$expected_sha256" ]; then
             echo "Release jar is not reproducible." >&2
-            echo "First build:  $expected_sha256  ${{ steps.release_file.outputs.name }}" >&2
+            echo "First build:  $expected_sha256  $EXPECTED_NAME" >&2
             echo "Second build: $actual_sha256  ${release_files[0]}" >&2
             exit 1
           fi
@@ -105,13 +112,13 @@ jobs:
           echo "Reproducible release jar verified: $actual_sha256  ${release_files[0]}"
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: build/libs/${{ steps.release_file.outputs.name }}
 
       - name: Build Changelog
         id: github_release
-        uses: mikepenz/release-changelog-builder-action@v6
+        uses: mikepenz/release-changelog-builder-action@b0db9d18b53447ef9f940a46c8f31653c4d9f621 # v6.5.0
         with:
           mode: COMMIT
           toTag: ${{ github.ref }}
@@ -184,7 +191,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ steps.release_version.outputs.version }}
           name: AnarchyClient ${{ steps.release_version.outputs.version }}
