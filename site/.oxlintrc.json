@@ -16,7 +16,29 @@
     "node": true
   },
   "ignorePatterns": ["dist/**", "node_modules/**", ".source/**", "src/routeTree.gen.ts"],
+  "jsPlugins": [
+    "eslint-plugin-playwright",
+    { "name": "tanstack-router", "specifier": "@tanstack/eslint-plugin-router" },
+    { "name": "react-hooks-js", "specifier": "eslint-plugin-react-hooks" }
+  ],
   "rules": {
+    "tanstack-router/create-route-property-order": "error",
+    "tanstack-router/route-param-names": "error",
+    "react-hooks-js/purity": "error",
+    "react-hooks-js/refs": "error",
+    "react-hooks-js/immutability": "error",
+    "react-hooks-js/set-state-in-render": "error",
+    "react-hooks-js/set-state-in-effect": "error",
+    "react-hooks-js/static-components": "error",
+    "react-hooks-js/globals": "error",
+    "react-hooks-js/use-memo": "error",
+    "react-hooks-js/error-boundaries": "error",
+    "react-hooks-js/component-hook-factories": "error",
+    "react-hooks-js/unsupported-syntax": "error",
+    "react-hooks-js/incompatible-library": "error",
+    "react-hooks-js/preserve-manual-memoization": "error",
+    "react-hooks-js/config": "error",
+    "react-hooks-js/gating": "error",
     "typescript/no-explicit-any": "error",
     "typescript/use-unknown-in-catch-callback-variable": "error",
     "typescript/no-invalid-void-type": "error",
@@ -112,5 +134,23 @@
     "typescript/consistent-indexed-object-style": "error",
     "unicorn/switch-case-braces": "error",
     "eslint/no-useless-assignment": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "playwright/missing-playwright-await": "error",
+        "playwright/no-focused-test": "error",
+        "playwright/no-skipped-test": "error",
+        "playwright/no-wait-for-timeout": "error",
+        "playwright/no-wait-for-selector": "error",
+        "playwright/prefer-web-first-assertions": "error",
+        "playwright/no-force-option": "error",
+        "playwright/no-networkidle": "error",
+        "playwright/no-page-pause": "error",
+        "playwright/no-useless-await": "error",
+        "playwright/valid-expect": "error"
+      }
+    }
+  ]
 }

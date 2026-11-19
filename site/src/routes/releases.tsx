@@ -3,7 +3,7 @@ import release from "virtual:anarchyclient-release";
 import { Suspense } from "react";
 import { DownloadCard } from "../components/download-card";
 import { InstallSteps } from "../components/install-steps";
-import { documentLoader } from "../lib/document-content";
+import { DocumentContent } from "../lib/document-content";
 import { requireDocument } from "../lib/documents";
 import { pageHead } from "../lib/metadata";
 import { site } from "../lib/site";
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/releases")({
 });
 
 function Downloads() {
-  const Content = documentLoader.getComponent(page.path);
   return (
     <main id="main-content" className="downloads">
       <div className="page-heading shell-width">
@@ -47,7 +46,7 @@ function Downloads() {
         aria-label="Verification and older releases"
       >
         <Suspense>
-          <Content slug="releases" details />
+          <DocumentContent path={page.path} slug="releases" details />
         </Suspense>
       </section>
     </main>

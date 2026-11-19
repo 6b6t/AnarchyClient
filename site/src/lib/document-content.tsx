@@ -50,3 +50,15 @@ export const documentLoader = createClientLoader<
     );
   },
 });
+
+export function DocumentContent({
+  path,
+  slug,
+  details = false,
+}: {
+  path: string;
+  slug: string;
+  details?: boolean;
+}) {
+  return documentLoader.useContent(path, { slug, details });
+}

@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { Suspense } from "react";
-import { documentLoader } from "../lib/document-content";
+import { DocumentContent } from "../lib/document-content";
 import { getDocument, pageTree } from "../lib/documents";
 import { pageHead } from "../lib/metadata";
 import { site } from "../lib/site";
@@ -19,7 +19,6 @@ export const Route = createFileRoute("/$slug")({
 
 function DocumentPage() {
   const page = Route.useLoaderData();
-  const Content = documentLoader.getComponent(page.path);
   return (
     <div id="main-content" className="docs-shell" tabIndex={-1}>
       <DocsLayout
@@ -38,7 +37,7 @@ function DocumentPage() {
         }}
       >
         <Suspense fallback={<p className="content-width">Loading guide…</p>}>
-          <Content slug={page.slug} />
+          <DocumentContent path={page.path} slug={page.slug} />
         </Suspense>
       </DocsLayout>
     </div>
