@@ -39,7 +39,13 @@ Use the checked-in Gradle wrapper.
 ./gradlew build
 ```
 
-Compiles the mod, processes resources, validates the access widener, runs tests, and produces build artifacts in `build/libs`.
+Compiles the mod with Error Prone, processes resources, validates the access widener, checks formatting, runs tests, and produces build artifacts in `build/libs`.
+
+```bash
+./gradlew spotlessApply
+```
+
+Formats all Java sources with palantir-java-format. `./gradlew check` and `./gradlew build` fail on unformatted code, so run this before you commit Java changes.
 
 ```bash
 ./gradlew test
@@ -77,7 +83,7 @@ The adjacent `minecraft-merged-<hash>-26.3.jar` is the compiled merged Minecraft
 
 ## Coding Style & Naming Conventions
 
-Target Java `25`; Gradle configures UTF-8 and `--release 25`. Use idiomatic Java naming: classes and records in `PascalCase`, methods and fields in `camelCase`, constants in `UPPER_SNAKE_CASE`, and packages in lowercase under `net.blockhost.anarchyclient`.
+Target Java `25`; Gradle configures UTF-8 and `--release 25`. Spotless enforces palantir-java-format, so do not format Java code by hand. Error Prone runs on every compile: its errors fail the build, and new code should not add warnings. Use idiomatic Java naming: classes and records in `PascalCase`, methods and fields in `camelCase`, constants in `UPPER_SNAKE_CASE`, and packages in lowercase under `net.blockhost.anarchyclient`.
 
 Prefer small module classes that extend the existing module and setting abstractions. Avoid duplicate control flow when a shared helper already exists. For immutable collections, prefer `List.of()`, `Set.of()`, and `Map.of()` where they fit. Prefer `try-with-resources` for closeable resources, descriptive method names, and focused classes that match the existing package boundaries.
 

@@ -1,9 +1,12 @@
+import net.ltgt.gradle.errorprone.errorprone
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 
 plugins {
     id("net.fabricmc.fabric-loom") version "1.19.4"
     id("io.freefair.lombok") version "9.8.3"
     id("maven-publish")
+    id("net.ltgt.errorprone") version "5.2.0"
+    id("com.diffplug.spotless") version "8.12.0"
 }
 
 val minecraftVersion = "26.3"
@@ -15,6 +18,11 @@ val lambdaEventsVersion = "2.4.2"
 val reflectVersion = "1.6.4"
 val asmVersion = "9.10.1"
 val javaVersion = 25
+val errorProneVersion = "2.53.0"
+val palantirJavaFormatVersion = "2.103.0"
+val mixinHandlerAnnotations = listOf("Inject", "Redirect", "ModifyVariable")
+    .map { "org.spongepowered.asm.mixin.injection.$it" }
+val mixinShadow = "org.spongepowered.asm.mixin.Shadow"
 
 version = "0.3.0"
 group = "net.blockhost"
@@ -42,6 +50,8 @@ dependencies {
     annotationProcessor("org.immutables:gson:$immutablesVersion")
     compileOnly("org.immutables:value:${immutablesVersion}")
     annotationProcessor("org.immutables:value:$immutablesVersion")
+
+    errorprone("com.google.errorprone:error_prone_core:$errorProneVersion")
 
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly("org.jetbrains:annotations:26.1.0")
@@ -87,6 +97,20 @@ tasks.withType<AbstractArchiveTask>().configureEach {
 tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.release.set(javaVersion)
+    options.errorprone {
+        disableWarningsInGeneratedCode.set(true)
+        // Mixin calls handler methods and fills @Shadow fields by reflection, and fixes the handler
+        // signatures, so Error Prone would report them as unused.
+        option("UnusedMethod:ExemptingMethodAnnotations", (mixinHandlerAnnotations + mixinShadow).joinToString(","))
+        option("Unused:methodAnnotationsExemptingParameters", mixinHandlerAnnotations.joinToString(","))
+    }
+}
+
+spotless {
+    java {
+        target("src/*/java/**/*.java")
+        palantirJavaFormat(palantirJavaFormatVersion)
+    }
 }
 
 java {
