@@ -5,7 +5,9 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
@@ -183,6 +185,99 @@ final class CombatModuleScenarios {
                 GameTestSupport.enable(context, "auto_city", false);
             }
         }
+    }
+
+    /** Bed Aura places a bed next to the target in the Nether and detonates it. */
+    static void bedAura(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("execute in minecraft:the_nether run forceload add -8 -8 8 8");
+            arena.run("execute in minecraft:the_nether run fill -6 100 -6 6 106 6 air");
+            arena.run("execute in minecraft:the_nether run fill -6 99 -6 6 99 6 obsidian");
+            arena.run("effect give " + arena.name() + " resistance infinite 4 true");
+            arena.give("red_bed 16");
+            arena.run("execute in minecraft:the_nether run tp " + arena.name() + " 0.5 100 0.5 -90 0");
+            context.waitFor(client -> client.level.dimension() == Level.NETHER, 200);
+            arena.spawnTarget(Level.NETHER, new BlockPos(3, 100, 0));
+            context.waitTicks(10);
+            expectTargetDamaged(context, arena, "bed_aura", 200);
+        }
+    }
+
+    /** Auto Anvil drops an anvil on the target's head. */
+    static void autoAnvil(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.spawnTarget(arena.origin().offset(3, 0, 0));
+            arena.give("anvil 8");
+            arena.give("obsidian 64");
+            context.waitTicks(10);
+            expectTargetDamaged(context, arena, "auto_anvil", 200);
+        }
+    }
+
+    /** Auto Weapon switches to the strongest hotbar weapon while attack is held. */
+    static void autoWeapon(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.hotbar(0, "stone");
+            arena.hotbar(2, "wooden_sword");
+            arena.hotbar(4, "diamond_sword");
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "auto_weapon", true);
+            try {
+                context.waitTicks(5);
+                int idle = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
+                GameTestSupport.check(idle == 0, "Auto Weapon switched slots outside combat (slot " + idle + ")");
+                context.getInput().holdKeyFor(options -> options.keyAttack, 5);
+                int selected = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
+                GameTestSupport.check(selected == 4, "Auto Weapon did not pick the diamond sword (slot " + selected + ")");
+            } finally {
+                GameTestSupport.enable(context, "auto_weapon", false);
+            }
+        }
+    }
+
+    /** Auto Clicker keeps attacking while attack is held. Vanilla attacks an entity once per click. */
+    static void autoClicker(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.spawnTarget(arena.origin().offset(2, 0, 0));
+            arena.hotbar(0, "diamond_sword");
+            context.waitTicks(10);
+            GameTestSupport.enable(context, "auto_clicker", true);
+            try {
+                context.getInput().holdKeyFor(options -> options.keyAttack, 40);
+                int hits = arena.targetHits();
+                GameTestSupport.check(hits >= 5, "Auto Clicker hit the target only " + hits + " time(s) in two seconds");
+            } finally {
+                GameTestSupport.enable(context, "auto_clicker", false);
+            }
+        }
+    }
+
+    /** Auto Pot throws a healing potion when health drops below the threshold. */
+    static void autoPot(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.hotbar(3, "splash_potion[potion_contents={potion:\"minecraft:healing\"}]");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "auto_pot", true);
+            try {
+                context.waitTicks(10);
+                boolean kept = arena.server().computeOnServer(server -> hasSplashPotion(arena.serverPlayer(server).getInventory()));
+                GameTestSupport.check(kept, "Auto Pot threw a potion at full health");
+                arena.run("damage " + arena.name() + " 12 minecraft:generic");
+                arena.server().waitFor(server -> !hasSplashPotion(arena.serverPlayer(server).getInventory()), 60);
+            } finally {
+                GameTestSupport.enable(context, "auto_pot", false);
+            }
+        }
+    }
+
+    private static boolean hasSplashPotion(final Inventory inventory) {
+        return inventory.contains(stack -> stack.is(Items.SPLASH_POTION));
     }
 
     private static boolean is(final MinecraftServer server, final BlockPos pos, final Block block) {

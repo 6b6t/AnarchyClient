@@ -8,12 +8,18 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 
@@ -183,6 +189,150 @@ final class WorldModuleScenarios {
                 GameTestSupport.check(safe, "Avoid Hazards let the player walk into lava");
             } finally {
                 GameTestSupport.enable(context, "avoid_hazards", false);
+            }
+        }
+    }
+
+    /** Speed Mine breaks a block that vanilla mining cannot finish in the same time. */
+    static void speedMine(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos block = arena.origin().offset(2, 1, 0);
+            arena.setBlock(block, "deepslate");
+            arena.hotbar(0, "wooden_pickaxe");
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.getInput().lookAt(block);
+            context.waitTicks(5);
+            // A wooden pickaxe needs 45 ticks for deepslate.
+            context.getInput().holdKeyFor(options -> options.keyAttack, 40);
+            context.waitTicks(10);
+            GameTestSupport.check(!arena.blockAt(block).isAir(), "Vanilla mining broke the block, so the test proves nothing");
+            GameTestSupport.enable(context, "speed_mine", true);
+            try {
+                context.getInput().holdKeyFor(options -> options.keyAttack, 40);
+                arena.server().waitFor(server -> server.overworld().getBlockState(block).isAir(), 5);
+            } finally {
+                GameTestSupport.enable(context, "speed_mine", false);
+            }
+        }
+    }
+
+    /** Fast Place places more blocks than vanilla while use is held for the same time. */
+    static void fastPlace(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos origin = arena.origin();
+            arena.setBlock(origin.offset(4, 1, 0), "stone");
+            arena.hotbar(0, "dirt 64");
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.waitTicks(5);
+            int vanilla = placeTowardsPlayer(context, arena);
+            arena.run("fill " + GameTestSupport.at(origin.offset(1, 1, 0)) + " " + GameTestSupport.at(origin.offset(3, 1, 0)) + " air");
+            context.waitTicks(10);
+            GameTestSupport.enable(context, "fast_place", true);
+            try {
+                int fast = placeTowardsPlayer(context, arena);
+                GameTestSupport.check(fast > vanilla, "Fast Place placed " + fast + " block(s), vanilla " + vanilla);
+            } finally {
+                GameTestSupport.enable(context, "fast_place", false);
+            }
+        }
+    }
+
+    /** Holds use for three ticks against the wall and counts the blocks placed between it and the player. */
+    private static int placeTowardsPlayer(final ClientGameTestContext context, final GameTestSupport.Arena arena) {
+        context.getInput().holdKeyFor(options -> options.keyUse, 3);
+        context.waitTicks(5);
+        return arena.server().computeOnServer(server -> {
+            int placed = 0;
+            for (int dx = 1; dx <= 3; dx++) {
+                if (server.overworld().getBlockState(arena.origin().offset(dx, 1, 0)).is(Blocks.DIRT)) {
+                    placed++;
+                }
+            }
+            return placed;
+        });
+    }
+
+    /** Vein Miner breaks the connected blocks of the type the player just mined. */
+    static void veinMiner(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos origin = arena.origin();
+            BlockPos from = origin.offset(2, 0, -1);
+            BlockPos to = origin.offset(3, 1, 0);
+            arena.run("fill " + GameTestSupport.at(from) + " " + GameTestSupport.at(to) + " dirt");
+            // Breaks dirt instantly, which Vein Miner needs for the extra blocks.
+            arena.hotbar(0, "diamond_shovel[enchantments={efficiency:5}]");
+            context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
+            context.getInput().lookAt(origin.offset(2, 1, 0));
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "vein_miner", true);
+            try {
+                context.getInput().pressKey(options -> options.keyAttack);
+                arena.server().waitFor(server -> BlockPos.betweenClosedStream(from, to)
+                        .allMatch(pos -> server.overworld().getBlockState(pos).isAir()), 20);
+            } finally {
+                GameTestSupport.enable(context, "vein_miner", false);
+            }
+        }
+    }
+
+    /** Auto Shearer shears a sheep in range. */
+    static void autoShearer(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos spot = arena.origin().offset(2, 0, 0);
+            arena.run("summon minecraft:sheep " + GameTestSupport.at(spot) + " {NoAI:1b}");
+            arena.hotbar(4, "shears");
+            context.waitTicks(10);
+            GameTestSupport.enable(context, "auto_shearer", true);
+            try {
+                arena.server().waitFor(server -> server.overworld().getEntitiesOfClass(Sheep.class, new AABB(spot).inflate(3.0))
+                        .stream().anyMatch(Sheep::isSheared), 100);
+            } finally {
+                GameTestSupport.enable(context, "auto_shearer", false);
+            }
+        }
+    }
+
+    /** Auto Breed feeds both cows, so they fall in love. */
+    static void autoBreed(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos origin = arena.origin();
+            arena.run("summon minecraft:cow " + GameTestSupport.at(origin.offset(2, 0, 1)) + " {NoAI:1b}");
+            arena.run("summon minecraft:cow " + GameTestSupport.at(origin.offset(2, 0, -1)) + " {NoAI:1b}");
+            arena.hotbar(3, "wheat 8");
+            context.waitTicks(10);
+            GameTestSupport.enable(context, "auto_breed", true);
+            try {
+                arena.server().waitFor(server -> server.overworld().getEntitiesOfClass(Cow.class, new AABB(origin).inflate(5.0))
+                        .stream().filter(Animal::isInLove).count() == 2, 100);
+            } finally {
+                GameTestSupport.enable(context, "auto_breed", false);
+            }
+        }
+    }
+
+    /** Auto Farm harvests ripe wheat and plants new seeds in its place. */
+    static void autoFarm(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            BlockPos crop = arena.origin().offset(2, 0, 0);
+            arena.setBlock(crop.below(), "farmland[moisture=7]");
+            arena.setBlock(crop.below().east(), "water");
+            arena.setBlock(crop, "wheat[age=7]");
+            arena.hotbar(0, "wheat_seeds 8");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "auto_farm", true);
+            try {
+                arena.server().waitFor(server -> {
+                    BlockState state = server.overworld().getBlockState(crop);
+                    return state.is(Blocks.WHEAT) && state.getValue(BlockStateProperties.AGE_7) == 0;
+                }, 100);
+            } finally {
+                GameTestSupport.enable(context, "auto_farm", false);
             }
         }
     }

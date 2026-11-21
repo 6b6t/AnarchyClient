@@ -2,14 +2,22 @@ package net.blockhost.anarchyclient.gametest;
 
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
 
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 /** Scenarios for chat, camera, and other small modules. */
 final class MiscModuleScenarios {
+
+    /** The Fake Player module's default name. */
+    private static final String FAKE_PLAYER = "AnarchyClient";
 
     private MiscModuleScenarios() {
     }
@@ -120,5 +128,36 @@ final class MiscModuleScenarios {
             arena.run("damage " + arena.name() + " 6 minecraft:generic");
             arena.server().waitFor(server -> arena.serverPlayer(server).getHealth() < 20.0F, 40);
         }
+    }
+
+    /** Fake Player adds a client-only copy of the player and removes it when turned off. */
+    static void fakePlayer(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("item replace entity " + arena.name() + " armor.chest with diamond_chestplate");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "fake_player", true);
+            try {
+                context.waitFor(client -> fakePlayer(client).isPresent(), 20);
+                boolean equipped = context.computeOnClient(client -> fakePlayer(client).orElseThrow()
+                        .getItemBySlot(EquipmentSlot.CHEST).is(Items.DIAMOND_CHESTPLATE));
+                GameTestSupport.check(equipped, "Fake Player did not copy the chestplate");
+                boolean serverSees = arena.server().computeOnServer(server -> server.overworld().players().stream()
+                        .anyMatch(player -> FAKE_PLAYER.equals(player.getScoreboardName())));
+                GameTestSupport.check(!serverSees, "Fake Player exists on the server");
+            } finally {
+                GameTestSupport.enable(context, "fake_player", false);
+            }
+            context.waitTick();
+            GameTestSupport.check(context.computeOnClient(client -> fakePlayer(client).isEmpty()),
+                    "Fake Player stayed after the module was turned off");
+        }
+    }
+
+    private static Optional<Player> fakePlayer(final Minecraft client) {
+        return client.level.players().stream()
+                .filter(player -> FAKE_PLAYER.equals(player.getScoreboardName()) && player.getId() < 0)
+                .map(Player.class::cast)
+                .findFirst();
     }
 }

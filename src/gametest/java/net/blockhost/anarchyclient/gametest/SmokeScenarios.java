@@ -124,10 +124,45 @@ final class SmokeScenarios {
         }
     }
 
+    /** Fullbright lights up the ground at midnight. */
+    static void fullbright(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("time set midnight");
+            context.getInput().lookAt(0.0F, 60.0F);
+            context.waitTicks(10);
+            int vanilla = brightness(lowerCenter(context.takeScreenshot("fullbright_vanilla")));
+            GameTestSupport.enable(context, "fullbright", true);
+            try {
+                context.waitTicks(10);
+                int bright = brightness(lowerCenter(context.takeScreenshot("fullbright_on")));
+                LOGGER.info("Ground brightness vanilla {} fullbright {}", vanilla, bright);
+                GameTestSupport.check(bright > vanilla + 40, "Fullbright raised the ground brightness only from "
+                        + vanilla + " to " + bright);
+            } finally {
+                GameTestSupport.enable(context, "fullbright", false);
+            }
+        }
+    }
+
+    private static int brightness(final int[] rgb) {
+        return (rgb[0] + rgb[1] + rgb[2]) / 3;
+    }
+
     private static int[] topCenter(final Path screenshot) {
+        return pixel(screenshot, 0.125);
+    }
+
+    /** Below the crosshair, which sits in the exact center. */
+    private static int[] lowerCenter(final Path screenshot) {
+        return pixel(screenshot, 0.75);
+    }
+
+    /** Reads the pixel in the middle column at {@code heightFraction} of the image height. */
+    private static int[] pixel(final Path screenshot, final double heightFraction) {
         try {
             BufferedImage image = ImageIO.read(screenshot.toFile());
-            int rgb = image.getRGB(image.getWidth() / 2, image.getHeight() / 8);
+            int rgb = image.getRGB(image.getWidth() / 2, (int) (image.getHeight() * heightFraction));
             return new int[] {rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF};
         } catch (IOException exception) {
             throw new AssertionError("Cannot read " + screenshot, exception);

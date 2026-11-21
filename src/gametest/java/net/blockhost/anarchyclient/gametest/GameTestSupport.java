@@ -12,16 +12,19 @@ import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.StreamSupport;
 
 /**
  * Shared setup for client game tests: a cleared arena in a fresh singleplayer world, server-side
@@ -97,7 +100,8 @@ final class GameTestSupport {
 
     /** How many hits the target has taken. Call it on the server thread. */
     static int targetHits(final MinecraftServer server) {
-        return server.overworld().players().stream()
+        return StreamSupport.stream(server.getAllLevels().spliterator(), false)
+                .flatMap(level -> level.players().stream())
                 .filter(player -> player instanceof DamageableTarget)
                 .map(player -> ((DamageableTarget) player).hits)
                 .findFirst()
@@ -142,17 +146,22 @@ final class GameTestSupport {
 
         /** Adds a player named {@value #TARGET} at {@code feet} that survives every hit, and waits until the client sees it. */
         void spawnTarget(final BlockPos feet) {
-            this.spawnTarget(feet, true);
+            this.spawnTarget(Level.OVERWORLD, feet, true);
+        }
+
+        /** Adds a target that survives every hit in another dimension. The player must already be there. */
+        void spawnTarget(final ResourceKey<Level> dimension, final BlockPos feet) {
+            this.spawnTarget(dimension, feet, true);
         }
 
         /** Adds a player named {@value #TARGET} at {@code feet} that dies like a real player. */
         void spawnMortalTarget(final BlockPos feet) {
-            this.spawnTarget(feet, false);
+            this.spawnTarget(Level.OVERWORLD, feet, false);
         }
 
-        private void spawnTarget(final BlockPos feet, final boolean immortal) {
+        private void spawnTarget(final ResourceKey<Level> dimension, final BlockPos feet, final boolean immortal) {
             this.server.runOnServer(server -> {
-                ServerLevel level = server.overworld();
+                ServerLevel level = server.getLevel(dimension);
                 FakePlayer target = new DamageableTarget(level, new GameProfile(UUID.randomUUID(), TARGET), immortal);
                 target.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 90.0F, 0.0F);
                 server.getPlayerList().broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(target)));

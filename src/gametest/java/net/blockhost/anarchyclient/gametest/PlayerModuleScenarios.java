@@ -179,4 +179,98 @@ final class PlayerModuleScenarios {
             }
         }
     }
+
+    /** Reach hits a target that stands just outside the vanilla attack range. */
+    static void reach(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            // The target's near side is 3.7 blocks away: past vanilla's 3, inside Reach's default 4.
+            arena.spawnTarget(arena.origin().offset(4, 0, 0));
+            arena.hotbar(0, "diamond_sword");
+            context.waitTicks(10);
+            context.getInput().pressKey(options -> options.keyAttack);
+            context.waitTicks(5);
+            GameTestSupport.check(arena.targetHits() == 0, "The target was in vanilla reach, so the test proves nothing");
+            GameTestSupport.enable(context, "reach", true);
+            try {
+                context.waitTicks(25);
+                context.getInput().pressKey(options -> options.keyAttack);
+                arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 20);
+            } finally {
+                GameTestSupport.enable(context, "reach", false);
+            }
+        }
+    }
+
+    /** EXP Thrower throws XP bottles while worn armor is below the durability threshold. */
+    static void expThrower(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("item replace entity " + arena.name() + " armor.chest with diamond_chestplate[damage=400]");
+            arena.hotbar(2, "experience_bottle 16");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "exp_thrower", true);
+            try {
+                arena.server().waitFor(server -> arena.serverPlayer(server).getInventory().getItem(2).getCount() < 16, 100);
+            } finally {
+                GameTestSupport.enable(context, "exp_thrower", false);
+            }
+        }
+    }
+
+    /** Auto Mend moves a damaged mending item into the offhand. */
+    static void autoMend(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("item replace entity " + arena.name()
+                    + " inventory.5 with diamond_pickaxe[damage=1200,enchantments={mending:1}]");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "auto_mend", true);
+            try {
+                arena.server().waitFor(server -> arena.serverPlayer(server).getOffhandItem().is(Items.DIAMOND_PICKAXE), 100);
+            } finally {
+                GameTestSupport.enable(context, "auto_mend", false);
+            }
+        }
+    }
+
+    /** Chest Swap puts on the elytra in place of the chestplate, then turns itself off. */
+    static void chestSwap(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("item replace entity " + arena.name() + " armor.chest with diamond_chestplate");
+            arena.run("item replace entity " + arena.name() + " inventory.7 with elytra");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "chest_swap", true);
+            try {
+                arena.server().waitFor(server -> arena.serverPlayer(server).getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA)
+                        && arena.serverPlayer(server).getInventory().contains(stack -> stack.is(Items.DIAMOND_CHESTPLATE)), 100);
+                context.waitFor(client -> !GameTestSupport.module("chest_swap").enabled(), 20);
+            } finally {
+                GameTestSupport.enable(context, "chest_swap", false);
+            }
+        }
+    }
+
+    /** Elytra Swap puts on the elytra once the player starts falling. */
+    static void elytraSwap(final ClientGameTestContext context) {
+        try (TestSingleplayerContext world = context.worldBuilder().create()) {
+            GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
+            arena.run("item replace entity " + arena.name() + " armor.chest with iron_chestplate");
+            arena.run("item replace entity " + arena.name() + " inventory.7 with elytra");
+            arena.run("effect give " + arena.name() + " resistance infinite 4 true");
+            context.waitTicks(5);
+            GameTestSupport.enable(context, "elytra_swap", true);
+            try {
+                context.waitTicks(10);
+                boolean early = arena.server().computeOnServer(server ->
+                        arena.serverPlayer(server).getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA));
+                GameTestSupport.check(!early, "Elytra Swap equipped the elytra on the ground");
+                arena.teleport(arena.origin().above(30), -90.0F);
+                arena.server().waitFor(server -> arena.serverPlayer(server).getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA), 60);
+            } finally {
+                GameTestSupport.enable(context, "elytra_swap", false);
+            }
+        }
+    }
 }
