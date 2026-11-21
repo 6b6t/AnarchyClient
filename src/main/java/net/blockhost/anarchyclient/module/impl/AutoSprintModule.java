@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-
-import java.util.List;
 
 public final class AutoSprintModule extends Module {
 
@@ -29,7 +28,12 @@ public final class AutoSprintModule extends Module {
             .build()));
 
     public AutoSprintModule() {
-        super("auto_sprint", "Auto Sprint", ModuleCategory.MOVEMENT, "Keeps sprinting active when movement conditions allow it.", List.of("sprint"));
+        super(
+                "auto_sprint",
+                "Auto Sprint",
+                ModuleCategory.MOVEMENT,
+                "Keeps sprinting active when movement conditions allow it.",
+                List.of("sprint"));
     }
 
     @Override
@@ -51,7 +55,10 @@ public final class AutoSprintModule extends Module {
      */
     public static boolean omniSprintImpulse(final LocalPlayer player) {
         AutoSprintModule module = active;
-        return module != null && module.omniSprint.value() && player != null && player.input != null
+        return module != null
+                && module.omniSprint.value()
+                && player != null
+                && player.input != null
                 && InputStates.moving(player.input.keyPresses);
     }
 
@@ -64,9 +71,8 @@ public final class AutoSprintModule extends Module {
         boolean moving = this.omniSprint.value()
                 ? InputStates.moving(player.input.keyPresses)
                 : player.input.hasForwardImpulse();
-        boolean blocked = player.isCrouching()
-                || player.isInWater()
-                || !this.allowUsingItem.value() && player.isUsingItem();
+        boolean blocked =
+                player.isCrouching() || player.isInWater() || !this.allowUsingItem.value() && player.isUsingItem();
         if ((moving || this.keepSprint.value() && player.isSprinting()) && !blocked) {
             player.setSprinting(true);
         }

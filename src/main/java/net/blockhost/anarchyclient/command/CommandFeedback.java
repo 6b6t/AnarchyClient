@@ -9,22 +9,21 @@ import net.minecraft.network.chat.MutableComponent;
 
 final class CommandFeedback {
 
-    private CommandFeedback() {
-    }
+    private CommandFeedback() {}
 
     static MutableComponent copyable(final String label, final String value) {
         return Component.literal(label)
-                .withStyle(style -> style
-                        .withColor(ChatFormatting.AQUA)
+                .withStyle(style -> style.withColor(ChatFormatting.AQUA)
                         .withClickEvent(new ClickEvent.CopyToClipboard(value))
-                        .withHoverEvent(new HoverEvent.ShowText(Translations.component("anarchyclient.message.command_feedback.copy", "Copy %s", value))));
+                        .withHoverEvent(new HoverEvent.ShowText(Translations.component(
+                                "anarchyclient.message.command_feedback.copy", "Copy %s", value))));
     }
 
     static MutableComponent command(final String label, final String command) {
         return Component.literal(label)
-                .withStyle(style -> style
-                        .withColor(ChatFormatting.GREEN)
+                .withStyle(style -> style.withColor(ChatFormatting.GREEN)
                         .withClickEvent(new ClickEvent.SuggestCommand(command))
-                        .withHoverEvent(new HoverEvent.ShowText(Translations.component("anarchyclient.message.command_feedback.suggest", "Suggest %s", command))));
+                        .withHoverEvent(new HoverEvent.ShowText(Translations.component(
+                                "anarchyclient.message.command_feedback.suggest", "Suggest %s", command))));
     }
 }

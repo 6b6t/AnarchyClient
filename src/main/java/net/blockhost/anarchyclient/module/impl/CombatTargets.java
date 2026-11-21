@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.target.TargetPolicy;
 import net.blockhost.anarchyclient.target.TargetQuery;
 import net.minecraft.client.Minecraft;
@@ -11,12 +12,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Optional;
-
 final class CombatTargets {
 
-    private CombatTargets() {
-    }
+    private CombatTargets() {}
 
     /**
      * Players only, friends skipped. Teammates are left to the Teams module (checked in {@link #nearestEnemy}), so a
@@ -30,8 +28,11 @@ final class CombatTargets {
         if (player == null || client.level == null) {
             return null;
         }
-        Optional<LivingEntity> locked = TargetLockModule.preferred(client.level.players(), player, ENEMY_PLAYERS, range);
-        if (locked.isPresent() && locked.get() instanceof Player lockedPlayer && TeamsModule.allows(lockedPlayer, player)) {
+        Optional<LivingEntity> locked =
+                TargetLockModule.preferred(client.level.players(), player, ENEMY_PLAYERS, range);
+        if (locked.isPresent()
+                && locked.get() instanceof Player lockedPlayer
+                && TeamsModule.allows(lockedPlayer, player)) {
             return lockedPlayer;
         }
         double rangeSqr = range * range;

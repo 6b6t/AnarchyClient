@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -10,12 +15,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public final class VeinMinerModule extends Module {
 
@@ -33,7 +32,10 @@ public final class VeinMinerModule extends Module {
     private boolean breakingVein;
 
     public VeinMinerModule() {
-        super("vein_miner", "Vein Miner", ModuleCategory.WORLD,
+        super(
+                "vein_miner",
+                "Vein Miner",
+                ModuleCategory.WORLD,
                 "When a block you mine breaks, also breaks connected blocks of the same type that you can break instantly, up to a set limit.");
     }
 
@@ -74,8 +76,8 @@ public final class VeinMinerModule extends Module {
         try {
             for (BlockPos pos : vein(client.level, origin, block, extraBlocks)) {
                 BlockState state = client.level.getBlockState(pos);
-                boolean instant = player.getAbilities().instabuild
-                        || state.getDestroyProgress(player, client.level, pos) >= 1.0F;
+                boolean instant =
+                        player.getAbilities().instabuild || state.getDestroyProgress(player, client.level, pos) >= 1.0F;
                 if (instant && player.isWithinBlockInteractionRange(pos, 1.0)) {
                     client.gameMode.startDestroyBlock(pos, face);
                 }
@@ -110,7 +112,9 @@ public final class VeinMinerModule extends Module {
             BlockPos pos = queue.removeFirst();
             for (Direction direction : Direction.values()) {
                 BlockPos next = pos.relative(direction);
-                if (result.size() < limit && visited.add(next) && level.getBlockState(next).is(block)) {
+                if (result.size() < limit
+                        && visited.add(next)
+                        && level.getBlockState(next).is(block)) {
                     result.add(next);
                     queue.add(next);
                 }

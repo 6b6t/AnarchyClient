@@ -1,18 +1,17 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.network.chat.Component;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
 
 class PlanModulesTest {
 
@@ -32,11 +31,7 @@ class PlanModulesTest {
     @Test
     void strongholdFinderIntersectsEyeThrowRays() {
         Optional<Vec3> estimate = StrongholdFinderModule.estimate(
-                new Vec3(0.0, 64.0, 0.0),
-                new Vec3(1.0, 0.0, 1.0),
-                new Vec3(10.0, 70.0, 0.0),
-                new Vec3(-1.0, 0.0, 1.0)
-        );
+                new Vec3(0.0, 64.0, 0.0), new Vec3(1.0, 0.0, 1.0), new Vec3(10.0, 70.0, 0.0), new Vec3(-1.0, 0.0, 1.0));
 
         assertTrue(estimate.isPresent());
         assertEquals(5.0, estimate.orElseThrow().x, 1.0E-9);
@@ -57,16 +52,11 @@ class PlanModulesTest {
 
     @Test
     void painterRespectsEnabledSurfaceFamiliesAndOneHighMode() {
-        assertTrue(PainterModule.shouldPaintSurface(true, true, true, false, false,
-                true, false, false, false));
-        assertFalse(PainterModule.shouldPaintSurface(true, true, false, false, true,
-                true, false, false, false));
-        assertTrue(PainterModule.shouldPaintSurface(true, true, false, true, false,
-                false, true, false, false));
-        assertFalse(PainterModule.shouldPaintSurface(true, true, true, true, true,
-                true, true, true, true));
-        assertTrue(PainterModule.shouldPaintSurface(true, false, true, true, true,
-                true, true, true, true));
+        assertTrue(PainterModule.shouldPaintSurface(true, true, true, false, false, true, false, false, false));
+        assertFalse(PainterModule.shouldPaintSurface(true, true, false, false, true, true, false, false, false));
+        assertTrue(PainterModule.shouldPaintSurface(true, true, false, true, false, false, true, false, false));
+        assertFalse(PainterModule.shouldPaintSurface(true, true, true, true, true, true, true, true, true));
+        assertTrue(PainterModule.shouldPaintSurface(true, false, true, true, true, true, true, true, true));
     }
 
     @Test
@@ -99,14 +89,15 @@ class PlanModulesTest {
     void autoWitherPlansSoulSandAndSkullOrder() {
         BlockPos foot = new BlockPos(0, 64, 0);
 
-        assertEquals(List.of(
-                foot,
-                foot.above(),
-                foot.above().west(),
-                foot.above().east(),
-                foot.above(2).west(),
-                foot.above(2),
-                foot.above(2).east()
-        ), AutoWitherModule.planPositions(foot, Direction.Axis.X));
+        assertEquals(
+                List.of(
+                        foot,
+                        foot.above(),
+                        foot.above().west(),
+                        foot.above().east(),
+                        foot.above(2).west(),
+                        foot.above(2),
+                        foot.above(2).east()),
+                AutoWitherModule.planPositions(foot, Direction.Axis.X));
     }
 }

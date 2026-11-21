@@ -20,7 +20,10 @@ public final class ParkourModule extends Module {
     private int cooldownTicks;
 
     public ParkourModule() {
-        super("parkour", "Parkour", ModuleCategory.MOVEMENT,
+        super(
+                "parkour",
+                "Parkour",
+                ModuleCategory.MOVEMENT,
                 "Jumps automatically when walking forward off the edge of a block.");
     }
 
@@ -33,7 +36,9 @@ public final class ParkourModule extends Module {
         if (player == null || player.input != input || client.gui.screen() != null || this.cooldownTicks > 0) {
             return;
         }
-        if (player.onGround() && input.hasForwardImpulse() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value())) {
+        if (player.onGround()
+                && input.hasForwardImpulse()
+                && MovementChecks.movingTowardAir(player, input, this.lookAhead.value())) {
             input.keyPresses = InputStates.withJump(input.keyPresses, true);
             this.cooldownTicks = 8;
         }

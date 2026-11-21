@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,11 +20,8 @@ public final class NoSlowModule extends Module {
             .name("Consume")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting bows = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("bows")
-            .name("Bows")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting bows = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("bows").name("Bows").defaultValue(true).build()));
     private final BooleanSetting shields = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("shields")
             .name("Shields")
@@ -73,7 +69,10 @@ public final class NoSlowModule extends Module {
             .build()));
 
     public NoSlowModule() {
-        super("no_slow", "No Slow", ModuleCategory.MOVEMENT,
+        super(
+                "no_slow",
+                "No Slow",
+                ModuleCategory.MOVEMENT,
                 "Keeps full movement speed while eating, drawing bows, or blocking, and ignores slowdown from webs, honey, soul sand, and similar blocks.");
     }
 

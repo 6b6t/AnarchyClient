@@ -6,19 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.command.CommandPrefix;
-import net.blockhost.anarchyclient.friends.FriendManager;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.notification.ToggleNotifications;
-import net.blockhost.anarchyclient.rivet.BackgroundDesign;
-import net.blockhost.anarchyclient.setting.Setting;
-import net.fabricmc.loader.api.FabricLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -33,6 +20,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.command.CommandPrefix;
+import net.blockhost.anarchyclient.friends.FriendManager;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.notification.ToggleNotifications;
+import net.blockhost.anarchyclient.rivet.BackgroundDesign;
+import net.blockhost.anarchyclient.setting.Setting;
+import net.fabricmc.loader.api.FabricLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class ClientConfig {
 
@@ -264,8 +263,7 @@ public final class ClientConfig {
                 this.backgroundDesign,
                 this.glassOpacity,
                 this.cornerRadius,
-                this.glassBlur
-        );
+                this.glassBlur);
     }
 
     public void uiPreferences(final UiPreferences preferences) {
@@ -484,8 +482,10 @@ public final class ClientConfig {
         ui.addProperty("glassBlur", preferences.glassBlur());
         ui.addProperty("commandPrefix", CommandPrefix.get());
         ui.addProperty("toggleNotifications", ToggleNotifications.enabled());
-        ui.addProperty("toggleNotificationsMode", ToggleNotifications.mode().name().toLowerCase(Locale.ROOT));
-        ui.addProperty("toggleNotificationsCorner", ToggleNotifications.corner().name().toLowerCase(Locale.ROOT));
+        ui.addProperty(
+                "toggleNotificationsMode", ToggleNotifications.mode().name().toLowerCase(Locale.ROOT));
+        ui.addProperty(
+                "toggleNotificationsCorner", ToggleNotifications.corner().name().toLowerCase(Locale.ROOT));
         ui.addProperty("toggleNotificationsDuration", ToggleNotifications.durationMs());
 
         if (ui.size() > 0) {
@@ -505,8 +505,7 @@ public final class ClientConfig {
 
     private static BackgroundDesign parseBackgroundDesign(final String value) {
         for (BackgroundDesign design : BackgroundDesign.values()) {
-            if (design.name().equalsIgnoreCase(value)
-                    || design.displayName().equalsIgnoreCase(value)) {
+            if (design.name().equalsIgnoreCase(value) || design.displayName().equalsIgnoreCase(value)) {
                 return design;
             }
         }
@@ -585,32 +584,22 @@ public final class ClientConfig {
         return normalized;
     }
 
-    public record CategoryWindowState(float x, float y) {
-    }
+    public record CategoryWindowState(float x, float y) {}
 
-    public record UiPreferences(boolean showDisabledModules,
-                                boolean enabledModulesFirst,
-                                boolean showModuleSummaries,
-                                boolean compactRows,
-                                boolean wideInspector,
-                                GuiThemePreset guiTheme,
-                                BackgroundDesign backgroundDesign,
-                                float glassOpacity,
-                                float cornerRadius,
-                                float glassBlur) {
+    public record UiPreferences(
+            boolean showDisabledModules,
+            boolean enabledModulesFirst,
+            boolean showModuleSummaries,
+            boolean compactRows,
+            boolean wideInspector,
+            GuiThemePreset guiTheme,
+            BackgroundDesign backgroundDesign,
+            float glassOpacity,
+            float cornerRadius,
+            float glassBlur) {
 
         public static final UiPreferences DEFAULT = new UiPreferences(
-                true,
-                false,
-                true,
-                true,
-                false,
-                GuiThemePreset.EMERALD,
-                BackgroundDesign.NONE,
-                0.55F,
-                14F,
-                5F
-        );
+                true, false, true, true, false, GuiThemePreset.EMERALD, BackgroundDesign.NONE, 0.55F, 14F, 5F);
 
         public UiPreferences {
             if (guiTheme == null) {

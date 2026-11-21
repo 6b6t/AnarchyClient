@@ -22,7 +22,11 @@ public final class TeamsModule extends Module {
             .build()));
 
     public TeamsModule() {
-        super("teams", "Teams", ModuleCategory.COMBAT, "Prevents combat modules from targeting players that match configured team checks.");
+        super(
+                "teams",
+                "Teams",
+                ModuleCategory.COMBAT,
+                "Prevents combat modules from targeting players that match configured team checks.");
     }
 
     @Override
@@ -42,13 +46,14 @@ public final class TeamsModule extends Module {
         if (module == null || entity == null || player == null || entity == player) {
             return true;
         }
-        if (module.scoreboard.value() && entity.getTeam() != null && player.getTeam() != null
+        if (module.scoreboard.value()
+                && entity.getTeam() != null
+                && player.getTeam() != null
                 && entity.getTeam().isAlliedTo(player.getTeam())) {
             return false;
         }
         // Clan tags live in the team prefix shown before the name; usernames cannot contain brackets.
-        return !module.namePrefix.value()
-                || !samePrefix(shownName(entity), shownName(player));
+        return !module.namePrefix.value() || !samePrefix(shownName(entity), shownName(player));
     }
 
     static String shownName(final Entity entity) {
@@ -68,12 +73,13 @@ public final class TeamsModule extends Module {
         char first = name.charAt(0);
         return switch (first) {
             case '[', '(', '<', '{' -> {
-                int close = name.indexOf(switch (first) {
-                    case '[' -> ']';
-                    case '(' -> ')';
-                    case '<' -> '>';
-                    default -> '}';
-                });
+                int close = name.indexOf(
+                        switch (first) {
+                            case '[' -> ']';
+                            case '(' -> ')';
+                            case '<' -> '>';
+                            default -> '}';
+                        });
                 yield close > 0 ? name.substring(0, close + 1) : "";
             }
             default -> "";

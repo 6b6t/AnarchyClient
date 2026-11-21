@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.ui;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.EnumSet;
+import java.util.Optional;
+import java.util.Set;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.i18n.Translations;
@@ -25,12 +30,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.network.chat.Component;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.EnumSet;
-import java.util.Optional;
-import java.util.Set;
 
 public final class AnarchyClientScreen extends Screen {
 
@@ -102,7 +101,8 @@ public final class AnarchyClientScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
+    public void extractRenderState(
+            final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         if (this.rivet == null) {
             return;
         }
@@ -112,8 +112,8 @@ public final class AnarchyClientScreen extends Screen {
         // re-sending them every frame made slider drags jump between the two at high GUI scales.
         double pointerX = Double.isNaN(this.lastMouseX) ? mouseX : this.lastMouseX;
         double pointerY = Double.isNaN(this.lastMouseY) ? mouseY : this.lastMouseY;
-        this.rivet.onMouseMove(new MouseMoveEvent((float) (pointerX / scale), (float) (pointerY / scale),
-                this.heldMouseButtons));
+        this.rivet.onMouseMove(
+                new MouseMoveEvent((float) (pointerX / scale), (float) (pointerY / scale), this.heldMouseButtons));
         if (this.panel != null) {
             this.panel.mousePosition((float) (pointerX / scale), (float) (pointerY / scale));
         }
@@ -132,7 +132,8 @@ public final class AnarchyClientScreen extends Screen {
     }
 
     @Override
-    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
+    public void extractBackground(
+            final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         // Triggers the vanilla blur pass. GlassBackdrop captures the blurred frame for the glass
         // panels and restores the sharp frame, so the game stays fully visible behind the menu.
         graphics.blurBeforeThisStratum();
@@ -150,7 +151,8 @@ public final class AnarchyClientScreen extends Screen {
         this.lastMouseY = mouseY;
         if (this.rivet != null) {
             float scale = this.uiScale();
-            this.rivet.onMouseMove(new MouseMoveEvent((float) (mouseX / scale), (float) (mouseY / scale), this.heldMouseButtons));
+            this.rivet.onMouseMove(
+                    new MouseMoveEvent((float) (mouseX / scale), (float) (mouseY / scale), this.heldMouseButtons));
         }
     }
 
@@ -192,7 +194,8 @@ public final class AnarchyClientScreen extends Screen {
     }
 
     /** Rivet lays out and hit-tests in virtual (reference scale) coordinates; convert real clicks. */
-    private net.lenni0451.rivet.input.mouse.MouseButtonEvent toVirtualSpace(final net.lenni0451.rivet.input.mouse.MouseButtonEvent event) {
+    private net.lenni0451.rivet.input.mouse.MouseButtonEvent toVirtualSpace(
+            final net.lenni0451.rivet.input.mouse.MouseButtonEvent event) {
         float scale = this.uiScale();
         return scale == 1F ? event : event.withXBy(x -> x / scale).withYBy(y -> y / scale);
     }
@@ -208,7 +211,8 @@ public final class AnarchyClientScreen extends Screen {
             return true;
         }
         Optional<KeyEvent> key = RivetInputMapper.key(event);
-        if (this.rivet != null && key.filter(AnarchyClientScreen::isLayoutDumpKey).isPresent()) {
+        if (this.rivet != null
+                && key.filter(AnarchyClientScreen::isLayoutDumpKey).isPresent()) {
             this.dumpLayoutTree();
             return true;
         }
@@ -217,7 +221,8 @@ public final class AnarchyClientScreen extends Screen {
 
     @Override
     public boolean keyReleased(final net.minecraft.client.input.KeyEvent event) {
-        return this.rivet != null && RivetInputMapper.key(event).map(this.rivet::onKeyUp).orElse(false);
+        return this.rivet != null
+                && RivetInputMapper.key(event).map(this.rivet::onKeyUp).orElse(false);
     }
 
     @Override
@@ -267,12 +272,17 @@ public final class AnarchyClientScreen extends Screen {
             Path file = LayoutTreeDumper.writeSnapshot(this.rivet, directory);
             AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.anarchy_client_screen.layout_tree_saved_to", "Layout tree saved to %s.", file));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.anarchy_client_screen.layout_tree_saved_to",
+                        "Layout tree saved to %s.",
+                        file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.anarchy_client_screen.failed_to_save_layout_tree_snapshot", "Failed to save layout tree snapshot."));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.anarchy_client_screen.failed_to_save_layout_tree_snapshot",
+                        "Failed to save layout tree snapshot."));
             }
         }
     }

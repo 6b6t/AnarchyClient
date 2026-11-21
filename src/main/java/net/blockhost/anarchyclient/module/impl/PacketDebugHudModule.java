@@ -1,20 +1,22 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.module.DebugValueRegistry;
-import net.blockhost.anarchyclient.network.PacketQueueManager;
-import net.blockhost.anarchyclient.timer.TimerManager;
-import net.blockhost.anarchyclient.timer.TimerBalanceService;
-import net.minecraft.client.Minecraft;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import net.blockhost.anarchyclient.module.DebugValueRegistry;
+import net.blockhost.anarchyclient.network.PacketQueueManager;
+import net.blockhost.anarchyclient.timer.TimerBalanceService;
+import net.blockhost.anarchyclient.timer.TimerManager;
+import net.minecraft.client.Minecraft;
 
 public final class PacketDebugHudModule extends HudElementModule {
 
     public PacketDebugHudModule() {
-        super("packet_debug_hud", "Packet Debug HUD",
-                "Shows packet queue sizes, timer state, balance values, and module debug values.", "Bottom Right");
+        super(
+                "packet_debug_hud",
+                "Packet Debug HUD",
+                "Shows packet queue sizes, timer state, balance values, and module debug values.",
+                "Bottom Right");
     }
 
     @Override
@@ -31,7 +33,8 @@ public final class PacketDebugHudModule extends HudElementModule {
         if (tickBaseBalance > 0.0 || timerRangeBalance > 0.0) {
             lines.add(String.format("Balance %.1f / %.1f", tickBaseBalance, timerRangeBalance));
         }
-        for (Map.Entry<String, Map<String, String>> owner : DebugValueRegistry.snapshot().entrySet()) {
+        for (Map.Entry<String, Map<String, String>> owner :
+                DebugValueRegistry.snapshot().entrySet()) {
             for (Map.Entry<String, String> value : owner.getValue().entrySet()) {
                 lines.add(owner.getKey() + " " + value.getKey() + "=" + value.getValue());
                 if (lines.size() >= 10) {

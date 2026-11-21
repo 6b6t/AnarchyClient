@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -16,9 +18,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class SkeletonEspModule extends Module {
 
@@ -50,7 +49,10 @@ public final class SkeletonEspModule extends Module {
             .build()));
 
     public SkeletonEspModule() {
-        super("skeleton_esp", "Skeleton ESP", ModuleCategory.RENDER,
+        super(
+                "skeleton_esp",
+                "Skeleton ESP",
+                ModuleCategory.RENDER,
                 "Draws stick-figure skeletons over nearby players through walls, with friends shown in blue.");
     }
 
@@ -89,8 +91,10 @@ public final class SkeletonEspModule extends Module {
                 continue;
             }
             WorldLineRenderer.Color color = AnarchyClient.FRIENDS.isFriend(target.getScoreboardName())
-                    ? new WorldLineRenderer.Color(98, 170, 255, this.opacity.value().intValue())
-                    : new WorldLineRenderer.Color(245, 245, 245, this.opacity.value().intValue());
+                    ? new WorldLineRenderer.Color(
+                            98, 170, 255, this.opacity.value().intValue())
+                    : new WorldLineRenderer.Color(
+                            245, 245, 245, this.opacity.value().intValue());
             for (Segment segment : skeleton(target, partialTick, camera)) {
                 WorldLineRenderer.lineNoDepth(matrices, submits, segment.start(), segment.end(), color);
             }
@@ -141,8 +145,7 @@ public final class SkeletonEspModule extends Module {
         return new Vec3(
                 Mth.lerp(partialTick, player.xo, player.getX()),
                 Mth.lerp(partialTick, player.yo, player.getY()),
-                Mth.lerp(partialTick, player.zo, player.getZ())
-        );
+                Mth.lerp(partialTick, player.zo, player.getZ()));
     }
 
     private static Vec3 rightVector(final float yawDegrees) {
@@ -150,6 +153,5 @@ public final class SkeletonEspModule extends Module {
         return new Vec3(Mth.cos(yaw), 0.0, Mth.sin(yaw));
     }
 
-    record Segment(Vec3 start, Vec3 end) {
-    }
+    record Segment(Vec3 start, Vec3 end) {}
 }

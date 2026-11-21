@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class ArmorHudModule extends HudElementModule {
 
@@ -14,12 +13,14 @@ public final class ArmorHudModule extends HudElementModule {
             new ArmorLine("Helm", EquipmentSlot.HEAD),
             new ArmorLine("Chest", EquipmentSlot.CHEST),
             new ArmorLine("Legs", EquipmentSlot.LEGS),
-            new ArmorLine("Boots", EquipmentSlot.FEET)
-    );
+            new ArmorLine("Boots", EquipmentSlot.FEET));
 
     public ArmorHudModule() {
-        super("armor_hud", "Armor HUD",
-                "Shows your helmet, chestplate, leggings, and boots with durability bars in a movable HUD panel.", "Bottom Left");
+        super(
+                "armor_hud",
+                "Armor HUD",
+                "Shows your helmet, chestplate, leggings, and boots with durability bars in a movable HUD panel.",
+                "Bottom Left");
     }
 
     @Override
@@ -65,6 +66,5 @@ public final class ArmorHudModule extends HudElementModule {
         return stack.getHoverName().getString();
     }
 
-    private record ArmorLine(String label, EquipmentSlot slot) {
-    }
+    private record ArmorLine(String label, EquipmentSlot slot) {}
 }

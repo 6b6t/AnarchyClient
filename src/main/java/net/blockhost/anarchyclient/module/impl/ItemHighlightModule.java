@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -24,8 +25,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class ItemHighlightModule extends Module {
 
@@ -77,7 +76,10 @@ public final class ItemHighlightModule extends Module {
             .build()));
 
     public ItemHighlightModule() {
-        super("item_highlight", "Item Highlight", ModuleCategory.RENDER,
+        super(
+                "item_highlight",
+                "Item Highlight",
+                ModuleCategory.RENDER,
                 "Highlights dropped items from your list or a valuable filter, and can mark end crystals.");
         this.items.visibleWhen(() -> "Listed".equals(this.itemMode.value()));
         this.opacity.visibleWhen(() -> "Box".equals(this.renderMode.value()));
@@ -95,8 +97,11 @@ public final class ItemHighlightModule extends Module {
                 if (entity instanceof ItemEntity itemEntity
                         && itemEntity.distanceToSqr(client.player) <= rangeSqr
                         && this.matchesItem(itemEntity)) {
-                    MarkerManager.put(new CuboidMarker("item_highlight:item:" + entity.getId(),
-                            entity.getBoundingBox().inflate(0.05), MarkerStyle.CYAN, 4));
+                    MarkerManager.put(new CuboidMarker(
+                            "item_highlight:item:" + entity.getId(),
+                            entity.getBoundingBox().inflate(0.05),
+                            MarkerStyle.CYAN,
+                            4));
                 }
             }
         }
@@ -104,8 +109,8 @@ public final class ItemHighlightModule extends Module {
             double crystalRangeSqr = this.crystalRange.value() * this.crystalRange.value();
             for (Entity entity : client.level.entitiesForRendering()) {
                 if (entity instanceof EndCrystal && entity.distanceToSqr(client.player) <= crystalRangeSqr) {
-                    MarkerManager.put(new CuboidMarker("item_highlight:crystal:" + entity.getId(),
-                            entity.getBoundingBox(), MarkerStyle.CYAN, 4));
+                    MarkerManager.put(new CuboidMarker(
+                            "item_highlight:crystal:" + entity.getId(), entity.getBoundingBox(), MarkerStyle.CYAN, 4));
                 }
             }
         }
@@ -116,7 +121,10 @@ public final class ItemHighlightModule extends Module {
         Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
-        if (client.level == null || player == null || matrices == null || submits == null
+        if (client.level == null
+                || player == null
+                || matrices == null
+                || submits == null
                 || "Marker".equals(this.renderMode.value())) {
             return;
         }
@@ -135,8 +143,12 @@ public final class ItemHighlightModule extends Module {
                 EspOutlineRegistry.set(entity.getId(), ARGB.color(255, 92, 214, 255));
             } else {
                 AABB box = WorldLineRenderer.interpolatedBox(itemEntity, partialTick, 0.08, camera);
-                WorldLineRenderer.boxNoDepth(matrices, submits, box,
-                        new WorldLineRenderer.Color(255, 215, 95, this.opacity.value().intValue()));
+                WorldLineRenderer.boxNoDepth(
+                        matrices,
+                        submits,
+                        box,
+                        new WorldLineRenderer.Color(
+                                255, 215, 95, this.opacity.value().intValue()));
             }
         }
     }

@@ -8,7 +8,10 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 public final class IllegalDisconnectModule extends Module {
 
     public IllegalDisconnectModule() {
-        super("illegal_disconnect", "Illegal Disconnect", ModuleCategory.MISC,
+        super(
+                "illegal_disconnect",
+                "Illegal Disconnect",
+                ModuleCategory.MISC,
                 "Sends an invalid movement packet so the server kicks you right away, then turns itself off. "
                         + "Use it to leave instantly on servers that keep you online after a normal disconnect.");
     }

@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.rivet;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import javax.annotation.Nullable;
 import net.lenni0451.rivet.backend.Backend;
 import net.lenni0451.rivet.backend.text.Font;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.StringUtil;
-
-import javax.annotation.Nullable;
 
 public final class Blaze3DBackend implements Backend {
 
@@ -40,8 +39,6 @@ public final class Blaze3DBackend implements Backend {
 
     @Override
     public boolean isKeyDown(final Key key) {
-        return RivetInputMapper.toScancode(key)
-                .stream()
-                .anyMatch(InputConstants::isKeyDown);
+        return RivetInputMapper.toScancode(key).stream().anyMatch(InputConstants::isKeyDown);
     }
 }

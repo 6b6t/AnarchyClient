@@ -5,12 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.world.level.storage.LevelResource;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -19,13 +13,17 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.world.level.storage.LevelResource;
 
 final class SeedStore {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private SeedStore() {
-    }
+    private SeedStore() {}
 
     static List<SeedRecord> list(final Path path) throws IOException {
         return read(path).entrySet().stream()
@@ -45,12 +43,20 @@ final class SeedStore {
         return record.seed().isBlank() ? null : record;
     }
 
-    static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt) throws IOException {
+    static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt)
+            throws IOException {
         return put(path, world, seed, savedAt, "", "", "manual");
     }
 
-    static SeedRecord put(final Path path, final String world, final String seed, final Instant savedAt,
-                          final String version, final String dimension, final String source) throws IOException {
+    static SeedRecord put(
+            final Path path,
+            final String world,
+            final String seed,
+            final Instant savedAt,
+            final String version,
+            final String dimension,
+            final String source)
+            throws IOException {
         String normalized = normalizeSeed(seed);
         JsonObject root = read(path);
         JsonObject entry = new JsonObject();
@@ -67,8 +73,7 @@ final class SeedStore {
                 savedAt.toString(),
                 normalizeMetadata(version),
                 normalizeMetadata(dimension),
-                normalizeMetadata(source).isBlank() ? "manual" : normalizeMetadata(source)
-        );
+                normalizeMetadata(source).isBlank() ? "manual" : normalizeMetadata(source));
     }
 
     static boolean delete(final Path path, final String world) throws IOException {
@@ -100,7 +105,11 @@ final class SeedStore {
         if (singleplayer != null) {
             // One key per save folder: a world has one seed in every dimension, and different worlds must not
             // share a saved seed.
-            Path folder = singleplayer.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize().getFileName();
+            Path folder = singleplayer
+                    .getWorldPath(LevelResource.ROOT)
+                    .toAbsolutePath()
+                    .normalize()
+                    .getFileName();
             return "singleplayer:" + (folder == null ? "world" : folder);
         }
         return "unknown";
@@ -133,8 +142,7 @@ final class SeedStore {
                 string(entry, "saved_at"),
                 string(entry, "version"),
                 string(entry, "dimension"),
-                string(entry, "source")
-        );
+                string(entry, "source"));
     }
 
     /** Reads a string field, treating a missing or non-text value (from a hand-edited file) as empty. */
@@ -143,6 +151,5 @@ final class SeedStore {
         return value != null && value.isJsonPrimitive() ? value.getAsString().trim() : "";
     }
 
-    record SeedRecord(String world, String seed, String savedAt, String version, String dimension, String source) {
-    }
+    record SeedRecord(String world, String seed, String savedAt, String version, String dimension, String source) {}
 }

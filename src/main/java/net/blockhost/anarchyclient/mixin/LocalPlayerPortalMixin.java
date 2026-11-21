@@ -12,8 +12,7 @@ public abstract class LocalPlayerPortalMixin {
 
     @Redirect(
             method = "handlePortalTransitionEffect",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;isAllowedInPortal()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;isAllowedInPortal()Z"))
     private boolean anarchyclient$allowScreensInPortals(final Screen screen) {
         return PortalMenuModule.active() || screen.isAllowedInPortal();
     }

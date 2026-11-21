@@ -14,16 +14,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class GameRendererMixin {
 
     @Inject(method = "bobHurt", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$noHurtCamera(final CameraRenderState cameraState, final PoseStack poseStack,
-                                            final CallbackInfo info) {
+    private void anarchyclient$noHurtCamera(
+            final CameraRenderState cameraState, final PoseStack poseStack, final CallbackInfo info) {
         if (RenderSuppression.suppresses(RenderSuppression.Kind.HURT_CAMERA)) {
             info.cancel();
         }
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$noViewBob(final CameraRenderState cameraState, final PoseStack poseStack,
-                                         final CallbackInfo info) {
+    private void anarchyclient$noViewBob(
+            final CameraRenderState cameraState, final PoseStack poseStack, final CallbackInfo info) {
         if (RenderSuppression.suppresses(RenderSuppression.Kind.VIEW_BOB)) {
             info.cancel();
         }

@@ -21,7 +21,8 @@ public final class SpiralModule extends Module {
             .min(8.0)
             .max(512.0)
             .step(8.0)
-            .description("Blocks between two rings of the spiral. Match it to your render distance to scan every chunk once.")
+            .description(
+                    "Blocks between two rings of the spiral. Match it to your render distance to scan every chunk once.")
             .build()));
     private final BooleanSetting sprint = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("sprint")
@@ -37,7 +38,10 @@ public final class SpiralModule extends Module {
     private Level level;
 
     public SpiralModule() {
-        super("spiral", "Spiral", ModuleCategory.MOVEMENT,
+        super(
+                "spiral",
+                "Spiral",
+                ModuleCategory.MOVEMENT,
                 "Walks or flies outward in a square spiral from where you turned it on, to search an area evenly. "
                         + "It only turns you and holds forward, so pair it with Elytra Fly or Auto Walk settings as needed.");
     }

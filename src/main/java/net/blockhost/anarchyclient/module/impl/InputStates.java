@@ -10,8 +10,7 @@ import org.lwjgl.sdl.SDLMouse;
 
 final class InputStates {
 
-    private InputStates() {
-    }
+    private InputStates() {}
 
     static boolean keyPressed(final Minecraft client, final int key) {
         return client.getWindow() != null && InputConstants.isKeyDown(key);
@@ -22,23 +21,28 @@ final class InputStates {
     }
 
     static Input withShift(final Input input, final boolean shift) {
-        return new Input(input.forward(), input.backward(), input.left(), input.right(), input.jump(), shift, input.sprint());
+        return new Input(
+                input.forward(), input.backward(), input.left(), input.right(), input.jump(), shift, input.sprint());
     }
 
     static Input withJump(final Input input, final boolean jump) {
-        return new Input(input.forward(), input.backward(), input.left(), input.right(), jump, input.shift(), input.sprint());
+        return new Input(
+                input.forward(), input.backward(), input.left(), input.right(), jump, input.shift(), input.sprint());
     }
 
     static Input withForward(final Input input, final boolean forward) {
-        return new Input(forward, input.backward(), input.left(), input.right(), input.jump(), input.shift(), input.sprint());
+        return new Input(
+                forward, input.backward(), input.left(), input.right(), input.jump(), input.shift(), input.sprint());
     }
 
     static Input withBackward(final Input input, final boolean backward) {
-        return new Input(input.forward(), backward, input.left(), input.right(), input.jump(), input.shift(), input.sprint());
+        return new Input(
+                input.forward(), backward, input.left(), input.right(), input.jump(), input.shift(), input.sprint());
     }
 
     static Input withSprint(final Input input, final boolean sprint) {
-        return new Input(input.forward(), input.backward(), input.left(), input.right(), input.jump(), input.shift(), sprint);
+        return new Input(
+                input.forward(), input.backward(), input.left(), input.right(), input.jump(), input.shift(), sprint);
     }
 
     static boolean moving(final Input input) {

@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -26,17 +28,10 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
 public final class NewChunksModule extends Module {
 
     private static final Direction[] SOURCE_SEARCH_DIRECTIONS = {
-            Direction.EAST,
-            Direction.NORTH,
-            Direction.WEST,
-            Direction.SOUTH,
-            Direction.UP
+        Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH, Direction.UP
     };
 
     private final BooleanSetting clearOnDisable = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -70,7 +65,10 @@ public final class NewChunksModule extends Module {
     private ClientLevel trackedLevel;
 
     public NewChunksModule() {
-        super("new_chunks", "New Chunks", ModuleCategory.RENDER,
+        super(
+                "new_chunks",
+                "New Chunks",
+                ModuleCategory.RENDER,
                 "Marks chunks where flowing liquid updates next to a source block, which suggests freshly generated terrain, in red. Marks reset when you change dimension or server.");
     }
 
@@ -85,10 +83,12 @@ public final class NewChunksModule extends Module {
         } else if (packet instanceof ClientboundBlockUpdatePacket update) {
             MainThread.run(() -> {
                 if (this.syncLevel(client)) {
-                    this.markFluidUpdate(client, update.getPos(), update.getBlockState().getFluidState());
+                    this.markFluidUpdate(
+                            client, update.getPos(), update.getBlockState().getFluidState());
                 }
             });
-        } else if (this.inspectChunkPackets.value() && packet instanceof ClientboundLevelChunkWithLightPacket chunkPacket) {
+        } else if (this.inspectChunkPackets.value()
+                && packet instanceof ClientboundLevelChunkWithLightPacket chunkPacket) {
             MainThread.run(() -> {
                 if (this.syncLevel(client)) {
                     this.inspectChunkPacket(client, chunkPacket);
@@ -118,10 +118,24 @@ public final class NewChunksModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         double rangeSqr = this.renderRange.value() * this.renderRange.value();
-        this.renderChunks(matrices, submits, camera, client.player.blockPosition(), rangeSqr, this.oldChunks,
-                new WorldLineRenderer.Color(90, 220, 120, 40), new WorldLineRenderer.Color(90, 220, 120, 170));
-        this.renderChunks(matrices, submits, camera, client.player.blockPosition(), rangeSqr, this.newChunks,
-                new WorldLineRenderer.Color(245, 80, 80, 55), new WorldLineRenderer.Color(245, 80, 80, 220));
+        this.renderChunks(
+                matrices,
+                submits,
+                camera,
+                client.player.blockPosition(),
+                rangeSqr,
+                this.oldChunks,
+                new WorldLineRenderer.Color(90, 220, 120, 40),
+                new WorldLineRenderer.Color(90, 220, 120, 170));
+        this.renderChunks(
+                matrices,
+                submits,
+                camera,
+                client.player.blockPosition(),
+                rangeSqr,
+                this.newChunks,
+                new WorldLineRenderer.Color(245, 80, 80, 55),
+                new WorldLineRenderer.Color(245, 80, 80, 220));
     }
 
     @Override
@@ -157,7 +171,8 @@ public final class NewChunksModule extends Module {
         }
         for (Direction direction : SOURCE_SEARCH_DIRECTIONS) {
             BlockPos neighbor = pos.relative(direction);
-            if (client.level != null && client.level.isLoaded(neighbor)
+            if (client.level != null
+                    && client.level.isLoaded(neighbor)
                     && client.level.getFluidState(neighbor).isSource()) {
                 this.newChunks.add(chunk);
                 return;
@@ -197,9 +212,15 @@ public final class NewChunksModule extends Module {
         }
     }
 
-    private void renderChunks(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 camera,
-                              final BlockPos playerPos, final double rangeSqr, final Set<Long> chunks,
-                              final WorldLineRenderer.Color fillColor, final WorldLineRenderer.Color lineColor) {
+    private void renderChunks(
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final Vec3 camera,
+            final BlockPos playerPos,
+            final double rangeSqr,
+            final Set<Long> chunks,
+            final WorldLineRenderer.Color fillColor,
+            final WorldLineRenderer.Color lineColor) {
         int y = this.renderY.value().intValue();
         for (long key : chunks) {
             ChunkPos chunk = ChunkPos.unpack(key);
@@ -208,13 +229,13 @@ public final class NewChunksModule extends Module {
                 continue;
             }
             AABB box = new AABB(
-                    chunk.getMinBlockX(),
-                    y,
-                    chunk.getMinBlockZ(),
-                    chunk.getMaxBlockX() + 1,
-                    y + 1,
-                    chunk.getMaxBlockZ() + 1
-            ).move(camera.scale(-1));
+                            chunk.getMinBlockX(),
+                            y,
+                            chunk.getMinBlockZ(),
+                            chunk.getMaxBlockX() + 1,
+                            y + 1,
+                            chunk.getMaxBlockZ() + 1)
+                    .move(camera.scale(-1));
             WorldLineRenderer.fillNoDepth(matrices, submits, box, fillColor);
             WorldLineRenderer.boxNoDepth(matrices, submits, box, lineColor);
         }

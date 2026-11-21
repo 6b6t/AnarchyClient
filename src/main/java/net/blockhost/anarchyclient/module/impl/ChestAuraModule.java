@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -23,11 +27,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public final class ChestAuraModule extends Module {
 
@@ -73,12 +72,16 @@ public final class ChestAuraModule extends Module {
     private int awaitingOpenTicks;
     /** The block this module last clicked while its menu has not opened yet. */
     private @Nullable BlockPos awaitingPos;
+
     private @Nullable AbstractContainerMenu openedMenu;
 
     private static final int OPEN_TIMEOUT_TICKS = 20;
 
     public ChestAuraModule() {
-        super("chest_aura", "Chest Aura", ModuleCategory.WORLD,
+        super(
+                "chest_aura",
+                "Chest Aura",
+                ModuleCategory.WORLD,
                 "Opens nearby chests, barrels, and other listed containers automatically, skipping ones already opened and optionally closing the ones it opened.");
     }
 
@@ -134,8 +137,12 @@ public final class ChestAuraModule extends Module {
     }
 
     @Override
-    public boolean entityInteract(final Minecraft client, final Player player, final Entity entity,
-                                  final EntityHitResult hitResult, final InteractionHand hand) {
+    public boolean entityInteract(
+            final Minecraft client,
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand) {
         // Chest boats, minecarts, and animals open menus too; those belong to the player.
         this.stopAwaiting();
         return false;
@@ -182,8 +189,7 @@ public final class ChestAuraModule extends Module {
                     player.closeContainer();
                 }
             }
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -202,7 +208,8 @@ public final class ChestAuraModule extends Module {
                     BlockPos pos = new BlockPos(x, y, z);
                     if (this.openedBlocks.containsKey(pos)
                             || !client.level.isLoaded(pos)
-                            || !this.parsedBlocks.contains(client.level.getBlockState(pos).getBlock())) {
+                            || !this.parsedBlocks.contains(
+                                    client.level.getBlockState(pos).getBlock())) {
                         continue;
                     }
                     double distance = player.getEyePosition().distanceToSqr(Vec3.atCenterOf(pos));
@@ -218,10 +225,7 @@ public final class ChestAuraModule extends Module {
 
     private void openBlock(final Minecraft client, final LocalPlayer player, final BlockPos pos) {
         client.gameMode.useItemOn(
-                player,
-                InteractionHand.MAIN_HAND,
-                new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false)
-        );
+                player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
     }
 
     private void markOpened(final BlockState state, final BlockPos pos) {

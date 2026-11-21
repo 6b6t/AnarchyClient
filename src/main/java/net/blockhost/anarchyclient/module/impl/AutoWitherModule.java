@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -22,8 +23,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-
-import java.util.List;
 
 public final class AutoWitherModule extends Module {
 
@@ -50,8 +49,7 @@ public final class AutoWitherModule extends Module {
             .addAllOptions(List.of(
                     BlockTargetScanner.SortMode.CLOSEST.label(),
                     BlockTargetScanner.SortMode.FARTHEST.label(),
-                    BlockTargetScanner.SortMode.RANDOM.label()
-            ))
+                    BlockTargetScanner.SortMode.RANDOM.label()))
             .build()));
     private final NumberSetting delay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("delay")
@@ -82,7 +80,10 @@ public final class AutoWitherModule extends Module {
     private List<BlockPos> previewPositions = List.of();
 
     public AutoWitherModule() {
-        super("auto_wither", "Auto Wither", ModuleCategory.COMBAT,
+        super(
+                "auto_wither",
+                "Auto Wither",
+                ModuleCategory.COMBAT,
                 "Finds open space nearby and builds a wither from soul sand or soul soil and wither skeleton skulls, with a build preview.");
     }
 
@@ -111,7 +112,8 @@ public final class AutoWitherModule extends Module {
             return;
         }
         WitherStep step = this.currentBuild.steps().get(this.stage);
-        if (!BlockPlacer.needsPlacement(client.level, step.pos()) && !step.matches(client.level.getBlockState(step.pos()))) {
+        if (!BlockPlacer.needsPlacement(client.level, step.pos())
+                && !step.matches(client.level.getBlockState(step.pos()))) {
             resetBuild();
             return;
         }
@@ -123,8 +125,7 @@ public final class AutoWitherModule extends Module {
                 70.0F,
                 step::matchesItem,
                 // Soul sand and skulls are shorter than a full block.
-                BlockPlacer.PlacementOptions.NON_FULL
-        );
+                BlockPlacer.PlacementOptions.NON_FULL);
         if (result == BlockPlacer.PlacementResult.PLACED || result == BlockPlacer.PlacementResult.FILLED) {
             this.stage++;
             this.cooldownTicks = this.delay.value().intValue();
@@ -168,8 +169,7 @@ public final class AutoWitherModule extends Module {
                 vertical,
                 BlockTargetScanner.SortMode.fromSetting(this.priority.value()),
                 AutoTntModule.scanLimit(horizontal, vertical),
-                candidate -> candidate.state().canBeReplaced()
-        )) {
+                candidate -> candidate.state().canBeReplaced())) {
             for (Direction.Axis axis : List.of(Direction.Axis.X, Direction.Axis.Z)) {
                 WitherBuild build = new WitherBuild(planSteps(target.pos(), axis));
                 if (hasRoom(client.level, build)) {
@@ -181,7 +181,8 @@ public final class AutoWitherModule extends Module {
     }
 
     private void advanceCompletedStages(final ClientLevel level) {
-        while (this.currentBuild != null && this.stage < this.currentBuild.steps().size()) {
+        while (this.currentBuild != null
+                && this.stage < this.currentBuild.steps().size()) {
             WitherStep step = this.currentBuild.steps().get(this.stage);
             if (!step.matches(level.getBlockState(step.pos()))) {
                 break;
@@ -253,8 +254,7 @@ public final class AutoWitherModule extends Module {
                 new WitherStep(stem.relative(positive), WitherMaterial.SOUL),
                 new WitherStep(skullCenter.relative(negative), WitherMaterial.SKULL),
                 new WitherStep(skullCenter, WitherMaterial.SKULL),
-                new WitherStep(skullCenter.relative(positive), WitherMaterial.SKULL)
-        );
+                new WitherStep(skullCenter.relative(positive), WitherMaterial.SKULL));
     }
 
     enum WitherMaterial {

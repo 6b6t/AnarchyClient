@@ -1,7 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-
-
 /**
  * Exponentially smoothed value for lightweight per-frame animation. The menu re-renders every
  * frame, so calling {@link #toward} inside {@code render} advances the animation without extra

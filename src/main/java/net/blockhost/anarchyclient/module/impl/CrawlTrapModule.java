@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,9 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class CrawlTrapModule extends Module {
 
@@ -51,7 +50,10 @@ public final class CrawlTrapModule extends Module {
             .build()));
 
     public CrawlTrapModule() {
-        super("crawl_trap", "Crawl Trap", ModuleCategory.COMBAT,
+        super(
+                "crawl_trap",
+                "Crawl Trap",
+                ModuleCategory.COMBAT,
                 "Fills the block above a crawling enemy, and optionally the blocks beside them, so they stay stuck "
                         + "in the crawling pose. Pairs well with Piston Push.");
     }
@@ -72,9 +74,13 @@ public final class CrawlTrapModule extends Module {
             return;
         }
         List<BlockPos> positions = trapPositions(target.blockPosition(), crawling, this.sides.value());
-        int placed = CombatPlacementPlanner.placeBatch(client, this, positions, CombatPlacementPlanner.HARD_BLOCKS,
-                CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(),
-                        this.range.value()));
+        int placed = CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                positions,
+                CombatPlacementPlanner.HARD_BLOCKS,
+                CombatPlacementPlanner.Options.of(
+                        this.blocksPerTick.value().intValue(), this.rotate.value(), this.range.value()));
         this.debugValue("placed", placed);
     }
 

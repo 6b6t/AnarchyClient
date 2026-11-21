@@ -18,7 +18,10 @@ public final class SuperKnockbackModule extends Module {
             .build()));
 
     public SuperKnockbackModule() {
-        super("super_knockback", "Super Knockback", ModuleCategory.COMBAT,
+        super(
+                "super_knockback",
+                "Super Knockback",
+                ModuleCategory.COMBAT,
                 "Sends a stop and start sprint packet before each hit while you sprint, so the server applies sprint knockback.");
     }
 
@@ -27,8 +30,10 @@ public final class SuperKnockbackModule extends Module {
         ClientPacketListener connection = client.getConnection();
         if (this.resetSprint.value() && player != null && connection != null && player.isSprinting()) {
             // Toggling the client flag sends nothing, because LocalPlayer only syncs sprint state once per tick.
-            connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
-            connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
+            connection.send(
+                    new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
+            connection.send(
+                    new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         }
         return false;
     }

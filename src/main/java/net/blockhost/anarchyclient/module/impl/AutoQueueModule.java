@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,9 +9,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
-import java.util.Locale;
 
 public final class AutoQueueModule extends Module {
 
@@ -39,8 +38,12 @@ public final class AutoQueueModule extends Module {
     private int cooldownTicks;
 
     public AutoQueueModule() {
-        super("auto_queue", "Auto Queue", ModuleCategory.PLAYER,
-                "Sends a configured command, such as /play, when a chat message contains the trigger text.", List.of("auto_play"));
+        super(
+                "auto_queue",
+                "Auto Queue",
+                ModuleCategory.PLAYER,
+                "Sends a configured command, such as /play, when a chat message contains the trigger text.",
+                List.of("auto_play"));
     }
 
     @Override
@@ -52,7 +55,9 @@ public final class AutoQueueModule extends Module {
 
     @Override
     public Component chatMessage(final Minecraft client, final Component message) {
-        if (client.player != null && this.cooldownTicks <= 0 && matches(message.getString(), this.trigger.value(), this.matchCase.value())) {
+        if (client.player != null
+                && this.cooldownTicks <= 0
+                && matches(message.getString(), this.trigger.value(), this.matchCase.value())) {
             ChatActions.send(client, this.action.value());
             this.cooldownTicks = this.cooldown.value().intValue();
         }

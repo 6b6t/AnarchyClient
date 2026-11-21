@@ -1,14 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 final class MovementChecks {
 
-    private MovementChecks() {
-    }
+    private MovementChecks() {}
 
     static boolean movingTowardAir(final LocalPlayer player, final double lookAhead) {
         Vec3 movement = player.getDeltaMovement();
@@ -21,9 +20,8 @@ final class MovementChecks {
         }
 
         Vec3 direction = horizontal.normalize().scale(lookAhead);
-        AABB belowAhead = player.getBoundingBox()
-                .move(direction.x, -0.08, direction.z)
-                .inflate(-0.02, 0.0, -0.02);
+        AABB belowAhead =
+                player.getBoundingBox().move(direction.x, -0.08, direction.z).inflate(-0.02, 0.0, -0.02);
         return player.level().noBlockCollision(player, belowAhead);
     }
 
@@ -33,9 +31,8 @@ final class MovementChecks {
             return false;
         }
         Vec3 direction = horizontal.normalize().scale(lookAhead);
-        AABB belowAhead = player.getBoundingBox()
-                .move(direction.x, -0.08, direction.z)
-                .inflate(-0.02, 0.0, -0.02);
+        AABB belowAhead =
+                player.getBoundingBox().move(direction.x, -0.08, direction.z).inflate(-0.02, 0.0, -0.02);
         return player.level().noBlockCollision(player, belowAhead);
     }
 

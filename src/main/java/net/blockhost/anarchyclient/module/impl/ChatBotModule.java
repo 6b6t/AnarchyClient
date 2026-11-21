@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayDeque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Queue;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -8,13 +14,6 @@ import net.blockhost.anarchyclient.util.PlaceholderFormatter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
-
-import java.util.ArrayDeque;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
 
 public final class ChatBotModule extends Module {
 
@@ -43,7 +42,10 @@ public final class ChatBotModule extends Module {
     private final Queue<QueuedReply> queue = new ArrayDeque<>();
 
     public ChatBotModule() {
-        super("chat_bot", "Chat Bot", ModuleCategory.MISC,
+        super(
+                "chat_bot",
+                "Chat Bot",
+                ModuleCategory.MISC,
                 "Replies in chat when a message contains the prefix and a configured keyword, filling in placeholders like player name and coordinates.");
     }
 
@@ -122,11 +124,17 @@ public final class ChatBotModule extends Module {
         Map<String, String> placeholders = new LinkedHashMap<>();
         if (client.player != null) {
             placeholders.put("player.name", client.player.getScoreboardName());
-            placeholders.put("player.x", Integer.toString(client.player.blockPosition().getX()));
-            placeholders.put("player.y", Integer.toString(client.player.blockPosition().getY()));
-            placeholders.put("player.z", Integer.toString(client.player.blockPosition().getZ()));
-            placeholders.put("player.pos", client.player.blockPosition().getX() + ", "
-                    + client.player.blockPosition().getY() + ", " + client.player.blockPosition().getZ());
+            placeholders.put(
+                    "player.x", Integer.toString(client.player.blockPosition().getX()));
+            placeholders.put(
+                    "player.y", Integer.toString(client.player.blockPosition().getY()));
+            placeholders.put(
+                    "player.z", Integer.toString(client.player.blockPosition().getZ()));
+            placeholders.put(
+                    "player.pos",
+                    client.player.blockPosition().getX() + ", "
+                            + client.player.blockPosition().getY() + ", "
+                            + client.player.blockPosition().getZ());
         }
         if (client.level != null) {
             placeholders.put("dimension", client.level.dimension().identifier().toString());
@@ -134,8 +142,11 @@ public final class ChatBotModule extends Module {
         if (client.getCurrentServer() != null) {
             placeholders.put("server.address", client.getCurrentServer().ip);
         }
-        placeholders.put("server.brand", client.getConnection() == null || client.getConnection().serverBrand() == null
-                ? "unknown" : client.getConnection().serverBrand());
+        placeholders.put(
+                "server.brand",
+                client.getConnection() == null || client.getConnection().serverBrand() == null
+                        ? "unknown"
+                        : client.getConnection().serverBrand());
         return placeholders;
     }
 

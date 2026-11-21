@@ -1,13 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.lenni0451.rivet.input.mouse.MouseButton;
-import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-import net.lenni0451.rivet.text.model.TextOrigin;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.FAINT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BOX;
 import static net.blockhost.anarchyclient.ui.PanelStyle.SETTING_ROW_HEIGHT;
@@ -17,6 +9,14 @@ import static net.blockhost.anarchyclient.ui.PanelWidgets.iconNode;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textNode;
+
+import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.lenni0451.rivet.input.mouse.MouseButton;
+import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
+import net.lenni0451.rivet.text.model.TextOrigin;
 
 final class SelectSettingRow extends SettingLine {
 
@@ -43,10 +43,23 @@ final class SelectSettingRow extends SettingLine {
     @Override
     protected void layoutControls(final Size size) {
         float valueWidth = Math.min(100F, Math.max(0F, size.width() * 0.42F));
-        place(this.value, cell(2, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(0F, 0F, 2F, 0F), valueWidth, null));
-        place(this.icon, cell(3, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
-                padding(0F, 0F, 8F, 0F), ICON_BOX, ICON_BOX));
+        place(
+                this.value,
+                cell(2, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 0F, 2F, 0F), valueWidth, null));
+        place(
+                this.icon,
+                cell(
+                        3,
+                        0,
+                        1,
+                        2,
+                        0F,
+                        1F,
+                        GridAnchor.CENTER,
+                        GridFill.NONE,
+                        padding(0F, 0F, 8F, 0F),
+                        ICON_BOX,
+                        ICON_BOX));
     }
 
     @Override

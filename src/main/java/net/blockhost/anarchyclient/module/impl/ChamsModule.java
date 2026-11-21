@@ -38,7 +38,10 @@ public final class ChamsModule extends Module {
             .build()));
 
     public ChamsModule() {
-        super("chams", "Chams", ModuleCategory.RENDER,
+        super(
+                "chams",
+                "Chams",
+                ModuleCategory.RENDER,
                 "Draws see-through boxes around players and, optionally, hostile mobs within range.");
     }
 
@@ -53,7 +56,9 @@ public final class ChamsModule extends Module {
         float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double rangeSqr = this.range.value() * this.range.value();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (entity == client.player || entity.distanceToSqr(client.player) > rangeSqr || !this.shouldRender(entity)) {
+            if (entity == client.player
+                    || entity.distanceToSqr(client.player) > rangeSqr
+                    || !this.shouldRender(entity)) {
                 continue;
             }
             AABB box = WorldLineRenderer.interpolatedBox(entity, partialTick, 0.05, camera);

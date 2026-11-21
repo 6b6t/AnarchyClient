@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -12,8 +13,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.OptionalInt;
 
 public final class ItemSaverModule extends Module {
 
@@ -40,7 +39,10 @@ public final class ItemSaverModule extends Module {
             .build()));
 
     public ItemSaverModule() {
-        super("item_saver", "Item Saver", ModuleCategory.PLAYER,
+        super(
+                "item_saver",
+                "Item Saver",
+                ModuleCategory.PLAYER,
                 "Stops you from mining or attacking with a tool or weapon that is about to break, so you do not lose it.");
     }
 
@@ -60,7 +62,8 @@ public final class ItemSaverModule extends Module {
             return false;
         }
         if (this.switchSlot.value()) {
-            OptionalInt safe = safeSlot(player.getInventory(), player.getInventory().getSelectedSlot(), threshold);
+            OptionalInt safe =
+                    safeSlot(player.getInventory(), player.getInventory().getSelectedSlot(), threshold);
             safe.ifPresent(slot -> InventoryActions.selectHotbarSlot(player, slot));
         }
         this.debugValue("blocked", player.getMainHandItem().getHoverName().getString());

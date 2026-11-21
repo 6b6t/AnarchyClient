@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -17,8 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-
 public final class EChestFarmerModule extends Module {
 
     private final NumberSetting delayTicks = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -34,7 +33,10 @@ public final class EChestFarmerModule extends Module {
     private int cooldown;
 
     public EChestFarmerModule() {
-        super("echest_farmer", "EChest Farmer", ModuleCategory.WORLD,
+        super(
+                "echest_farmer",
+                "EChest Farmer",
+                ModuleCategory.WORLD,
                 "Places an ender chest in front of you and mines it with a non-Silk Touch pickaxe to farm obsidian.");
     }
 
@@ -77,7 +79,13 @@ public final class EChestFarmerModule extends Module {
             return;
         }
         if (this.cooldown <= 0) {
-            BlockPlacement.place(client, this, pos, true, 70.0F, stack -> stack.is(Items.ENDER_CHEST),
+            BlockPlacement.place(
+                    client,
+                    this,
+                    pos,
+                    true,
+                    70.0F,
+                    stack -> stack.is(Items.ENDER_CHEST),
                     BlockPlacer.PlacementOptions.NON_FULL);
         }
     }
@@ -94,8 +102,8 @@ public final class EChestFarmerModule extends Module {
      * direction first and then the other sides.
      */
     static BlockPos chooseTarget(final BlockGetter level, final BlockPos feet, final Direction facing) {
-        List<Direction> directions = List.of(facing, facing.getClockWise(), facing.getCounterClockWise(),
-                facing.getOpposite());
+        List<Direction> directions =
+                List.of(facing, facing.getClockWise(), facing.getCounterClockWise(), facing.getOpposite());
         for (Direction direction : directions) {
             BlockPos pos = feet.relative(direction);
             if (level.getBlockState(pos).is(Blocks.ENDER_CHEST)) {
@@ -104,7 +112,8 @@ public final class EChestFarmerModule extends Module {
         }
         for (Direction direction : directions) {
             BlockPos pos = feet.relative(direction);
-            if (level.getBlockState(pos).canBeReplaced() && !level.getBlockState(pos.below()).canBeReplaced()) {
+            if (level.getBlockState(pos).canBeReplaced()
+                    && !level.getBlockState(pos.below()).canBeReplaced()) {
                 return pos.immutable();
             }
         }
@@ -114,6 +123,7 @@ public final class EChestFarmerModule extends Module {
     /** A pickaxe that drops obsidian from an ender chest; Silk Touch would drop the chest itself. */
     static boolean isFarmingPickaxe(final ItemStack stack) {
         return stack.is(ItemTags.PICKAXES)
-                && stack.getEnchantments().keySet().stream().noneMatch(enchantment -> enchantment.is(Enchantments.SILK_TOUCH));
+                && stack.getEnchantments().keySet().stream()
+                        .noneMatch(enchantment -> enchantment.is(Enchantments.SILK_TOUCH));
     }
 }

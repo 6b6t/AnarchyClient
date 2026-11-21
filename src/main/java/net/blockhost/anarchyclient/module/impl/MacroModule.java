@@ -8,27 +8,22 @@ import net.minecraft.client.Minecraft;
 
 public final class MacroModule extends Module {
 
-    private final StringSetting f6 = this.setting(StringSetting.from(StringSetting.builder()
-            .id("f6")
-            .name("F6")
-            .defaultValue("/home")
-            .build()));
-    private final StringSetting f7 = this.setting(StringSetting.from(StringSetting.builder()
-            .id("f7")
-            .name("F7")
-            .defaultValue("/spawn")
-            .build()));
-    private final StringSetting f8 = this.setting(StringSetting.from(StringSetting.builder()
-            .id("f8")
-            .name("F8")
-            .defaultValue("gg")
-            .build()));
+    private final StringSetting f6 = this.setting(StringSetting.from(
+            StringSetting.builder().id("f6").name("F6").defaultValue("/home").build()));
+    private final StringSetting f7 = this.setting(StringSetting.from(
+            StringSetting.builder().id("f7").name("F7").defaultValue("/spawn").build()));
+    private final StringSetting f8 = this.setting(StringSetting.from(
+            StringSetting.builder().id("f8").name("F8").defaultValue("gg").build()));
     private boolean f6Down;
     private boolean f7Down;
     private boolean f8Down;
 
     public MacroModule() {
-        super("macros", "Macros", ModuleCategory.MISC, "Runs configured chat or command actions from keybind-style triggers.");
+        super(
+                "macros",
+                "Macros",
+                ModuleCategory.MISC,
+                "Runs configured chat or command actions from keybind-style triggers.");
     }
 
     @Override

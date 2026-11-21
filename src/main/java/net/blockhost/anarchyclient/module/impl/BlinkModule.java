@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -10,9 +12,6 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 public final class BlinkModule extends Module {
 
@@ -32,7 +31,10 @@ public final class BlinkModule extends Module {
     private final Queue<QueuedPacket> packets = new ArrayDeque<>();
 
     public BlinkModule() {
-        super("blink", "Blink", ModuleCategory.MOVEMENT,
+        super(
+                "blink",
+                "Blink",
+                ModuleCategory.MOVEMENT,
                 "Holds back your movement packets and sends them together when disabled, so the server sees you jump to the new position.");
     }
 
@@ -68,6 +70,5 @@ public final class BlinkModule extends Module {
         }
     }
 
-    private record QueuedPacket(Connection connection, Packet<?> packet) {
-    }
+    private record QueuedPacket(Connection connection, Packet<?> packet) {}
 }

@@ -1,14 +1,5 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.setting.StringSetting;
-import net.minecraft.client.Minecraft;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,6 +14,14 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.blockhost.anarchyclient.setting.StringSetting;
+import net.minecraft.client.Minecraft;
 
 public final class SwarmModule extends Module {
 
@@ -64,12 +63,16 @@ public final class SwarmModule extends Module {
     private volatile boolean running;
     /** Bumped on every start and stop, so a thread from an earlier service stops even after a quick restart. */
     private volatile int generation;
+
     private volatile long retryAfterMillis;
     private Thread serviceThread;
     private String lastStatus = "stopped";
 
     public SwarmModule() {
-        super("swarm", "Swarm", ModuleCategory.MISC,
+        super(
+                "swarm",
+                "Swarm",
+                ModuleCategory.MISC,
                 "Connects clients over a socket so a host can make workers send the same chat messages or commands.");
     }
 
@@ -104,8 +107,8 @@ public final class SwarmModule extends Module {
     }
 
     public String status() {
-        return this.role.value().toLowerCase(Locale.ROOT) + " " + this.host.value() + ":" + this.port.value().intValue()
-                + " peers=" + this.peers.size() + " " + this.lastStatus;
+        return this.role.value().toLowerCase(Locale.ROOT) + " " + this.host.value() + ":"
+                + this.port.value().intValue() + " peers=" + this.peers.size() + " " + this.lastStatus;
     }
 
     public int broadcast(final String action) {
@@ -131,10 +134,11 @@ public final class SwarmModule extends Module {
         int serviceGeneration = ++this.generation;
         this.lastStatus = "starting";
         if ("Host".equals(this.role.value())) {
-            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Host")
-                    .start(() -> this.runHost(serviceGeneration));
+            this.serviceThread =
+                    Thread.ofVirtual().name("AnarchyClient Swarm Host").start(() -> this.runHost(serviceGeneration));
         } else {
-            this.serviceThread = Thread.ofVirtual().name("AnarchyClient Swarm Worker")
+            this.serviceThread = Thread.ofVirtual()
+                    .name("AnarchyClient Swarm Worker")
                     .start(() -> this.runWorker(serviceGeneration));
         }
     }
@@ -192,7 +196,8 @@ public final class SwarmModule extends Module {
 
     private void handlePeer(final Socket socket) {
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
             String hello = reader.readLine();
             if (hello == null || !hello.equals("HELLO\t" + this.channel.value())) {
@@ -223,7 +228,8 @@ public final class SwarmModule extends Module {
                     this.workerSocket = socket;
                 }
                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
                 writer.println("HELLO\t" + this.channel.value());
                 this.lastStatus = "connected";
                 String line;
@@ -246,7 +252,9 @@ public final class SwarmModule extends Module {
 
     private Optional<String> decodeRun(final String line) {
         String[] parts = line.split("\\t", 3);
-        if (parts.length != 3 || !"RUN".equals(parts[0]) || !this.channel.value().equals(parts[1])) {
+        if (parts.length != 3
+                || !"RUN".equals(parts[0])
+                || !this.channel.value().equals(parts[1])) {
             return Optional.empty();
         }
         try {

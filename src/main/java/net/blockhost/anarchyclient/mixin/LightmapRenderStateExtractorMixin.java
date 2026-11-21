@@ -16,8 +16,8 @@ public abstract class LightmapRenderStateExtractorMixin {
      * out-of-range value into options.txt, which vanilla then drops along with the player's own setting.
      */
     @Inject(method = "extract", at = @At("TAIL"))
-    private void anarchyclient$fullbright(final LightmapRenderState renderState, final float partialTicks,
-                                          final CallbackInfo info) {
+    private void anarchyclient$fullbright(
+            final LightmapRenderState renderState, final float partialTicks, final CallbackInfo info) {
         float brightness = FullbrightModule.brightness();
         if (renderState.needsUpdate && brightness >= 0.0F) {
             renderState.brightness = brightness;

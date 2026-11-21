@@ -17,13 +17,18 @@ public final class MoreCarryModule extends Module {
             .build()));
 
     public MoreCarryModule() {
-        super("more_carry", "More Carry", ModuleCategory.PLAYER,
+        super(
+                "more_carry",
+                "More Carry",
+                ModuleCategory.PLAYER,
                 "Keeps items in your crafting grid by not telling the server you closed your inventory.");
     }
 
     @Override
     public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.player == null || client.hasSingleplayerServer() || !(packet instanceof ServerboundContainerClosePacket close)) {
+        if (client.player == null
+                || client.hasSingleplayerServer()
+                || !(packet instanceof ServerboundContainerClosePacket close)) {
             return false;
         }
         return !this.playerInventoryOnly.value() || close.getContainerId() == client.player.inventoryMenu.containerId;

@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.test.TestInventories;
 import net.minecraft.world.entity.player.Inventory;
@@ -8,16 +11,13 @@ import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.OptionalInt;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 @ExtendWith(MinecraftBootstrapExtension.class)
 class AnchorAuraModuleTest {
 
     @Test
     void keepsTheSelectedSlotWhenItHoldsNoGlowstone() {
-        Inventory inventory = TestInventories.withSlots(new ItemStack(Items.GLOWSTONE), new ItemStack(Items.DIAMOND_SWORD));
+        Inventory inventory =
+                TestInventories.withSlots(new ItemStack(Items.GLOWSTONE), new ItemStack(Items.DIAMOND_SWORD));
         inventory.setSelectedSlot(1);
 
         assertEquals(OptionalInt.of(1), AnchorAuraModule.detonationSlot(inventory));

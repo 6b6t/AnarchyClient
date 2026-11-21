@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.gametest;
 
 import com.google.gson.JsonPrimitive;
+import java.util.EnumSet;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.DebugValueRegistry;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
@@ -19,14 +21,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.EnumSet;
-import java.util.Set;
-
 /** Edge cases and interactions between modules. */
 final class EdgeCaseScenarios {
 
-    private EdgeCaseScenarios() {
-    }
+    private EdgeCaseScenarios() {}
 
     /**
      * Piston Crystal must keep cycling: the blast destroys its piston, so it has to rebuild the setup
@@ -57,8 +55,10 @@ final class EdgeCaseScenarios {
             try {
                 arena.server().waitFor(server -> GameTestSupport.targetHits(server) >= 2, 600);
             } catch (AssertionError timeout) {
-                throw new AssertionError("Piston Crystal hit the target only " + arena.targetHits() + " time(s); debug "
-                        + DebugValueRegistry.snapshot().get("piston_crystal"), timeout);
+                throw new AssertionError(
+                        "Piston Crystal hit the target only " + arena.targetHits() + " time(s); debug "
+                                + DebugValueRegistry.snapshot().get("piston_crystal"),
+                        timeout);
             } finally {
                 GameTestSupport.enable(context, "piston_crystal", false);
             }
@@ -75,14 +75,19 @@ final class EdgeCaseScenarios {
             GameTestSupport.enable(context, "anti_aim", true);
             GameTestSupport.enable(context, "surround", true);
             try {
-                arena.server().waitFor(server -> {
-                    for (Direction direction : Direction.Plane.HORIZONTAL) {
-                        if (!server.overworld().getBlockState(feet.relative(direction)).is(Blocks.OBSIDIAN)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }, 120);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                                        if (!server.overworld()
+                                                .getBlockState(feet.relative(direction))
+                                                .is(Blocks.OBSIDIAN)) {
+                                            return false;
+                                        }
+                                    }
+                                    return true;
+                                },
+                                120);
             } finally {
                 GameTestSupport.enable(context, "surround", false);
                 GameTestSupport.enable(context, "anti_aim", false);
@@ -123,11 +128,19 @@ final class EdgeCaseScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "arrow_swap", true);
             try {
-                arena.server().waitFor(server -> {
-                    PotionContents potion = arena.serverPlayer(server).getInventory().getItem(1)
-                            .get(DataComponents.POTION_CONTENTS);
-                    return potion != null && potion.potion().map(holder -> holder.is(Potions.SWIFTNESS)).orElse(false);
-                }, 60);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    PotionContents potion = arena.serverPlayer(server)
+                                            .getInventory()
+                                            .getItem(1)
+                                            .get(DataComponents.POTION_CONTENTS);
+                                    return potion != null
+                                            && potion.potion()
+                                                    .map(holder -> holder.is(Potions.SWIFTNESS))
+                                                    .orElse(false);
+                                },
+                                60);
             } finally {
                 GameTestSupport.enable(context, "arrow_swap", false);
             }
@@ -149,8 +162,11 @@ final class EdgeCaseScenarios {
                 context.getInput().pressKey(options -> options.keyAttack);
                 context.waitTicks(10);
                 int hits = arena.targetHits();
-                int damage = arena.server().computeOnServer(server ->
-                        arena.serverPlayer(server).getInventory().getItem(0).getDamageValue());
+                int damage = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server)
+                                .getInventory()
+                                .getItem(0)
+                                .getDamageValue());
                 GameTestSupport.check(hits == 0, "Item Saver let a nearly broken sword hit the target");
                 GameTestSupport.check(damage == 1559, "The protected sword lost durability: " + damage);
             } finally {
@@ -167,11 +183,19 @@ final class EdgeCaseScenarios {
             arena.spawnTarget(target);
             arena.server().runOnServer(server -> target(server).setPose(Pose.SWIMMING));
             arena.give("obsidian 32");
-            context.waitFor(client -> client.level.players().stream()
-                    .anyMatch(player -> GameTestSupport.TARGET.equals(player.getScoreboardName()) && player.getPose() == Pose.SWIMMING), 40);
+            context.waitFor(
+                    client -> client.level.players().stream()
+                            .anyMatch(player -> GameTestSupport.TARGET.equals(player.getScoreboardName())
+                                    && player.getPose() == Pose.SWIMMING),
+                    40);
             GameTestSupport.enable(context, "crawl_trap", true);
             try {
-                arena.server().waitFor(server -> server.overworld().getBlockState(target.above()).is(Blocks.OBSIDIAN), 100);
+                arena.server()
+                        .waitFor(
+                                server -> server.overworld()
+                                        .getBlockState(target.above())
+                                        .is(Blocks.OBSIDIAN),
+                                100);
             } finally {
                 GameTestSupport.enable(context, "crawl_trap", false);
             }
@@ -183,8 +207,8 @@ final class EdgeCaseScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(-1, -1, -3)) + " " + GameTestSupport.at(origin.offset(6, -1, 3))
-                    + " obsidian");
+            arena.run("fill " + GameTestSupport.at(origin.offset(-1, -1, -3)) + " "
+                    + GameTestSupport.at(origin.offset(6, -1, 3)) + " obsidian");
             arena.run("effect give " + arena.name() + " resistance infinite 4 true");
             arena.spawnTarget(origin.offset(3, 0, 0));
             arena.give("end_crystal 32");
@@ -195,7 +219,8 @@ final class EdgeCaseScenarios {
             try {
                 arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 200);
                 context.waitTicks(40);
-                GameTestSupport.check(context.computeOnClient(client -> client.level != null), "Crystal Aura got the player kicked");
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.level != null), "Crystal Aura got the player kicked");
             } finally {
                 if (context.computeOnClient(client -> client.level != null)) {
                     GameTestSupport.enable(context, "crystal_aura", false);
@@ -223,8 +248,9 @@ final class EdgeCaseScenarios {
             }
             GameTestSupport.enable(context, "skin_flicker", false);
             GameTestSupport.check(changed, "Skin Flicker never changed the skin layers");
-            GameTestSupport.check(parts(context).equals(before), "Skin Flicker did not restore the skin layers: "
-                    + parts(context) + " instead of " + before);
+            GameTestSupport.check(
+                    parts(context).equals(before),
+                    "Skin Flicker did not restore the skin layers: " + parts(context) + " instead of " + before);
         }
     }
 
@@ -272,8 +298,11 @@ final class EdgeCaseScenarios {
             try {
                 for (int dz = -1; dz <= 1; dz++) {
                     BlockPos ground = origin.offset(2, -1, dz);
-                    context.runOnClient(client -> client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
-                            new BlockHitResult(Vec3.atCenterOf(ground).relative(Direction.UP, 0.5), Direction.UP, ground, false)));
+                    context.runOnClient(client -> client.gameMode.useItemOn(
+                            client.player,
+                            InteractionHand.MAIN_HAND,
+                            new BlockHitResult(
+                                    Vec3.atCenterOf(ground).relative(Direction.UP, 0.5), Direction.UP, ground, false)));
                     context.waitTicks(5);
                 }
                 context.waitFor(client -> ClientChat.contains(client, "I just placed 3 blocks."), 260);
@@ -295,8 +324,12 @@ final class EdgeCaseScenarios {
                 context.waitTicks(40);
                 double dx = context.computeOnClient(client -> client.player.getX()) - startX;
                 double dz = context.computeOnClient(client -> client.player.getZ()) - startZ;
-                GameTestSupport.check(dx > 4.0 && Math.abs(dz) < 1.0, "Spiral did not walk east: moved " + dx + ", " + dz);
-                double serverDx = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX()) - startX;
+                GameTestSupport.check(
+                        dx > 4.0 && Math.abs(dz) < 1.0, "Spiral did not walk east: moved " + dx + ", " + dz);
+                double serverDx = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getX())
+                        - startX;
                 GameTestSupport.check(serverDx > 3.0, "The server did not see the Spiral walk: moved " + serverDx);
             } finally {
                 GameTestSupport.enable(context, "spiral", false);
@@ -318,16 +351,30 @@ final class EdgeCaseScenarios {
             try {
                 context.waitFor(client -> client.player.isFallFlying(), 20);
             } catch (AssertionError timeout) {
-                throw new AssertionError("The test could not start gliding; y "
-                        + context.computeOnClient(client -> client.player.getY()), timeout);
+                throw new AssertionError(
+                        "The test could not start gliding; y "
+                                + context.computeOnClient(client -> client.player.getY()),
+                        timeout);
             }
             GameTestSupport.enable(context, "auto_firework", true);
             try {
-                arena.server().waitFor(server -> arena.serverPlayer(server).getInventory().getItem(0).getCount() < 16, 100);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                                .getInventory()
+                                                .getItem(0)
+                                                .getCount()
+                                        < 16,
+                                100);
             } catch (AssertionError timeout) {
-                throw new AssertionError("Auto Firework used no rocket; debug " + DebugValueRegistry.snapshot().get("auto_firework")
-                        + " gliding " + context.computeOnClient(client -> client.player.isFallFlying())
-                        + " speed " + context.computeOnClient(client -> client.player.getDeltaMovement().length() * 20.0), timeout);
+                throw new AssertionError(
+                        "Auto Firework used no rocket; debug "
+                                + DebugValueRegistry.snapshot().get("auto_firework")
+                                + " gliding " + context.computeOnClient(client -> client.player.isFallFlying())
+                                + " speed "
+                                + context.computeOnClient(client ->
+                                        client.player.getDeltaMovement().length() * 20.0),
+                        timeout);
             } finally {
                 GameTestSupport.enable(context, "auto_firework", false);
             }

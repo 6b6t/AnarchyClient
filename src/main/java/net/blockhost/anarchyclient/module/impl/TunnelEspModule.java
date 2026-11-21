@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -14,9 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class TunnelEspModule extends Module {
 
@@ -41,7 +40,10 @@ public final class TunnelEspModule extends Module {
     private Level level;
 
     public TunnelEspModule() {
-        super("tunnel_esp", "Tunnel ESP", ModuleCategory.RENDER,
+        super(
+                "tunnel_esp",
+                "Tunnel ESP",
+                ModuleCategory.RENDER,
                 "Outlines one-wide, two-tall tunnel spaces near you, such as paths dug by other players.");
     }
 
@@ -62,7 +64,11 @@ public final class TunnelEspModule extends Module {
             return;
         }
         this.cooldownTicks = 30;
-        this.tunnels = scan(client, player.blockPosition(), this.range.value().intValue(), this.maxBlocks.value().intValue());
+        this.tunnels = scan(
+                client,
+                player.blockPosition(),
+                this.range.value().intValue(),
+                this.maxBlocks.value().intValue());
     }
 
     @Override
@@ -81,7 +87,10 @@ public final class TunnelEspModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         for (BlockPos pos : this.tunnels) {
-            WorldLineRenderer.boxNoDepth(matrices, submits, new AABB(pos).move(camera.scale(-1)),
+            WorldLineRenderer.boxNoDepth(
+                    matrices,
+                    submits,
+                    new AABB(pos).move(camera.scale(-1)),
                     new WorldLineRenderer.Color(90, 170, 255, 145));
         }
     }
@@ -102,14 +111,19 @@ public final class TunnelEspModule extends Module {
     }
 
     static boolean isTunnel(final Minecraft client, final BlockPos pos) {
-        if (!client.level.getBlockState(pos).isAir() || !client.level.getBlockState(pos.above()).isAir()
+        if (!client.level.getBlockState(pos).isAir()
+                || !client.level.getBlockState(pos.above()).isAir()
                 || client.level.getBlockState(pos.below()).isAir()) {
             return false;
         }
-        boolean northSouth = solid(client, pos.north()) && solid(client, pos.south())
-                && client.level.getBlockState(pos.east()).isAir() && client.level.getBlockState(pos.west()).isAir();
-        boolean eastWest = solid(client, pos.east()) && solid(client, pos.west())
-                && client.level.getBlockState(pos.north()).isAir() && client.level.getBlockState(pos.south()).isAir();
+        boolean northSouth = solid(client, pos.north())
+                && solid(client, pos.south())
+                && client.level.getBlockState(pos.east()).isAir()
+                && client.level.getBlockState(pos.west()).isAir();
+        boolean eastWest = solid(client, pos.east())
+                && solid(client, pos.west())
+                && client.level.getBlockState(pos.north()).isAir()
+                && client.level.getBlockState(pos.south()).isAir();
         return northSouth || eastWest;
     }
 

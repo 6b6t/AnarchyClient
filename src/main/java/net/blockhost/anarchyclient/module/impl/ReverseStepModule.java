@@ -21,7 +21,10 @@ public final class ReverseStepModule extends Module {
     private boolean rising;
 
     public ReverseStepModule() {
-        super("reverse_step", "Reverse Step", ModuleCategory.MOVEMENT,
+        super(
+                "reverse_step",
+                "Reverse Step",
+                ModuleCategory.MOVEMENT,
                 "Pulls the player down faster when walking off ledges. Ignores jumps, flight, and elytra gliding.");
     }
 
@@ -33,8 +36,14 @@ public final class ReverseStepModule extends Module {
         }
         Vec3 velocity = player.getDeltaMovement();
         this.rising = airborneAfterRising(this.rising, player.onGround(), velocity.y);
-        if (player.onGround() || this.rising || player.isInWater() || player.isInLava() || player.isFallFlying()
-                || player.getAbilities().flying || player.isPassenger() || player.onClimbable()
+        if (player.onGround()
+                || this.rising
+                || player.isInWater()
+                || player.isInLava()
+                || player.isFallFlying()
+                || player.getAbilities().flying
+                || player.isPassenger()
+                || player.onClimbable()
                 || MovementKeys.jump(client)) {
             return;
         }

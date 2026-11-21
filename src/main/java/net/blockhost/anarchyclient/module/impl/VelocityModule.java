@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -15,10 +18,6 @@ import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 public final class VelocityModule extends Module {
 
@@ -65,7 +64,10 @@ public final class VelocityModule extends Module {
     private int jumpResetTicks;
 
     public VelocityModule() {
-        super("velocity", "Velocity", ModuleCategory.MOVEMENT,
+        super(
+                "velocity",
+                "Velocity",
+                ModuleCategory.MOVEMENT,
                 "Reduces, cancels, or reverses the knockback you take from hits and explosions, with an optional jump reset mode.");
     }
 
@@ -99,14 +101,23 @@ public final class VelocityModule extends Module {
             }
             return true;
         }
-        if (packet instanceof ClientboundExplodePacket explosion && explosion.playerKnockback().isPresent()) {
+        if (packet instanceof ClientboundExplodePacket explosion
+                && explosion.playerKnockback().isPresent()) {
             if (!this.applies(player, true)) {
                 return false;
             }
             Vec3 knockback = this.adjust(explosion.playerKnockback().get(), true);
-            handleReplacement(connection, new ClientboundExplodePacket(explosion.center(), explosion.radius(),
-                    explosion.blockCount(), Optional.ofNullable(knockback), explosion.explosionParticle(),
-                    explosion.explosionSound(), explosion.blockParticles(), explosion.playSound()));
+            handleReplacement(
+                    connection,
+                    new ClientboundExplodePacket(
+                            explosion.center(),
+                            explosion.radius(),
+                            explosion.blockCount(),
+                            Optional.ofNullable(knockback),
+                            explosion.explosionParticle(),
+                            explosion.explosionSound(),
+                            explosion.blockParticles(),
+                            explosion.playSound()));
             return true;
         }
         return false;

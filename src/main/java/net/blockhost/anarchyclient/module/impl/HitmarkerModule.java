@@ -51,7 +51,10 @@ public final class HitmarkerModule extends Module {
     private boolean killHit;
 
     public HitmarkerModule() {
-        super("hitmarker", "Hitmarker", ModuleCategory.RENDER,
+        super(
+                "hitmarker",
+                "Hitmarker",
+                ModuleCategory.RENDER,
                 "Draws an X around your crosshair for a moment each time you hit a living entity. It turns red on a hit that should kill.");
     }
 
@@ -68,8 +71,10 @@ public final class HitmarkerModule extends Module {
 
     private void onAttack(final Minecraft client, final int entityId) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null
-                || !(client.level.getEntity(entityId) instanceof LivingEntity living) || !living.isAlive()) {
+        if (player == null
+                || client.level == null
+                || !(client.level.getEntity(entityId) instanceof LivingEntity living)
+                || !living.isAlive()) {
             return;
         }
         this.hitMillis = System.currentTimeMillis();

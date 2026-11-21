@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,8 +13,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Optional;
 
 public final class AutoFireworkModule extends Module {
 
@@ -50,7 +49,10 @@ public final class AutoFireworkModule extends Module {
     private int cooldown;
 
     public AutoFireworkModule() {
-        super("auto_firework", "Auto Firework", ModuleCategory.MOVEMENT,
+        super(
+                "auto_firework",
+                "Auto Firework",
+                ModuleCategory.MOVEMENT,
                 "Uses a firework rocket from your hotbar or offhand while you glide with an elytra and slow down, "
                         + "so you keep flying without clicking.");
     }
@@ -61,8 +63,12 @@ public final class AutoFireworkModule extends Module {
         if (this.cooldown > 0) {
             this.cooldown--;
         }
-        if (player == null || client.gameMode == null || !player.isFallFlying() || this.cooldown > 0
-                || client.gui.screen() != null || player.isUsingItem()) {
+        if (player == null
+                || client.gameMode == null
+                || !player.isFallFlying()
+                || this.cooldown > 0
+                || client.gui.screen() != null
+                || player.isUsingItem()) {
             return;
         }
         if (this.climbOnly.value() && player.getXRot() > -5.0F) {
@@ -74,8 +80,8 @@ public final class AutoFireworkModule extends Module {
         if (!shouldFire(blocksPerSecond(player.getDeltaMovement()), this.minSpeed.value())) {
             return;
         }
-        Optional<InteractionHand> hand = SilentHotbar.usableHand(player, this.id(),
-                stack -> stack.is(Items.FIREWORK_ROCKET), SilentHotbar.PRIORITY_NORMAL, 2, true);
+        Optional<InteractionHand> hand = SilentHotbar.usableHand(
+                player, this.id(), stack -> stack.is(Items.FIREWORK_ROCKET), SilentHotbar.PRIORITY_NORMAL, 2, true);
         if (hand.isEmpty()) {
             this.debugValue("state", "no rockets");
             return;

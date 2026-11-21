@@ -1,19 +1,11 @@
 package net.blockhost.anarchyclient.i18n;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.module.ModuleRegistry;
-import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.setting.Setting;
-import net.blockhost.anarchyclient.setting.SettingGroup;
-import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,9 +17,16 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.module.ModuleRegistry;
+import net.blockhost.anarchyclient.setting.SelectSetting;
+import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.SettingGroup;
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Keeps the English language file in sync with the code, and checks every translation against it.
@@ -41,10 +40,12 @@ class TranslationKeysTest {
     private static final Path SOURCE_DIR = Path.of("src/main/java");
     /** Keys vanilla systems look up directly rather than through {@link Translations}. */
     private static final Map<String, String> FIXED_KEYS = Map.of("key.anarchyclient.open_menu", "Open AnarchyClient");
+
     private static final Pattern LOOKUP = Pattern.compile(
             "Translations\\.(?:text|format|component)\\(\\s*\"([^\"]+)\",\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
     private static final Pattern PLACEHOLDER = Pattern.compile("%(?:\\d+\\$)?s");
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private static final Gson GSON =
+            new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 
     @Test
     void englishFileListsEveryKeyInTheCode() throws IOException {
@@ -53,7 +54,8 @@ class TranslationKeysTest {
         if ("1".equals(System.getenv("ANARCHYCLIENT_WRITE_LANG"))) {
             Files.writeString(english, GSON.toJson(expected) + "\n", StandardCharsets.UTF_8);
         }
-        assertEquals(expected, read(english), "en_us.json is out of date; run the tests with ANARCHYCLIENT_WRITE_LANG=1");
+        assertEquals(
+                expected, read(english), "en_us.json is out of date; run the tests with ANARCHYCLIENT_WRITE_LANG=1");
     }
 
     @Test
@@ -61,7 +63,8 @@ class TranslationKeysTest {
         Map<String, String> english = read(LANG_DIR.resolve("en_us.json"));
         List<String> problems = new ArrayList<>();
         try (Stream<Path> files = Files.list(LANG_DIR)) {
-            for (Path file : files.filter(path -> !path.getFileName().toString().equals("en_us.json")).toList()) {
+            for (Path file : files.filter(path -> !path.getFileName().toString().equals("en_us.json"))
+                    .toList()) {
                 for (Map.Entry<String, String> entry : read(file).entrySet()) {
                     String source = english.get(entry.getKey());
                     if (source == null) {
@@ -100,13 +103,14 @@ class TranslationKeysTest {
             }
         }
         try (Stream<Path> sources = Files.walk(SOURCE_DIR)) {
-            for (Path source : sources.filter(path -> path.toString().endsWith(".java")).toList()) {
+            for (Path source :
+                    sources.filter(path -> path.toString().endsWith(".java")).toList()) {
                 Matcher matcher = LOOKUP.matcher(Files.readString(source));
                 while (matcher.find()) {
                     String previous = entries.put(matcher.group(1), unescape(matcher.group(2)));
                     if (previous != null && !previous.equals(unescape(matcher.group(2)))) {
-                        throw new AssertionError("Key " + matcher.group(1) + " has two English texts: \""
-                                + previous + "\" and \"" + unescape(matcher.group(2)) + "\"");
+                        throw new AssertionError("Key " + matcher.group(1) + " has two English texts: \"" + previous
+                                + "\" and \"" + unescape(matcher.group(2)) + "\"");
                     }
                 }
             }
@@ -148,7 +152,8 @@ class TranslationKeysTest {
     private static Map<String, String> read(final Path file) throws IOException {
         JsonObject json = GSON.fromJson(Files.readString(file, StandardCharsets.UTF_8), JsonObject.class);
         Map<String, String> entries = new TreeMap<>();
-        json.entrySet().forEach(entry -> entries.put(entry.getKey(), entry.getValue().getAsString()));
+        json.entrySet()
+                .forEach(entry -> entries.put(entry.getKey(), entry.getValue().getAsString()));
         return entries;
     }
 }

@@ -1,5 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.SequencedMap;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rotation.Rotation;
@@ -24,18 +35,6 @@ import net.minecraft.world.level.block.NoteBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.SequencedMap;
-import java.util.Set;
 
 public final class NotebotModule extends Module {
 
@@ -74,11 +73,8 @@ public final class NotebotModule extends Module {
             .max(8.0)
             .step(0.5)
             .build()));
-    private final BooleanSetting tune = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("tune")
-            .name("Tune")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting tune = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("tune").name("Tune").defaultValue(true).build()));
     private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("rotate")
             .name("Rotate")
@@ -89,11 +85,8 @@ public final class NotebotModule extends Module {
             .name("Swing")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting loop = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("loop")
-            .name("Loop")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting loop = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("loop").name("Loop").defaultValue(true).build()));
     private Stage stage = Stage.PREPARE;
     private ParsedSong parsedSong = ParsedSong.EMPTY;
     private final Map<Integer, List<BlockPos>> blocksByNote = new HashMap<>();
@@ -104,7 +97,11 @@ public final class NotebotModule extends Module {
     private int songTick;
 
     public NotebotModule() {
-        super("notebot", "Notebot", ModuleCategory.MISC, "Plays configured note patterns through note blocks or sound actions. Pauses in creative mode, where hitting a note block breaks it.");
+        super(
+                "notebot",
+                "Notebot",
+                ModuleCategory.MISC,
+                "Plays configured note patterns through note blocks or sound actions. Pauses in creative mode, where hitting a note block breaks it.");
         this.legacyNotes.visibleWhen(() -> false);
     }
 
@@ -201,8 +198,8 @@ public final class NotebotModule extends Module {
         if (this.rotate.value()) {
             rotateToward(this, player, hitLocation);
         }
-        InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND,
-                new BlockHitResult(hitLocation, Direction.UP, pos, false));
+        InteractionResult result = client.gameMode.useItemOn(
+                player, InteractionHand.MAIN_HAND, new BlockHitResult(hitLocation, Direction.UP, pos, false));
         if (!result.consumesAction()) {
             this.cooldownTicks = 2;
             return;
@@ -219,7 +216,11 @@ public final class NotebotModule extends Module {
             entry.setValue(remaining);
         }
         this.debugValue("stage", "tuning");
-        this.debugValue("remaining", String.valueOf(this.tuneHits.values().stream().mapToInt(Integer::intValue).sum()));
+        this.debugValue(
+                "remaining",
+                String.valueOf(this.tuneHits.values().stream()
+                        .mapToInt(Integer::intValue)
+                        .sum()));
         this.debugValue("target", targetNote);
         this.cooldownTicks = this.tuneDelay.value().intValue();
     }
@@ -242,11 +243,10 @@ public final class NotebotModule extends Module {
             if (this.rotate.value() && usedBlocks.isEmpty()) {
                 rotateToward(this, player, Vec3.atCenterOf(pos));
             }
-            client.getConnection().getConnection().send(new ServerboundPlayerActionPacket(
-                    ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
-                    pos,
-                    Direction.UP
-            ));
+            client.getConnection()
+                    .getConnection()
+                    .send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
             usedBlocks.add(pos);
         }
         if (!usedBlocks.isEmpty() && this.swing.value()) {
@@ -284,7 +284,9 @@ public final class NotebotModule extends Module {
                     if (!state.getValue(NoteBlock.INSTRUMENT).isTunable()) {
                         continue;
                     }
-                    blocks.add(new ScannedNoteBlock(pos.immutable(), state.getValue(NoteBlock.NOTE),
+                    blocks.add(new ScannedNoteBlock(
+                            pos.immutable(),
+                            state.getValue(NoteBlock.NOTE),
                             player.distanceToSqr(Vec3.atCenterOf(pos))));
                 }
             }
@@ -305,7 +307,9 @@ public final class NotebotModule extends Module {
         if (observed != null) {
             return observed;
         }
-        if (client.level != null && client.level.isLoaded(pos) && client.level.getBlockState(pos).is(Blocks.NOTE_BLOCK)) {
+        if (client.level != null
+                && client.level.isLoaded(pos)
+                && client.level.getBlockState(pos).is(Blocks.NOTE_BLOCK)) {
             return client.level.getBlockState(pos).getValue(NoteBlock.NOTE);
         }
         return 0;
@@ -375,7 +379,8 @@ public final class NotebotModule extends Module {
             int colon = noteToken.indexOf(':');
             if (colon >= 0) {
                 try {
-                    tick = Math.max(0, Integer.parseInt(noteToken.substring(0, colon).trim()));
+                    tick = Math.max(
+                            0, Integer.parseInt(noteToken.substring(0, colon).trim()));
                     noteToken = noteToken.substring(colon + 1);
                 } catch (RuntimeException exception) {
                     continue;
@@ -448,8 +453,7 @@ public final class NotebotModule extends Module {
                 1,
                 2.0F,
                 RotationTurnMode.STEPPED,
-                true
-        ));
+                true));
         RotationManager.apply(player);
     }
 
@@ -459,8 +463,8 @@ public final class NotebotModule extends Module {
         PLAY
     }
 
-    record ParsedSong(Map<Integer, List<Integer>> notesByTick, int lastTick,
-                      Map<Integer, Integer> requiredBlocksByNote) {
+    record ParsedSong(
+            Map<Integer, List<Integer>> notesByTick, int lastTick, Map<Integer, Integer> requiredBlocksByNote) {
 
         private static final ParsedSong EMPTY = new ParsedSong(Map.of(), 0, Map.of());
 
@@ -469,15 +473,20 @@ public final class NotebotModule extends Module {
         }
     }
 
-    record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {
-    }
+    record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {}
 
-    record NoteBlockPlan(boolean possible, int requiredBlocks, Map<Integer, List<BlockPos>> blocksByNote,
-                                 Map<BlockPos, Integer> targetNotes, Map<BlockPos, Integer> observedNotes,
-                                 SequencedMap<BlockPos, Integer> tuneHits) {
+    record NoteBlockPlan(
+            boolean possible,
+            int requiredBlocks,
+            Map<Integer, List<BlockPos>> blocksByNote,
+            Map<BlockPos, Integer> targetNotes,
+            Map<BlockPos, Integer> observedNotes,
+            SequencedMap<BlockPos, Integer> tuneHits) {
 
         static NoteBlockPlan create(final ParsedSong song, final List<ScannedNoteBlock> scannedBlocks) {
-            int requiredBlocks = song.requiredBlocksByNote().values().stream().mapToInt(Integer::intValue).sum();
+            int requiredBlocks = song.requiredBlocksByNote().values().stream()
+                    .mapToInt(Integer::intValue)
+                    .sum();
             if (scannedBlocks.size() < requiredBlocks) {
                 return impossible(requiredBlocks);
             }
@@ -487,7 +496,8 @@ public final class NotebotModule extends Module {
             SequencedMap<BlockPos, Integer> tuneHits = new LinkedHashMap<>();
             ArrayDeque<ScannedNoteBlock> availableBlocks = new ArrayDeque<>(scannedBlocks);
 
-            List<Integer> notes = song.requiredBlocksByNote().keySet().stream().sorted().toList();
+            List<Integer> notes =
+                    song.requiredBlocksByNote().keySet().stream().sorted().toList();
             for (int note : notes) {
                 int required = song.requiredBlocksByNote().get(note);
                 for (int index = 0; index < required; index++) {
@@ -495,7 +505,9 @@ public final class NotebotModule extends Module {
                     if (block == null) {
                         return impossible(requiredBlocks);
                     }
-                    blocksByNote.computeIfAbsent(note, ignored -> new ArrayList<>()).add(block.pos());
+                    blocksByNote
+                            .computeIfAbsent(note, ignored -> new ArrayList<>())
+                            .add(block.pos());
                     targetNotes.put(block.pos(), note);
                     observedNotes.put(block.pos(), block.note());
                     int clicks = tuneClicks(block.note(), note);
@@ -506,17 +518,23 @@ public final class NotebotModule extends Module {
             }
             Map<Integer, List<BlockPos>> immutableBlocksByNote = new HashMap<>();
             blocksByNote.forEach((note, blocks) -> immutableBlocksByNote.put(note, List.copyOf(blocks)));
-            return new NoteBlockPlan(true, requiredBlocks, Map.copyOf(immutableBlocksByNote), Map.copyOf(targetNotes),
-                    Map.copyOf(observedNotes), new LinkedHashMap<>(tuneHits));
+            return new NoteBlockPlan(
+                    true,
+                    requiredBlocks,
+                    Map.copyOf(immutableBlocksByNote),
+                    Map.copyOf(targetNotes),
+                    Map.copyOf(observedNotes),
+                    new LinkedHashMap<>(tuneHits));
         }
 
-        private static ScannedNoteBlock removeBestBlock(final ArrayDeque<ScannedNoteBlock> blocks,
-                                                        final int targetNote) {
+        private static ScannedNoteBlock removeBestBlock(
+                final ArrayDeque<ScannedNoteBlock> blocks, final int targetNote) {
             ScannedNoteBlock best = null;
             for (ScannedNoteBlock block : blocks) {
                 int blockClicks = tuneClicks(block.note(), targetNote);
                 int bestClicks = best == null ? Integer.MAX_VALUE : tuneClicks(best.note(), targetNote);
-                if (best == null || blockClicks < bestClicks
+                if (best == null
+                        || blockClicks < bestClicks
                         || blockClicks == bestClicks && block.distanceSq() < best.distanceSq()) {
                     best = block;
                 }

@@ -1,11 +1,10 @@
 package net.blockhost.anarchyclient.rotation;
 
+import java.util.Optional;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Optional;
 
 /**
  * Remembers the last rotation the client sent to the server.
@@ -18,8 +17,7 @@ public final class ServerRotationTracker {
 
     private static volatile @Nullable Rotation lastSent;
 
-    private ServerRotationTracker() {
-    }
+    private ServerRotationTracker() {}
 
     public static void onSent(final Packet<?> packet) {
         if (packet instanceof ServerboundMovePlayerPacket move && move.hasRotation()) {

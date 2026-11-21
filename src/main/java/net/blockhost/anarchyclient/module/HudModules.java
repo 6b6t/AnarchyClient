@@ -30,8 +30,7 @@ import net.blockhost.anarchyclient.module.impl.WelcomerHudModule;
  */
 final class HudModules {
 
-    private HudModules() {
-    }
+    private HudModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new CoordinatesHudModule());

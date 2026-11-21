@@ -17,8 +17,7 @@ public final class CommandPrefix {
 
     private static volatile String prefix = ".";
 
-    private CommandPrefix() {
-    }
+    private CommandPrefix() {}
 
     public static String get() {
         return prefix;
@@ -39,8 +38,11 @@ public final class CommandPrefix {
      * command, so ordinary messages would never be sent.
      */
     public static boolean isAllowed(final String value) {
-        return value != null && value.length() == 1 && value.charAt(0) != '/'
-                && !Character.isLetterOrDigit(value.charAt(0)) && !Character.isWhitespace(value.charAt(0));
+        return value != null
+                && value.length() == 1
+                && value.charAt(0) != '/'
+                && !Character.isLetterOrDigit(value.charAt(0))
+                && !Character.isWhitespace(value.charAt(0));
     }
 
     /** Advance to the next common prefix (wraps). Used by the Theme tab button. */

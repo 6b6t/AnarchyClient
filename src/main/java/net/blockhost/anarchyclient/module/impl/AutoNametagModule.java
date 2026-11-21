@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashSet;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.UUID;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -16,11 +20,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
 
-import java.util.HashSet;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.UUID;
-
 public final class AutoNametagModule extends Module {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -34,7 +33,10 @@ public final class AutoNametagModule extends Module {
     private final Set<UUID> tagged = new HashSet<>();
 
     public AutoNametagModule() {
-        super("auto_nametag", "Auto Nametag", ModuleCategory.WORLD,
+        super(
+                "auto_nametag",
+                "Auto Nametag",
+                ModuleCategory.WORLD,
                 "Uses a renamed name tag from the hotbar on the nearest unnamed mob within range.");
     }
 
@@ -64,7 +66,8 @@ public final class AutoNametagModule extends Module {
             return;
         }
         InventoryActions.selectHotbarSlot(player, slot.orElseThrow());
-        InteractionResult result = client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+        InteractionResult result =
+                client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
         // Remember the mob either way, so a refused tag does not retry the same mob forever.
         this.tagged.add(target.getUUID());
         if (result.consumesAction()) {
@@ -82,8 +85,11 @@ public final class AutoNametagModule extends Module {
         double bestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
             // Name tags work on mobs only, not on players or armor stands.
-            if (!(entity instanceof Mob living) || !living.isAlive() || living.hasCustomName()
-                    || this.tagged.contains(living.getUUID()) || !CombatTargets.canReachEntity(player, living)) {
+            if (!(entity instanceof Mob living)
+                    || !living.isAlive()
+                    || living.hasCustomName()
+                    || this.tagged.contains(living.getUUID())
+                    || !CombatTargets.canReachEntity(player, living)) {
                 continue;
             }
             double distance = living.distanceToSqr(player);

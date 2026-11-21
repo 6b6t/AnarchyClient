@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawFittedText;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.textWidth;
+
+import java.util.function.Supplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
@@ -7,11 +11,6 @@ import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.math.Size;
 import net.lenni0451.rivet.text.model.TextOrigin;
-
-import java.util.function.Supplier;
-
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawFittedText;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.textWidth;
 
 final class TextAction extends Component implements LayoutDebugLabel {
 
@@ -31,8 +30,16 @@ final class TextAction extends Component implements LayoutDebugLabel {
         if (value.isBlank()) {
             return;
         }
-        drawFittedText(this, renderer, value, this.color.get(), size.width(), size.height() / 2F,
-                size.width(), TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
+        drawFittedText(
+                this,
+                renderer,
+                value,
+                this.color.get(),
+                size.width(),
+                size.height() / 2F,
+                size.width(),
+                TextOrigin.Horizontal.VISUAL_RIGHT,
+                TextOrigin.Vertical.LOGICAL_CENTER);
     }
 
     @Override
@@ -53,7 +60,9 @@ final class TextAction extends Component implements LayoutDebugLabel {
         if (value.isBlank()) {
             return Size.EMPTY;
         }
-        return new Size(Math.min(textWidth(this, value, this.color.get()), constraints.width()), this.rivet().backend().font().height());
+        return new Size(
+                Math.min(textWidth(this, value, this.color.get()), constraints.width()),
+                this.rivet().backend().font().height());
     }
 
     @Override

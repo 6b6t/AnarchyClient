@@ -14,11 +14,7 @@ public abstract class DeltaTrackerTimerMixin {
     // argument to at least the level tick rate, which would cancel any speed-up.
     @Redirect(
             method = "advanceGameTime",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lit/unimi/dsi/fastutil/floats/FloatUnaryOperator;apply(F)F"
-            )
-    )
+            at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/floats/FloatUnaryOperator;apply(F)F"))
     private float anarchyclient$applyTimerMultiplier(final FloatUnaryOperator provider, final float msPerTick) {
         return TimerManager.adjustMspt(provider.apply(msPerTick));
     }

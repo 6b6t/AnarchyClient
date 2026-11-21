@@ -12,17 +12,16 @@ import net.lenni0451.rivet.math.Rectangle;
  * glass as a translucent animated overlay.</p>
  */
 public record GlassPanelCommand(
-        float x,
-        float y,
-        float width,
-        float height,
-        float cornerRadius,
-        Color tint,
-        BackgroundDesign design
-) implements RenderCommand.Custom {
+        float x, float y, float width, float height, float cornerRadius, Color tint, BackgroundDesign design)
+        implements RenderCommand.Custom {
 
-    public GlassPanelCommand(final float x, final float y, final float width, final float height,
-                             final float cornerRadius, final Color tint) {
+    public GlassPanelCommand(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float cornerRadius,
+            final Color tint) {
         this(x, y, width, height, cornerRadius, tint, BackgroundDesign.NONE);
     }
 

@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -16,9 +18,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class HoleEspModule extends Module {
 
@@ -58,7 +57,10 @@ public final class HoleEspModule extends Module {
     private int scanCooldown;
 
     public HoleEspModule() {
-        super("hole_esp", "Hole ESP", ModuleCategory.RENDER,
+        super(
+                "hole_esp",
+                "Hole ESP",
+                ModuleCategory.RENDER,
                 "Highlights nearby one-block holes fully walled by bedrock, obsidian, or other blast-proof blocks.");
     }
 
@@ -75,7 +77,10 @@ public final class HoleEspModule extends Module {
             return;
         }
         this.holes.clear();
-        this.holes.addAll(scanHoles(client, this.radius.value().intValue(), this.vertical.value().intValue(),
+        this.holes.addAll(scanHoles(
+                client,
+                this.radius.value().intValue(),
+                this.vertical.value().intValue(),
                 this.maxHoles.value().intValue()));
         this.scanCooldown = 10;
     }
@@ -104,7 +109,8 @@ public final class HoleEspModule extends Module {
         this.scanCooldown = 0;
     }
 
-    private static List<BlockPos> scanHoles(final Minecraft client, final int radius, final int vertical, final int maxHoles) {
+    private static List<BlockPos> scanHoles(
+            final Minecraft client, final int radius, final int vertical, final int maxHoles) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || maxHoles <= 0) {
             return List.of();
@@ -137,13 +143,17 @@ public final class HoleEspModule extends Module {
                 safeBlock(level.getBlockState(pos.north())),
                 safeBlock(level.getBlockState(pos.south())),
                 safeBlock(level.getBlockState(pos.east())),
-                safeBlock(level.getBlockState(pos.west()))
-        );
+                safeBlock(level.getBlockState(pos.west())));
     }
 
-    static boolean isHole(final boolean feetEmpty, final boolean headEmpty, final boolean floorSafe,
-                          final boolean northSafe, final boolean southSafe, final boolean eastSafe,
-                          final boolean westSafe) {
+    static boolean isHole(
+            final boolean feetEmpty,
+            final boolean headEmpty,
+            final boolean floorSafe,
+            final boolean northSafe,
+            final boolean southSafe,
+            final boolean eastSafe,
+            final boolean westSafe) {
         return feetEmpty && headEmpty && floorSafe && northSafe && southSafe && eastSafe && westSafe;
     }
 

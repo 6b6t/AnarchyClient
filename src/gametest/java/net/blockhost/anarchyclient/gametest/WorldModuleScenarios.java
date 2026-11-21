@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.gametest;
 
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 import net.minecraft.client.gui.screens.inventory.MerchantScreen;
@@ -23,15 +26,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 
-import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
-
 /** Scenarios for inventory, trading, and other world interaction modules. */
 final class WorldModuleScenarios {
 
-    private WorldModuleScenarios() {
-    }
+    private WorldModuleScenarios() {}
 
     static void autoTame(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -64,16 +62,19 @@ final class WorldModuleScenarios {
             arena.give("paper 64");
             context.waitTicks(10);
             context.runOnClient(client -> {
-                Entity villager = StreamSupport.stream(client.level.entitiesForRendering().spliterator(), false)
+                Entity villager = StreamSupport.stream(
+                                client.level.entitiesForRendering().spliterator(), false)
                         .filter(entity -> entity instanceof Villager)
                         .findFirst()
                         .orElseThrow(() -> new AssertionError("The villager did not reach the client"));
-                client.gameMode.interact(client.player, villager, new EntityHitResult(villager), InteractionHand.MAIN_HAND);
+                client.gameMode.interact(
+                        client.player, villager, new EntityHitResult(villager), InteractionHand.MAIN_HAND);
             });
             context.waitForScreen(MerchantScreen.class);
             GameTestSupport.enable(context, "auto_trade", true);
             try {
-                arena.server().waitFor(server -> count(arena.serverPlayer(server).getInventory(), Items.EMERALD) >= 2, 200);
+                arena.server()
+                        .waitFor(server -> count(arena.serverPlayer(server).getInventory(), Items.EMERALD) >= 2, 200);
             } finally {
                 GameTestSupport.enable(context, "auto_trade", false);
                 context.setScreen(() -> null);
@@ -92,17 +93,28 @@ final class WorldModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "inventory_sorter", true);
             try {
-                context.waitFor(client -> !GameTestSupport.module("inventory_sorter").enabled(), 200);
+                context.waitFor(
+                        client -> !GameTestSupport.module("inventory_sorter").enabled(), 200);
                 context.waitTicks(5);
                 List<String> order = arena.server().computeOnServer(server -> {
                     Inventory inventory = arena.serverPlayer(server).getInventory();
                     return IntStream.range(9, 15)
-                            .mapToObj(slot -> inventory.getItem(slot).isEmpty() ? "empty"
-                                    : BuiltInRegistries.ITEM.getKey(inventory.getItem(slot).getItem()).toString())
+                            .mapToObj(slot -> inventory.getItem(slot).isEmpty()
+                                    ? "empty"
+                                    : BuiltInRegistries.ITEM
+                                            .getKey(inventory.getItem(slot).getItem())
+                                            .toString())
                             .toList();
                 });
-                GameTestSupport.check(order.equals(List.of("minecraft:apple", "minecraft:apple", "minecraft:dirt",
-                        "minecraft:stone", "minecraft:stone", "empty")), "Unexpected sorted order " + order);
+                GameTestSupport.check(
+                        order.equals(List.of(
+                                "minecraft:apple",
+                                "minecraft:apple",
+                                "minecraft:dirt",
+                                "minecraft:stone",
+                                "minecraft:stone",
+                                "empty")),
+                        "Unexpected sorted order " + order);
             } finally {
                 GameTestSupport.enable(context, "inventory_sorter", false);
             }
@@ -123,10 +135,15 @@ final class WorldModuleScenarios {
                 context.waitTicks(2);
                 context.getInput().holdKeyFor(options -> options.keyAttack, 5);
                 context.waitTicks(2);
-                int selected = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
-                GameTestSupport.check(selected == 1, "Item Saver kept the nearly broken pickaxe selected (slot " + selected + ")");
-                int damage = arena.server().computeOnServer(server ->
-                        arena.serverPlayer(server).getInventory().getItem(0).getDamageValue());
+                int selected = context.computeOnClient(
+                        client -> client.player.getInventory().getSelectedSlot());
+                GameTestSupport.check(
+                        selected == 1, "Item Saver kept the nearly broken pickaxe selected (slot " + selected + ")");
+                int damage = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server)
+                                .getInventory()
+                                .getItem(0)
+                                .getDamageValue());
                 GameTestSupport.check(damage == 1559, "The protected pickaxe lost durability: " + damage);
             } finally {
                 GameTestSupport.enable(context, "item_saver", false);
@@ -145,8 +162,13 @@ final class WorldModuleScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "arrow_swap", true);
             try {
-                arena.server().waitFor(server -> arena.serverPlayer(server).getInventory().getItem(1)
-                        .is(Items.TIPPED_ARROW), 60);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                        .getInventory()
+                                        .getItem(1)
+                                        .is(Items.TIPPED_ARROW),
+                                60);
             } finally {
                 GameTestSupport.enable(context, "arrow_swap", false);
             }
@@ -166,7 +188,8 @@ final class WorldModuleScenarios {
                 context.getInput().holdKeyFor(options -> options.keyUp, 40);
                 context.waitTicks(10);
                 double y = context.computeOnClient(client -> client.player.getY());
-                GameTestSupport.check(y >= origin.getY() - 0.01, "Avoid Hazards let the player walk into the void (y " + y + ")");
+                GameTestSupport.check(
+                        y >= origin.getY() - 0.01, "Avoid Hazards let the player walk into the void (y " + y + ")");
             } finally {
                 GameTestSupport.enable(context, "avoid_hazards", false);
             }
@@ -177,14 +200,15 @@ final class WorldModuleScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(2, -1, -2)) + " " + GameTestSupport.at(origin.offset(4, -1, 2))
-                    + " lava");
+            arena.run("fill " + GameTestSupport.at(origin.offset(2, -1, -2)) + " "
+                    + GameTestSupport.at(origin.offset(4, -1, 2)) + " lava");
             context.waitTicks(10);
             GameTestSupport.enable(context, "avoid_hazards", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 60);
                 context.waitTicks(10);
-                boolean safe = context.computeOnClient(client -> !client.player.isInLava() && !client.player.isOnFire()
+                boolean safe = context.computeOnClient(client -> !client.player.isInLava()
+                        && !client.player.isOnFire()
                         && client.player.getX() < origin.getX() + 2.0);
                 GameTestSupport.check(safe, "Avoid Hazards let the player walk into lava");
             } finally {
@@ -206,11 +230,16 @@ final class WorldModuleScenarios {
             // A wooden pickaxe needs 45 ticks for deepslate.
             context.getInput().holdKeyFor(options -> options.keyAttack, 40);
             context.waitTicks(10);
-            GameTestSupport.check(!arena.blockAt(block).isAir(), "Vanilla mining broke the block, so the test proves nothing");
+            GameTestSupport.check(
+                    !arena.blockAt(block).isAir(), "Vanilla mining broke the block, so the test proves nothing");
             GameTestSupport.enable(context, "speed_mine", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyAttack, 40);
-                arena.server().waitFor(server -> server.overworld().getBlockState(block).isAir(), 5);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        server.overworld().getBlockState(block).isAir(),
+                                5);
             } finally {
                 GameTestSupport.enable(context, "speed_mine", false);
             }
@@ -227,7 +256,8 @@ final class WorldModuleScenarios {
             context.runOnClient(client -> client.player.getInventory().setSelectedSlot(0));
             context.waitTicks(5);
             int vanilla = placeTowardsPlayer(context, arena);
-            arena.run("fill " + GameTestSupport.at(origin.offset(1, 1, 0)) + " " + GameTestSupport.at(origin.offset(3, 1, 0)) + " air");
+            arena.run("fill " + GameTestSupport.at(origin.offset(1, 1, 0)) + " "
+                    + GameTestSupport.at(origin.offset(3, 1, 0)) + " air");
             context.waitTicks(10);
             GameTestSupport.enable(context, "fast_place", true);
             try {
@@ -246,7 +276,9 @@ final class WorldModuleScenarios {
         return arena.server().computeOnServer(server -> {
             int placed = 0;
             for (int dx = 1; dx <= 3; dx++) {
-                if (server.overworld().getBlockState(arena.origin().offset(dx, 1, 0)).is(Blocks.DIRT)) {
+                if (server.overworld()
+                        .getBlockState(arena.origin().offset(dx, 1, 0))
+                        .is(Blocks.DIRT)) {
                     placed++;
                 }
             }
@@ -270,8 +302,13 @@ final class WorldModuleScenarios {
             GameTestSupport.enable(context, "vein_miner", true);
             try {
                 context.getInput().pressKey(options -> options.keyAttack);
-                arena.server().waitFor(server -> BlockPos.betweenClosedStream(from, to)
-                        .allMatch(pos -> server.overworld().getBlockState(pos).isAir()), 20);
+                arena.server()
+                        .waitFor(
+                                server -> BlockPos.betweenClosedStream(from, to)
+                                        .allMatch(pos -> server.overworld()
+                                                .getBlockState(pos)
+                                                .isAir()),
+                                20);
             } finally {
                 GameTestSupport.enable(context, "vein_miner", false);
             }
@@ -288,8 +325,15 @@ final class WorldModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "auto_shearer", true);
             try {
-                arena.server().waitFor(server -> server.overworld().getEntitiesOfClass(Sheep.class, new AABB(spot).inflate(3.0))
-                        .stream().anyMatch(Sheep::isSheared), 100);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        server
+                                                .overworld()
+                                                .getEntitiesOfClass(Sheep.class, new AABB(spot).inflate(3.0))
+                                                .stream()
+                                                .anyMatch(Sheep::isSheared),
+                                100);
             } finally {
                 GameTestSupport.enable(context, "auto_shearer", false);
             }
@@ -307,8 +351,17 @@ final class WorldModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "auto_breed", true);
             try {
-                arena.server().waitFor(server -> server.overworld().getEntitiesOfClass(Cow.class, new AABB(origin).inflate(5.0))
-                        .stream().filter(Animal::isInLove).count() == 2, 100);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        server
+                                                        .overworld()
+                                                        .getEntitiesOfClass(Cow.class, new AABB(origin).inflate(5.0))
+                                                        .stream()
+                                                        .filter(Animal::isInLove)
+                                                        .count()
+                                                == 2,
+                                100);
             } finally {
                 GameTestSupport.enable(context, "auto_breed", false);
             }
@@ -327,10 +380,13 @@ final class WorldModuleScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "auto_farm", true);
             try {
-                arena.server().waitFor(server -> {
-                    BlockState state = server.overworld().getBlockState(crop);
-                    return state.is(Blocks.WHEAT) && state.getValue(BlockStateProperties.AGE_7) == 0;
-                }, 100);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    BlockState state = server.overworld().getBlockState(crop);
+                                    return state.is(Blocks.WHEAT) && state.getValue(BlockStateProperties.AGE_7) == 0;
+                                },
+                                100);
             } finally {
                 GameTestSupport.enable(context, "auto_farm", false);
             }

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -15,8 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
-
-import java.util.Set;
 
 public final class AutoGrindModule extends Module {
 
@@ -43,7 +42,10 @@ public final class AutoGrindModule extends Module {
     private int cooldown;
 
     public AutoGrindModule() {
-        super("auto_grind", "Auto Grind", ModuleCategory.PLAYER,
+        super(
+                "auto_grind",
+                "Auto Grind",
+                ModuleCategory.PLAYER,
                 "Moves items with removable enchantments into an open grindstone and collects the disenchanted output.");
     }
 
@@ -78,7 +80,8 @@ public final class AutoGrindModule extends Module {
         }
     }
 
-    static boolean canGrind(final ItemStack stack, final Set<Item> ignoredItems, final Set<String> ignoredEnchantments) {
+    static boolean canGrind(
+            final ItemStack stack, final Set<Item> ignoredItems, final Set<String> ignoredEnchantments) {
         if (stack.isEmpty() || ignoredItems.contains(stack.getItem())) {
             return false;
         }

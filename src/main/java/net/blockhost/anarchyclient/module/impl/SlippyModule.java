@@ -19,14 +19,21 @@ public final class SlippyModule extends Module {
             .build()));
 
     public SlippyModule() {
-        super("slippy", "Slippy", ModuleCategory.MOVEMENT,
+        super(
+                "slippy",
+                "Slippy",
+                ModuleCategory.MOVEMENT,
                 "Multiplies your ground speed each tick while you walk, so movement slides like on ice.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !player.onGround() || player.isInWater() || player.isInLava() || !MovementVelocity.moving(client)) {
+        if (player == null
+                || !player.onGround()
+                || player.isInWater()
+                || player.isInLava()
+                || !MovementVelocity.moving(client)) {
             return;
         }
         Vec3 movement = player.getDeltaMovement();

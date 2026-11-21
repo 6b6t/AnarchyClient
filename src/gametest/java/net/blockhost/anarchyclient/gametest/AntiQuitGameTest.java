@@ -18,13 +18,14 @@ public final class AntiQuitGameTest implements GameScenario {
                 context.clickScreenButton("menu.returnToMenu");
                 context.waitForScreen(ConfirmScreen.class);
                 context.takeScreenshot("anti_quit_confirm");
-                GameTestSupport.check(context.computeOnClient(client -> client.level != null),
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.level != null),
                         "Save and Quit left the world before confirmation");
 
                 context.clickScreenButton("gui.no");
                 context.waitForScreen(PauseScreen.class);
-                GameTestSupport.check(context.computeOnClient(client -> client.level != null),
-                        "Choosing No left the world");
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.level != null), "Choosing No left the world");
             } finally {
                 GameTestSupport.enable(context, "anti_quit", false);
                 context.setScreen(() -> null);

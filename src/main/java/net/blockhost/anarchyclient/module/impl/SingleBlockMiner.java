@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.ToolSelector;
 import net.blockhost.anarchyclient.module.Module;
 import net.minecraft.client.Minecraft;
@@ -10,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
-
-import java.util.function.Predicate;
 
 /**
  * Keeps a module on one block until it breaks. Starting a second break aborts the first, so a
@@ -31,13 +30,15 @@ final class SingleBlockMiner {
      * Continues the block in progress while {@code stillWanted} accepts it. Returns whether this
      * tick was spent on it; when it returns {@code false} the module may pick a new block.
      */
-    boolean continueCurrent(final Minecraft client, final Predicate<BlockPos> stillWanted,
-                            final Predicate<ItemStack> tools) {
+    boolean continueCurrent(
+            final Minecraft client, final Predicate<BlockPos> stillWanted, final Predicate<ItemStack> tools) {
         BlockPos pos = this.current;
         if (pos == null) {
             return false;
         }
-        if (client.level == null || client.level.getBlockState(pos).isAir() || !stillWanted.test(pos)
+        if (client.level == null
+                || client.level.getBlockState(pos).isAir()
+                || !stillWanted.test(pos)
                 || !WorldInteraction.breakBlock(client, this.owner, pos, this.face, tools)) {
             this.stop(client);
             return false;
@@ -81,11 +82,13 @@ final class SingleBlockMiner {
     }
 
     /** Vanilla never finishes a survival break whose destroy progress per tick is zero. */
-    static boolean canEverBreak(final Player player, final BlockGetter level, final BlockPos pos, final BlockState state) {
+    static boolean canEverBreak(
+            final Player player, final BlockGetter level, final BlockPos pos, final BlockState state) {
         return player.getAbilities().instabuild || state.getDestroyProgress(player, level, pos) > 0.0F;
     }
 
-    @Nullable BlockPos current() {
+    @Nullable
+    BlockPos current() {
         return this.current;
     }
 

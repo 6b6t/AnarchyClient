@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,9 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class HoleFillerModule extends Module {
 
@@ -61,7 +60,10 @@ public final class HoleFillerModule extends Module {
             .build()));
 
     public HoleFillerModule() {
-        super("hole_filler", "Hole Filler", ModuleCategory.COMBAT,
+        super(
+                "hole_filler",
+                "Hole Filler",
+                ModuleCategory.COMBAT,
                 "Fills nearby safe holes and double holes with hard blocks, by default only near an enemy.");
     }
 
@@ -79,21 +81,27 @@ public final class HoleFillerModule extends Module {
         if (target != null) {
             double targetRangeSqr = this.targetRange.value() * this.targetRange.value();
             targets = targets.stream()
-                    .filter(pos -> target.distanceToSqr(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) <= targetRangeSqr)
+                    .filter(pos ->
+                            target.distanceToSqr(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5) <= targetRangeSqr)
                     .toList();
         } else if (this.onlyNearTarget.value()) {
             targets = List.of();
         }
-        int placed = CombatPlacementPlanner.placeBatch(client, this, targets, CombatPlacementPlanner.HARD_BLOCKS,
-                CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(), this.range.value())
+        int placed = CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                targets,
+                CombatPlacementPlanner.HARD_BLOCKS,
+                CombatPlacementPlanner.Options.of(
+                                this.blocksPerTick.value().intValue(), this.rotate.value(), this.range.value())
                         .withSupport(this.support.value())
                         .withAvoidSelf(true));
         this.debugValue("holes", targets.size());
         this.debugValue("placed", placed);
     }
 
-    static List<BlockPos> fillTargets(final Minecraft client, final BlockPos center, final int radius,
-                                      final boolean doubleHoles) {
+    static List<BlockPos> fillTargets(
+            final Minecraft client, final BlockPos center, final int radius, final boolean doubleHoles) {
         if (client.level == null) {
             return List.of();
         }

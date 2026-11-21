@@ -35,8 +35,7 @@ public final class ClientCommands {
     private static CommandDispatcher<FabricClientCommandSource> cachedActive;
     private static CommandDispatcher<ClientSuggestionProvider> cachedMirror;
 
-    private ClientCommands() {
-    }
+    private ClientCommands() {}
 
     /** A dispatcher whose root children are the {@code /ac} subcommands, for prefix suggestions + execution. */
     @SuppressWarnings("unchecked")

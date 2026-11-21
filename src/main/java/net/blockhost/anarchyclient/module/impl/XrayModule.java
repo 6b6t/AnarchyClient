@@ -1,6 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -21,12 +26,6 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 
 public final class XrayModule extends Module {
 
@@ -68,6 +67,7 @@ public final class XrayModule extends Module {
 
     /** Chunk columns scanned per tick, so a large range is spread over several ticks. */
     private static final int COLUMNS_PER_TICK = 8;
+
     private static final int PASS_COOLDOWN_TICKS = 20;
 
     private List<BlockPos> cachedPositions = List.of();
@@ -79,7 +79,10 @@ public final class XrayModule extends Module {
     private @Nullable Level scannedLevel;
 
     public XrayModule() {
-        super("xray", "Xray", ModuleCategory.RENDER,
+        super(
+                "xray",
+                "Xray",
+                ModuleCategory.RENDER,
                 "Highlights the selected blocks through terrain, nearest first, up to the configured count.");
     }
 
@@ -105,8 +108,11 @@ public final class XrayModule extends Module {
                 this.cooldownTicks--;
                 return;
             }
-            this.pass = new ScanPass(player.blockPosition(), this.range.value().intValue(),
-                    this.verticalRange.value().intValue(), Set.copyOf(this.parsedBlocks));
+            this.pass = new ScanPass(
+                    player.blockPosition(),
+                    this.range.value().intValue(),
+                    this.verticalRange.value().intValue(),
+                    Set.copyOf(this.parsedBlocks));
         }
         if (this.pass.step(client.level, COLUMNS_PER_TICK)) {
             this.cachedPositions = this.pass.nearest(this.maxBlocks.value().intValue());
@@ -198,8 +204,10 @@ public final class XrayModule extends Module {
                 return;
             }
             LevelChunk chunk = level.getChunk(chunkX, chunkZ);
-            int minSection = Math.max(level.getMinSectionY(), SectionPos.blockToSectionCoord(this.center.getY() - this.vertical));
-            int maxSection = Math.min(level.getMaxSectionY(), SectionPos.blockToSectionCoord(this.center.getY() + this.vertical));
+            int minSection = Math.max(
+                    level.getMinSectionY(), SectionPos.blockToSectionCoord(this.center.getY() - this.vertical));
+            int maxSection = Math.min(
+                    level.getMaxSectionY(), SectionPos.blockToSectionCoord(this.center.getY() + this.vertical));
             for (int sectionY = minSection; sectionY <= maxSection; sectionY++) {
                 LevelChunkSection section = chunk.getSection(level.getSectionIndexFromSectionY(sectionY));
                 if (section.hasOnlyAir() || !section.maybeHas(this.wanted)) {
@@ -209,7 +217,8 @@ public final class XrayModule extends Module {
             }
         }
 
-        private void scanSection(final LevelChunkSection section, final int chunkX, final int sectionY, final int chunkZ) {
+        private void scanSection(
+                final LevelChunkSection section, final int chunkX, final int sectionY, final int chunkZ) {
             int baseX = SectionPos.sectionToBlockCoord(chunkX);
             int baseY = SectionPos.sectionToBlockCoord(sectionY);
             int baseZ = SectionPos.sectionToBlockCoord(chunkZ);

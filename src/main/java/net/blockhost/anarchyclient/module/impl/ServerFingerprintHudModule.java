@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.server.ServerProfileStore;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class ServerFingerprintHudModule extends HudElementModule {
 
@@ -19,15 +18,18 @@ public final class ServerFingerprintHudModule extends HudElementModule {
     private String lastStored = "";
 
     public ServerFingerprintHudModule() {
-        super("server_fingerprint_hud", "Server Fingerprint HUD",
-                "Shows the detected server type, anti-cheat, TPS, safety score, plugins, and payload channels.", "Top Left");
+        super(
+                "server_fingerprint_hud",
+                "Server Fingerprint HUD",
+                "Shows the detected server type, anti-cheat, TPS, safety score, plugins, and payload channels.",
+                "Top Left");
     }
 
     @Override
     public void tick(final Minecraft client) {
         ServerObserver.Fingerprint fingerprint = ServerObserver.fingerprint();
-        String key = fingerprint.rootDomain() + "|" + fingerprint.antiCheat() + "|" + fingerprint.labels()
-                + "|" + fingerprint.plugins() + "|" + fingerprint.payloadChannels() + "|" + fingerprint.safetyScore();
+        String key = fingerprint.rootDomain() + "|" + fingerprint.antiCheat() + "|" + fingerprint.labels() + "|"
+                + fingerprint.plugins() + "|" + fingerprint.payloadChannels() + "|" + fingerprint.safetyScore();
         if (this.store.value() && !fingerprint.rootDomain().isBlank() && !key.equals(this.lastStored)) {
             ServerProfileStore.recordFingerprint(fingerprint);
             this.lastStored = key;
@@ -44,17 +46,20 @@ public final class ServerFingerprintHudModule extends HudElementModule {
         snapshot.tps().ifPresent(value -> lines.add(String.format("TPS %.1f", value)));
         lines.add("Safety " + snapshot.safetyScore() + "/100");
         if (!snapshot.environmentLabels().isEmpty()) {
-            lines.add("Labels " + String.join(", ", snapshot.environmentLabels().stream().sorted().toList()));
+            lines.add("Labels "
+                    + String.join(
+                            ", ", snapshot.environmentLabels().stream().sorted().toList()));
         }
         if (!snapshot.plugins().isEmpty()) {
             lines.add("Plugins " + snapshot.plugins().stream().sorted().limit(5).toList());
         }
         if (!snapshot.payloadChannels().isEmpty()) {
-            lines.add("Payloads " + snapshot.payloadChannels().stream()
-                    .map(Object::toString)
-                    .sorted(Comparator.naturalOrder())
-                    .limit(4)
-                    .toList());
+            lines.add("Payloads "
+                    + snapshot.payloadChannels().stream()
+                            .map(Object::toString)
+                            .sorted(Comparator.naturalOrder())
+                            .limit(4)
+                            .toList());
         }
         return lines;
     }

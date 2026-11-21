@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
@@ -21,8 +22,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Set;
-
 /**
  * Estimates explosion damage with the vanilla formulas from {@code ExplosionDamageCalculator},
  * {@code ServerExplosion}, {@code Player.hurtServer}, and {@code CombatRules}.
@@ -38,8 +37,7 @@ public final class DamageEstimator {
     /** Explosion power of a bed outside the Overworld. */
     public static final double BED_POWER = 5.0;
 
-    private DamageEstimator() {
-    }
+    private DamageEstimator() {}
 
     /**
      * Returns the damage an explosion of the given power at {@code center} deals to the entity,
@@ -62,8 +60,8 @@ public final class DamageEstimator {
      * beds remove themselves before they explode, so the block that explodes must not shield the
      * entity from its own explosion.
      */
-    public static double explosionDamage(final LivingEntity entity, final Vec3 center, final double power,
-                                         final Set<BlockPos> removedBlocks) {
+    public static double explosionDamage(
+            final LivingEntity entity, final Vec3 center, final double power, final Set<BlockPos> removedBlocks) {
         if (entity == null || center == null || power <= 0.0) {
             return 0.0;
         }
@@ -71,8 +69,11 @@ public final class DamageEstimator {
         if (distance > power * 2.0) {
             return 0.0;
         }
-        double exposure = seenPercent(new RemovedBlocksGetter(entity.level(), removedBlocks), center,
-                entity.getBoundingBox(), CollisionContext.of(entity));
+        double exposure = seenPercent(
+                new RemovedBlocksGetter(entity.level(), removedBlocks),
+                center,
+                entity.getBoundingBox(),
+                CollisionContext.of(entity));
         return applyDefenses(entity, rawDamage(distance, power, exposure));
     }
 
@@ -80,7 +81,8 @@ public final class DamageEstimator {
      * Vanilla {@code ServerExplosion.getSeenPercent} against an arbitrary block view: the share of
      * sample points in {@code box} with an unobstructed collider line to {@code center}.
      */
-    static float seenPercent(final BlockGetter level, final Vec3 center, final AABB box, final CollisionContext context) {
+    static float seenPercent(
+            final BlockGetter level, final Vec3 center, final AABB box, final CollisionContext context) {
         double xs = 1.0 / ((box.maxX - box.minX) * 2.0 + 1.0);
         double ys = 1.0 / ((box.maxY - box.minY) * 2.0 + 1.0);
         double zs = 1.0 / ((box.maxZ - box.minZ) * 2.0 + 1.0);
@@ -98,7 +100,8 @@ public final class DamageEstimator {
                     double y = Mth.lerp(yy, box.minY, box.maxY);
                     double z = Mth.lerp(zz, box.minZ, box.maxZ);
                     Vec3 from = new Vec3(x + xOffset, y, z + zOffset);
-                    ClipContext clip = new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, context);
+                    ClipContext clip =
+                            new ClipContext(from, center, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, context);
                     if (level.clip(clip).getType() == HitResult.Type.MISS) {
                         hits++;
                     }
@@ -110,7 +113,8 @@ public final class DamageEstimator {
     }
 
     /** Same as {@link #explosionDamage} but assumes no blocks shield the entity. */
-    public static double explosionDamageIgnoringTerrain(final LivingEntity entity, final Vec3 center, final double power) {
+    public static double explosionDamageIgnoringTerrain(
+            final LivingEntity entity, final Vec3 center, final double power) {
         if (entity == null || center == null || power <= 0.0) {
             return 0.0;
         }
@@ -198,7 +202,9 @@ public final class DamageEstimator {
 
         @Override
         public FluidState getFluidState(final BlockPos pos) {
-            return this.removed.contains(pos) ? Blocks.AIR.defaultBlockState().getFluidState() : this.level.getFluidState(pos);
+            return this.removed.contains(pos)
+                    ? Blocks.AIR.defaultBlockState().getFluidState()
+                    : this.level.getFluidState(pos);
         }
 
         @Override

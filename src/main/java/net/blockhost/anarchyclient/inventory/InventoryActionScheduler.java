@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.inventory;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.inventory.InventoryMenu;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.inventory.InventoryMenu;
 
 public final class InventoryActionScheduler {
 
@@ -19,8 +18,7 @@ public final class InventoryActionScheduler {
     private static int cooldownPriority = Integer.MIN_VALUE;
     private static String cooldownOwner = "";
 
-    private InventoryActionScheduler() {
-    }
+    private InventoryActionScheduler() {}
 
     /** Queues a chain for this tick, replacing the owner's earlier chain. Chains must be scheduled every tick. */
     public static void schedule(final InventoryActionChain chain) {
@@ -69,8 +67,11 @@ public final class InventoryActionScheduler {
     }
 
     /** Orders chains by priority (highest first, then schedule order) and removes those held back by the cooldown. */
-    static List<InventoryActionChain> eligible(final List<InventoryActionChain> pending, final boolean coolingDown,
-                                               final int cooldownPriority, final String cooldownOwner) {
+    static List<InventoryActionChain> eligible(
+            final List<InventoryActionChain> pending,
+            final boolean coolingDown,
+            final int cooldownPriority,
+            final String cooldownOwner) {
         return pending.stream()
                 .filter(chain -> !coolingDown
                         || chain.priority() > cooldownPriority

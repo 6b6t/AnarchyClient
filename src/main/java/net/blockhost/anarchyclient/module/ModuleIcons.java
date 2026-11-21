@@ -83,11 +83,9 @@ final class ModuleIcons {
             new IconRule("config", "settings-2"),
             new IconRule("protect", "lock"),
             new IconRule("spoof", "wifi"),
-            new IconRule("vanish", "eye-off")
-    );
+            new IconRule("vanish", "eye-off"));
 
-    private ModuleIcons() {
-    }
+    private ModuleIcons() {}
 
     static String icon(final Module module) {
         String id = module.id();
@@ -108,6 +106,5 @@ final class ModuleIcons {
         };
     }
 
-    private record IconRule(String token, String icon) {
-    }
+    private record IconRule(String token, String icon) {}
 }

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.impl.BetterChatModule;
 import net.blockhost.anarchyclient.module.impl.ChatFilterModule;
@@ -20,8 +21,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-
 @Mixin(ChatComponent.class)
 public abstract class ChatComponentMixin {
 
@@ -37,9 +36,12 @@ public abstract class ChatComponentMixin {
     private @Nullable Component anarchyclient$lastAdded;
 
     @Inject(method = "addMessage", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$filterChatMessage(final Component contents, final @Nullable MessageSignature signature,
-                                                 final GuiMessageSource source, final @Nullable GuiMessageTag tag,
-                                                 final CallbackInfo info) {
+    private void anarchyclient$filterChatMessage(
+            final Component contents,
+            final @Nullable MessageSignature signature,
+            final GuiMessageSource source,
+            final @Nullable GuiMessageTag tag,
+            final CallbackInfo info) {
         if (ChatFilterModule.hides(contents)) {
             info.cancel();
         }
@@ -52,18 +54,23 @@ public abstract class ChatComponentMixin {
 
     @Inject(
             method = "addMessage",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/components/ChatComponent;addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V"
-            )
-    )
-    private void anarchyclient$replaceDuplicateMessage(final Component contents, final @Nullable MessageSignature signature,
-                                                       final GuiMessageSource source, final @Nullable GuiMessageTag tag,
-                                                       final CallbackInfo info) {
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/client/gui/components/ChatComponent;addMessageToDisplayQueue(Lnet/minecraft/client/multiplayer/chat/GuiMessage;)V"))
+    private void anarchyclient$replaceDuplicateMessage(
+            final Component contents,
+            final @Nullable MessageSignature signature,
+            final GuiMessageSource source,
+            final @Nullable GuiMessageTag tag,
+            final CallbackInfo info) {
         Component previous = this.anarchyclient$lastAdded;
         this.anarchyclient$lastAdded = contents;
-        if (BetterChatModule.takeReplacesPrevious() && previous != null
-                && !this.allMessages.isEmpty() && this.allMessages.getFirst().content() == previous) {
+        if (BetterChatModule.takeReplacesPrevious()
+                && previous != null
+                && !this.allMessages.isEmpty()
+                && this.allMessages.getFirst().content() == previous) {
             this.allMessages.removeFirst();
             this.refreshTrimmedMessages();
         }
@@ -73,12 +80,12 @@ public abstract class ChatComponentMixin {
     // visible messages and history survive.
     @Inject(
             method = "clearMessages",
-            at = @At(
-                    value = "FIELD",
-                    target = "Lnet/minecraft/client/gui/components/ChatComponent;trimmedMessages:Ljava/util/List;"
-            ),
-            cancellable = true
-    )
+            at =
+                    @At(
+                            value = "FIELD",
+                            target =
+                                    "Lnet/minecraft/client/gui/components/ChatComponent;trimmedMessages:Ljava/util/List;"),
+            cancellable = true)
     private void anarchyclient$preventChatClear(final boolean history, final CallbackInfo info) {
         if (BetterChatModule.shouldPreventClearMessages(history)) {
             info.cancel();

@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Set;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -10,11 +14,6 @@ import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class TreeAuraModuleTest {
@@ -43,7 +42,9 @@ class TreeAuraModuleTest {
 
         @Override
         public BlockState getBlockState(final BlockPos pos) {
-            return this.positions.contains(pos) ? Blocks.DARK_OAK_SAPLING.defaultBlockState() : Blocks.AIR.defaultBlockState();
+            return this.positions.contains(pos)
+                    ? Blocks.DARK_OAK_SAPLING.defaultBlockState()
+                    : Blocks.AIR.defaultBlockState();
         }
 
         @Override

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -7,8 +8,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class SpiderModule extends Module {
 
@@ -28,7 +27,10 @@ public final class SpiderModule extends Module {
             .build()));
 
     public SpiderModule() {
-        super("spider", "Spider", ModuleCategory.MOVEMENT,
+        super(
+                "spider",
+                "Spider",
+                ModuleCategory.MOVEMENT,
                 "Lets you climb up walls by pushing you upward whenever you walk into a block.");
     }
 

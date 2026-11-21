@@ -8,7 +8,11 @@ import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.Item;
 
-public sealed interface InventoryAction permits InventoryAction.DropSlot, InventoryAction.PickupSwap, InventoryAction.SelectHotbarSlot, InventoryAction.UseHotbarItem {
+public sealed interface InventoryAction
+        permits InventoryAction.DropSlot,
+                InventoryAction.PickupSwap,
+                InventoryAction.SelectHotbarSlot,
+                InventoryAction.UseHotbarItem {
 
     boolean canExecute(InventoryActionContext context);
 
@@ -58,9 +62,30 @@ public sealed interface InventoryAction permits InventoryAction.DropSlot, Invent
             if (!this.canExecute(context)) {
                 return false;
             }
-            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
-            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.targetMenuSlot, 0, ContainerInput.PICKUP, context.player());
-            context.client().gameMode.handleContainerInput(InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            context.client()
+                    .gameMode
+                    .handleContainerInput(
+                            InventoryMenu.CONTAINER_ID,
+                            this.sourceMenuSlot,
+                            0,
+                            ContainerInput.PICKUP,
+                            context.player());
+            context.client()
+                    .gameMode
+                    .handleContainerInput(
+                            InventoryMenu.CONTAINER_ID,
+                            this.targetMenuSlot,
+                            0,
+                            ContainerInput.PICKUP,
+                            context.player());
+            context.client()
+                    .gameMode
+                    .handleContainerInput(
+                            InventoryMenu.CONTAINER_ID,
+                            this.sourceMenuSlot,
+                            0,
+                            ContainerInput.PICKUP,
+                            context.player());
             return true;
         }
     }
@@ -77,13 +102,14 @@ public sealed interface InventoryAction permits InventoryAction.DropSlot, Invent
             if (!this.canExecute(context)) {
                 return false;
             }
-            context.client().gameMode.handleContainerInput(
-                    InventoryMenu.CONTAINER_ID,
-                    this.sourceMenuSlot,
-                    this.fullStack ? 1 : 0,
-                    ContainerInput.THROW,
-                    context.player()
-            );
+            context.client()
+                    .gameMode
+                    .handleContainerInput(
+                            InventoryMenu.CONTAINER_ID,
+                            this.sourceMenuSlot,
+                            this.fullStack ? 1 : 0,
+                            ContainerInput.THROW,
+                            context.player());
             return true;
         }
     }
@@ -111,7 +137,10 @@ public sealed interface InventoryAction permits InventoryAction.DropSlot, Invent
         public boolean canExecute(final InventoryActionContext context) {
             return context.client().gameMode != null
                     && Inventory.isHotbarSlot(this.inventorySlot)
-                    && context.player().getInventory().getItem(this.inventorySlot).is(this.item);
+                    && context.player()
+                            .getInventory()
+                            .getItem(this.inventorySlot)
+                            .is(this.item);
         }
 
         @Override

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -11,9 +13,6 @@ import net.minecraft.world.inventory.EnchantmentMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.Set;
-import java.util.function.Predicate;
 
 public final class AutoEnchantModule extends Module {
 
@@ -50,7 +49,10 @@ public final class AutoEnchantModule extends Module {
     private int cooldown;
 
     public AutoEnchantModule() {
-        super("auto_enchant", "Auto Enchant", ModuleCategory.PLAYER,
+        super(
+                "auto_enchant",
+                "Auto Enchant",
+                ModuleCategory.PLAYER,
                 "Enchants configured items at the chosen level in an open enchanting table, refilling lapis and collecting results.");
     }
 
@@ -67,7 +69,12 @@ public final class AutoEnchantModule extends Module {
         }
         int targetLevel = targetLevel(this.level.value());
         if (menu.getSlot(ITEM_SLOT).hasItem()) {
-            if (canUseChoice(menu.costs, targetLevel, player.experienceLevel, menu.getGoldCount(), player.hasInfiniteMaterials())) {
+            if (canUseChoice(
+                    menu.costs,
+                    targetLevel,
+                    player.experienceLevel,
+                    menu.getGoldCount(),
+                    player.hasInfiniteMaterials())) {
                 client.gameMode.handleInventoryButtonClick(menu.containerId, targetLevel - 1);
                 if (this.dropOutput.value()) {
                     ContainerActions.throwSlot(client, menu, ITEM_SLOT);
@@ -90,7 +97,8 @@ public final class AutoEnchantModule extends Module {
         }
     }
 
-    private boolean moveFirst(final Minecraft client, final EnchantmentMenu menu, final Predicate<ItemStack> predicate) {
+    private boolean moveFirst(
+            final Minecraft client, final EnchantmentMenu menu, final Predicate<ItemStack> predicate) {
         int slot = firstMatchingSlot(menu, PLAYER_INVENTORY_START, predicate);
         if (slot < 0) {
             return false;
@@ -110,22 +118,27 @@ public final class AutoEnchantModule extends Module {
         return !stack.isEmpty() && stack.isEnchantable() && (!filtered || targets.contains(stack.getItem()));
     }
 
-    static boolean canUseChoice(final int[] costs, final int level, final int playerLevel,
-                                final int lapisCount, final boolean infiniteMaterials) {
+    static boolean canUseChoice(
+            final int[] costs,
+            final int level,
+            final int playerLevel,
+            final int lapisCount,
+            final boolean infiniteMaterials) {
         int clampedLevel = targetLevel(level);
         int index = clampedLevel - 1;
         if (costs == null || index >= costs.length || costs[index] <= 0) {
             return false;
         }
-        return infiniteMaterials || lapisCount >= clampedLevel && playerLevel >= clampedLevel && playerLevel >= costs[index];
+        return infiniteMaterials
+                || lapisCount >= clampedLevel && playerLevel >= clampedLevel && playerLevel >= costs[index];
     }
 
     static int targetLevel(final double level) {
         return Math.max(1, Math.min(3, (int) level));
     }
 
-    private static int firstMatchingSlot(final EnchantmentMenu menu, final int start,
-                                         final Predicate<ItemStack> predicate) {
+    private static int firstMatchingSlot(
+            final EnchantmentMenu menu, final int start, final Predicate<ItemStack> predicate) {
         for (int slot = start; slot < menu.slots.size(); slot++) {
             ItemStack stack = menu.getSlot(slot).getItem();
             if (predicate.test(stack)) {

@@ -1,9 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ServerWeatherTest {
 

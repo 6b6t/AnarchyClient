@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,11 +12,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 public final class ColorSignsModule extends Module {
 
@@ -30,7 +29,10 @@ public final class ColorSignsModule extends Module {
             .build()));
 
     public ColorSignsModule() {
-        super("color_signs", "Color Signs", ModuleCategory.MISC,
+        super(
+                "color_signs",
+                "Color Signs",
+                ModuleCategory.MISC,
                 "Converts & color codes into formatting codes when you write signs and, optionally, books. Vanilla servers strip sign formatting, so signs only keep colors on servers that allow it.");
     }
 

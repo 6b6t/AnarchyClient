@@ -5,11 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.renderpearl.api.commands.CommandEncoder;
 import com.mojang.renderpearl.api.textures.GpuTexture;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.minecraft.client.Minecraft;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.minecraft.client.Minecraft;
 
 /**
  * Captures a blurred copy of the game framebuffer for glass panels while the client menu is open.
@@ -29,8 +28,7 @@ public final class GlassBackdrop {
     // Resources retired on resize. Closed one frame later so draws recorded against the old view finish first.
     private static final List<AutoCloseable> retired = new ArrayList<>();
 
-    private GlassBackdrop() {
-    }
+    private GlassBackdrop() {}
 
     public static void activate() {
         active = true;
@@ -42,7 +40,7 @@ public final class GlassBackdrop {
      */
     public static void deactivate() {
         active = false;
-        for (AutoCloseable resource : new AutoCloseable[]{blurredView, blurredTexture, sharpTexture}) {
+        for (AutoCloseable resource : new AutoCloseable[] {blurredView, blurredTexture, sharpTexture}) {
             if (resource != null) {
                 retired.add(resource);
             }
@@ -74,7 +72,8 @@ public final class GlassBackdrop {
         closeRetired();
         ensureTextures(mainTarget);
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
-        encoder.copyTextureToTexture(mainTarget.getColorTexture(), sharpTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+        encoder.copyTextureToTexture(
+                mainTarget.getColorTexture(), sharpTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
     }
 
     /**
@@ -90,8 +89,10 @@ public final class GlassBackdrop {
         // Note: re-running processBlurEffect here to stack passes is unsafe — the blur post chain's
         // ring buffer cannot be re-submitted within the same frame and trips a GPU fence assert.
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
-        encoder.copyTextureToTexture(mainTarget.getColorTexture(), blurredTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
-        encoder.copyTextureToTexture(sharpTexture, mainTarget.getColorTexture(), 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+        encoder.copyTextureToTexture(
+                mainTarget.getColorTexture(), blurredTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+        encoder.copyTextureToTexture(
+                sharpTexture, mainTarget.getColorTexture(), 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
         capturedThisFrame = true;
     }
 
@@ -110,16 +111,24 @@ public final class GlassBackdrop {
         }
         int width = color.getWidth(0);
         int height = color.getHeight(0);
-        sharpTexture = RenderSystem.getDevice().createTexture(
-                () -> "AnarchyClient glass sharp scene",
-                GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_COPY_DST,
-                color.getFormat(), width, height, 1, 1
-        );
-        blurredTexture = RenderSystem.getDevice().createTexture(
-                () -> "AnarchyClient glass blurred scene",
-                GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING,
-                color.getFormat(), width, height, 1, 1
-        );
+        sharpTexture = RenderSystem.getDevice()
+                .createTexture(
+                        () -> "AnarchyClient glass sharp scene",
+                        GpuTexture.USAGE_COPY_SRC | GpuTexture.USAGE_COPY_DST,
+                        color.getFormat(),
+                        width,
+                        height,
+                        1,
+                        1);
+        blurredTexture = RenderSystem.getDevice()
+                .createTexture(
+                        () -> "AnarchyClient glass blurred scene",
+                        GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING,
+                        color.getFormat(),
+                        width,
+                        height,
+                        1,
+                        1);
         blurredView = RenderSystem.getDevice().createTextureView(blurredTexture);
         capturedThisFrame = false;
     }

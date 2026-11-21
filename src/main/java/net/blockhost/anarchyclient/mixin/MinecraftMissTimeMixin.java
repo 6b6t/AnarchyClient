@@ -15,8 +15,7 @@ public abstract class MinecraftMissTimeMixin {
      */
     @Redirect(
             method = "startAttack",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;hasMissTime()Z"))
     private boolean anarchyclient$noMissCooldown(final MultiPlayerGameMode gameMode) {
         return !NoMissCooldownModule.removesMissCooldown() && gameMode.hasMissTime();
     }

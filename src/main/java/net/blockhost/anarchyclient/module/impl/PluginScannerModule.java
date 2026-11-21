@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
@@ -9,10 +12,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
-
-import java.util.Comparator;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public final class PluginScannerModule extends Module {
 
@@ -44,7 +43,11 @@ public final class PluginScannerModule extends Module {
     private int observedPluginSequence;
 
     public PluginScannerModule() {
-        super("plugin_scanner", "Plugin Scanner", ModuleCategory.MISC, "Inspects server plugin hints from available commands, messages, and protocol details.");
+        super(
+                "plugin_scanner",
+                "Plugin Scanner",
+                ModuleCategory.MISC,
+                "Inspects server plugin hints from available commands, messages, and protocol details.");
     }
 
     @Override
@@ -76,8 +79,12 @@ public final class PluginScannerModule extends Module {
             return;
         }
         switch (this.stage) {
-            case START -> this.next(client, this.slash.value() ? ScanStage.SLASH
-                    : this.bukkit.value() ? ScanStage.BUKKIT : ScanStage.SUGGESTIONS);
+            case START ->
+                this.next(
+                        client,
+                        this.slash.value()
+                                ? ScanStage.SLASH
+                                : this.bukkit.value() ? ScanStage.BUKKIT : ScanStage.SUGGESTIONS);
             case SLASH -> {
                 ChatActions.send(client, "/plugins");
                 ServerObserver.beginPluginChatCapture(this.timeoutMillis());
@@ -99,9 +106,9 @@ public final class PluginScannerModule extends Module {
                 client.getConnection().send(new ServerboundCommandSuggestionPacket(id, "/"));
                 this.waitFor(ScanStage.SUGGESTIONS_WAIT);
             }
-            case SUGGESTIONS_WAIT -> this.finish(client, ServerObserver.snapshot().plugins());
-            case IDLE -> {
-            }
+            case SUGGESTIONS_WAIT ->
+                this.finish(client, ServerObserver.snapshot().plugins());
+            case IDLE -> {}
         }
     }
 
@@ -117,7 +124,8 @@ public final class PluginScannerModule extends Module {
 
     private boolean hasNewResult() {
         ServerObserver.Snapshot snapshot = ServerObserver.snapshot();
-        return snapshot.pluginScanSequence() != this.observedPluginSequence && !snapshot.plugins().isEmpty();
+        return snapshot.pluginScanSequence() != this.observedPluginSequence
+                && !snapshot.plugins().isEmpty();
     }
 
     private void finish(final Minecraft client, final Set<String> plugins) {

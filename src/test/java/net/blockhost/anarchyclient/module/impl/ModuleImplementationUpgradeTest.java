@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class ModuleImplementationUpgradeTest {
@@ -35,8 +34,8 @@ class ModuleImplementationUpgradeTest {
     @Test
     void fastUseFiltersSomeModeByItemAndBlock() {
         assertTrue(FastUseModule.shouldApplyItem(Items.BOW, "All", List.of(), false));
-        assertTrue(FastUseModule.shouldApplyItem(Items.EXPERIENCE_BOTTLE, "Some",
-                List.of(Items.EXPERIENCE_BOTTLE), false));
+        assertTrue(FastUseModule.shouldApplyItem(
+                Items.EXPERIENCE_BOTTLE, "Some", List.of(Items.EXPERIENCE_BOTTLE), false));
         assertTrue(FastUseModule.shouldApplyItem(Items.STONE, "Some", List.of(), true));
         assertFalse(FastUseModule.shouldApplyItem(Items.BOW, "Some", List.of(), false));
         assertFalse(FastUseModule.shouldApplyItem(null, "All", List.of(), true));

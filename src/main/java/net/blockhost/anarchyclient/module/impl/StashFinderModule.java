@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,14 +24,6 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public final class StashFinderModule extends Module {
 
@@ -50,7 +49,10 @@ public final class StashFinderModule extends Module {
     private int cooldownTicks;
 
     public StashFinderModule() {
-        super("stash_finder", "Stash Finder", ModuleCategory.WORLD,
+        super(
+                "stash_finder",
+                "Stash Finder",
+                ModuleCategory.WORLD,
                 "Scans loaded chunks for clusters of chests and other containers and reports possible stashes in chat.");
     }
 
@@ -86,8 +88,12 @@ public final class StashFinderModule extends Module {
         }
         for (Stash stash : findStashes(counts, this.threshold.value().intValue(), this.reportedChunks)) {
             BlockPos pos = ChunkPos.unpack(stash.chunk()).getWorldPosition();
-            player.sendSystemMessage(Translations.component("anarchyclient.message.stash_finder.possible_stash_containers_near",
-                    "Possible stash: %s containers near %s, %s", stash.containers(), pos.getX(), pos.getZ()));
+            player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.stash_finder.possible_stash_containers_near",
+                    "Possible stash: %s containers near %s, %s",
+                    stash.containers(),
+                    pos.getX(),
+                    pos.getZ()));
         }
     }
 
@@ -98,7 +104,9 @@ public final class StashFinderModule extends Module {
      */
     static List<Stash> findStashes(final Map<Long, Integer> counts, final int threshold, final Set<Long> reported) {
         List<Long> chunks = new ArrayList<>(counts.keySet());
-        chunks.sort(Comparator.comparingInt((Long chunk) -> counts.get(chunk)).reversed().thenComparing(chunk -> chunk));
+        chunks.sort(Comparator.comparingInt((Long chunk) -> counts.get(chunk))
+                .reversed()
+                .thenComparing(chunk -> chunk));
         List<Stash> stashes = new ArrayList<>();
         for (long chunk : chunks) {
             if (reported.contains(chunk)) {
@@ -125,8 +133,7 @@ public final class StashFinderModule extends Module {
         return stashes;
     }
 
-    record Stash(long chunk, int containers) {
-    }
+    record Stash(long chunk, int containers) {}
 
     @Override
     protected void onDisable() {

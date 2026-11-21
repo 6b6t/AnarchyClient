@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -13,8 +14,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.ItemContainerContents;
-
-import java.util.List;
 
 public final class BetterTooltipsModule extends Module {
 
@@ -43,7 +42,10 @@ public final class BetterTooltipsModule extends Module {
             .build()));
 
     public BetterTooltipsModule() {
-        super("better_tooltips", "Better Tooltips", ModuleCategory.RENDER,
+        super(
+                "better_tooltips",
+                "Better Tooltips",
+                ModuleCategory.RENDER,
                 "Adds durability, container contents, and potion effects to item tooltips.");
     }
 
@@ -54,7 +56,11 @@ public final class BetterTooltipsModule extends Module {
         }
         if (this.durability.value() && stack.isDamageableItem()) {
             int remaining = Math.max(0, stack.getMaxDamage() - stack.getDamageValue());
-            lines.add(Translations.component("anarchyclient.message.better_tooltips.durability", "Durability: %s / %s", remaining, stack.getMaxDamage())
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_tooltips.durability",
+                            "Durability: %s / %s",
+                            remaining,
+                            stack.getMaxDamage())
                     .withStyle(ChatFormatting.GRAY));
         }
         if (this.containers.value()) {
@@ -74,7 +80,9 @@ public final class BetterTooltipsModule extends Module {
         if (items.isEmpty()) {
             return;
         }
-        lines.add(Translations.component("anarchyclient.message.better_tooltips.contents_stacks", "Contents: %s stacks", items.size()).withStyle(ChatFormatting.GRAY));
+        lines.add(Translations.component(
+                        "anarchyclient.message.better_tooltips.contents_stacks", "Contents: %s stacks", items.size())
+                .withStyle(ChatFormatting.GRAY));
         for (int index = 0; index < Math.min(items.size(), Math.max(1, maxLines)); index++) {
             ItemStack item = items.get(index);
             lines.add(Component.literal(" - " + item.getCount() + "x ")
@@ -82,7 +90,9 @@ public final class BetterTooltipsModule extends Module {
                     .append(item.getHoverName().copy().withStyle(ChatFormatting.GRAY)));
         }
         if (items.size() > maxLines) {
-            lines.add(Translations.component("anarchyclient.message.better_tooltips.more", " - +%s more", (items.size() - maxLines)).withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_tooltips.more", " - +%s more", (items.size() - maxLines))
+                    .withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 
@@ -91,9 +101,11 @@ public final class BetterTooltipsModule extends Module {
         if (contents == null || !contents.hasEffects()) {
             return;
         }
-        lines.add(Translations.component("anarchyclient.message.better_tooltips.effects", "Effects").withStyle(ChatFormatting.GRAY));
+        lines.add(Translations.component("anarchyclient.message.better_tooltips.effects", "Effects")
+                .withStyle(ChatFormatting.GRAY));
         for (MobEffectInstance effect : contents.getAllEffects()) {
-            lines.add(Component.literal(" - ").withStyle(ChatFormatting.DARK_GRAY)
+            lines.add(Component.literal(" - ")
+                    .withStyle(ChatFormatting.DARK_GRAY)
                     .append(Component.translatable(effect.getDescriptionId()).withStyle(ChatFormatting.GRAY))
                     .append(Component.literal(effect.getAmplifier() > 0 ? " " + (effect.getAmplifier() + 1) : "")
                             .withStyle(ChatFormatting.GRAY)));

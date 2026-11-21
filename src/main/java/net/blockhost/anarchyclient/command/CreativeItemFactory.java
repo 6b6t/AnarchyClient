@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.command;
 
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -10,8 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.TypedEntityData;
-
-import java.util.List;
 
 public final class CreativeItemFactory {
 
@@ -25,19 +24,19 @@ public final class CreativeItemFactory {
             Items.WITHER_SPAWN_EGG,
             Items.ENDER_DRAGON_SPAWN_EGG,
             Items.BARRIER,
-            Items.DEBUG_STICK
-    );
+            Items.DEBUG_STICK);
 
-    private CreativeItemFactory() {
-    }
+    private CreativeItemFactory() {}
 
     public static ItemStack playerHead(final String playerName) {
         ItemStack stack = new ItemStack(Items.PLAYER_HEAD);
         String name = sanitizeName(playerName, "Player");
         stack.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved(name));
         // Item data goes to the server: store plain text in the current language, not a translation key.
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal(
-                Translations.format("anarchyclient.message.creative_item_factory.s_head", "%s's Head", name)));
+        stack.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal(
+                        Translations.format("anarchyclient.message.creative_item_factory.s_head", "%s's Head", name)));
         return stack;
     }
 
@@ -66,8 +65,12 @@ public final class CreativeItemFactory {
     public static ItemStack randomItem(final int index) {
         Item item = RANDOM_ITEMS.get(Math.floorMod(index, RANDOM_ITEMS.size()));
         ItemStack stack = new ItemStack(item);
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal(Translations.format(
-                "anarchyclient.message.creative_item_factory.anarchy_item", "Anarchy Item %s", Math.floorMod(index, 10_000))));
+        stack.set(
+                DataComponents.CUSTOM_NAME,
+                Component.literal(Translations.format(
+                        "anarchyclient.message.creative_item_factory.anarchy_item",
+                        "Anarchy Item %s",
+                        Math.floorMod(index, 10_000))));
         if (item == Items.PLAYER_HEAD) {
             stack.set(DataComponents.PROFILE, ResolvableProfile.createUnresolved("AnarchyClient"));
         }

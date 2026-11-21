@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rotation.RotationManager;
@@ -14,10 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class PistonPushModule extends Module {
 
@@ -59,7 +58,10 @@ public final class PistonPushModule extends Module {
     private int cooldownTicks;
 
     public PistonPushModule() {
-        super("piston_push", "Piston Push", ModuleCategory.COMBAT,
+        super(
+                "piston_push",
+                "Piston Push",
+                ModuleCategory.COMBAT,
                 "Places a piston at the nearest enemy's head height and powers it with a redstone block, so the piston "
                         + "head forces them out of their hole or down into a crawl. Needs pistons and redstone blocks in the hotbar.");
     }
@@ -153,7 +155,8 @@ public final class PistonPushModule extends Module {
                 facings.add(facing);
             }
         }
-        facings.sort(Comparator.comparingDouble(facing -> Vec3.atCenterOf(pistonPosition(feet, facing)).distanceToSqr(eye)));
+        facings.sort(Comparator.comparingDouble(
+                facing -> Vec3.atCenterOf(pistonPosition(feet, facing)).distanceToSqr(eye)));
         return facings;
     }
 

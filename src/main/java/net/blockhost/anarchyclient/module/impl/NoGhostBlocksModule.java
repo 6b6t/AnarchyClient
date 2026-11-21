@@ -21,7 +21,10 @@ public final class NoGhostBlocksModule extends Module {
     private int timer;
 
     public NoGhostBlocksModule() {
-        super("no_ghost_blocks", "No Ghost Blocks", ModuleCategory.WORLD,
+        super(
+                "no_ghost_blocks",
+                "No Ghost Blocks",
+                ModuleCategory.WORLD,
                 "Sends an aborted dig for the block you look at so servers that resend it can fix a ghost block. "
                         + "Vanilla servers do not resend blocks for this.");
     }
@@ -36,11 +39,11 @@ public final class NoGhostBlocksModule extends Module {
         }
         // One packet for the targeted block only. Sweeping a radius sent up to 15,625 packets per burst, which
         // risks a spam kick and cancels any real mining in progress.
-        client.getConnection().send(new ServerboundPlayerActionPacket(
-                ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                hit.getBlockPos(),
-                hit.getDirection()
-        ));
+        client.getConnection()
+                .send(new ServerboundPlayerActionPacket(
+                        ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                        hit.getBlockPos(),
+                        hit.getDirection()));
         this.timer = this.intervalTicks.value().intValue();
     }
 }

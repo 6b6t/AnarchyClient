@@ -1,6 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -22,12 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 public final class LogoutSpotsModule extends Module {
 
@@ -65,7 +64,10 @@ public final class LogoutSpotsModule extends Module {
     private Level level;
 
     public LogoutSpotsModule() {
-        super("logout_spots", "Logout Spots", ModuleCategory.RENDER,
+        super(
+                "logout_spots",
+                "Logout Spots",
+                ModuleCategory.RENDER,
                 "Marks the position where nearby players were standing when they logged out.");
     }
 
@@ -101,7 +103,8 @@ public final class LogoutSpotsModule extends Module {
         }
         for (UUID id : remove.profileIds()) {
             LogoutSpot spot = this.lastSeen.get(id);
-            if (spot == null || id.equals(client.player.getUUID())
+            if (spot == null
+                    || id.equals(client.player.getUUID())
                     || this.ignoreFriends.value() && AnarchyClient.FRIENDS.isFriend(spot.name())) {
                 continue;
             }
@@ -149,11 +152,14 @@ public final class LogoutSpotsModule extends Module {
         return lifetimeTicks >= 0 && ageTicks > lifetimeTicks;
     }
 
-    private static Map<UUID, LogoutSpot> snapshotPlayers(final Minecraft client, final Player self,
-                                                         final boolean ignoreFriends) {
+    private static Map<UUID, LogoutSpot> snapshotPlayers(
+            final Minecraft client, final Player self, final boolean ignoreFriends) {
         Map<UUID, LogoutSpot> players = new LinkedHashMap<>();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof Player player) || player == self || player.isSpectator() || !player.isAlive()
+            if (!(entity instanceof Player player)
+                    || player == self
+                    || player.isSpectator()
+                    || !player.isAlive()
                     || ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName())) {
                 continue;
             }
@@ -170,8 +176,7 @@ public final class LogoutSpotsModule extends Module {
                 player.position(),
                 player.getBoundingBox(),
                 player.getHealth() + player.getAbsorptionAmount(),
-                0
-        );
+                0);
     }
 
     private void ageSpots(final int lifetimeTicks) {
@@ -198,8 +203,8 @@ public final class LogoutSpotsModule extends Module {
         this.level = null;
     }
 
-    record LogoutSpot(UUID id, String name, ResourceKey<Level> dimension, Vec3 position, AABB box, float health,
-                      int ageTicks) {
+    record LogoutSpot(
+            UUID id, String name, ResourceKey<Level> dimension, Vec3 position, AABB box, float health, int ageTicks) {
 
         LogoutSpot withAge(final int ageTicks) {
             return new LogoutSpot(this.id, this.name, this.dimension, this.position, this.box, this.health, ageTicks);

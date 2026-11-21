@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -9,13 +10,11 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
-
-import java.util.List;
 
 public final class MiddleClickActionModule extends Module {
 
@@ -33,8 +32,12 @@ public final class MiddleClickActionModule extends Module {
     private boolean wasPressed;
 
     public MiddleClickActionModule() {
-        super("middle_click_action", "Middle Click", ModuleCategory.MISC,
-                "Throws a pearl or XP bottle, runs a command, or adds a friend on middle click.", List.of("middle_click_extra"));
+        super(
+                "middle_click_action",
+                "Middle Click",
+                ModuleCategory.MISC,
+                "Throws a pearl or XP bottle, runs a command, or adds a friend on middle click.",
+                List.of("middle_click_extra"));
     }
 
     @Override
@@ -55,7 +58,9 @@ public final class MiddleClickActionModule extends Module {
         switch (this.mode.value()) {
             case "XP Bottle" -> useHotbarItem(client, player, Items.EXPERIENCE_BOTTLE);
             case "Command" -> {
-                String target = client.hitResult instanceof EntityHitResult hit ? hit.getEntity().getScoreboardName() : "";
+                String target = client.hitResult instanceof EntityHitResult hit
+                        ? hit.getEntity().getScoreboardName()
+                        : "";
                 ChatActions.run(client, this.command.value().replace("{target}", target));
             }
             case "Add Friend" -> {

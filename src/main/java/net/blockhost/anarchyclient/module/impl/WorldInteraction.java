@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.ToolSelector;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.rotation.Rotation;
@@ -21,13 +23,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-import java.util.OptionalInt;
-import java.util.function.Predicate;
-
 final class WorldInteraction {
 
-    private WorldInteraction() {
-    }
+    private WorldInteraction() {}
 
     /**
      * Right-clicks a face of {@code pos} with a hotbar item. With {@code rotate}, returns
@@ -35,8 +33,13 @@ final class WorldInteraction {
      * Returns {@link ActionResult#REFUSED} when the click was sent but the item and the block did
      * nothing, so retrying the same block will not help.
      */
-    static ActionResult useOnBlock(final Minecraft client, final Module owner, final BlockPos pos, final Direction face,
-                                   final Predicate<ItemStack> itemPredicate, final boolean rotate) {
+    static ActionResult useOnBlock(
+            final Minecraft client,
+            final Module owner,
+            final BlockPos pos,
+            final Direction face,
+            final Predicate<ItemStack> itemPredicate,
+            final boolean rotate) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return ActionResult.WAITING;
@@ -53,8 +56,8 @@ final class WorldInteraction {
                 return ActionResult.WAITING;
             }
         }
-        InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND,
-                new BlockHitResult(hit, face, pos, false));
+        InteractionResult result =
+                client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, new BlockHitResult(hit, face, pos, false));
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return ActionResult.DONE;
@@ -75,17 +78,20 @@ final class WorldInteraction {
      * Mines {@code pos} with the best hotbar tool accepted by {@code tools}. Keeps the current
      * slot when no accepted tool is better, and does not switch when no hotbar item is accepted.
      */
-    static boolean breakBlock(final Minecraft client, final Module owner, final BlockPos pos, final Direction face,
-                              final Predicate<ItemStack> tools) {
+    static boolean breakBlock(
+            final Minecraft client,
+            final Module owner,
+            final BlockPos pos,
+            final Direction face,
+            final Predicate<ItemStack> tools) {
         return mine(client, owner.id(), pos, face, tools);
     }
 
     /** Mines {@code pos} with whatever is in the main hand now. */
-    static boolean breakBlockWithHeldItem(final Minecraft client, final Module owner, final BlockPos pos,
-                                          final Direction face) {
+    static boolean breakBlockWithHeldItem(
+            final Minecraft client, final Module owner, final BlockPos pos, final Direction face) {
         return mine(client, owner.id(), pos, face, null);
     }
-
 
     /** Aborts the module's break in progress and gives mining back to vanilla. */
     static void stopBreaking(final Minecraft client, final Module owner) {
@@ -96,8 +102,12 @@ final class WorldInteraction {
         return InventoryActions.findHotbarSlot(inventory, predicate).isPresent();
     }
 
-    private static boolean mine(final Minecraft client, final String owner, final BlockPos pos, final Direction face,
-                                final @Nullable Predicate<ItemStack> tools) {
+    private static boolean mine(
+            final Minecraft client,
+            final String owner,
+            final BlockPos pos,
+            final Direction face,
+            final @Nullable Predicate<ItemStack> tools) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return false;
@@ -122,8 +132,7 @@ final class WorldInteraction {
                 1,
                 2.0F,
                 RotationTurnMode.STEPPED,
-                true
-        ));
+                true));
         RotationManager.apply(player);
     }
 

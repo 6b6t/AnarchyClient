@@ -1,15 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class MiningProgressTest {
@@ -31,7 +31,8 @@ class MiningProgressTest {
 
     @Test
     void obsidianNeedsAPickaxeOfDiamondOrBetter() {
-        assertTrue(MiningProgress.canHarvest(new ItemStack(Items.DIAMOND_PICKAXE), Blocks.OBSIDIAN.defaultBlockState()));
+        assertTrue(
+                MiningProgress.canHarvest(new ItemStack(Items.DIAMOND_PICKAXE), Blocks.OBSIDIAN.defaultBlockState()));
         assertFalse(MiningProgress.canHarvest(new ItemStack(Items.IRON_PICKAXE), Blocks.OBSIDIAN.defaultBlockState()));
         assertTrue(MiningProgress.canHarvest(ItemStack.EMPTY, Blocks.DIRT.defaultBlockState()));
     }

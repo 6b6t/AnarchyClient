@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
@@ -21,12 +25,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.Equippable;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public final class InventoryCleanerModule extends Module {
 
@@ -103,7 +101,10 @@ public final class InventoryCleanerModule extends Module {
             .build()));
 
     public InventoryCleanerModule() {
-        super("inventory_cleaner", "Inventory Cleaner", ModuleCategory.PLAYER,
+        super(
+                "inventory_cleaner",
+                "Inventory Cleaner",
+                ModuleCategory.PLAYER,
                 "Drops junk items, or in strict mode everything except your best gear and kept item types.");
     }
 
@@ -126,8 +127,7 @@ public final class InventoryCleanerModule extends Module {
                 this.keepPearls.value(),
                 this.keepRanged.value(),
                 this.keepPotions.value(),
-                this.keepThrowables.value()
-        );
+                this.keepThrowables.value());
         int inventorySlot = findDropSlot(stacks, player.getInventory().getSelectedSlot(), options);
         int menuSlot = InventorySlots.toInventoryMenuSlot(inventorySlot);
         if (menuSlot < 0) {
@@ -138,8 +138,7 @@ public final class InventoryCleanerModule extends Module {
                 InventoryActionScheduler.PRIORITY_NORMAL,
                 this.delayTicks.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.dropSlot(menuSlot, true)
-        ));
+                InventoryAction.dropSlot(menuSlot, true)));
     }
 
     static int findDropSlot(final List<ItemStack> stacks, final int selectedSlot, final CleanerOptions options) {
@@ -168,7 +167,8 @@ public final class InventoryCleanerModule extends Module {
     }
 
     static CleanerOptions defaultOptions() {
-        return new CleanerOptions(false, defaultJunkItems(), true, true, true, true, true, true, true, true, true, true);
+        return new CleanerOptions(
+                false, defaultJunkItems(), true, true, true, true, true, true, true, true, true, true);
     }
 
     private static Set<Integer> keepSlots(final List<ItemStack> stacks, final CleanerOptions options) {
@@ -260,7 +260,8 @@ public final class InventoryCleanerModule extends Module {
         }
     }
 
-    private static void keepBestArmor(final List<ItemStack> stacks, final Set<Integer> keep, final EquipmentSlot slotType) {
+    private static void keepBestArmor(
+            final List<ItemStack> stacks, final Set<Integer> keep, final EquipmentSlot slotType) {
         int bestSlot = -1;
         double bestScore = 0.0;
         for (int slot = 0; slot < stacks.size(); slot++) {
@@ -303,9 +304,19 @@ public final class InventoryCleanerModule extends Module {
         }
     }
 
-    record CleanerOptions(boolean strict, Set<Item> junkItems, boolean keepWeapons, boolean keepTools,
-                          boolean keepArmor, boolean keepFood, boolean keepBlocks, boolean keepTotems,
-                          boolean keepPearls, boolean keepRanged, boolean keepPotions, boolean keepThrowables) {
+    record CleanerOptions(
+            boolean strict,
+            Set<Item> junkItems,
+            boolean keepWeapons,
+            boolean keepTools,
+            boolean keepArmor,
+            boolean keepFood,
+            boolean keepBlocks,
+            boolean keepTotems,
+            boolean keepPearls,
+            boolean keepRanged,
+            boolean keepPotions,
+            boolean keepThrowables) {
 
         CleanerOptions {
             junkItems = Set.copyOf(junkItems);

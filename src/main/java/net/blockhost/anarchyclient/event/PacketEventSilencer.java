@@ -4,8 +4,7 @@ public final class PacketEventSilencer {
 
     private static final ThreadLocal<Boolean> SILENT = ThreadLocal.withInitial(() -> false);
 
-    private PacketEventSilencer() {
-    }
+    private PacketEventSilencer() {}
 
     public static boolean silent() {
         return SILENT.get();

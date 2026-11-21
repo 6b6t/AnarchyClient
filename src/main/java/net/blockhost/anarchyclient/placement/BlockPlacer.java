@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.placement;
 
+import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.rotation.Rotation;
 import net.blockhost.anarchyclient.rotation.RotationManager;
@@ -27,12 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import java.lang.reflect.Method;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.function.Predicate;
-
 public final class BlockPlacer {
 
     private static final Set<String> USE_METHODS = Set.of("useWithoutItem", "useItemOn");
@@ -41,7 +40,9 @@ public final class BlockPlacer {
     private static final ClassValue<Boolean> OVERRIDES_USE = new ClassValue<>() {
         @Override
         protected Boolean computeValue(final Class<?> type) {
-            for (Class<?> current = type; current != null && current != BlockBehaviour.class; current = current.getSuperclass()) {
+            for (Class<?> current = type;
+                    current != null && current != BlockBehaviour.class;
+                    current = current.getSuperclass()) {
                 for (Method method : current.getDeclaredMethods()) {
                     if (USE_METHODS.contains(method.getName())) {
                         return true;
@@ -52,17 +53,24 @@ public final class BlockPlacer {
         }
     };
 
-    private BlockPlacer() {
-    }
+    private BlockPlacer() {}
 
-    public static PlacementResult place(final Minecraft client, final String owner, final BlockPos target,
-                                        final boolean rotate, final float maxTurnDegrees) {
+    public static PlacementResult place(
+            final Minecraft client,
+            final String owner,
+            final BlockPos target,
+            final boolean rotate,
+            final float maxTurnDegrees) {
         return place(client, owner, target, rotate, maxTurnDegrees, stack -> true);
     }
 
-    public static PlacementResult place(final Minecraft client, final String owner, final BlockPos target,
-                                        final boolean rotate, final float maxTurnDegrees,
-                                        final Predicate<ItemStack> itemPredicate) {
+    public static PlacementResult place(
+            final Minecraft client,
+            final String owner,
+            final BlockPos target,
+            final boolean rotate,
+            final float maxTurnDegrees,
+            final Predicate<ItemStack> itemPredicate) {
         return place(client, owner, target, rotate, maxTurnDegrees, itemPredicate, PlacementOptions.DEFAULT);
     }
 
@@ -73,9 +81,14 @@ public final class BlockPlacer {
      * rotation toward the clicked face has been sent to the server, so the click never arrives
      * before the rotation. Without {@code rotate}, it places immediately.
      */
-    public static PlacementResult place(final Minecraft client, final String owner, final BlockPos target,
-                                        final boolean rotate, final float maxTurnDegrees,
-                                        final Predicate<ItemStack> itemPredicate, final PlacementOptions options) {
+    public static PlacementResult place(
+            final Minecraft client,
+            final String owner,
+            final BlockPos target,
+            final boolean rotate,
+            final float maxTurnDegrees,
+            final Predicate<ItemStack> itemPredicate,
+            final PlacementOptions options) {
         return switch (attempt(client, owner, target, rotate, maxTurnDegrees, itemPredicate, options)) {
             case FILLED -> PlacementResult.FILLED;
             case PLACED -> PlacementResult.PLACED;
@@ -88,8 +101,13 @@ public final class BlockPlacer {
      * Places up to {@code maxPlacements} requests in order. With {@code rotate}, the batch stops at
      * the first request that still needs to turn, so later requests cannot steal its rotation.
      */
-    public static int placeBatch(final Minecraft client, final String owner, final Iterable<PlacementRequest> requests,
-                                 final int maxPlacements, final boolean rotate, final float maxTurnDegrees) {
+    public static int placeBatch(
+            final Minecraft client,
+            final String owner,
+            final Iterable<PlacementRequest> requests,
+            final int maxPlacements,
+            final boolean rotate,
+            final float maxTurnDegrees) {
         int limit = placementsPerTick(maxPlacements);
         int placed = 0;
         for (PlacementRequest request : requests) {
@@ -100,8 +118,7 @@ public final class BlockPlacer {
                     rotate,
                     maxTurnDegrees,
                     request.itemPredicate(),
-                    request.options()
-            );
+                    request.options());
             if (result == Attempt.ROTATING) {
                 return placed;
             }
@@ -112,9 +129,14 @@ public final class BlockPlacer {
         return placed;
     }
 
-    private static Attempt attempt(final Minecraft client, final String owner, final BlockPos target,
-                                   final boolean rotate, final float maxTurnDegrees,
-                                   final Predicate<ItemStack> itemPredicate, final PlacementOptions options) {
+    private static Attempt attempt(
+            final Minecraft client,
+            final String owner,
+            final BlockPos target,
+            final boolean rotate,
+            final float maxTurnDegrees,
+            final Predicate<ItemStack> itemPredicate,
+            final PlacementOptions options) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return Attempt.WAITING;
@@ -126,7 +148,8 @@ public final class BlockPlacer {
         if (placementTarget.isEmpty()) {
             return Attempt.WAITING;
         }
-        OptionalInt hotbarSlot = findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate, options);
+        OptionalInt hotbarSlot =
+                findPlaceableHotbarSlot(player.getInventory(), client.level, player, target, itemPredicate, options);
         if (hotbarSlot.isEmpty()) {
             return Attempt.MISSING_ITEM;
         }
@@ -136,19 +159,11 @@ public final class BlockPlacer {
         PlacementTarget placement = placementTarget.orElseThrow();
         if (rotate) {
             Rotation rotation = Rotation.lookingAt(placement.hitLocation(), player.getEyePosition());
-            RotationManager.request(new RotationRequest(
-                    owner,
-                    rotation,
-                    70,
-                    maxTurnDegrees,
-                    2,
-                    2.0F,
-                    RotationTurnMode.STEPPED,
-                    true
-            ));
+            RotationManager.request(
+                    new RotationRequest(owner, rotation, 70, maxTurnDegrees, 2, 2.0F, RotationTurnMode.STEPPED, true));
             RotationManager.apply(player);
-            if (!RotationManager.serverLookHits(player, new AABB(placement.hitResult().getBlockPos()),
-                    player.blockInteractionRange() + 1.0)) {
+            if (!RotationManager.serverLookHits(
+                    player, new AABB(placement.hitResult().getBlockPos()), player.blockInteractionRange() + 1.0)) {
                 return Attempt.ROTATING;
             }
         }
@@ -165,14 +180,20 @@ public final class BlockPlacer {
      * both see the player sneaking during the click, so the clicked block's own interaction (a
      * door, a chest, a respawn anchor) is skipped like a vanilla shift-click.
      */
-    public static InteractionResult useItemOn(final Minecraft client, final LocalPlayer player,
-                                              final BlockHitResult hitResult, final boolean sneak) {
+    public static InteractionResult useItemOn(
+            final Minecraft client, final LocalPlayer player, final BlockHitResult hitResult, final boolean sneak) {
         Input previous = player.input.keyPresses;
         if (!sneak || previous.shift() || client.getConnection() == null) {
             return client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
         }
-        Input sneaking = new Input(previous.forward(), previous.backward(), previous.left(), previous.right(),
-                previous.jump(), true, previous.sprint());
+        Input sneaking = new Input(
+                previous.forward(),
+                previous.backward(),
+                previous.left(),
+                previous.right(),
+                previous.jump(),
+                true,
+                previous.sprint());
         client.getConnection().send(new ServerboundPlayerInputPacket(sneaking));
         player.input.keyPresses = sneaking;
         try {
@@ -195,21 +216,27 @@ public final class BlockPlacer {
         return level.getBlockState(target).canBeReplaced();
     }
 
-    public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
-                                                      final LocalPlayer player, final BlockPos target) {
+    public static OptionalInt findPlaceableHotbarSlot(
+            final Inventory inventory, final ClientLevel level, final LocalPlayer player, final BlockPos target) {
         return findPlaceableHotbarSlot(inventory, level, player, target, stack -> true);
     }
 
-    public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
-                                                      final LocalPlayer player, final BlockPos target,
-                                                      final Predicate<ItemStack> itemPredicate) {
+    public static OptionalInt findPlaceableHotbarSlot(
+            final Inventory inventory,
+            final ClientLevel level,
+            final LocalPlayer player,
+            final BlockPos target,
+            final Predicate<ItemStack> itemPredicate) {
         return findPlaceableHotbarSlot(inventory, level, player, target, itemPredicate, PlacementOptions.DEFAULT);
     }
 
-    public static OptionalInt findPlaceableHotbarSlot(final Inventory inventory, final ClientLevel level,
-                                                      final LocalPlayer player, final BlockPos target,
-                                                      final Predicate<ItemStack> itemPredicate,
-                                                      final PlacementOptions options) {
+    public static OptionalInt findPlaceableHotbarSlot(
+            final Inventory inventory,
+            final ClientLevel level,
+            final LocalPlayer player,
+            final BlockPos target,
+            final Predicate<ItemStack> itemPredicate,
+            final PlacementOptions options) {
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
             if (itemPredicate.test(stack) && isPlaceableBlock(stack, level, player, target, options)) {
@@ -219,13 +246,17 @@ public final class BlockPlacer {
         return OptionalInt.empty();
     }
 
-    public static boolean isPlaceableBlock(final ItemStack stack, final ClientLevel level, final LocalPlayer player,
-                                           final BlockPos target) {
+    public static boolean isPlaceableBlock(
+            final ItemStack stack, final ClientLevel level, final LocalPlayer player, final BlockPos target) {
         return isPlaceableBlock(stack, level, player, target, PlacementOptions.DEFAULT);
     }
 
-    public static boolean isPlaceableBlock(final ItemStack stack, final ClientLevel level, final LocalPlayer player,
-                                           final BlockPos target, final PlacementOptions options) {
+    public static boolean isPlaceableBlock(
+            final ItemStack stack,
+            final ClientLevel level,
+            final LocalPlayer player,
+            final BlockPos target,
+            final PlacementOptions options) {
         if (!(stack.getItem() instanceof BlockItem blockItem)) {
             return false;
         }
@@ -233,7 +264,9 @@ public final class BlockPlacer {
         BlockState state = block.defaultBlockState();
         if (!needsPlacement(level, target)
                 || options.requireFullBlock() && !Block.isShapeFullBlock(state.getCollisionShape(level, target))
-                || !options.allowFallingBlocks() && block instanceof FallingBlock && FallingBlock.isFree(level.getBlockState(target.below()))) {
+                || !options.allowFallingBlocks()
+                        && block instanceof FallingBlock
+                        && FallingBlock.isFree(level.getBlockState(target.below()))) {
             return false;
         }
         return level.isUnobstructed(state, target, CollisionContext.placementContext(player));
@@ -297,8 +330,7 @@ public final class BlockPlacer {
      * A face to click. {@code sneak} is set when the clicked block has its own use interaction and
      * the click must be sent while sneaking.
      */
-    public record PlacementTarget(BlockHitResult hitResult, Vec3 hitLocation, boolean sneak) {
-    }
+    public record PlacementTarget(BlockHitResult hitResult, Vec3 hitLocation, boolean sneak) {}
 
     private enum Attempt {
         FILLED,

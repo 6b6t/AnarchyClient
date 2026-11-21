@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.module;
 
-import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class ModuleRegistryTest {
@@ -20,11 +19,36 @@ class ModuleRegistryTest {
 
         ModuleRegistry.registerDefaults(modules);
 
-        for (String id : List.of("anti_cyrillic", "chat_filter", "skin_flicker", "portal_god_mode",
-                "illegal_disconnect", "anti_aim", "announcer", "anti_quit", "heaven", "kill_effects", "hitmarker",
-                "skybox", "borders", "entity_list_hud", "welcomer_hud", "piston_push", "piston_crystal", "crawl_trap",
-                "crystal_blocker", "mainhand_totem", "arrow_swap", "spiral", "hole_snap", "auto_firework", "auto_tame",
-                "inventory_sorter", "auto_trade", "auto_smith", "item_saver")) {
+        for (String id : List.of(
+                "anti_cyrillic",
+                "chat_filter",
+                "skin_flicker",
+                "portal_god_mode",
+                "illegal_disconnect",
+                "anti_aim",
+                "announcer",
+                "anti_quit",
+                "heaven",
+                "kill_effects",
+                "hitmarker",
+                "skybox",
+                "borders",
+                "entity_list_hud",
+                "welcomer_hud",
+                "piston_push",
+                "piston_crystal",
+                "crawl_trap",
+                "crystal_blocker",
+                "mainhand_totem",
+                "arrow_swap",
+                "spiral",
+                "hole_snap",
+                "auto_firework",
+                "auto_tame",
+                "inventory_sorter",
+                "auto_trade",
+                "auto_smith",
+                "item_saver")) {
             assertTrue(modules.find(id).isPresent(), id + " is not registered");
         }
     }
@@ -278,12 +302,13 @@ class ModuleRegistryTest {
         ModuleRegistry.registerDefaults(modules);
 
         List<String> order = modules.all().stream().map(Module::id).toList();
-        for (String inputModule : List.of("auto_walk", "sneak", "eagle", "inventory_move", "no_slow", "avoid_hazards")) {
+        for (String inputModule :
+                List.of("auto_walk", "sneak", "eagle", "inventory_move", "no_slow", "avoid_hazards")) {
             assertRegisteredBefore(order, inputModule, "freecam");
         }
         // Modules that queue, replay, or rebuild packets must not see packets the filters drop.
-        for (String packetModule : List.of("velocity", "pop_chams", "new_chunks", "backtrack", "fake_lag",
-                "ping_spoof", "blink")) {
+        for (String packetModule :
+                List.of("velocity", "pop_chams", "new_chunks", "backtrack", "fake_lag", "ping_spoof", "blink")) {
             assertRegisteredBefore(order, "anti_crash", packetModule);
             assertRegisteredBefore(order, "anti_exploit", packetModule);
             assertRegisteredBefore(order, "packet_canceller", packetModule);

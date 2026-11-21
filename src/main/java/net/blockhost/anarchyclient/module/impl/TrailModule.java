@@ -1,6 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -13,13 +19,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public final class TrailModule extends Module {
 
@@ -43,7 +42,10 @@ public final class TrailModule extends Module {
     private Level level;
 
     public TrailModule() {
-        super("trail", "Trail", ModuleCategory.RENDER,
+        super(
+                "trail",
+                "Trail",
+                ModuleCategory.RENDER,
                 "Draws a line along the recent path of each nearby player until the points expire or you change dimension.");
     }
 
@@ -93,8 +95,12 @@ public final class TrailModule extends Module {
             TrailPoint previous = iterator.next();
             while (iterator.hasNext()) {
                 TrailPoint next = iterator.next();
-                WorldLineRenderer.lineNoDepth(matrices, submits, previous.position().subtract(camera),
-                        next.position().subtract(camera), color);
+                WorldLineRenderer.lineNoDepth(
+                        matrices,
+                        submits,
+                        previous.position().subtract(camera),
+                        next.position().subtract(camera),
+                        color);
                 previous = next;
             }
         }

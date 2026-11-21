@@ -1,17 +1,16 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawFittedText;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawText;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.wrapText;
+
+import java.util.List;
+import java.util.function.Supplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.math.Size;
 import net.lenni0451.rivet.text.model.TextOrigin;
-
-import java.util.List;
-import java.util.function.Supplier;
-
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawFittedText;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawText;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.wrapText;
 
 final class TextNode extends Component implements LayoutDebugLabel {
 
@@ -54,8 +53,16 @@ final class TextNode extends Component implements LayoutDebugLabel {
             case VISUAL_RIGHT -> size.width();
         };
         if (this.maxLines <= 1) {
-            drawFittedText(this, renderer, value, currentColor, x, size.height() / 2F,
-                    size.width(), this.horizontal, this.vertical);
+            drawFittedText(
+                    this,
+                    renderer,
+                    value,
+                    currentColor,
+                    x,
+                    size.height() / 2F,
+                    size.width(),
+                    this.horizontal,
+                    this.vertical);
             return;
         }
         List<String> lines = wrapText(this, value, currentColor, size.width(), this.maxLines);
@@ -83,7 +90,10 @@ final class TextNode extends Component implements LayoutDebugLabel {
             // string's measured width must never squeeze fixed siblings (toggles, icons).
             return new Size(0F, fontHeight);
         }
-        int lines = Math.max(1, wrapText(this, value, this.color.get(), constraints.width(), this.maxLines).size());
+        int lines = Math.max(
+                1,
+                wrapText(this, value, this.color.get(), constraints.width(), this.maxLines)
+                        .size());
         return new Size(0F, lines * (fontHeight + LINE_SPACING) - LINE_SPACING);
     }
 
@@ -96,7 +106,8 @@ final class TextNode extends Component implements LayoutDebugLabel {
         if (value.isBlank()) {
             return 1;
         }
-        return Math.max(1, wrapText(this, value, this.color.get(), width, this.maxLines).size());
+        return Math.max(
+                1, wrapText(this, value, this.color.get(), width, this.maxLines).size());
     }
 
     @Override

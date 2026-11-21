@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.CARD_GAP;
+
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
 import net.lenni0451.rivet.math.Size;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.CARD_GAP;
 
 /**
  * Two-column card grid. Rivet's list layouts stack a single column, so this container places
@@ -37,12 +37,8 @@ final class CardGrid extends Container {
             }
             int column = index % 2;
             int row = index / 2;
-            child.layoutOptions(new AbsoluteOptions(
-                    column * (cardWidth + CARD_GAP),
-                    row * (height + CARD_GAP),
-                    cardWidth,
-                    height
-            ));
+            child.layoutOptions(
+                    new AbsoluteOptions(column * (cardWidth + CARD_GAP), row * (height + CARD_GAP), cardWidth, height));
             index++;
         }
         super.computeLayout(size);

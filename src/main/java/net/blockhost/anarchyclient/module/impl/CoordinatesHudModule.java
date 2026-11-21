@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,9 +12,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class CoordinatesHudModule extends Module {
 
@@ -43,7 +42,10 @@ public final class CoordinatesHudModule extends Module {
             .build()));
 
     public CoordinatesHudModule() {
-        super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD,
+        super(
+                "coordinates_hud",
+                "Coordinates HUD",
+                ModuleCategory.HUD,
                 "Shows your coordinates, linked Nether or Overworld coordinates outside the End, dimension, facing, speed, FPS, and ping.");
     }
 
@@ -66,7 +68,8 @@ public final class CoordinatesHudModule extends Module {
         if (client.player == null) {
             return lines;
         }
-        lines.add(String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
+        lines.add(
+                String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
         // Only the Overworld and the Nether are linked; other dimensions such as the End have no counterpart.
         ResourceKey<Level> dimension = client.player.level().dimension();
         if (this.showLinkedCoords.value() && (dimension == Level.NETHER || dimension == Level.OVERWORLD)) {

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -21,8 +22,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.OptionalInt;
 
 public final class AutoExtinguishModule extends Module {
 
@@ -76,7 +75,10 @@ public final class AutoExtinguishModule extends Module {
     private int cooldownTicks;
 
     public AutoExtinguishModule() {
-        super("auto_extinguish", "Auto Extinguish", ModuleCategory.PLAYER,
+        super(
+                "auto_extinguish",
+                "Auto Extinguish",
+                ModuleCategory.PLAYER,
                 "Puts out fire blocks within reach and can pour a water bucket at your feet when you are burning.");
     }
 
@@ -90,7 +92,9 @@ public final class AutoExtinguishModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        if (this.extinguishSelf.value() && player.getRemainingFireTicks() > 0 && !player.isInWater()
+        if (this.extinguishSelf.value()
+                && player.getRemainingFireTicks() > 0
+                && !player.isInWater()
                 && this.pourWaterAtFeet(client, player)) {
             return;
         }
@@ -107,14 +111,21 @@ public final class AutoExtinguishModule extends Module {
      * rotation. Returns whether this tick was spent on it.
      */
     private boolean pourWaterAtFeet(final Minecraft client, final LocalPlayer player) {
-        OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.WATER_BUCKET));
+        OptionalInt slot =
+                InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.WATER_BUCKET));
         BlockPos ground = player.blockPosition().below();
         if (slot.isEmpty() || client.level.getBlockState(ground).isAir()) {
             return false;
         }
-        RotationManager.request(new RotationRequest(this.id(),
+        RotationManager.request(new RotationRequest(
+                this.id(),
                 Rotation.lookingAt(Vec3.atCenterOf(ground).add(0.0, 0.5, 0.0), player.getEyePosition()),
-                InventoryActionScheduler.PRIORITY_LIFE, 90.0F, 2, 2.0F, RotationTurnMode.STEPPED, false));
+                InventoryActionScheduler.PRIORITY_LIFE,
+                90.0F,
+                2,
+                2.0F,
+                RotationTurnMode.STEPPED,
+                false));
         RotationManager.apply(player);
         if (!RotationManager.serverLookHits(player, new AABB(ground), player.blockInteractionRange())) {
             return true;
@@ -138,13 +149,14 @@ public final class AutoExtinguishModule extends Module {
         int vertical = this.verticalRadius.value().intValue();
         int max = this.maxBlocksPerTick.value().intValue();
         int count = 0;
-        for (BlockPos cursor : BlockPos.betweenClosed(center.offset(-horizontal, -vertical, -horizontal),
-                center.offset(horizontal, vertical, horizontal))) {
+        for (BlockPos cursor : BlockPos.betweenClosed(
+                center.offset(-horizontal, -vertical, -horizontal), center.offset(horizontal, vertical, horizontal))) {
             BlockPos pos = cursor.immutable();
             if (count >= max) {
                 break;
             }
-            if (!client.level.isLoaded(pos) || !isFireBlock(client.level.getBlockState(pos).getBlock())
+            if (!client.level.isLoaded(pos)
+                    || !isFireBlock(client.level.getBlockState(pos).getBlock())
                     || !CombatTargets.canReachBlock(player, pos)) {
                 continue;
             }

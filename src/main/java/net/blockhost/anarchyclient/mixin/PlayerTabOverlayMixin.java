@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.impl.BetterTabModule;
 import net.minecraft.client.Minecraft;
@@ -10,8 +11,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 @Mixin(PlayerTabOverlay.class)
 public abstract class PlayerTabOverlayMixin {

@@ -18,7 +18,10 @@ public final class BreakDelayModule extends Module {
             .build()));
 
     public BreakDelayModule() {
-        super("break_delay", "Break Delay", ModuleCategory.WORLD,
+        super(
+                "break_delay",
+                "Break Delay",
+                ModuleCategory.WORLD,
                 "Sets the vanilla right-click repeat delay, so held use actions such as placing blocks repeat faster.");
     }
 
@@ -27,8 +30,8 @@ public final class BreakDelayModule extends Module {
         // Only shorten the delay vanilla set after a use. Writing the value every tick kept it from ever counting
         // down to 0, which is when vanilla repeats a held use.
         MinecraftAccessor accessor = (MinecraftAccessor) client;
-        accessor.anarchyclient$setRightClickDelay(
-                shortenedDelay(accessor.anarchyclient$rightClickDelay(), this.delay.value().intValue()));
+        accessor.anarchyclient$setRightClickDelay(shortenedDelay(
+                accessor.anarchyclient$rightClickDelay(), this.delay.value().intValue()));
     }
 
     static int shortenedDelay(final int current, final int configured) {

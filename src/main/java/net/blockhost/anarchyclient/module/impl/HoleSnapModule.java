@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,8 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Optional;
 
 public final class HoleSnapModule extends Module {
 
@@ -56,15 +55,22 @@ public final class HoleSnapModule extends Module {
             .build()));
 
     public HoleSnapModule() {
-        super("hole_snap", "Hole Snap", ModuleCategory.MOVEMENT,
+        super(
+                "hole_snap",
+                "Hole Snap",
+                ModuleCategory.MOVEMENT,
                 "Pulls you sideways into a nearby obsidian or bedrock hole as you move past it.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || player.isFallFlying() || player.getAbilities().flying
-                || player.isPassenger() || this.pauseSneaking.value() && player.isShiftKeyDown()) {
+        if (player == null
+                || client.level == null
+                || player.isFallFlying()
+                || player.getAbilities().flying
+                || player.isPassenger()
+                || this.pauseSneaking.value() && player.isShiftKeyDown()) {
             return;
         }
         BlockPos feet = player.blockPosition();
@@ -75,8 +81,8 @@ public final class HoleSnapModule extends Module {
             return;
         }
         Vec3 motion = player.getDeltaMovement();
-        Optional<BlockPos> hole = this.findHole(client.level, player.position(), feet,
-                this.directional.value() ? motion : null);
+        Optional<BlockPos> hole =
+                this.findHole(client.level, player.position(), feet, this.directional.value() ? motion : null);
         if (hole.isEmpty()) {
             return;
         }
@@ -89,8 +95,8 @@ public final class HoleSnapModule extends Module {
         return HoleManager.isHole(level, pos) || this.doubleHoles.value() && HoleManager.isDoubleHoleCell(level, pos);
     }
 
-    private Optional<BlockPos> findHole(final BlockGetter level, final Vec3 position, final BlockPos feet,
-                                        final Vec3 motion) {
+    private Optional<BlockPos> findHole(
+            final BlockGetter level, final Vec3 position, final BlockPos feet, final Vec3 motion) {
         int radius = this.range.value().intValue();
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;

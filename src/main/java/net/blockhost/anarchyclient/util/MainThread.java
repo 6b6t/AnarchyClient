@@ -11,8 +11,7 @@ import net.minecraft.client.Minecraft;
  */
 public final class MainThread {
 
-    private MainThread() {
-    }
+    private MainThread() {}
 
     /**
      * Runs the task now if the caller is on the client thread, otherwise queues it on the client

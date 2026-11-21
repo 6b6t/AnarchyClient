@@ -36,7 +36,8 @@ final class FriendHead extends Component {
                         // A skin that fails to resolve must never take down the render pass.
                         if (!renderFailureLogged) {
                             renderFailureLogged = true;
-                            AnarchyClient.LOGGER.warn("Friend head render failed; further failures are not logged", exception);
+                            AnarchyClient.LOGGER.warn(
+                                    "Friend head render failed; further failures are not logged", exception);
                         }
                     }
                 },

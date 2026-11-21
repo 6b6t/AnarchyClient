@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -20,16 +21,21 @@ import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.BlockHitResult;
 
-import java.util.List;
-
 public final class AutoSignModule extends Module {
 
     static final int PLACEMENT_WINDOW_TICKS = 20;
 
-    private final StringSetting line1 = this.setting(StringSetting.from(StringSetting.builder().id("line_1").name("Line 1").defaultValue("AnarchyClient").build()));
-    private final StringSetting line2 = this.setting(StringSetting.from(StringSetting.builder().id("line_2").name("Line 2").defaultValue("").build()));
-    private final StringSetting line3 = this.setting(StringSetting.from(StringSetting.builder().id("line_3").name("Line 3").defaultValue("").build()));
-    private final StringSetting line4 = this.setting(StringSetting.from(StringSetting.builder().id("line_4").name("Line 4").defaultValue("").build()));
+    private final StringSetting line1 = this.setting(StringSetting.from(StringSetting.builder()
+            .id("line_1")
+            .name("Line 1")
+            .defaultValue("AnarchyClient")
+            .build()));
+    private final StringSetting line2 = this.setting(StringSetting.from(
+            StringSetting.builder().id("line_2").name("Line 2").defaultValue("").build()));
+    private final StringSetting line3 = this.setting(StringSetting.from(
+            StringSetting.builder().id("line_3").name("Line 3").defaultValue("").build()));
+    private final StringSetting line4 = this.setting(StringSetting.from(
+            StringSetting.builder().id("line_4").name("Line 4").defaultValue("").build()));
     private final BooleanSetting front = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("front")
             .name("Front")
@@ -40,7 +46,10 @@ public final class AutoSignModule extends Module {
     private volatile int placementTicks;
 
     public AutoSignModule() {
-        super("auto_sign", "Auto Sign", ModuleCategory.WORLD,
+        super(
+                "auto_sign",
+                "Auto Sign",
+                ModuleCategory.WORLD,
                 "Writes the configured four lines to each sign you place instead of opening the sign editor.");
     }
 
@@ -114,9 +123,12 @@ public final class AutoSignModule extends Module {
         }
         connection.send(new ServerboundSignUpdatePacket(
                 editor.pos(),
-                List.of(trim(this.line1.value()), trim(this.line2.value()), trim(this.line3.value()), trim(this.line4.value())),
-                this.front.value() ? SignTextSlot.FRONT : SignTextSlot.BACK
-        ));
+                List.of(
+                        trim(this.line1.value()),
+                        trim(this.line2.value()),
+                        trim(this.line3.value()),
+                        trim(this.line4.value())),
+                this.front.value() ? SignTextSlot.FRONT : SignTextSlot.BACK));
         this.placementTicks = 0;
         return true;
     }

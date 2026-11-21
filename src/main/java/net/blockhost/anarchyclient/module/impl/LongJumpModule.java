@@ -29,7 +29,10 @@ public final class LongJumpModule extends Module {
     private int airTicks;
 
     public LongJumpModule() {
-        super("long_jump", "Long Jump", ModuleCategory.MOVEMENT,
+        super(
+                "long_jump",
+                "Long Jump",
+                ModuleCategory.MOVEMENT,
                 "Launches you forward in one long jump when you move, then turns off after landing.");
     }
 

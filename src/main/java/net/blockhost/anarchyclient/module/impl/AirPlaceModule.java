@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -28,8 +29,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
-import java.util.List;
-
 public final class AirPlaceModule extends Module {
 
     private final SelectSetting hand = this.setting(SelectSetting.from(SelectSetting.builder()
@@ -53,14 +52,19 @@ public final class AirPlaceModule extends Module {
             .build()));
 
     public AirPlaceModule() {
-        super("air_place", "Air Place", ModuleCategory.WORLD,
+        super(
+                "air_place",
+                "Air Place",
+                ModuleCategory.WORLD,
                 "Places blocks, spawn eggs, armor stands, and rockets in mid-air at a set distance along your view, with a preview box.");
     }
 
     @Override
     public boolean itemUse(final Minecraft client, final InteractionHand hand) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || !matchesHand(this.hand.value(), hand)
+        if (player == null
+                || client.level == null
+                || !matchesHand(this.hand.value(), hand)
                 || !placeable(player.getItemInHand(hand))
                 || client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS) {
             return false;
@@ -75,7 +79,11 @@ public final class AirPlaceModule extends Module {
         LocalPlayer player = client.player;
         PoseStack matrices = context.poseStack();
         SubmitNodeCollector submits = context.submitNodeCollector();
-        if (!this.render.value() || player == null || client.level == null || matrices == null || submits == null
+        if (!this.render.value()
+                || player == null
+                || client.level == null
+                || matrices == null
+                || submits == null
                 || client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS
                 || !hasPlaceableHand(player, this.hand.value())) {
             return;
@@ -89,20 +97,23 @@ public final class AirPlaceModule extends Module {
         WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(142, 234, 213, 180));
     }
 
-    private static boolean usePlaceableItem(final Minecraft client, final LocalPlayer player, final InteractionHand hand,
-                                            final BlockPos target) {
-        if (client.gameMode == null || client.level == null || !client.level.getBlockState(target).canBeReplaced()) {
+    private static boolean usePlaceableItem(
+            final Minecraft client, final LocalPlayer player, final InteractionHand hand, final BlockPos target) {
+        if (client.gameMode == null
+                || client.level == null
+                || !client.level.getBlockState(target).canBeReplaced()) {
             return false;
         }
         ItemStack stack = player.getItemInHand(hand);
         if (stack.getItem() instanceof BlockItem blockItem
-                && !client.level.isUnobstructed(blockItem.getBlock().defaultBlockState(), target,
-                CollisionContext.placementContext(player))) {
+                && !client.level.isUnobstructed(
+                        blockItem.getBlock().defaultBlockState(), target, CollisionContext.placementContext(player))) {
             return false;
         }
         Direction face = player.getMotionDirection().getOpposite();
         Vec3 hit = Vec3.atCenterOf(target);
-        InteractionResult result = client.gameMode.useItemOn(player, hand, new BlockHitResult(hit, face, target, false));
+        InteractionResult result =
+                client.gameMode.useItemOn(player, hand, new BlockHitResult(hit, face, target, false));
         if (result.consumesAction()) {
             player.swing(hand, SwingAnimation.DEFAULT, false);
             return true;
@@ -111,7 +122,8 @@ public final class AirPlaceModule extends Module {
     }
 
     private static BlockPos targetPos(final LocalPlayer player, final double distance) {
-        return BlockPos.containing(player.getEyePosition().add(player.getLookAngle().scale(distance)));
+        return BlockPos.containing(
+                player.getEyePosition().add(player.getLookAngle().scale(distance)));
     }
 
     private static boolean hasPlaceableHand(final LocalPlayer player, final String mode) {

@@ -1,20 +1,18 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.lenni0451.rivet.component.container.Container;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-
-import java.util.Locale;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.FAINT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.gridLayout;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.label;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textNode;
+
+import java.util.Locale;
+import net.lenni0451.rivet.component.container.Container;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
 
 final class GroupHeader extends Container implements LayoutDebugLabel {
 
@@ -26,8 +24,20 @@ final class GroupHeader extends Container implements LayoutDebugLabel {
         this.name = name;
         this.fixedSize(-1, 24);
         this.label = textNode(name.toUpperCase(Locale.ROOT), FAINT);
-        place(this.label, cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(PADDING, 4F, PADDING, 0F), null, null));
+        place(
+                this.label,
+                cell(
+                        0,
+                        0,
+                        1,
+                        1,
+                        1F,
+                        1F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(PADDING, 4F, PADDING, 0F),
+                        null,
+                        null));
         this.addChild(this.label);
     }
 

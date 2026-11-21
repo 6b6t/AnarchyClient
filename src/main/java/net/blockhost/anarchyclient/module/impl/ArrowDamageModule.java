@@ -37,13 +37,16 @@ public final class ArrowDamageModule extends Module {
             .build()));
 
     public ArrowDamageModule() {
-        super("arrow_damage", "Arrow Damage", ModuleCategory.COMBAT,
+        super(
+                "arrow_damage",
+                "Arrow Damage",
+                ModuleCategory.COMBAT,
                 "Sends extra sprint and movement packets when you release a bow, crossbow, or trident to boost its damage. This can flag anti-cheats.");
     }
 
     @Override
-    public void itemStopUse(final Minecraft client, final InteractionHand hand, final ItemStack stack,
-                            final int remainingTicks) {
+    public void itemStopUse(
+            final Minecraft client, final InteractionHand hand, final ItemStack stack, final int remainingTicks) {
         LocalPlayer player = client.player;
         if (player == null || client.getConnection() == null || !isSupported(stack, this.tridents.value())) {
             return;
@@ -52,15 +55,23 @@ public final class ArrowDamageModule extends Module {
         if (usedTicks < 3) {
             return;
         }
-        client.getConnection().send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
+        client.getConnection()
+                .send(new ServerboundPlayerCommandPacket(
+                        player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         for (int index = 0; index < this.packets.value().intValue(); index++) {
             double y = player.getY() + this.offset.value();
-            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(player.getX(), y, player.getZ(), false, player.horizontalCollision));
-            client.getConnection().send(new ServerboundMovePlayerPacket.Pos(player.getX(), player.getY(), player.getZ(), true, player.horizontalCollision));
+            client.getConnection()
+                    .send(new ServerboundMovePlayerPacket.Pos(
+                            player.getX(), y, player.getZ(), false, player.horizontalCollision));
+            client.getConnection()
+                    .send(new ServerboundMovePlayerPacket.Pos(
+                            player.getX(), player.getY(), player.getZ(), true, player.horizontalCollision));
         }
     }
 
     static boolean isSupported(final ItemStack stack, final boolean tridents) {
-        return stack.getItem() == Items.BOW || stack.getItem() == Items.CROSSBOW || tridents && stack.getItem() == Items.TRIDENT;
+        return stack.getItem() == Items.BOW
+                || stack.getItem() == Items.CROSSBOW
+                || tridents && stack.getItem() == Items.TRIDENT;
     }
 }

@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
@@ -32,14 +39,6 @@ import net.minecraft.world.level.block.CraftingTableBlock;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.OptionalInt;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public final class SmartEatModule extends Module {
 
@@ -91,11 +90,8 @@ public final class SmartEatModule extends Module {
             .name("Enchanted")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting allowSoup = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("soup")
-            .name("Soup")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting allowSoup = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("soup").name("Soup").defaultValue(true).build()));
     private final BooleanSetting allowDuringCombat = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("allow_combat")
             .name("Combat")
@@ -146,7 +142,11 @@ public final class SmartEatModule extends Module {
     private InteractionHand eatingHand;
 
     public SmartEatModule() {
-        super("smart_eat", "Smart Eat", ModuleCategory.PLAYER, "Eats until the item is consumed when hunger or health is low, choosing food by quality and combat pressure.");
+        super(
+                "smart_eat",
+                "Smart Eat",
+                ModuleCategory.PLAYER,
+                "Eats until the item is consumed when hunger or health is low, choosing food by quality and combat pressure.");
         this.healthThreshold.visibleWhen(() -> !"Hunger".equals(this.thresholdMode.value()));
         this.hungerThreshold.visibleWhen(() -> !"Health".equals(this.thresholdMode.value()));
     }
@@ -254,38 +254,49 @@ public final class SmartEatModule extends Module {
                 health,
                 this.hungerThreshold.value(),
                 this.healthThreshold.value(),
-                ThresholdMode.fromSetting(this.thresholdMode.value())
-        )) {
-            return new ConsumableChoice(ConsumableKind.FOOD,
+                ThresholdMode.fromSetting(this.thresholdMode.value()))) {
+            return new ConsumableChoice(
+                    ConsumableKind.FOOD,
                     stack -> isFood(stack, false, blacklist) && canEatNow(player.canEat(false), stack));
         }
         return null;
     }
 
-    private OptionalInt findHotbarSlot(final Inventory inventory, final ConsumableChoice choice,
-                                       final FoodPriority priority) {
+    private OptionalInt findHotbarSlot(
+            final Inventory inventory, final ConsumableChoice choice, final FoodPriority priority) {
         return switch (choice.kind()) {
             case SOUP -> findSoupSlot(inventory, 0, Inventory.getSelectionSize() - 1);
-            case GAPPLE -> bestGappleSlot(inventory, 0, Inventory.getSelectionSize() - 1,
-                    this.preferEnchantedGapples.value());
-            case FOOD -> findBestFoodSlot(inventory, 0, Inventory.getSelectionSize() - 1,
-                    choice.predicate(), priority);
+            case GAPPLE ->
+                bestGappleSlot(inventory, 0, Inventory.getSelectionSize() - 1, this.preferEnchantedGapples.value());
+            case FOOD -> findBestFoodSlot(inventory, 0, Inventory.getSelectionSize() - 1, choice.predicate(), priority);
         };
     }
 
-    private OptionalInt findInventorySlot(final Inventory inventory, final ConsumableChoice choice,
-                                          final FoodPriority priority) {
+    private OptionalInt findInventorySlot(
+            final Inventory inventory, final ConsumableChoice choice, final FoodPriority priority) {
         return switch (choice.kind()) {
             case SOUP -> findSoupSlot(inventory, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE - 1);
-            case GAPPLE -> bestGappleSlot(inventory, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE - 1,
-                    this.preferEnchantedGapples.value());
-            case FOOD -> findBestFoodSlot(inventory, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE - 1,
-                    choice.predicate(), priority);
+            case GAPPLE ->
+                bestGappleSlot(
+                        inventory,
+                        Inventory.getSelectionSize(),
+                        Inventory.INVENTORY_SIZE - 1,
+                        this.preferEnchantedGapples.value());
+            case FOOD ->
+                findBestFoodSlot(
+                        inventory,
+                        Inventory.getSelectionSize(),
+                        Inventory.INVENTORY_SIZE - 1,
+                        choice.predicate(),
+                        priority);
         };
     }
 
-    private void queueInventoryMove(final Minecraft client, final LocalPlayer player, final ConsumableChoice choice,
-                                    final FoodPriority priority) {
+    private void queueInventoryMove(
+            final Minecraft client,
+            final LocalPlayer player,
+            final ConsumableChoice choice,
+            final FoodPriority priority) {
         if (!InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
@@ -294,17 +305,15 @@ public final class SmartEatModule extends Module {
         if (sourceSlot.isEmpty() || targetSlot.isEmpty()) {
             return;
         }
-        InventorySlotRef source = InventorySlots.storageSlot(sourceSlot.orElseThrow()).orElse(null);
-        InventorySlotRef target = InventorySlots.storageSlot(targetSlot.orElseThrow()).orElse(null);
+        InventorySlotRef source =
+                InventorySlots.storageSlot(sourceSlot.orElseThrow()).orElse(null);
+        InventorySlotRef target =
+                InventorySlots.storageSlot(targetSlot.orElseThrow()).orElse(null);
         if (source == null || target == null) {
             return;
         }
         InventoryActionScheduler.schedule(InventoryActionChain.single(
-                this.id(),
-                InventoryActionScheduler.PRIORITY_LIFE,
-                2,
-                InventoryAction.pickupSwap(source, target)
-        ));
+                this.id(), InventoryActionScheduler.PRIORITY_LIFE, 2, InventoryAction.pickupSwap(source, target)));
     }
 
     /** Whether vanilla lets the player start eating {@code stack}, given whether they are hungry at all. */
@@ -313,13 +322,17 @@ public final class SmartEatModule extends Module {
         return food != null && (hungry || food.canAlwaysEat());
     }
 
-    static boolean shouldEat(final int hunger, final float health, final double hungerThreshold,
-                             final double healthThreshold) {
+    static boolean shouldEat(
+            final int hunger, final float health, final double hungerThreshold, final double healthThreshold) {
         return shouldEat(hunger, health, hungerThreshold, healthThreshold, ThresholdMode.ANY);
     }
 
-    static boolean shouldEat(final int hunger, final float health, final double hungerThreshold,
-                             final double healthThreshold, final ThresholdMode mode) {
+    static boolean shouldEat(
+            final int hunger,
+            final float health,
+            final double hungerThreshold,
+            final double healthThreshold,
+            final ThresholdMode mode) {
         boolean hungerLow = hunger <= hungerThreshold;
         boolean healthLow = health <= healthThreshold;
         return mode.test(healthLow, hungerLow);
@@ -329,8 +342,8 @@ public final class SmartEatModule extends Module {
         return bestGappleSlot(inventory, 0, Inventory.getSelectionSize() - 1, preferEnchanted);
     }
 
-    private static OptionalInt bestGappleSlot(final Inventory inventory, final int start, final int end,
-                                              final boolean preferEnchanted) {
+    private static OptionalInt bestGappleSlot(
+            final Inventory inventory, final int start, final int end, final boolean preferEnchanted) {
         OptionalInt enchanted = findSlot(inventory, start, end, stack -> stack.is(Items.ENCHANTED_GOLDEN_APPLE));
         OptionalInt golden = findSlot(inventory, start, end, stack -> stack.is(Items.GOLDEN_APPLE));
         if (preferEnchanted && enchanted.isPresent()) {
@@ -348,7 +361,8 @@ public final class SmartEatModule extends Module {
     }
 
     static boolean isSoup(final ItemStack stack) {
-        return !stack.isEmpty() && isSoupItemId(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
+        return !stack.isEmpty()
+                && isSoupItemId(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
     }
 
     static boolean isSoupItemId(final String itemId) {
@@ -408,8 +422,12 @@ public final class SmartEatModule extends Module {
         return blacklist.contains(path) || blacklist.contains(id);
     }
 
-    private static OptionalInt findBestFoodSlot(final Inventory inventory, final int start, final int end,
-                                                final Predicate<ItemStack> predicate, final FoodPriority priority) {
+    private static OptionalInt findBestFoodSlot(
+            final Inventory inventory,
+            final int start,
+            final int end,
+            final Predicate<ItemStack> predicate,
+            final FoodPriority priority) {
         int bestSlot = -1;
         double bestScore = -1;
         for (int slot = start; slot <= end; slot++) {
@@ -426,8 +444,8 @@ public final class SmartEatModule extends Module {
         return bestSlot < 0 ? OptionalInt.empty() : OptionalInt.of(bestSlot);
     }
 
-    private static OptionalInt findSlot(final Inventory inventory, final int start, final int end,
-                                        final Predicate<ItemStack> predicate) {
+    private static OptionalInt findSlot(
+            final Inventory inventory, final int start, final int end, final Predicate<ItemStack> predicate) {
         for (int slot = start; slot <= end; slot++) {
             ItemStack stack = inventory.getItem(slot);
             if (!stack.isEmpty() && predicate.test(stack)) {
@@ -446,8 +464,8 @@ public final class SmartEatModule extends Module {
         return OptionalInt.empty();
     }
 
-    private static InteractionHand consumableHand(final ItemStack mainHand, final ItemStack offHand,
-                                                  final Predicate<ItemStack> predicate) {
+    private static InteractionHand consumableHand(
+            final ItemStack mainHand, final ItemStack offHand, final Predicate<ItemStack> predicate) {
         if (predicate.test(mainHand)) {
             return InteractionHand.MAIN_HAND;
         }
@@ -516,6 +534,5 @@ public final class SmartEatModule extends Module {
         SOUP
     }
 
-    private record ConsumableChoice(ConsumableKind kind, Predicate<ItemStack> predicate) {
-    }
+    private record ConsumableChoice(ConsumableKind kind, Predicate<ItemStack> predicate) {}
 }

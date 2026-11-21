@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
@@ -11,14 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ExtendWith(MinecraftBootstrapExtension.class)
 class MinecraftPacketCompatibilityTest {
 
@@ -28,8 +27,8 @@ class MinecraftPacketCompatibilityTest {
         BlockPos pos = new BlockPos(10, 64, -20);
         var packet = new ServerboundSignUpdatePacket(pos, List.of("&aGreen", "plain", "", "&lBold"), side);
 
-        var rewritten = assertInstanceOf(ServerboundSignUpdatePacket.class,
-                new ColorSignsModule().replaceSendPacket(null, null, packet));
+        var rewritten = assertInstanceOf(
+                ServerboundSignUpdatePacket.class, new ColorSignsModule().replaceSendPacket(null, null, packet));
 
         assertEquals(pos, rewritten.pos());
         assertEquals(side, rewritten.slot());
@@ -39,7 +38,8 @@ class MinecraftPacketCompatibilityTest {
 
     @Test
     void keepsUncoloredSignPackets() {
-        var packet = new ServerboundSignUpdatePacket(BlockPos.ZERO, List.of("plain", "text", "", ""), SignTextSlot.BACK);
+        var packet =
+                new ServerboundSignUpdatePacket(BlockPos.ZERO, List.of("plain", "text", "", ""), SignTextSlot.BACK);
         assertSame(packet, new ColorSignsModule().replaceSendPacket(null, null, packet));
     }
 

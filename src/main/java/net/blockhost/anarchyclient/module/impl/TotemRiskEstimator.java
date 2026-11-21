@@ -12,17 +12,13 @@ import net.minecraft.world.phys.Vec3;
 final class TotemRiskEstimator {
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
+        EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
     };
 
     private static final double TNT_POWER = 4.0;
     private static final double CREEPER_POWER = 3.0;
 
-    private TotemRiskEstimator() {
-    }
+    private TotemRiskEstimator() {}
 
     static float effectiveHealth(final LocalPlayer player, final boolean includeAbsorption) {
         float health = player.getHealth();
@@ -45,8 +41,8 @@ final class TotemRiskEstimator {
         return false;
     }
 
-    static double predictedExplosionDamage(final Iterable<? extends Entity> entities, final LocalPlayer player,
-                                           final double range) {
+    static double predictedExplosionDamage(
+            final Iterable<? extends Entity> entities, final LocalPlayer player, final double range) {
         double predictedDamage = 0.0;
         double rangeSqr = range * range;
         for (Entity entity : entities) {
@@ -54,16 +50,22 @@ final class TotemRiskEstimator {
             if (power <= 0.0 || player.distanceToSqr(entity) > rangeSqr) {
                 continue;
             }
-            predictedDamage = Math.max(predictedDamage,
-                    DamageEstimator.explosionDamage(player, explosionCenter(entity), power));
+            predictedDamage =
+                    Math.max(predictedDamage, DamageEstimator.explosionDamage(player, explosionCenter(entity), power));
         }
         return predictedDamage;
     }
 
-    static boolean needsTotem(final LocalPlayer player, final ClientLevel level, final boolean includeAbsorption,
-                              final boolean missingArmorTotem, final double healthThreshold,
-                              final double fallDistanceThreshold, final boolean fireTotem,
-                              final boolean predictExplosions, final double explosionRange) {
+    static boolean needsTotem(
+            final LocalPlayer player,
+            final ClientLevel level,
+            final boolean includeAbsorption,
+            final boolean missingArmorTotem,
+            final double healthThreshold,
+            final double fallDistanceThreshold,
+            final boolean fireTotem,
+            final boolean predictExplosions,
+            final double explosionRange) {
         float health = effectiveHealth(player, includeAbsorption);
         if (health <= healthThreshold) {
             return true;

@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -11,10 +14,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
-
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
 
 public final class AutoLoginModule extends Module {
 
@@ -37,7 +36,10 @@ public final class AutoLoginModule extends Module {
     private volatile String transferHost;
 
     public AutoLoginModule() {
-        super("auto_login", "Auto Login", ModuleCategory.MISC,
+        super(
+                "auto_login",
+                "Auto Login",
+                ModuleCategory.MISC,
                 "Sends a configured login command a set time after joining, chosen by server address, name, or a fallback entry.");
     }
 
@@ -142,11 +144,7 @@ public final class AutoLoginModule extends Module {
     private static ServerIdentity serverIdentity(final Minecraft client) {
         ServerData server = client.getCurrentServer();
         if (server != null) {
-            return new ServerIdentity(
-                    normalize(server.ip),
-                    normalize(server.name),
-                    false
-            );
+            return new ServerIdentity(normalize(server.ip), normalize(server.name), false);
         }
         return new ServerIdentity("local", "local", client.isLocalServer() || client.hasSingleplayerServer());
     }
@@ -155,6 +153,5 @@ public final class AutoLoginModule extends Module {
         return value == null || value.isBlank() ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-    private record ServerIdentity(String address, String name, boolean local) {
-    }
+    private record ServerIdentity(String address, String name, boolean local) {}
 }

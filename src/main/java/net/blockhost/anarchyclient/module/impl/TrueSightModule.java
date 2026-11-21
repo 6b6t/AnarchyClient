@@ -18,11 +18,8 @@ public final class TrueSightModule extends Module {
             .name("Players")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting mobs = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("mobs")
-            .name("Mobs")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting mobs = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("mobs").name("Mobs").defaultValue(true).build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
             .name("Range")
@@ -33,7 +30,10 @@ public final class TrueSightModule extends Module {
             .build()));
 
     public TrueSightModule() {
-        super("true_sight", "True Sight", ModuleCategory.RENDER,
+        super(
+                "true_sight",
+                "True Sight",
+                ModuleCategory.RENDER,
                 "Outlines invisible players and mobs near you so you can see where they are.");
     }
 

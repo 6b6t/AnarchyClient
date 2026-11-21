@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.rivet;
 
-import net.lenni0451.commons.math.MathUtils;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
-import org.joml.Matrix3x2fc;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.lenni0451.commons.math.MathUtils;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import org.joml.Matrix3x2fc;
 
 final class GuiShapeGeometry {
 
@@ -16,11 +15,17 @@ final class GuiShapeGeometry {
 
     private static final float EPSILON = 0.0001F;
 
-    private GuiShapeGeometry() {
-    }
+    private GuiShapeGeometry() {}
 
-    static List<Vertex> gradientRect(final float x, final float y, final float width, final float height,
-                                     final int topLeftColor, final int bottomLeftColor, final int bottomRightColor, final int topRightColor) {
+    static List<Vertex> gradientRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final int topLeftColor,
+            final int bottomLeftColor,
+            final int bottomRightColor,
+            final int topRightColor) {
         if (width <= 0 || height <= 0) {
             return List.of();
         }
@@ -28,19 +33,31 @@ final class GuiShapeGeometry {
                 new Vertex(x, y, topLeftColor),
                 new Vertex(x, y + height, bottomLeftColor),
                 new Vertex(x + width, y + height, bottomRightColor),
-                new Vertex(x + width, y, topRightColor)
-        );
+                new Vertex(x + width, y, topRightColor));
     }
 
-    static List<Vertex> filledRoundedRect(final float x, final float y, final float width, final float height,
-                                          final float cornerRadius, final int color) {
+    static List<Vertex> filledRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float cornerRadius,
+            final int color) {
         return filledRoundedRect(x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius, color);
     }
 
-    static List<Vertex> filledRoundedRect(final float x, final float y, final float width, final float height,
-                                          final float topLeftRadius, final float bottomLeftRadius,
-                                          final float bottomRightRadius, final float topRightRadius, final int color) {
-        CornerRadii radii = clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
+    static List<Vertex> filledRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float topLeftRadius,
+            final float bottomLeftRadius,
+            final float bottomRightRadius,
+            final float topRightRadius,
+            final int color) {
+        CornerRadii radii =
+                clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
         if (radii.isSquare()) {
             return solidRect(x, y, width, height, color);
         }
@@ -55,25 +72,48 @@ final class GuiShapeGeometry {
             }
             VerticalSpan leftSpan = roundedRectSpanAtX(left, x, y, width, height, radii);
             VerticalSpan rightSpan = roundedRectSpanAtX(right, x, y, width, height, radii);
-            addVerticalStrip(vertices, left, leftSpan.top(), leftSpan.bottom(), right, rightSpan.top(), rightSpan.bottom(), color);
+            addVerticalStrip(
+                    vertices,
+                    left,
+                    leftSpan.top(),
+                    leftSpan.bottom(),
+                    right,
+                    rightSpan.top(),
+                    rightSpan.bottom(),
+                    color);
         }
         return vertices;
     }
 
-    static List<Vertex> outlinedRoundedRect(final float x, final float y, final float width, final float height,
-                                            final float cornerRadius, final float outlineWidth, final int color) {
-        return outlinedRoundedRect(x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius, outlineWidth, color);
+    static List<Vertex> outlinedRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float cornerRadius,
+            final float outlineWidth,
+            final int color) {
+        return outlinedRoundedRect(
+                x, y, width, height, cornerRadius, cornerRadius, cornerRadius, cornerRadius, outlineWidth, color);
     }
 
-    static List<Vertex> outlinedRoundedRect(final float x, final float y, final float width, final float height,
-                                            final float topLeftRadius, final float bottomLeftRadius,
-                                            final float bottomRightRadius, final float topRightRadius,
-                                            final float outlineWidth, final int color) {
+    static List<Vertex> outlinedRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float topLeftRadius,
+            final float bottomLeftRadius,
+            final float bottomRightRadius,
+            final float topRightRadius,
+            final float outlineWidth,
+            final int color) {
         if (outlineWidth <= 0) {
             return List.of();
         }
 
-        CornerRadii radii = clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
+        CornerRadii radii =
+                clampedCornerRadii(width, height, topLeftRadius, bottomLeftRadius, bottomRightRadius, topRightRadius);
         if (radii.isSquare()) {
             return outlinedRect(x, y, width, height, outlineWidth, color);
         }
@@ -84,7 +124,16 @@ final class GuiShapeGeometry {
         float innerWidth = width - stroke * 2F;
         float innerHeight = height - stroke * 2F;
         if (innerWidth <= EPSILON || innerHeight <= EPSILON) {
-            return filledRoundedRect(x, y, width, height, radii.topLeft(), radii.bottomLeft(), radii.bottomRight(), radii.topRight(), color);
+            return filledRoundedRect(
+                    x,
+                    y,
+                    width,
+                    height,
+                    radii.topLeft(),
+                    radii.bottomLeft(),
+                    radii.bottomRight(),
+                    radii.topRight(),
+                    color);
         }
 
         CornerRadii innerRadii = clampedCornerRadii(
@@ -93,8 +142,7 @@ final class GuiShapeGeometry {
                 radii.topLeft() - stroke,
                 radii.bottomLeft() - stroke,
                 radii.bottomRight() - stroke,
-                radii.topRight() - stroke
-        );
+                radii.topRight() - stroke);
         List<Float> breakpoints = roundedRectBreakpoints(x, width, radii);
         addRoundedRectBreakpoints(breakpoints, innerX, innerWidth, innerRadii);
         sortAndDedupe(breakpoints);
@@ -112,21 +160,40 @@ final class GuiShapeGeometry {
             VerticalSpan innerLeft = roundedRectSpanAtX(left, innerX, innerY, innerWidth, innerHeight, innerRadii);
             VerticalSpan innerRight = roundedRectSpanAtX(right, innerX, innerY, innerWidth, innerHeight, innerRadii);
             if (innerLeft == null || innerRight == null) {
-                addVerticalStrip(vertices, left, outerLeft.top(), outerLeft.bottom(), right, outerRight.top(), outerRight.bottom(), color);
+                addVerticalStrip(
+                        vertices,
+                        left,
+                        outerLeft.top(),
+                        outerLeft.bottom(),
+                        right,
+                        outerRight.top(),
+                        outerRight.bottom(),
+                        color);
                 continue;
             }
 
-            addVerticalStrip(vertices, left, outerLeft.top(), innerLeft.top(), right, outerRight.top(), innerRight.top(), color);
-            addVerticalStrip(vertices, left, innerLeft.bottom(), outerLeft.bottom(), right, innerRight.bottom(), outerRight.bottom(), color);
+            addVerticalStrip(
+                    vertices, left, outerLeft.top(), innerLeft.top(), right, outerRight.top(), innerRight.top(), color);
+            addVerticalStrip(
+                    vertices,
+                    left,
+                    innerLeft.bottom(),
+                    outerLeft.bottom(),
+                    right,
+                    innerRight.bottom(),
+                    outerRight.bottom(),
+                    color);
         }
         return vertices;
     }
 
-    static List<Vertex> solidRect(final float x, final float y, final float width, final float height, final int color) {
+    static List<Vertex> solidRect(
+            final float x, final float y, final float width, final float height, final int color) {
         return gradientRect(x, y, width, height, color, color, color, color);
     }
 
-    static List<Vertex> line(final float x1, final float y1, final float x2, final float y2, final float width, final int color) {
+    static List<Vertex> line(
+            final float x1, final float y1, final float x2, final float y2, final float width, final int color) {
         if (width <= 0) {
             return List.of();
         }
@@ -157,16 +224,22 @@ final class GuiShapeGeometry {
                 new Vertex(bodyX1 + offsetX, bodyY1 + offsetY, color),
                 new Vertex(bodyX1 - offsetX, bodyY1 - offsetY, color),
                 new Vertex(bodyX2 - offsetX, bodyY2 - offsetY, color),
-                new Vertex(bodyX2 + offsetX, bodyY2 + offsetY, color)
-        ));
+                new Vertex(bodyX2 + offsetX, bodyY2 + offsetY, color)));
         float angle = (float) Math.atan2(dy, dx);
-        vertices.addAll(filledArc(bodyX1, bodyY1, halfWidth, angle + QUARTER_CIRCLE, angle + HALF_CIRCLE + QUARTER_CIRCLE, color));
+        vertices.addAll(filledArc(
+                bodyX1, bodyY1, halfWidth, angle + QUARTER_CIRCLE, angle + HALF_CIRCLE + QUARTER_CIRCLE, color));
         vertices.addAll(filledArc(bodyX2, bodyY2, halfWidth, angle - QUARTER_CIRCLE, angle + QUARTER_CIRCLE, color));
         return vertices;
     }
 
-    static List<Vertex> filledTriangle(final float x1, final float y1, final float x2, final float y2,
-                                       final float x3, final float y3, final int color) {
+    static List<Vertex> filledTriangle(
+            final float x1,
+            final float y1,
+            final float x2,
+            final float y2,
+            final float x3,
+            final float y3,
+            final int color) {
         Vertex first = new Vertex(x1, y1, color);
         Vertex second = new Vertex(x2, y2, color);
         Vertex third = new Vertex(x3, y3, color);
@@ -180,7 +253,13 @@ final class GuiShapeGeometry {
         return filledArc(x, y, radius, 0, FULL_CIRCLE, color);
     }
 
-    static List<Vertex> filledArc(final float x, final float y, final float radius, final float startAngle, final float endAngle, final int color) {
+    static List<Vertex> filledArc(
+            final float x,
+            final float y,
+            final float radius,
+            final float startAngle,
+            final float endAngle,
+            final int color) {
         if (radius <= 0) {
             return List.of();
         }
@@ -200,14 +279,19 @@ final class GuiShapeGeometry {
                     arcVertex(x, y, radius, angleA, color),
                     new Vertex(x, y, color),
                     new Vertex(x, y, color),
-                    arcVertex(x, y, radius, angleB, color)
-            ));
+                    arcVertex(x, y, radius, angleB, color)));
         }
         return vertices;
     }
 
-    static List<Vertex> ringArc(final float x, final float y, final float outerRadius, final float innerRadius,
-                                final float startAngle, final float endAngle, final int color) {
+    static List<Vertex> ringArc(
+            final float x,
+            final float y,
+            final float outerRadius,
+            final float innerRadius,
+            final float startAngle,
+            final float endAngle,
+            final int color) {
         if (outerRadius <= 0 || outerRadius <= innerRadius) {
             return List.of();
         }
@@ -228,13 +312,13 @@ final class GuiShapeGeometry {
                     arcVertex(x, y, outerRadius, angleA, color),
                     arcVertex(x, y, clampedInnerRadius, angleA, color),
                     arcVertex(x, y, clampedInnerRadius, angleB, color),
-                    arcVertex(x, y, outerRadius, angleB, color)
-            ));
+                    arcVertex(x, y, outerRadius, angleB, color)));
         }
         return vertices;
     }
 
-    static ScreenRectangle bounds(final List<Vertex> vertices, final Matrix3x2fc pose, final ScreenRectangle scissorArea) {
+    static ScreenRectangle bounds(
+            final List<Vertex> vertices, final Matrix3x2fc pose, final ScreenRectangle scissorArea) {
         if (vertices.isEmpty()) {
             return null;
         }
@@ -255,11 +339,8 @@ final class GuiShapeGeometry {
         int right = MathUtils.ceilInt(maxX);
         int bottom = MathUtils.ceilInt(maxY);
         ScreenRectangle transformedBounds = new ScreenRectangle(
-                left,
-                top,
-                Math.max(1, right - left),
-                Math.max(1, bottom - top)
-        ).transformMaxBounds(pose);
+                        left, top, Math.max(1, right - left), Math.max(1, bottom - top))
+                .transformMaxBounds(pose);
         if (scissorArea == null) {
             return transformedBounds;
         }
@@ -278,16 +359,18 @@ final class GuiShapeGeometry {
         return Math.min(384, Math.max(angleMinimum, lengthMinimum));
     }
 
-    private static Vertex arcVertex(final float x, final float y, final float radius, final float angle, final int color) {
-        return new Vertex(
-                (float) (x + Math.cos(angle) * radius),
-                (float) (y + Math.sin(angle) * radius),
-                color
-        );
+    private static Vertex arcVertex(
+            final float x, final float y, final float radius, final float angle, final int color) {
+        return new Vertex((float) (x + Math.cos(angle) * radius), (float) (y + Math.sin(angle) * radius), color);
     }
 
-    private static List<Vertex> outlinedRect(final float x, final float y, final float width, final float height,
-                                             final float outlineWidth, final int color) {
+    private static List<Vertex> outlinedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float outlineWidth,
+            final int color) {
         if (width <= 0 || height <= 0 || outlineWidth <= 0) {
             return List.of();
         }
@@ -301,9 +384,13 @@ final class GuiShapeGeometry {
         return vertices;
     }
 
-    private static CornerRadii clampedCornerRadii(final float width, final float height,
-                                                  final float topLeftRadius, final float bottomLeftRadius,
-                                                  final float bottomRightRadius, final float topRightRadius) {
+    private static CornerRadii clampedCornerRadii(
+            final float width,
+            final float height,
+            final float topLeftRadius,
+            final float bottomLeftRadius,
+            final float bottomRightRadius,
+            final float topRightRadius) {
         if (width <= 0 || height <= 0) {
             return CornerRadii.SQUARE;
         }
@@ -327,7 +414,8 @@ final class GuiShapeGeometry {
         return breakpoints;
     }
 
-    private static void addRoundedRectBreakpoints(final List<Float> breakpoints, final float x, final float width, final CornerRadii radii) {
+    private static void addRoundedRectBreakpoints(
+            final List<Float> breakpoints, final float x, final float width, final CornerRadii radii) {
         if (width <= 0) {
             return;
         }
@@ -340,8 +428,8 @@ final class GuiShapeGeometry {
         addCornerBreakpoints(breakpoints, x + width, radii.bottomRight(), true);
     }
 
-    private static void addCornerBreakpoints(final List<Float> breakpoints, final float edge, final float radius,
-                                             final boolean fromRight) {
+    private static void addCornerBreakpoints(
+            final List<Float> breakpoints, final float edge, final float radius, final boolean fromRight) {
         if (radius <= EPSILON) return;
         int segments = segmentsForArc(radius, QUARTER_CIRCLE);
         for (int index = 0; index <= segments; index++) {
@@ -350,8 +438,13 @@ final class GuiShapeGeometry {
         }
     }
 
-    private static VerticalSpan roundedRectSpanAtX(final float position, final float x, final float y,
-                                                   final float width, final float height, final CornerRadii radii) {
+    private static VerticalSpan roundedRectSpanAtX(
+            final float position,
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final CornerRadii radii) {
         if (position < x - EPSILON || position > x + width + EPSILON || width <= 0 || height <= 0) {
             return null;
         }
@@ -382,8 +475,15 @@ final class GuiShapeGeometry {
         return bottom - radius + extent;
     }
 
-    private static void addVerticalStrip(final List<Vertex> vertices, final float left, final float topLeft, final float bottomLeft,
-                                         final float right, final float topRight, final float bottomRight, final int color) {
+    private static void addVerticalStrip(
+            final List<Vertex> vertices,
+            final float left,
+            final float topLeft,
+            final float bottomLeft,
+            final float right,
+            final float topRight,
+            final float bottomRight,
+            final int color) {
         if (right - left <= EPSILON || (bottomLeft - topLeft <= EPSILON && bottomRight - topRight <= EPSILON)) {
             return;
         }
@@ -391,8 +491,7 @@ final class GuiShapeGeometry {
                 new Vertex(left, topLeft, color),
                 new Vertex(left, bottomLeft, color),
                 new Vertex(right, bottomRight, color),
-                new Vertex(right, topRight, color)
-        ));
+                new Vertex(right, topRight, color)));
     }
 
     private static void sortAndDedupe(final List<Float> values) {
@@ -424,11 +523,9 @@ final class GuiShapeGeometry {
                 + (fourth.x() * first.y() - first.x() * fourth.y());
     }
 
-    record Vertex(float x, float y, int color) {
-    }
+    record Vertex(float x, float y, int color) {}
 
-    private record VerticalSpan(float top, float bottom) {
-    }
+    private record VerticalSpan(float top, float bottom) {}
 
     private record CornerRadii(float topLeft, float bottomLeft, float bottomRight, float topRight) {
 

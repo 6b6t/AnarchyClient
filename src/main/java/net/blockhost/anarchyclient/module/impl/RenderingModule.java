@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.RenderSuppression;
@@ -13,9 +15,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class RenderingModule extends Module {
 
@@ -116,20 +115,23 @@ public final class RenderingModule extends Module {
             .name("Status")
             .defaultValue(false)
             .build()));
-    private final StatusEffectListSetting statusEffects = this.setting(StatusEffectListSetting.from(StatusEffectListSetting.builder()
-            .id("status_effects")
-            .name("Effects")
-            .addAllDefaultValue(List.of(
-                    MobEffects.BLINDNESS.value(),
-                    MobEffects.DARKNESS.value(),
-                    MobEffects.LEVITATION.value(),
-                    MobEffects.MINING_FATIGUE.value(),
-                    MobEffects.NAUSEA.value()
-            ))
-            .build()));
+    private final StatusEffectListSetting statusEffects =
+            this.setting(StatusEffectListSetting.from(StatusEffectListSetting.builder()
+                    .id("status_effects")
+                    .name("Effects")
+                    .addAllDefaultValue(List.of(
+                            MobEffects.BLINDNESS.value(),
+                            MobEffects.DARKNESS.value(),
+                            MobEffects.LEVITATION.value(),
+                            MobEffects.MINING_FATIGUE.value(),
+                            MobEffects.NAUSEA.value()))
+                    .build()));
 
     public RenderingModule() {
-        super("rendering", "Rendering", ModuleCategory.RENDER,
+        super(
+                "rendering",
+                "Rendering",
+                ModuleCategory.RENDER,
                 "Adjusts FOV and camera offsets and removes hurt camera, view bobbing, blindness, darkness, and chosen status effects.");
         this.fovScale.visibleWhen(() -> "Scale".equals(this.fovMode.value()));
         this.minimumFov.visibleWhen(() -> "Scale".equals(this.fovMode.value()));
@@ -168,17 +170,19 @@ public final class RenderingModule extends Module {
         if ("Fixed".equals(this.fovMode.value())) {
             return this.fixedFov.value().floatValue();
         }
-        return clamp((float) (fov * this.fovScale.value()), this.minimumFov.value().floatValue(),
+        return clamp(
+                (float) (fov * this.fovScale.value()),
+                this.minimumFov.value().floatValue(),
                 this.maximumFov.value().floatValue());
     }
 
     @Override
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
+    public CameraTransform cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         return new CameraTransform(
                 position.add(0.0, this.yOffset.value(), 0.0),
                 yaw + this.yawOffset.value().floatValue(),
-                clampPitch(pitch + this.pitchOffset.value().floatValue())
-        );
+                clampPitch(pitch + this.pitchOffset.value().floatValue()));
     }
 
     static float clamp(final float value, final float min, final float max) {

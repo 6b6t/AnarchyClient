@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 class NyanCatGifSpammerModuleTest {
 
@@ -39,10 +38,7 @@ class NyanCatGifSpammerModuleTest {
 
     @Test
     void chatSpammerParsesPipeSeparatedMessages() {
-        assertEquals(
-                List.of("hello", "gg", "bye"),
-                ChatSpammerModule.parseMessages(" hello | | gg | bye ")
-        );
+        assertEquals(List.of("hello", "gg", "bye"), ChatSpammerModule.parseMessages(" hello | | gg | bye "));
     }
 
     @Test

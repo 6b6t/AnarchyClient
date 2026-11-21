@@ -1,9 +1,8 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.OptionalInt;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
-
-import java.util.OptionalInt;
 
 public record HotbarInventorySlot(int index) implements InventorySlotRef {
 

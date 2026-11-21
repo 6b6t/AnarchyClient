@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.Comparator;
-import java.util.List;
 
 public final class PlayerRadarHudModule extends HudElementModule {
 
@@ -28,8 +27,11 @@ public final class PlayerRadarHudModule extends HudElementModule {
             .build()));
 
     public PlayerRadarHudModule() {
-        super("player_radar_hud", "Player Radar",
-                "Lists nearby players with their distance and health, closest first, and marks friends.", "Top Right");
+        super(
+                "player_radar_hud",
+                "Player Radar",
+                "Lists nearby players with their distance and health, closest first, and marks friends.",
+                "Top Right");
     }
 
     @Override

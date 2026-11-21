@@ -1,15 +1,17 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.minecraft.client.Minecraft;
-
-import java.util.List;
 
 public final class FlagTimelineHudModule extends HudElementModule {
 
     public FlagTimelineHudModule() {
-        super("flag_timeline_hud", "Flag Timeline HUD",
-                "Shows the anti-cheat flag count, the last flag reason, velocity corrections, and tab list joins and leaves.", "Top Right");
+        super(
+                "flag_timeline_hud",
+                "Flag Timeline HUD",
+                "Shows the anti-cheat flag count, the last flag reason, velocity corrections, and tab list joins and leaves.",
+                "Top Right");
     }
 
     @Override
@@ -21,7 +23,6 @@ public final class FlagTimelineHudModule extends HudElementModule {
                 "Flags " + snapshot.flagSequence(),
                 "Last " + flag.reason() + detail,
                 "Velocity " + snapshot.velocityCorrections(),
-                "Tab " + snapshot.tabAdds() + "/" + snapshot.tabRemoves()
-        );
+                "Tab " + snapshot.tabAdds() + "/" + snapshot.tabRemoves());
     }
 }

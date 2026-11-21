@@ -5,8 +5,7 @@ public final class ClientTicks {
 
     private static long count;
 
-    private ClientTicks() {
-    }
+    private ClientTicks() {}
 
     /** Called once at the start of every client tick. */
     public static void advance() {

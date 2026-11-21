@@ -19,8 +19,8 @@ public final class CrystalBlockerGameTest implements GameScenario {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos feet = arena.origin();
-            arena.run("fill " + GameTestSupport.at(feet.offset(-2, -1, -2)) + " " + GameTestSupport.at(feet.offset(2, -1, 2))
-                    + " obsidian");
+            arena.run("fill " + GameTestSupport.at(feet.offset(-2, -1, -2)) + " "
+                    + GameTestSupport.at(feet.offset(2, -1, 2)) + " obsidian");
             arena.give("obsidian 64");
             arena.spawnTarget(feet.offset(6, 0, 0));
             context.waitTicks(10);
@@ -28,8 +28,12 @@ public final class CrystalBlockerGameTest implements GameScenario {
             GameTestSupport.enable(context, "crystal_blocker", true);
             try {
                 arena.server().waitFor(server -> filledSpots(server, feet) >= REQUIRED_BLOCKS, 120);
-                boolean selfClear = arena.server().computeOnServer(server ->
-                        server.overworld().getBlockState(feet).isAir() && server.overworld().getBlockState(feet.above()).isAir());
+                boolean selfClear = arena.server()
+                        .computeOnServer(
+                                server -> server.overworld().getBlockState(feet).isAir()
+                                        && server.overworld()
+                                                .getBlockState(feet.above())
+                                                .isAir());
                 GameTestSupport.check(selfClear, "Crystal Blocker placed a block inside the player");
             } finally {
                 context.takeScreenshot("crystal_blocker_result");

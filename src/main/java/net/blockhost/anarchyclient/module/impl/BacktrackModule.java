@@ -46,17 +46,17 @@ public final class BacktrackModule extends Module {
             .max(512.0)
             .step(1.0)
             .build()));
-    private final BooleanSetting esp = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("esp")
-            .name("ESP")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting esp = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("esp").name("ESP").defaultValue(true).build()));
 
     /** Entity id of the local player while an enemy is in range, or {@code NO_TARGET}. Read on the Netty thread. */
     private volatile int activeSelfId = NO_TARGET;
 
     public BacktrackModule() {
-        super("backtrack", "Backtrack", ModuleCategory.COMBAT,
+        super(
+                "backtrack",
+                "Backtrack",
+                ModuleCategory.COMBAT,
                 "Delays entity movement updates while an enemy is in range, so you can still hit where they were a moment ago.");
     }
 
@@ -68,14 +68,15 @@ public final class BacktrackModule extends Module {
         this.activeSelfId = target == null ? NO_TARGET : client.player.getId();
         int flushed = target == null
                 ? PacketQueueManager.flushIncoming(this.id())
-                : PacketQueueManager.flushIncomingOlderThan(this.id(), this.delay.value().longValue());
+                : PacketQueueManager.flushIncomingOlderThan(
+                        this.id(), this.delay.value().longValue());
         this.debugValue("queued", PacketQueueManager.incomingSize(this.id()));
         if (flushed > 0) {
             this.debugValue("flushed", flushed);
         }
         if (this.esp.value() && target != null) {
-            MarkerManager.put(new CuboidMarker("backtrack:" + target.getUUID(), target.getBoundingBox(),
-                    MarkerStyle.CYAN, 4));
+            MarkerManager.put(
+                    new CuboidMarker("backtrack:" + target.getUUID(), target.getBoundingBox(), MarkerStyle.CYAN, 4));
         }
     }
 
@@ -85,7 +86,8 @@ public final class BacktrackModule extends Module {
         if (selfId == NO_TARGET || !isEntityMovementPacket(packet) || isAbout(packet, selfId)) {
             return false;
         }
-        return PacketQueueManager.queueIncoming(this.id(), connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueIncoming(
+                this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override

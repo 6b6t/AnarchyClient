@@ -17,8 +17,7 @@ public final class PositionPacketLimiter {
 
     private static boolean positionSent;
 
-    private PositionPacketLimiter() {
-    }
+    private PositionPacketLimiter() {}
 
     /** Returns the packet to send in place of {@code packet}, which is the same packet when it is allowed. */
     public static synchronized Packet<?> limit(final Packet<?> packet) {
@@ -42,8 +41,8 @@ public final class PositionPacketLimiter {
 
     static ServerboundMovePlayerPacket withoutPosition(final ServerboundMovePlayerPacket move) {
         if (move.hasRotation()) {
-            return new ServerboundMovePlayerPacket.Rot(move.getYRot(0.0F), move.getXRot(0.0F), move.isOnGround(),
-                    move.horizontalCollision());
+            return new ServerboundMovePlayerPacket.Rot(
+                    move.getYRot(0.0F), move.getXRot(0.0F), move.isOnGround(), move.horizontalCollision());
         }
         return new ServerboundMovePlayerPacket.StatusOnly(move.isOnGround(), move.horizontalCollision());
     }

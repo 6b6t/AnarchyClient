@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.waypoint;
 
-import net.minecraft.core.BlockPos;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import net.minecraft.core.BlockPos;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class WaypointStoreTest {
 
@@ -34,8 +33,7 @@ class WaypointStoreTest {
     void parsesLegacyWaypointSettingIntoCurrentWorld() {
         assertEquals(
                 new Waypoint("world", "home", new BlockPos(0, 64, 0), WaypointStore.DEFAULT_COLOR),
-                WaypointStore.parseLegacy("world", "home:0:64:0").getFirst()
-        );
+                WaypointStore.parseLegacy("world", "home:0:64:0").getFirst());
     }
 
     @Test

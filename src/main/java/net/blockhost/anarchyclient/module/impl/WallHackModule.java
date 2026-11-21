@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
@@ -13,12 +18,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
 public final class WallHackModule extends Module {
 
     private final BlockListSetting blocks = this.setting(BlockListSetting.from(BlockListSetting.builder()
@@ -30,8 +29,7 @@ public final class WallHackModule extends Module {
                     Blocks.EMERALD_ORE,
                     Blocks.DEEPSLATE_EMERALD_ORE,
                     Blocks.ANCIENT_DEBRIS,
-                    Blocks.SPAWNER
-            ))
+                    Blocks.SPAWNER))
             .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -53,7 +51,10 @@ public final class WallHackModule extends Module {
     private int cooldownTicks;
 
     public WallHackModule() {
-        super("wall_hack", "Wall Hack", ModuleCategory.RENDER,
+        super(
+                "wall_hack",
+                "Wall Hack",
+                ModuleCategory.RENDER,
                 "Highlights selected blocks such as diamond ore, ancient debris, and spawners through walls.");
     }
 
@@ -66,14 +67,21 @@ public final class WallHackModule extends Module {
         }
         Set<Block> targets = SetBackedBlocks.ids(this.blocks.value());
         // Mined or replaced blocks lose their highlight right away instead of waiting for the next scan.
-        List<BlockPos> stale = stalePositions(this.highlighted, targets, pos -> client.level.getBlockState(pos).getBlock());
+        List<BlockPos> stale = stalePositions(
+                this.highlighted,
+                targets,
+                pos -> client.level.getBlockState(pos).getBlock());
         stale.forEach(this::removeMarker);
         if (this.cooldownTicks-- > 0) {
             return;
         }
         int max = this.maxBlocks.value().intValue();
-        Set<BlockPos> found = new HashSet<>(BlockScan.matchingBlocks(client, targets,
-                this.range.value().intValue(), this.range.value().intValue(), max));
+        Set<BlockPos> found = new HashSet<>(BlockScan.matchingBlocks(
+                client,
+                targets,
+                this.range.value().intValue(),
+                this.range.value().intValue(),
+                max));
         List.copyOf(this.highlighted).stream()
                 .filter(pos -> !found.contains(pos))
                 .forEach(this::removeMarker);
@@ -90,8 +98,8 @@ public final class WallHackModule extends Module {
         this.cooldownTicks = 0;
     }
 
-    static List<BlockPos> stalePositions(final Collection<BlockPos> highlighted, final Set<Block> targets,
-                                         final Function<BlockPos, Block> blockAt) {
+    static List<BlockPos> stalePositions(
+            final Collection<BlockPos> highlighted, final Set<Block> targets, final Function<BlockPos, Block> blockAt) {
         return highlighted.stream()
                 .filter(pos -> !targets.contains(blockAt.apply(pos)))
                 .toList();

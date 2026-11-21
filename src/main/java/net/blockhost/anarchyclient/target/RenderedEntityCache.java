@@ -1,21 +1,18 @@
 package net.blockhost.anarchyclient.target;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.StreamSupport;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 public final class RenderedEntityCache {
 
     private static final CopyOnWriteArraySet<String> SUBSCRIBERS = new CopyOnWriteArraySet<>();
     private static List<LivingEntity> entities = List.of();
 
-    private RenderedEntityCache() {
-    }
+    private RenderedEntityCache() {}
 
     public static void subscribe(final String owner) {
         SUBSCRIBERS.add(owner);

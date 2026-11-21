@@ -16,21 +16,29 @@ import net.minecraft.world.phys.Vec3;
 public final class LiquidInteractModule extends Module {
 
     public LiquidInteractModule() {
-        super("liquid_interact", "Liquid Interact", ModuleCategory.WORLD,
+        super(
+                "liquid_interact",
+                "Liquid Interact",
+                ModuleCategory.WORLD,
                 "Lets you place blocks against water and lava surfaces you are looking at.");
     }
 
     @Override
     public boolean itemUse(final Minecraft client, final InteractionHand hand) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null || hand != InteractionHand.MAIN_HAND
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
+                || hand != InteractionHand.MAIN_HAND
                 || !(player.getMainHandItem().getItem() instanceof BlockItem)) {
             return false;
         }
         Vec3 from = player.getEyePosition();
         Vec3 to = from.add(player.getLookAngle().scale(player.blockInteractionRange()));
-        BlockHitResult hit = client.level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
-        if (hit.getType() != HitResult.Type.BLOCK || client.level.getFluidState(hit.getBlockPos()).isEmpty()) {
+        BlockHitResult hit =
+                client.level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
+        if (hit.getType() != HitResult.Type.BLOCK
+                || client.level.getFluidState(hit.getBlockPos()).isEmpty()) {
             return false;
         }
         InteractionResult result = client.gameMode.useItemOn(player, hand, hit);

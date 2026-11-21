@@ -20,9 +20,12 @@ public abstract class EditBoxMixin {
     private String anarchyclient$unmaskedValue;
 
     @Inject(method = "extractWidgetRenderState", at = @At("HEAD"))
-    private void anarchyclient$maskProtectedValue(final GuiGraphicsExtractor graphics, final int mouseX,
-                                                  final int mouseY, final float partialTick,
-                                                  final CallbackInfo info) {
+    private void anarchyclient$maskProtectedValue(
+            final GuiGraphicsExtractor graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTick,
+            final CallbackInfo info) {
         if (TextFieldProtectModule.shouldMask(((EditBox) (Object) this).getMessage(), this.value)) {
             this.anarchyclient$unmaskedValue = this.value;
             this.value = TextFieldProtectModule.mask(this.value);
@@ -30,9 +33,12 @@ public abstract class EditBoxMixin {
     }
 
     @Inject(method = "extractWidgetRenderState", at = @At("RETURN"))
-    private void anarchyclient$restoreProtectedValue(final GuiGraphicsExtractor graphics, final int mouseX,
-                                                     final int mouseY, final float partialTick,
-                                                     final CallbackInfo info) {
+    private void anarchyclient$restoreProtectedValue(
+            final GuiGraphicsExtractor graphics,
+            final int mouseX,
+            final int mouseY,
+            final float partialTick,
+            final CallbackInfo info) {
         if (this.anarchyclient$unmaskedValue != null) {
             this.value = this.anarchyclient$unmaskedValue;
             this.anarchyclient$unmaskedValue = null;

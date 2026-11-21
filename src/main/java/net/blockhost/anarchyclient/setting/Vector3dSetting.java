@@ -49,7 +49,10 @@ public final class Vector3dSetting extends Setting<Vec3> implements TextValueSet
         }
         JsonObject object = element.getAsJsonObject();
         if (object.has("x") && object.has("y") && object.has("z")) {
-            this.value(new Vec3(object.get("x").getAsDouble(), object.get("y").getAsDouble(), object.get("z").getAsDouble()));
+            this.value(new Vec3(
+                    object.get("x").getAsDouble(),
+                    object.get("y").getAsDouble(),
+                    object.get("z").getAsDouble()));
         }
     }
 

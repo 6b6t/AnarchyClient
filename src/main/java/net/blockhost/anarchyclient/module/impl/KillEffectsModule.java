@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -14,10 +17,6 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class KillEffectsModule extends Module {
 
@@ -52,7 +51,10 @@ public final class KillEffectsModule extends Module {
     private final Set<Integer> dead = new HashSet<>();
 
     public KillEffectsModule() {
-        super("kill_effects", "Kill Effects", ModuleCategory.RENDER,
+        super(
+                "kill_effects",
+                "Kill Effects",
+                ModuleCategory.RENDER,
                 "Shows client-side lightning and plays a sound where nearby players die. Only you see and hear it.");
     }
 
@@ -93,8 +95,15 @@ public final class KillEffectsModule extends Module {
             }
         }
         if (this.sound.value()) {
-            level.playLocalSound(victim.getX(), victim.getY(), victim.getZ(), SoundEvents.LIGHTNING_BOLT_IMPACT,
-                    SoundSource.PLAYERS, 1.0F, 1.0F, false);
+            level.playLocalSound(
+                    victim.getX(),
+                    victim.getY(),
+                    victim.getZ(),
+                    SoundEvents.LIGHTNING_BOLT_IMPACT,
+                    SoundSource.PLAYERS,
+                    1.0F,
+                    1.0F,
+                    false);
         }
     }
 

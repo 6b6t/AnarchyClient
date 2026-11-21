@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.command;
 
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
-
 public final class AnarchyClientCommands {
 
-    private AnarchyClientCommands() {
-    }
+    private AnarchyClientCommands() {}
 
     public static void register() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> register(dispatcher));

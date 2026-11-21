@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -7,7 +10,6 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,10 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 public final class PainterModule extends Module {
 
@@ -92,7 +90,10 @@ public final class PainterModule extends Module {
     private int cooldownTicks;
 
     public PainterModule() {
-        super("painter", "Painter", ModuleCategory.WORLD,
+        super(
+                "painter",
+                "Painter",
+                ModuleCategory.WORLD,
                 "Places a chosen block, such as buttons, on nearby top, side, or bottom surfaces.");
     }
 
@@ -123,18 +124,22 @@ public final class PainterModule extends Module {
                 vertical,
                 BlockTargetScanner.SortMode.CLOSEST,
                 AutoTntModule.scanLimit(horizontal, vertical),
-                candidate -> shouldPaint(client.level, candidate.pos(), this.selectedBlock,
-                        this.topSurface.value(), this.sides.value(), this.bottomSurface.value(), this.oneBlockHeight.value())
-        )) {
+                candidate -> shouldPaint(
+                        client.level,
+                        candidate.pos(),
+                        this.selectedBlock,
+                        this.topSurface.value(),
+                        this.sides.value(),
+                        this.bottomSurface.value(),
+                        this.oneBlockHeight.value()))) {
             requests.add(new BlockPlacer.PlacementRequest(
                     target.pos(),
                     stack -> matchesBlock(stack, this.selectedBlock),
-                    BlockPlacer.PlacementOptions.NON_FULL
-            ));
+                    BlockPlacer.PlacementOptions.NON_FULL));
         }
 
-        int placed = BlockPlacer.placeBatch(client, this.id(), requests, this.blocksPerTick.value().intValue(),
-                this.rotate.value(), 70.0F);
+        int placed = BlockPlacer.placeBatch(
+                client, this.id(), requests, this.blocksPerTick.value().intValue(), this.rotate.value(), 70.0F);
         if (placed > 0) {
             this.cooldownTicks = this.delay.value().intValue();
         }
@@ -145,9 +150,14 @@ public final class PainterModule extends Module {
         this.cooldownTicks = 0;
     }
 
-    static boolean shouldPaint(final BlockGetter level, final BlockPos target, final Block selectedBlock,
-                               final boolean topSurface, final boolean sides, final boolean bottomSurface,
-                               final boolean oneBlockHeight) {
+    static boolean shouldPaint(
+            final BlockGetter level,
+            final BlockPos target,
+            final Block selectedBlock,
+            final boolean topSurface,
+            final boolean sides,
+            final boolean bottomSurface,
+            final boolean oneBlockHeight) {
         boolean targetReplaceable = level.getBlockState(target).canBeReplaced();
         boolean aboveReplaceable = level.getBlockState(target.above()).canBeReplaced();
         boolean hasTopSurface = paintableSurface(level, target.below(), selectedBlock);
@@ -159,14 +169,28 @@ public final class PainterModule extends Module {
                 break;
             }
         }
-        return shouldPaintSurface(targetReplaceable, aboveReplaceable, topSurface, sides, bottomSurface,
-                hasTopSurface, hasSideSurface, hasBottomSurface, oneBlockHeight);
+        return shouldPaintSurface(
+                targetReplaceable,
+                aboveReplaceable,
+                topSurface,
+                sides,
+                bottomSurface,
+                hasTopSurface,
+                hasSideSurface,
+                hasBottomSurface,
+                oneBlockHeight);
     }
 
-    static boolean shouldPaintSurface(final boolean targetReplaceable, final boolean aboveReplaceable,
-                                      final boolean topSurface, final boolean sides, final boolean bottomSurface,
-                                      final boolean hasTopSurface, final boolean hasSideSurface,
-                                      final boolean hasBottomSurface, final boolean oneBlockHeight) {
+    static boolean shouldPaintSurface(
+            final boolean targetReplaceable,
+            final boolean aboveReplaceable,
+            final boolean topSurface,
+            final boolean sides,
+            final boolean bottomSurface,
+            final boolean hasTopSurface,
+            final boolean hasSideSurface,
+            final boolean hasBottomSurface,
+            final boolean oneBlockHeight) {
         if (!targetReplaceable || oneBlockHeight && aboveReplaceable) {
             return false;
         }

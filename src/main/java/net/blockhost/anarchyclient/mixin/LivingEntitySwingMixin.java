@@ -14,12 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class LivingEntitySwingMixin {
 
     @Inject(
-            method = "swing(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/component/SwingAnimation;Z)Z",
+            method =
+                    "swing(Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/item/component/SwingAnimation;Z)Z",
             at = @At("HEAD"),
-            cancellable = true
-    )
-    private void anarchyclient$noSwing(final InteractionHand hand, final SwingAnimation animation,
-                                       final boolean sendToSwingingEntity, final CallbackInfoReturnable<Boolean> info) {
+            cancellable = true)
+    private void anarchyclient$noSwing(
+            final InteractionHand hand,
+            final SwingAnimation animation,
+            final boolean sendToSwingingEntity,
+            final CallbackInfoReturnable<Boolean> info) {
         if (NoSwingModule.shouldHideSwing(Minecraft.getInstance(), (LivingEntity) (Object) this)) {
             info.setReturnValue(false);
         }

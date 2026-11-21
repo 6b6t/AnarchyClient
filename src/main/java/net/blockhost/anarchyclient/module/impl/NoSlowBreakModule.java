@@ -16,7 +16,10 @@ public final class NoSlowBreakModule extends Module {
             .build()));
 
     public NoSlowBreakModule() {
-        super("no_slow_break", "No Slow Break", ModuleCategory.WORLD,
+        super(
+                "no_slow_break",
+                "No Slow Break",
+                ModuleCategory.WORLD,
                 "Removes Mining Fatigue on the client only. The server still applies it, so on most servers "
                         + "broken blocks reappear as ghost blocks until the server finishes them.");
     }

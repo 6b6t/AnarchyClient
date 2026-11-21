@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.world.level.ChunkPos;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import net.minecraft.world.level.ChunkPos;
+import org.junit.jupiter.api.Test;
 
 class StashFinderModuleTest {
 

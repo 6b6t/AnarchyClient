@@ -3,9 +3,8 @@ package net.blockhost.anarchyclient.module;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.InputConstants;
-import org.lwjgl.sdl.SDLScancode;
-
 import java.util.Locale;
+import org.lwjgl.sdl.SDLScancode;
 
 public final class ModuleKeybind {
 
@@ -60,8 +59,10 @@ public final class ModuleKeybind {
         JsonElement keyJson = json.get("key");
         if (keyJson != null && keyJson.isJsonPrimitive()) {
             int savedKey = keyJson.getAsInt();
-            this.key = json.has("key_format") && "sdl_scancode".equals(json.get("key_format").getAsString())
-                    ? savedKey : LegacyKeyCodes.toScancode(savedKey);
+            this.key = json.has("key_format")
+                            && "sdl_scancode".equals(json.get("key_format").getAsString())
+                    ? savedKey
+                    : LegacyKeyCodes.toScancode(savedKey);
         }
         JsonElement actionJson = json.get("action");
         if (actionJson != null && actionJson.isJsonPrimitive()) {

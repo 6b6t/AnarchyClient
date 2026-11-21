@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.rivet;
 
-import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
-import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.renderpearl.api.pipeline.BlendFunction;
 import com.mojang.renderpearl.api.pipeline.ColorTargetState;
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.pipeline.CompareOp;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -15,13 +15,12 @@ import net.minecraft.resources.Identifier;
 
 public final class AnarchyClientRenderPipelines {
 
-    public static final RenderPipeline GLASS_PANEL = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+    public static final RenderPipeline GLASS_PANEL =
+            RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/glass_panel"))
                     .withVertexShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/panel"))
                     .withFragmentShader(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "core/glass_panel"))
-                    .build()
-    );
+                    .build());
     public static final RenderPipeline SDF_FILL = panelPipeline("sdf_fill");
     public static final RenderPipeline SDF_OUTLINE = panelPipeline("sdf_outline");
     public static final RenderPipeline SDF_SHADOW = panelPipeline("sdf_shadow");
@@ -32,32 +31,27 @@ public final class AnarchyClientRenderPipelines {
     public static final RenderPipeline DEEP_PANEL = panelPipeline("deep_panel");
     public static final RenderPipeline SIMPLEX_FLOW_PANEL = panelPipeline("simplex_flow_panel");
     private static final DepthStencilState NO_DEPTH = new DepthStencilState(CompareOp.ALWAYS_PASS, false);
-    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
+    private static final RenderPipeline LINES_NO_DEPTH_PIPELINE =
+            RenderPipelines.register(RenderPipeline.builder(RenderPipelines.LINES_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/lines_no_depth"))
                     // The lines snippet declares no color target; without one every draw fails the
                     // render pass's attachment check and crashes the frame.
                     .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
                     .withDepthStencilState(NO_DEPTH)
-                    .build()
-    );
-    private static final RenderPipeline QUADS_NO_DEPTH_PIPELINE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
+                    .build());
+    private static final RenderPipeline QUADS_NO_DEPTH_PIPELINE =
+            RenderPipelines.register(RenderPipeline.builder(RenderPipelines.DEBUG_FILLED_SNIPPET)
                     .withLocation(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "pipeline/quads_no_depth"))
                     .withDepthStencilState(NO_DEPTH)
-                    .build()
-    );
+                    .build());
     public static final RenderType LINES_NO_DEPTH = RenderType.create(
             "anarchyclient:lines_no_depth",
-            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).createRenderSetup()
-    );
+            RenderSetup.builder(LINES_NO_DEPTH_PIPELINE).createRenderSetup());
     public static final RenderType QUADS_NO_DEPTH = RenderType.create(
             "anarchyclient:quads_no_depth",
-            RenderSetup.builder(QUADS_NO_DEPTH_PIPELINE).createRenderSetup()
-    );
+            RenderSetup.builder(QUADS_NO_DEPTH_PIPELINE).createRenderSetup());
 
-    private AnarchyClientRenderPipelines() {
-    }
+    private AnarchyClientRenderPipelines() {}
 
     private static RenderPipeline panelPipeline(final String name) {
         return RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)

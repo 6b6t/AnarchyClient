@@ -4,6 +4,9 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
@@ -16,10 +19,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-
 /**
  * Shared argument parsing, validation, and suggestions for the client commands.
  */
@@ -27,17 +26,18 @@ final class CommandSupport {
 
     static final int SUCCESS = Command.SINGLE_SUCCESS;
 
-    private CommandSupport() {
-    }
+    private CommandSupport() {}
 
-    static CompletableFuture<Suggestions> suggestOnlinePlayers(final CommandContext<FabricClientCommandSource> context,
-                                                               final SuggestionsBuilder builder) {
+    static CompletableFuture<Suggestions> suggestOnlinePlayers(
+            final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) {
         ClientPacketListener connection = Minecraft.getInstance().getConnection();
         if (connection == null) {
             return builder.buildFuture();
         }
-        return SharedSuggestionProvider.suggest(connection.getOnlinePlayers().stream()
-                .map(info -> info.getProfile().name()), builder);
+        return SharedSuggestionProvider.suggest(
+                connection.getOnlinePlayers().stream()
+                        .map(info -> info.getProfile().name()),
+                builder);
     }
 
     static String sanitizeFileName(final String value) {
@@ -51,7 +51,10 @@ final class CommandSupport {
     static Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.must_be_in_game", "You must be in a world to use this command."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.command_support.must_be_in_game",
+                            "You must be in a world to use this command."));
             return null;
         }
         return client;
@@ -60,7 +63,10 @@ final class CommandSupport {
     static Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
         if (client == null || client.player == null || !client.player.getAbilities().instabuild) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.command_support.you_must_be_in_creative_mode", "You must be in creative mode to use this command."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.command_support.you_must_be_in_creative_mode",
+                            "You must be in creative mode to use this command."));
             return null;
         }
         return client;
@@ -83,17 +89,15 @@ final class CommandSupport {
         return new Vec3(
                 parseCoordinate(xToken, origin.x),
                 parseCoordinate(yToken, origin.y),
-                parseCoordinate(zToken, origin.z)
-        );
+                parseCoordinate(zToken, origin.z));
     }
 
-    static BlockPos parseBlockPosition(final String xToken, final String yToken, final String zToken,
-                                       final Vec3 origin) {
+    static BlockPos parseBlockPosition(
+            final String xToken, final String yToken, final String zToken, final Vec3 origin) {
         return BlockPos.containing(
                 parseCoordinate(xToken, origin.x),
                 parseCoordinate(yToken, origin.y),
-                parseCoordinate(zToken, origin.z)
-        );
+                parseCoordinate(zToken, origin.z));
     }
 
     /**
@@ -128,7 +132,8 @@ final class CommandSupport {
         if (identifier == null) {
             throw new IllegalArgumentException("Invalid block id: " + id);
         }
-        return BuiltInRegistries.BLOCK.getOptional(identifier)
+        return BuiltInRegistries.BLOCK
+                .getOptional(identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown block: " + id));
     }
 
@@ -161,6 +166,5 @@ final class CommandSupport {
         return value;
     }
 
-    record BlockArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int count) {
-    }
+    record BlockArea(int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int count) {}
 }

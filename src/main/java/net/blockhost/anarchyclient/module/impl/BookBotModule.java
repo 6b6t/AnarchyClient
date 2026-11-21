@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -15,12 +20,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 public final class BookBotModule extends Module {
 
@@ -38,26 +37,23 @@ public final class BookBotModule extends Module {
             .max(200.0)
             .step(5.0)
             .build()));
-    private final BooleanSetting sign = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("sign")
-            .name("Sign")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting sign = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("sign").name("Sign").defaultValue(false).build()));
     private final StringSetting title = this.setting(StringSetting.from(StringSetting.builder()
             .id("title")
             .name("Title")
             .defaultValue("AnarchyClient")
             .build()));
-    private final BooleanSetting loop = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("loop")
-            .name("Loop")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting loop = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("loop").name("Loop").defaultValue(false).build()));
     private int cooldownTicks;
     private int booksWritten;
 
     public BookBotModule() {
-        super("book_bot", "Book Bot", ModuleCategory.MISC,
+        super(
+                "book_bot",
+                "Book Bot",
+                ModuleCategory.MISC,
                 "Writes the configured pages into a writable book from your hands or hotbar, optionally signs it, and can repeat.");
     }
 
@@ -79,12 +75,19 @@ public final class BookBotModule extends Module {
             return;
         }
         if (target.orElseThrow().hotbarSlot().isPresent()) {
-            SilentHotbar.select(player, this.id(), target.orElseThrow().hotbarSlot().orElseThrow(),
-                    SilentHotbar.PRIORITY_NORMAL, 2, true);
+            SilentHotbar.select(
+                    player,
+                    this.id(),
+                    target.orElseThrow().hotbarSlot().orElseThrow(),
+                    SilentHotbar.PRIORITY_NORMAL,
+                    2,
+                    true);
         }
         List<String> bookPages = sanitizePages(configuredPages);
-        Optional<String> bookTitle = this.sign.value() ? Optional.of(sanitizeTitle(this.title.value())) : Optional.empty();
-        client.getConnection().send(new ServerboundEditBookPacket(target.orElseThrow().packetSlot(), bookPages, bookTitle));
+        Optional<String> bookTitle =
+                this.sign.value() ? Optional.of(sanitizeTitle(this.title.value())) : Optional.empty();
+        client.getConnection()
+                .send(new ServerboundEditBookPacket(target.orElseThrow().packetSlot(), bookPages, bookTitle));
         this.booksWritten++;
         this.debugValue("status", this.sign.value() ? "signed" : "written");
         this.debugValue("books", this.booksWritten);
@@ -140,9 +143,7 @@ public final class BookBotModule extends Module {
         if (value == null || value.isBlank()) {
             return List.of();
         }
-        return Arrays.stream(value.split("\\|", -1))
-                .map(String::trim)
-                .toList();
+        return Arrays.stream(value.split("\\|", -1)).map(String::trim).toList();
     }
 
     static String sanitizeTitle(final String title) {

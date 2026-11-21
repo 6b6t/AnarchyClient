@@ -20,8 +20,7 @@ public final class MiningControl {
 
     private static final TickClaim CLAIM = new TickClaim();
 
-    private MiningControl() {
-    }
+    private MiningControl() {}
 
     /**
      * Starts or continues breaking {@code pos} and claims mining control for this tick. Call it

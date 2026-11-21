@@ -22,7 +22,10 @@ public final class NoPushModule extends Module {
             .build()));
 
     public NoPushModule() {
-        super("no_push", "No Push", ModuleCategory.MOVEMENT,
+        super(
+                "no_push",
+                "No Push",
+                ModuleCategory.MOVEMENT,
                 "Stops other entities, and optionally water and lava currents, from pushing the player around.");
     }
 

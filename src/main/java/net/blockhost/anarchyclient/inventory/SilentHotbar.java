@@ -1,14 +1,13 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.Predicate;
 
 public final class SilentHotbar {
 
@@ -19,11 +18,15 @@ public final class SilentHotbar {
     private static Request active;
     private static int previousSlot = -1;
 
-    private SilentHotbar() {
-    }
+    private SilentHotbar() {}
 
-    public static boolean select(final LocalPlayer player, final String owner, final int slot,
-                                 final int priority, final int ticks, final boolean restore) {
+    public static boolean select(
+            final LocalPlayer player,
+            final String owner,
+            final int slot,
+            final int priority,
+            final int ticks,
+            final boolean restore) {
         if (player == null || owner == null || owner.isBlank() || !Inventory.isHotbarSlot(slot)) {
             return false;
         }
@@ -51,9 +54,13 @@ public final class SilentHotbar {
                 || priority == current.priority() && !ItemUseControl.isHolding(current.owner());
     }
 
-    public static OptionalInt selectMatching(final LocalPlayer player, final String owner,
-                                             final Predicate<ItemStack> predicate, final int priority,
-                                             final int ticks, final boolean restore) {
+    public static OptionalInt selectMatching(
+            final LocalPlayer player,
+            final String owner,
+            final Predicate<ItemStack> predicate,
+            final int priority,
+            final int ticks,
+            final boolean restore) {
         OptionalInt slot = findHotbarSlot(player, predicate);
         if (slot.isPresent() && select(player, owner, slot.orElseThrow(), priority, ticks, restore)) {
             return slot;
@@ -61,16 +68,21 @@ public final class SilentHotbar {
         return OptionalInt.empty();
     }
 
-    public static Optional<InteractionHand> usableHand(final LocalPlayer player, final String owner,
-                                                       final Predicate<ItemStack> predicate, final int priority,
-                                                       final int ticks, final boolean restore) {
+    public static Optional<InteractionHand> usableHand(
+            final LocalPlayer player,
+            final String owner,
+            final Predicate<ItemStack> predicate,
+            final int priority,
+            final int ticks,
+            final boolean restore) {
         if (player == null) {
             return Optional.empty();
         }
         if (predicate.test(player.getOffhandItem())) {
             return Optional.of(InteractionHand.OFF_HAND);
         }
-        return selectMatching(player, owner, predicate, priority, ticks, restore).isPresent()
+        return selectMatching(player, owner, predicate, priority, ticks, restore)
+                        .isPresent()
                 ? Optional.of(InteractionHand.MAIN_HAND)
                 : Optional.empty();
     }

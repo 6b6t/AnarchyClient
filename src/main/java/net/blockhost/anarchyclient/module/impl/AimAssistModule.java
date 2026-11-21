@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rotation.Rotation;
@@ -17,10 +20,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 
 public final class AimAssistModule extends Module {
 
@@ -123,7 +122,11 @@ public final class AimAssistModule extends Module {
             .build()));
 
     public AimAssistModule() {
-        super("aim_assist", "Aim Assist", ModuleCategory.COMBAT, "Smooths view movement toward valid targets without taking complete control away from the player.");
+        super(
+                "aim_assist",
+                "Aim Assist",
+                ModuleCategory.COMBAT,
+                "Smooths view movement toward valid targets without taking complete control away from the player.");
         this.maxTurnDegrees.visibleWhen(() -> !this.instant.value());
         this.rotationMode.visibleWhen(() -> !this.instant.value());
     }
@@ -147,7 +150,8 @@ public final class AimAssistModule extends Module {
             RotationManager.clear(this.id());
             return;
         }
-        Rotation targetRotation = Rotation.lookingAt(aimPoint(target.orElseThrow(), this.targetPoint.value()), player.getEyePosition());
+        Rotation targetRotation =
+                Rotation.lookingAt(aimPoint(target.orElseThrow(), this.targetPoint.value()), player.getEyePosition());
         RotationManager.request(new RotationRequest(
                 this.id(),
                 targetRotation,
@@ -156,8 +160,7 @@ public final class AimAssistModule extends Module {
                 2,
                 0.5F,
                 this.instant.value() ? RotationTurnMode.INSTANT : turnMode(this.rotationMode.value()),
-                true
-        ));
+                true));
         RotationManager.apply(player);
     }
 
@@ -169,9 +172,9 @@ public final class AimAssistModule extends Module {
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
                 this.ignoreTeams.value(),
-                this.antiBot.value()
-        );
-        Comparator<LivingEntity> comparator = TargetPriority.fromSetting(this.priority.value()).comparator(player);
+                this.antiBot.value());
+        Comparator<LivingEntity> comparator =
+                TargetPriority.fromSetting(this.priority.value()).comparator(player);
         double rangeSqr = this.range.value() * this.range.value();
         return TargetQuery.livingTargets(RenderedEntityCache.entities(), player, policy)
                 .filter(entity -> player.distanceToSqr(entity) <= rangeSqr)

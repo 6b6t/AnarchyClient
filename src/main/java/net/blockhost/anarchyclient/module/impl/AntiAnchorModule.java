@@ -7,8 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -29,7 +29,10 @@ public final class AntiAnchorModule extends Module {
     private boolean placingSlab;
 
     public AntiAnchorModule() {
-        super("anti_anchor", "Anti Anchor", ModuleCategory.COMBAT,
+        super(
+                "anti_anchor",
+                "Anti Anchor",
+                ModuleCategory.COMBAT,
                 "While you crouch, places a slab between you and a respawn anchor above your head, and blocks you from using anchors yourself.");
     }
 
@@ -53,8 +56,13 @@ public final class AntiAnchorModule extends Module {
         }
         this.placingSlab = true;
         try {
-            WorldInteraction.useOnBlock(client, this, anchor, Direction.DOWN,
-                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock, this.rotate.value());
+            WorldInteraction.useOnBlock(
+                    client,
+                    this,
+                    anchor,
+                    Direction.DOWN,
+                    stack -> Block.byItem(stack.getItem()) instanceof SlabBlock,
+                    this.rotate.value());
         } finally {
             this.placingSlab = false;
         }
@@ -62,7 +70,8 @@ public final class AntiAnchorModule extends Module {
 
     @Override
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
-        return !this.placingSlab && client.level != null
+        return !this.placingSlab
+                && client.level != null
                 && client.level.getBlockState(hitResult.getBlockPos()).getBlock() instanceof RespawnAnchorBlock;
     }
 

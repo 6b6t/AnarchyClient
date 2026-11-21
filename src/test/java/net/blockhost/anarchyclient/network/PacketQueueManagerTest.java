@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.network;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class PacketQueueManagerTest {

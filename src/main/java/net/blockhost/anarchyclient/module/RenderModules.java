@@ -70,8 +70,7 @@ import net.blockhost.anarchyclient.module.impl.ZoomModule;
  */
 final class RenderModules {
 
-    private RenderModules() {
-    }
+    private RenderModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new EspModule());

@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -11,10 +14,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public final class BreakIndicatorsModule extends Module {
 
@@ -29,13 +28,17 @@ public final class BreakIndicatorsModule extends Module {
     private final Map<BlockPos, BreakMarker> markers = new HashMap<>();
 
     public BreakIndicatorsModule() {
-        super("break_indicators", "Break Indicators", ModuleCategory.RENDER,
+        super(
+                "break_indicators",
+                "Break Indicators",
+                ModuleCategory.RENDER,
                 "Shows red boxes on blocks being mined that grow with break progress.");
     }
 
     @Override
     public void tick(final Minecraft client) {
-        Iterator<Map.Entry<BlockPos, BreakMarker>> iterator = this.markers.entrySet().iterator();
+        Iterator<Map.Entry<BlockPos, BreakMarker>> iterator =
+                this.markers.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<BlockPos, BreakMarker> entry = iterator.next();
             BreakMarker ticked = entry.getValue().tick();
@@ -48,8 +51,8 @@ public final class BreakIndicatorsModule extends Module {
     }
 
     @Override
-    public void blockBreakingProgress(final Minecraft client, final int breakerId, final BlockPos pos,
-                                      final int progress) {
+    public void blockBreakingProgress(
+            final Minecraft client, final int breakerId, final BlockPos pos, final int progress) {
         if (progress < 0 || progress >= 10) {
             this.markers.remove(pos);
         } else {

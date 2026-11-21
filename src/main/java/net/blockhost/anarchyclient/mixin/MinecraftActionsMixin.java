@@ -52,8 +52,7 @@ public abstract class MinecraftActionsMixin {
      */
     @Inject(
             method = "handleKeybinds",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z", ordinal = 0)
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z", ordinal = 0))
     private void anarchyclient$attackWhileUsing(final CallbackInfo info) {
         if (this.player != null && this.player.isUsingItem() && MultiActionsModule.attackWhileUsing()) {
             while (this.options.keyAttack.consumeClick()) {
@@ -64,11 +63,11 @@ public abstract class MinecraftActionsMixin {
 
     @Redirect(
             method = "handleKeybinds",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"
-            )
-    )
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;releaseUsingItem(Lnet/minecraft/world/entity/player/Player;)V"))
     private void anarchyclient$keepHeldItemUse(final MultiPlayerGameMode gameMode, final Player player) {
         if (!this.anarchyclient$holdItemUse) {
             gameMode.releaseUsingItem(player);
@@ -96,32 +95,31 @@ public abstract class MinecraftActionsMixin {
 
     @Redirect(
             method = "startAttack",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z"))
     private boolean anarchyclient$allowStartAttackWhileUsing(final LocalPlayer player) {
         return !MultiActionsModule.attackWhileUsing() && player.isHandsBusy();
     }
 
     @Redirect(
             method = "continueAttack",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
     private boolean anarchyclient$allowBreakWhileUsing(final LocalPlayer player) {
         return !MultiActionsModule.breakWhileUsing() && player.isUsingItem();
     }
 
     @Redirect(
             method = "startUseItem",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;isDestroying()Z")
-    )
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;isDestroying()Z"))
     private boolean anarchyclient$allowPlaceWhileBreaking(final MultiPlayerGameMode gameMode) {
         return !MultiActionsModule.placeWhileBreaking() && gameMode.isDestroying();
     }
 
     @Redirect(
             method = "startUseItem",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isHandsBusy()Z"))
     private boolean anarchyclient$allowUseWhileBusy(final LocalPlayer player) {
         return !MultiActionsModule.useWhileBusy() && player.isHandsBusy();
     }

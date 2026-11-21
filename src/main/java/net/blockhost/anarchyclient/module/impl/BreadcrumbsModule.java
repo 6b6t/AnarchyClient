@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -12,9 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class BreadcrumbsModule extends Module {
 
@@ -54,7 +53,10 @@ public final class BreadcrumbsModule extends Module {
     private Level level;
 
     public BreadcrumbsModule() {
-        super("breadcrumbs", "Breadcrumbs", ModuleCategory.RENDER,
+        super(
+                "breadcrumbs",
+                "Breadcrumbs",
+                ModuleCategory.RENDER,
                 "Draws a line through walls along your recent path, dropping points older than the set lifetime.");
     }
 
@@ -91,7 +93,8 @@ public final class BreadcrumbsModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        WorldLineRenderer.Color color = new WorldLineRenderer.Color(0, 212, 170, this.opacity.value().intValue());
+        WorldLineRenderer.Color color =
+                new WorldLineRenderer.Color(0, 212, 170, this.opacity.value().intValue());
         for (int index = 1; index < this.points.size(); index++) {
             Vec3 start = this.points.get(index - 1).position().subtract(camera);
             Vec3 end = this.points.get(index).position().subtract(camera);

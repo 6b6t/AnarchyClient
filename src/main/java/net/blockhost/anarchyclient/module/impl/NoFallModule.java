@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -9,8 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-
-import java.util.List;
 
 public final class NoFallModule extends Module {
 
@@ -32,7 +31,10 @@ public final class NoFallModule extends Module {
             .build()));
 
     public NoFallModule() {
-        super("no_fall", "No Fall", ModuleCategory.MOVEMENT,
+        super(
+                "no_fall",
+                "No Fall",
+                ModuleCategory.MOVEMENT,
                 "Prevents fall damage by telling the server the player is on the ground while falling. This can flag anti-cheats.");
     }
 
@@ -52,10 +54,12 @@ public final class NoFallModule extends Module {
             }
             case "MLG Assist" -> {
                 if (player.getDeltaMovement().y < -0.6) {
-                    player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(true, player.horizontalCollision));
+                    player.connection.send(
+                            new ServerboundMovePlayerPacket.StatusOnly(true, player.horizontalCollision));
                 }
             }
-            default -> player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(true, player.horizontalCollision));
+            default ->
+                player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(true, player.horizontalCollision));
         }
     }
 
@@ -82,8 +86,8 @@ public final class NoFallModule extends Module {
                 && !player.isInWater();
     }
 
-    private static Packet<?> withGround(final ServerboundMovePlayerPacket packet, final LocalPlayer player,
-                                        final boolean onGround) {
+    private static Packet<?> withGround(
+            final ServerboundMovePlayerPacket packet, final LocalPlayer player, final boolean onGround) {
         boolean horizontalCollision = packet.horizontalCollision();
         if (packet instanceof ServerboundMovePlayerPacket.PosRot) {
             return new ServerboundMovePlayerPacket.PosRot(
@@ -93,8 +97,7 @@ public final class NoFallModule extends Module {
                     packet.getYRot(player.getYRot()),
                     packet.getXRot(player.getXRot()),
                     onGround,
-                    horizontalCollision
-            );
+                    horizontalCollision);
         }
         if (packet instanceof ServerboundMovePlayerPacket.Pos) {
             return new ServerboundMovePlayerPacket.Pos(
@@ -102,16 +105,11 @@ public final class NoFallModule extends Module {
                     packet.getY(player.getY()),
                     packet.getZ(player.getZ()),
                     onGround,
-                    horizontalCollision
-            );
+                    horizontalCollision);
         }
         if (packet instanceof ServerboundMovePlayerPacket.Rot) {
             return new ServerboundMovePlayerPacket.Rot(
-                    packet.getYRot(player.getYRot()),
-                    packet.getXRot(player.getXRot()),
-                    onGround,
-                    horizontalCollision
-            );
+                    packet.getYRot(player.getYRot()), packet.getXRot(player.getXRot()), onGround, horizontalCollision);
         }
         return new ServerboundMovePlayerPacket.StatusOnly(onGround, horizontalCollision);
     }

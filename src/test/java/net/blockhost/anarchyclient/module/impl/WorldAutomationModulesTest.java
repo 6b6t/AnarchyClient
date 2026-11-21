@@ -1,5 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.Set;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.test.TestInventories;
 import net.minecraft.world.entity.player.Inventory;
@@ -10,16 +19,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class WorldAutomationModulesTest {
@@ -34,7 +33,9 @@ class WorldAutomationModulesTest {
                 new ItemStack(Items.APPLE, 5)));
 
         int swaps = 0;
-        for (int[] swap = InventorySorterModule.nextSwap(stacks); swap != null; swap = InventorySorterModule.nextSwap(stacks)) {
+        for (int[] swap = InventorySorterModule.nextSwap(stacks);
+                swap != null;
+                swap = InventorySorterModule.nextSwap(stacks)) {
             ItemStack moved = stacks.get(swap[0]);
             stacks.set(swap[0], stacks.get(swap[1]));
             stacks.set(swap[1], moved);
@@ -48,7 +49,8 @@ class WorldAutomationModulesTest {
 
     @Test
     void inventorySorterLeavesSortedInventoriesAlone() {
-        assertNull(InventorySorterModule.nextSwap(List.of(new ItemStack(Items.APPLE), new ItemStack(Items.STONE), ItemStack.EMPTY)));
+        assertNull(InventorySorterModule.nextSwap(
+                List.of(new ItemStack(Items.APPLE), new ItemStack(Items.STONE), ItemStack.EMPTY)));
     }
 
     @Test

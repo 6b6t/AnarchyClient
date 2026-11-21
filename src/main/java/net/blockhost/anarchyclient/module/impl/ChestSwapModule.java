@@ -1,11 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
-import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -17,8 +18,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
 
 public final class ChestSwapModule extends Module {
 
@@ -43,7 +42,10 @@ public final class ChestSwapModule extends Module {
     private int ticksLeft;
 
     public ChestSwapModule() {
-        super("chest_swap", "Chest Swap", ModuleCategory.PLAYER,
+        super(
+                "chest_swap",
+                "Chest Swap",
+                ModuleCategory.PLAYER,
                 "Swaps between an elytra and the best chestplate in the chest slot, then turns itself off.");
     }
 
@@ -76,7 +78,8 @@ public final class ChestSwapModule extends Module {
         int inventorySlot = this.target == SwapTarget.CHESTPLATE
                 ? findChestplateSlot(player.getInventory(), this.chestplate.value())
                 : findGliderSlot(player.getInventory());
-        InventorySlotRef source = inventorySlot >= 0 ? InventorySlots.storageSlot(inventorySlot).orElse(null) : null;
+        InventorySlotRef source =
+                inventorySlot >= 0 ? InventorySlots.storageSlot(inventorySlot).orElse(null) : null;
         if (source == null) {
             this.enabled(false);
             return;
@@ -86,8 +89,7 @@ public final class ChestSwapModule extends Module {
                 InventoryActionScheduler.PRIORITY_EQUIPMENT,
                 this.delay.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.pickupSwap(source, InventorySlots.armorSlot(EquipmentSlot.CHEST))
-        ));
+                InventoryAction.pickupSwap(source, InventorySlots.armorSlot(EquipmentSlot.CHEST))));
     }
 
     static boolean isGlider(final ItemStack stack) {

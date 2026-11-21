@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -23,13 +29,6 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public final class PistonCrystalModule extends Module {
 
@@ -72,7 +71,10 @@ public final class PistonCrystalModule extends Module {
     private final Map<Direction, Integer> failedDirections = new EnumMap<>(Direction.class);
 
     public PistonCrystalModule() {
-        super("piston_crystal", "Piston Crystal", ModuleCategory.COMBAT,
+        super(
+                "piston_crystal",
+                "Piston Crystal",
+                ModuleCategory.COMBAT,
                 "Places an end crystal beside the nearest enemy's head, pushes it into them with a powered piston, "
                         + "and breaks it. Works on targets in holes. Needs pistons, end crystals, and redstone blocks in the hotbar.");
     }
@@ -92,7 +94,9 @@ public final class PistonCrystalModule extends Module {
             this.debugValue("stage", "no target");
             return;
         }
-        if (this.plan == null || !this.plan.feet().equals(target.blockPosition()) || ++this.stageTicks > STAGE_TIMEOUT_TICKS) {
+        if (this.plan == null
+                || !this.plan.feet().equals(target.blockPosition())
+                || ++this.stageTicks > STAGE_TIMEOUT_TICKS) {
             this.plan = this.choosePlan(level, player, target).orElse(null);
             this.stage = Stage.PISTON;
             this.stageTicks = 0;
@@ -117,8 +121,7 @@ public final class PistonCrystalModule extends Module {
             case PRESENT -> this.advance(Stage.CRYSTAL);
             case BLOCKED -> this.failPlan("piston blocked");
             case MISSING_ITEM -> this.failPlan("no pistons");
-            default -> {
-            }
+            default -> {}
         }
     }
 
@@ -136,28 +139,33 @@ public final class PistonCrystalModule extends Module {
             this.advance(Stage.POWER);
             return;
         }
-        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, this.plan.crystal().below(),
-                Direction.UP, stack -> stack.is(Items.END_CRYSTAL), this.rotate.value());
+        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
+                client,
+                this,
+                this.plan.crystal().below(),
+                Direction.UP,
+                stack -> stack.is(Items.END_CRYSTAL),
+                this.rotate.value());
         if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.REFUSED) {
             this.failPlan("crystal " + result);
         }
     }
 
     private void power(final Minecraft client) {
-        PistonPlacement.Result result = PistonPlacement.placePower(client, this, this.plan.power(), this.rotate.value());
+        PistonPlacement.Result result =
+                PistonPlacement.placePower(client, this, this.plan.power(), this.rotate.value());
         this.debugValue("power", result);
         switch (result) {
             case PLACED, PRESENT -> this.advance(Stage.BREAK);
             case BLOCKED, MISSING_ITEM -> this.failPlan("power " + result);
-            default -> {
-            }
+            default -> {}
         }
     }
 
     private void breakCrystal(final Minecraft client, final ClientLevel level, final LocalPlayer player) {
         // The crystal may still be moving with the piston head, so look around both cells.
-        Optional<EndCrystal> crystal = crystalNear(level, this.plan.head())
-                .or(() -> crystalNear(level, this.plan.crystal()));
+        Optional<EndCrystal> crystal =
+                crystalNear(level, this.plan.head()).or(() -> crystalNear(level, this.plan.crystal()));
         if (crystal.isEmpty()) {
             if (this.stageTicks > 6) {
                 this.advance(this.reset.value() ? Stage.RESET : Stage.PISTON);
@@ -216,10 +224,10 @@ public final class PistonCrystalModule extends Module {
                 continue;
             }
             double selfDamage = Math.max(
-                    DamageEstimator.explosionDamage(player, DamageEstimator.crystalCenter(candidate.crystal()),
-                            DamageEstimator.CRYSTAL_POWER),
-                    DamageEstimator.explosionDamage(player, DamageEstimator.crystalCenter(candidate.head()),
-                            DamageEstimator.CRYSTAL_POWER));
+                    DamageEstimator.explosionDamage(
+                            player, DamageEstimator.crystalCenter(candidate.crystal()), DamageEstimator.CRYSTAL_POWER),
+                    DamageEstimator.explosionDamage(
+                            player, DamageEstimator.crystalCenter(candidate.head()), DamageEstimator.CRYSTAL_POWER));
             if (selfDamage > this.maxSelfDamage.value() || !CrystalAuraModule.isSafe(selfDamage, health)) {
                 continue;
             }
@@ -235,8 +243,9 @@ public final class PistonCrystalModule extends Module {
     private static boolean canBuild(final ClientLevel level, final LocalPlayer player, final Plan plan) {
         boolean pistonReady = PistonPlacement.isPistonFacing(level.getBlockState(plan.piston()), plan.pistonFacing())
                 || BlockPlacer.findPlacementTarget(level, plan.piston()).isPresent();
-        boolean powerReady = plan.power().stream().anyMatch(pos -> level.getBlockState(pos).is(Blocks.REDSTONE_BLOCK)
-                || PistonPlacement.isOpen(level, pos) && !CombatPlacementPlanner.playerInside(player, pos));
+        boolean powerReady = plan.power().stream()
+                .anyMatch(pos -> level.getBlockState(pos).is(Blocks.REDSTONE_BLOCK)
+                        || PistonPlacement.isOpen(level, pos) && !CombatPlacementPlanner.playerInside(player, pos));
         return pistonReady && powerReady;
     }
 
@@ -259,14 +268,16 @@ public final class PistonCrystalModule extends Module {
             if ((base.is(Blocks.OBSIDIAN) || base.is(Blocks.BEDROCK))
                     && level.getBlockState(plan.crystal()).isAir()
                     && (PistonPlacement.isOpen(level, plan.piston())
-                    || PistonPlacement.isPistonFacing(piston, plan.pistonFacing()))
-                    && plan.power().stream().anyMatch(power -> PistonPlacement.isOpen(level, power)
-                    || PistonPlacement.existingPower(level, List.of(power)).isPresent())) {
+                            || PistonPlacement.isPistonFacing(piston, plan.pistonFacing()))
+                    && plan.power().stream()
+                            .anyMatch(power -> PistonPlacement.isOpen(level, power)
+                                    || PistonPlacement.existingPower(level, List.of(power))
+                                            .isPresent())) {
                 directions.add(outward);
             }
         }
-        directions.sort(Comparator.comparingDouble(direction ->
-                Vec3.atCenterOf(Plan.of(feet, direction).piston()).distanceToSqr(eye)));
+        directions.sort(Comparator.comparingDouble(
+                direction -> Vec3.atCenterOf(Plan.of(feet, direction).piston()).distanceToSqr(eye)));
         return directions;
     }
 
@@ -318,8 +329,8 @@ public final class PistonCrystalModule extends Module {
      * One piston crystal setup. {@code outward} points from the target to the crystal; the piston
      * sits one block further out and faces back toward the target.
      */
-    record Plan(BlockPos feet, Direction outward, BlockPos head, BlockPos crystal, BlockPos piston,
-                List<BlockPos> power) {
+    record Plan(
+            BlockPos feet, Direction outward, BlockPos head, BlockPos crystal, BlockPos piston, List<BlockPos> power) {
 
         static Plan of(final BlockPos feet, final Direction outward) {
             BlockPos head = feet.above();
@@ -328,17 +339,24 @@ public final class PistonCrystalModule extends Module {
             // An end crystal's hitbox is two blocks wide, so it blocks placing power on most sides of
             // the piston. Only spots outside it, such as behind or below the piston, stay usable.
             AABB crystalBox = crystalHitbox(crystal);
-            List<BlockPos> power = PistonPlacement.powerPositions(piston, outward.getOpposite(),
-                    List.of(crystal, head, crystal.above())).stream()
-                    .filter(pos -> !new AABB(pos).intersects(crystalBox))
-                    .toList();
+            List<BlockPos> power =
+                    PistonPlacement.powerPositions(
+                                    piston, outward.getOpposite(), List.of(crystal, head, crystal.above()))
+                            .stream()
+                            .filter(pos -> !new AABB(pos).intersects(crystalBox))
+                            .toList();
             return new Plan(feet.immutable(), outward, head, crystal, piston, power);
         }
 
         /** The hitbox of an end crystal resting in {@code cell}: two blocks wide and two tall. */
         static AABB crystalHitbox(final BlockPos cell) {
-            return new AABB(cell.getX() - 0.5, cell.getY(), cell.getZ() - 0.5,
-                    cell.getX() + 1.5, cell.getY() + 2.0, cell.getZ() + 1.5);
+            return new AABB(
+                    cell.getX() - 0.5,
+                    cell.getY(),
+                    cell.getZ() - 0.5,
+                    cell.getX() + 1.5,
+                    cell.getY() + 2.0,
+                    cell.getZ() + 1.5);
         }
 
         Direction pistonFacing() {

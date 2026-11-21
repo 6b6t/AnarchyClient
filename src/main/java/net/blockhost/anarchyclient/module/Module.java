@@ -1,17 +1,20 @@
 package net.blockhost.anarchyclient.module;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
+import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.SettingGroup;
-import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonInfo;
-import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.ClientInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -27,10 +30,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public abstract class Module {
 
@@ -52,13 +51,22 @@ public abstract class Module {
         this(id, name, category, description, List.of());
     }
 
-    protected Module(final String id, final String name, final ModuleCategory category, final String description,
-                     final List<String> aliases) {
+    protected Module(
+            final String id,
+            final String name,
+            final ModuleCategory category,
+            final String description,
+            final List<String> aliases) {
         this(id, name, category, description, aliases, ModuleKeybind.unbound());
     }
 
-    protected Module(final String id, final String name, final ModuleCategory category, final String description,
-                     final List<String> aliases, final ModuleKeybind keybind) {
+    protected Module(
+            final String id,
+            final String name,
+            final ModuleCategory category,
+            final String description,
+            final List<String> aliases,
+            final ModuleKeybind keybind) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -162,8 +170,8 @@ public abstract class Module {
         return setting;
     }
 
-    protected final SelectSetting modeSetting(final String id, final String name, final ModuleMode defaultMode,
-                                              final List<ModuleMode> modes) {
+    protected final SelectSetting modeSetting(
+            final String id, final String name, final ModuleMode defaultMode, final List<ModuleMode> modes) {
         return this.setting(SelectSetting.from(SelectSetting.builder()
                 .id(id)
                 .name(name)
@@ -184,11 +192,9 @@ public abstract class Module {
         this.activationListener = activationListener;
     }
 
-    public void tick(final Minecraft client) {
-    }
+    public void tick(final Minecraft client) {}
 
-    public void updateInput(final Minecraft client, final ClientInput input) {
-    }
+    public void updateInput(final Minecraft client, final ClientInput input) {}
 
     public boolean preventEdgeFall(final Minecraft client, final Player player) {
         return false;
@@ -218,25 +224,25 @@ public abstract class Module {
         return name;
     }
 
-    public void itemTooltip(final Minecraft client, final ItemStack stack, final List<Component> lines) {
-    }
+    public void itemTooltip(final Minecraft client, final ItemStack stack, final List<Component> lines) {}
 
-    public void entityAdded(final Minecraft client, final Entity entity) {
-    }
+    public void entityAdded(final Minecraft client, final Entity entity) {}
 
-    public void entityRemoved(final Minecraft client, final Entity entity, final RemovalReason reason) {
-    }
+    public void entityRemoved(final Minecraft client, final Entity entity, final RemovalReason reason) {}
 
-    public void blockBreakingProgress(final Minecraft client, final int breakerId, final BlockPos pos,
-                                      final int progress) {
-    }
+    public void blockBreakingProgress(
+            final Minecraft client, final int breakerId, final BlockPos pos, final int progress) {}
 
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
         return false;
     }
 
-    public boolean entityInteract(final Minecraft client, final Player player, final Entity entity,
-                                  final EntityHitResult hitResult, final InteractionHand hand) {
+    public boolean entityInteract(
+            final Minecraft client,
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand) {
         return false;
     }
 
@@ -244,9 +250,8 @@ public abstract class Module {
         return false;
     }
 
-    public void itemStopUse(final Minecraft client, final InteractionHand hand, final ItemStack stack,
-                            final int remainingTicks) {
-    }
+    public void itemStopUse(
+            final Minecraft client, final InteractionHand hand, final ItemStack stack, final int remainingTicks) {}
 
     public boolean openScreen(final Minecraft client, final Screen screen) {
         return false;
@@ -264,19 +269,16 @@ public abstract class Module {
         return fov;
     }
 
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                           final float pitch) {
+    public CameraTransform cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         return new CameraTransform(position, yaw, pitch);
     }
 
-    public void renderWorld(final Minecraft client, final LevelRenderContext context) {
-    }
+    public void renderWorld(final Minecraft client, final LevelRenderContext context) {}
 
-    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-    }
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {}
 
-    public void soundPacket(final Minecraft client, final ClientboundSoundPacket packet) {
-    }
+    public void soundPacket(final Minecraft client, final ClientboundSoundPacket packet) {}
 
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         return false;
@@ -290,26 +292,20 @@ public abstract class Module {
         return false;
     }
 
-    public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-    }
+    public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {}
 
-    public void gameJoined(final Minecraft client, final ClientPacketListener listener) {
-    }
+    public void gameJoined(final Minecraft client, final ClientPacketListener listener) {}
 
-    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
-    }
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {}
 
-    protected void onEnable() {
-    }
+    protected void onEnable() {}
 
-    protected void onDisable() {
-    }
+    protected void onDisable() {}
 
     interface ActivationListener {
 
         void onActivationChanged(Module module, boolean enabled);
     }
 
-    public record CameraTransform(Vec3 position, float yaw, float pitch) {
-    }
+    public record CameraTransform(Vec3 position, float yaw, float pitch) {}
 }

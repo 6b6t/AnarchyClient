@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -10,9 +12,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
-import java.util.Set;
 
 public final class ChestCleanerModule extends Module {
 
@@ -32,7 +31,10 @@ public final class ChestCleanerModule extends Module {
     private int cooldownTicks;
 
     public ChestCleanerModule() {
-        super("chest_cleaner", "Chest Cleaner", ModuleCategory.PLAYER,
+        super(
+                "chest_cleaner",
+                "Chest Cleaner",
+                ModuleCategory.PLAYER,
                 "Throws configured junk items out of an open chest one slot at a time with a short delay.");
     }
 

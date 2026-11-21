@@ -1,17 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
 
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
-
 final class SoundScan {
 
-    private SoundScan() {
-    }
+    private SoundScan() {}
 
     static Set<Identifier> parseSoundIds(final String value) {
         if (value == null || value.isBlank()) {
@@ -32,7 +30,8 @@ final class SoundScan {
     }
 
     static Identifier soundId(final ClientboundSoundPacket packet) {
-        return packet.getSound().unwrapKey()
+        return packet.getSound()
+                .unwrapKey()
                 .map(key -> key.identifier())
                 .orElse(packet.getSound().value().location());
     }

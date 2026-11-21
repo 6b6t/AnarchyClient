@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.TreeSet;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -10,21 +17,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.TreeSet;
-
 public final class NameCollectorModule extends Module {
 
     private final Set<String> names = new LinkedHashSet<>();
     private String domain;
 
     public NameCollectorModule() {
-        super("name_collector", "Name Collector", ModuleCategory.MISC,
+        super(
+                "name_collector",
+                "Name Collector",
+                ModuleCategory.MISC,
                 "Collects the names of online players and adds them to a per-server file when you leave or turn it off.");
     }
 
@@ -67,7 +69,10 @@ public final class NameCollectorModule extends Module {
             return;
         }
         String fileName = this.domain.replaceAll("[^a-zA-Z0-9._-]", "_") + ".txt";
-        Path file = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-name-captures").resolve(fileName);
+        Path file = FabricLoader.getInstance()
+                .getConfigDir()
+                .resolve(AnarchyClient.MOD_ID + "-name-captures")
+                .resolve(fileName);
         try {
             Files.createDirectories(file.getParent());
             Set<String> merged = new TreeSet<>(this.names);
@@ -79,7 +84,11 @@ public final class NameCollectorModule extends Module {
             }
             Files.write(file, merged, StandardCharsets.UTF_8);
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.name_collector.saved_names_to", "Saved %s names to %s.", merged.size(), file));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.name_collector.saved_names_to",
+                        "Saved %s names to %s.",
+                        merged.size(),
+                        file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save collected names", exception);

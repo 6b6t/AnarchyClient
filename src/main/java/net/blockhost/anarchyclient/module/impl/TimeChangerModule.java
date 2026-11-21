@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -15,10 +18,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.clock.ClockNetworkState;
 import net.minecraft.world.clock.WorldClock;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 public final class TimeChangerModule extends Module {
 
@@ -36,12 +35,16 @@ public final class TimeChangerModule extends Module {
      * Clock updates from server time packets. Packets arrive on the network thread, so the client tick applies them.
      */
     private final Map<Holder<WorldClock>, ClockNetworkState> pendingServerUpdates = new ConcurrentHashMap<>();
+
     private @Nullable Holder<WorldClock> clock;
     private @Nullable ClockNetworkState serverState;
     private long serverStateGameTime;
 
     public TimeChangerModule() {
-        super("time_changer", "Time Changer", ModuleCategory.RENDER,
+        super(
+                "time_changer",
+                "Time Changer",
+                ModuleCategory.RENDER,
                 "Freezes the visible time of day at a chosen value on your client and restores the server time when disabled.");
     }
 

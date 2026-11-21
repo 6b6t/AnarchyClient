@@ -4,8 +4,8 @@ import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
-import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -56,7 +56,10 @@ public final class AutoMendModule extends Module {
     private int cooldownTicks;
 
     public AutoMendModule() {
-        super("auto_mend", "Auto Mend", ModuleCategory.PLAYER,
+        super(
+                "auto_mend",
+                "Auto Mend",
+                ModuleCategory.PLAYER,
                 "Swaps your most damaged mending item into the offhand until collected XP fully repairs it. Leaves the offhand alone while a totem protects low health or Auto Totem is using it.");
     }
 
@@ -79,7 +82,8 @@ public final class AutoMendModule extends Module {
                 && player.getOffhandItem().isDamaged()) {
             return;
         }
-        int inventorySlot = findRepairSlot(player.getInventory(), this.minDurabilityPercent.value(), this.requireMending.value());
+        int inventorySlot =
+                findRepairSlot(player.getInventory(), this.minDurabilityPercent.value(), this.requireMending.value());
         if (inventorySlot < 0) {
             return;
         }
@@ -92,8 +96,7 @@ public final class AutoMendModule extends Module {
                 InventoryActionScheduler.PRIORITY_EQUIPMENT,
                 this.delay.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.pickupSwap(source, InventorySlots.offhandSlot())
-        ));
+                InventoryAction.pickupSwap(source, InventorySlots.offhandSlot())));
         this.cooldownTicks = this.delay.value().intValue();
     }
 
@@ -106,18 +109,21 @@ public final class AutoMendModule extends Module {
         return EXPThrowerModule.durabilityPercent(maxDamage, damageValue) <= minDurabilityPercent;
     }
 
-    static boolean protectedTotem(final float health, final float absorption, final boolean offhandTotem,
-                                  final double threshold) {
+    static boolean protectedTotem(
+            final float health, final float absorption, final boolean offhandTotem, final double threshold) {
         return offhandTotem && AutoLogModule.effectiveHealth(health, absorption, true) <= threshold;
     }
 
     private static boolean protectedTotem(final LocalPlayer player, final double threshold) {
-        return protectedTotem(player.getHealth(), player.getAbsorptionAmount(),
-                player.getOffhandItem().is(Items.TOTEM_OF_UNDYING), threshold);
+        return protectedTotem(
+                player.getHealth(),
+                player.getAbsorptionAmount(),
+                player.getOffhandItem().is(Items.TOTEM_OF_UNDYING),
+                threshold);
     }
 
-    private static int findRepairSlot(final Inventory inventory, final double minDurabilityPercent,
-                                      final boolean requireMending) {
+    private static int findRepairSlot(
+            final Inventory inventory, final double minDurabilityPercent, final boolean requireMending) {
         int bestSlot = -1;
         double bestPercent = Double.MAX_VALUE;
         int highestDamage = 0;
@@ -137,9 +143,11 @@ public final class AutoMendModule extends Module {
         return bestSlot;
     }
 
-    private static boolean isRepairCandidate(final ItemStack stack, final double minDurabilityPercent,
-                                             final boolean requireMending) {
-        if (stack == null || stack.isEmpty() || !stack.isDamageableItem()
+    private static boolean isRepairCandidate(
+            final ItemStack stack, final double minDurabilityPercent, final boolean requireMending) {
+        if (stack == null
+                || stack.isEmpty()
+                || !stack.isDamageableItem()
                 || !needsMending(stack.getMaxDamage(), stack.getDamageValue(), minDurabilityPercent)) {
             return false;
         }

@@ -28,7 +28,10 @@ public final class ArrowDodgeModule extends Module {
             .build()));
 
     public ArrowDodgeModule() {
-        super("arrow_dodge", "Arrow Dodge", ModuleCategory.COMBAT,
+        super(
+                "arrow_dodge",
+                "Arrow Dodge",
+                ModuleCategory.COMBAT,
                 "Pushes you sideways when a nearby arrow is flying toward you.");
     }
 
@@ -42,7 +45,10 @@ public final class ArrowDodgeModule extends Module {
             if (entity instanceof AbstractArrow arrow
                     && arrow.distanceToSqr(client.player) <= rangeSqr
                     && approaching(arrow.position(), arrow.getDeltaMovement(), client.player.position())) {
-                Vec3 side = arrow.getDeltaMovement().cross(new Vec3(0.0, 1.0, 0.0)).normalize().scale(this.strength.value());
+                Vec3 side = arrow.getDeltaMovement()
+                        .cross(new Vec3(0.0, 1.0, 0.0))
+                        .normalize()
+                        .scale(this.strength.value());
                 client.player.setDeltaMovement(client.player.getDeltaMovement().add(side.x, 0.0, side.z));
                 return;
             }

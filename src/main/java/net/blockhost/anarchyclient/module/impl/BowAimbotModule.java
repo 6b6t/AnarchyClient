@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.projectile.ProjectileAim;
@@ -19,9 +21,6 @@ import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ChargedProjectiles;
-
-import java.util.Comparator;
-import java.util.Optional;
 
 public final class BowAimbotModule extends Module {
 
@@ -50,7 +49,10 @@ public final class BowAimbotModule extends Module {
             .build()));
 
     public BowAimbotModule() {
-        super("bow_aimbot", "Bow Aimbot", ModuleCategory.COMBAT,
+        super(
+                "bow_aimbot",
+                "Bow Aimbot",
+                ModuleCategory.COMBAT,
                 "Aims at the nearest player or hostile in range while you draw a bow or hold a loaded crossbow, leading the target and compensating for arrow drop.");
     }
 
@@ -61,27 +63,29 @@ public final class BowAimbotModule extends Module {
             RotationManager.clear(this.id());
             return;
         }
-        TargetPolicy policy = TargetPolicy.of(this.players.value(), this.hostiles.value(), false,
-                true, true, true, true);
+        TargetPolicy policy =
+                TargetPolicy.of(this.players.value(), this.hostiles.value(), false, true, true, true, true);
         Optional<LivingEntity> target = TargetQuery.closest(
                 client.level.entitiesForRendering(),
                 player,
                 policy,
                 this.range.value(),
-                Comparator.comparingDouble(player::distanceToSqr)
-        );
-        target.ifPresentOrElse(entity -> RotationManager.request(new RotationRequest(
-                this.id(),
-                ProjectileAim.rotationToHit(player.getEyePosition(), entity,
-                        arrowVelocity(player.getMainHandItem(), player.getTicksUsingItem()),
-                        firesFirework(player.getMainHandItem()) ? 0.0 : ProjectileAim.gravity("bow")),
-                75,
-                30.0F,
-                2,
-                2.0F,
-                RotationTurnMode.STEPPED,
-                true
-        )), () -> RotationManager.clear(this.id()));
+                Comparator.comparingDouble(player::distanceToSqr));
+        target.ifPresentOrElse(
+                entity -> RotationManager.request(new RotationRequest(
+                        this.id(),
+                        ProjectileAim.rotationToHit(
+                                player.getEyePosition(),
+                                entity,
+                                arrowVelocity(player.getMainHandItem(), player.getTicksUsingItem()),
+                                firesFirework(player.getMainHandItem()) ? 0.0 : ProjectileAim.gravity("bow")),
+                        75,
+                        30.0F,
+                        2,
+                        2.0F,
+                        RotationTurnMode.STEPPED,
+                        true)),
+                () -> RotationManager.clear(this.id()));
         // A request does nothing until it is applied; nothing else applies it for this module.
         RotationManager.apply(player);
     }

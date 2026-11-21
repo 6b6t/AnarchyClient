@@ -19,13 +19,7 @@ public final class TimedRequestQueue<T> {
         Objects.requireNonNull(value, "value");
         int lifetime = Math.max(1, ticksUntilReset);
         this.clear(owner);
-        this.entries.add(new Entry<>(
-                owner,
-                priority,
-                this.tick + lifetime,
-                this.sequence++,
-                value
-        ));
+        this.entries.add(new Entry<>(owner, priority, this.tick + lifetime, this.sequence++, value));
     }
 
     public Optional<T> activeValue() {
@@ -35,8 +29,7 @@ public final class TimedRequestQueue<T> {
     public Optional<Entry<T>> active() {
         this.removeExpired();
         return this.entries.stream()
-                .max(Comparator.comparingInt(Entry<T>::priority)
-                        .thenComparingLong(Entry::sequence));
+                .max(Comparator.comparingInt(Entry<T>::priority).thenComparingLong(Entry::sequence));
     }
 
     public void tick() {
@@ -63,6 +56,5 @@ public final class TimedRequestQueue<T> {
         this.entries.removeIf(entry -> entry.expiresAt() <= this.tick);
     }
 
-    public record Entry<T>(String owner, int priority, int expiresAt, long sequence, T value) {
-    }
+    public record Entry<T>(String owner, int priority, int expiresAt, long sequence, T value) {}
 }

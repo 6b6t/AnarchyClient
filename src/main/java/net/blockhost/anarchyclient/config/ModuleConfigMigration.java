@@ -26,8 +26,8 @@ public interface ModuleConfigMigration {
      * Replaces a stored number that still equals {@code oldDefault} with {@code newDefault}, so configs
      * saved before a default changed pick up the new default. Any other stored value is kept.
      */
-    static void upgradeDefault(final JsonObject moduleJson, final String settingId, final double oldDefault,
-                               final double newDefault) {
+    static void upgradeDefault(
+            final JsonObject moduleJson, final String settingId, final double oldDefault, final double newDefault) {
         if (!(moduleJson.get("settings") instanceof JsonObject settings)) {
             return;
         }

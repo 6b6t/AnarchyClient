@@ -6,8 +6,8 @@ import net.blockhost.anarchyclient.module.impl.FreeLookModule;
 import net.blockhost.anarchyclient.module.impl.FreecamModule;
 import net.blockhost.anarchyclient.render.RenderSuppression;
 import net.minecraft.client.Camera;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -58,9 +58,8 @@ public abstract class CameraMixin {
     }
 
     @Inject(method = "extractRenderState", at = @At("RETURN"))
-    private void anarchyclient$suppressBlockingEffects(final CameraRenderState cameraState,
-                                                       final DeltaTracker deltaTracker,
-                                                       final CallbackInfo info) {
+    private void anarchyclient$suppressBlockingEffects(
+            final CameraRenderState cameraState, final DeltaTracker deltaTracker, final CallbackInfo info) {
         if (RenderSuppression.suppresses(RenderSuppression.Kind.BLINDNESS)
                 || RenderSuppression.suppresses(RenderSuppression.Kind.DARKNESS)) {
             cameraState.entityRenderState.doesMobEffectBlockSky = false;
@@ -82,13 +81,15 @@ public abstract class CameraMixin {
     }
 
     /** Free Look replaces the facing vanilla aligns the camera to, so third person still orbits the player. */
-    @Redirect(method = "alignWithEntity",
+    @Redirect(
+            method = "alignWithEntity",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getViewYRot(F)F"))
     private float anarchyclient$freeLookYaw(final Entity entity, final float partialTicks) {
         return FreeLookModule.viewYaw(entity, entity.getViewYRot(partialTicks));
     }
 
-    @Redirect(method = "alignWithEntity",
+    @Redirect(
+            method = "alignWithEntity",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;getViewXRot(F)F"))
     private float anarchyclient$freeLookPitch(final Entity entity, final float partialTicks) {
         return FreeLookModule.viewPitch(entity, entity.getViewXRot(partialTicks));
@@ -97,11 +98,7 @@ public abstract class CameraMixin {
     @Inject(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;calculateFov(F)F"))
     private void anarchyclient$modifyCamera(final DeltaTracker deltaTracker, final CallbackInfo info) {
         CameraTransformEvent event = AnarchyClient.MODULES.cameraTransform(
-                Minecraft.getInstance(),
-                this.position(),
-                this.yRot(),
-                this.xRot()
-        );
+                Minecraft.getInstance(), this.position(), this.yRot(), this.xRot());
         this.setPosition(event.position());
         this.setRotation(event.yaw(), event.pitch());
     }

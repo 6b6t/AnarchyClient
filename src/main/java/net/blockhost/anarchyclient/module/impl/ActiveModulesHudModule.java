@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -8,15 +10,15 @@ import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-import java.util.Comparator;
-import java.util.List;
-
 public final class ActiveModulesHudModule extends Module {
 
     private final ModuleManager modules;
 
     public ActiveModulesHudModule(final ModuleManager modules) {
-        super("active_modules_hud", "Active Modules", ModuleCategory.HUD,
+        super(
+                "active_modules_hud",
+                "Active Modules",
+                ModuleCategory.HUD,
                 "Lists every enabled module by name in a sorted HUD panel, top right by default.");
         this.modules = modules;
     }

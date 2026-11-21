@@ -32,7 +32,10 @@ public final class PingSpoofModule extends Module {
             .build()));
 
     public PingSpoofModule() {
-        super("ping_spoof", "Ping Spoof", ModuleCategory.MISC,
+        super(
+                "ping_spoof",
+                "Ping Spoof",
+                ModuleCategory.MISC,
                 "Delays keep-alive and ping replies to make the connection look slower to the server.");
     }
 
@@ -40,7 +43,9 @@ public final class PingSpoofModule extends Module {
     public void tick(final Minecraft client) {
         if (client.hasSingleplayerServer()) {
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.ping_spoof.ping_spoof_is_disabled_in_singleplayer", "Ping Spoof is disabled in singleplayer."));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.ping_spoof.ping_spoof_is_disabled_in_singleplayer",
+                        "Ping Spoof is disabled in singleplayer."));
             }
             this.enabled(false);
             return;
@@ -50,10 +55,12 @@ public final class PingSpoofModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (client.hasSingleplayerServer() || !(packet instanceof ClientboundKeepAlivePacket || packet instanceof ClientboundPingPacket)) {
+        if (client.hasSingleplayerServer()
+                || !(packet instanceof ClientboundKeepAlivePacket || packet instanceof ClientboundPingPacket)) {
             return false;
         }
-        return PacketQueueManager.queueIncoming(this.id(), connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueIncoming(
+                this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override

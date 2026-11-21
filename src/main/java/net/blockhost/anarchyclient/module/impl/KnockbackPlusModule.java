@@ -21,7 +21,10 @@ public final class KnockbackPlusModule extends Module {
     private boolean pendingStop;
 
     public KnockbackPlusModule() {
-        super("knockback_plus", "Knockback Plus", ModuleCategory.COMBAT,
+        super(
+                "knockback_plus",
+                "Knockback Plus",
+                ModuleCategory.COMBAT,
                 "Sends a sprint packet before each attack so your hits deal sprint knockback, then restores your real sprint state on the next tick.");
     }
 
@@ -37,7 +40,8 @@ public final class KnockbackPlusModule extends Module {
         this.pendingStop = false;
         ClientPacketListener connection = client.getConnection();
         if (client.player != null && connection != null && !client.player.isSprinting()) {
-            connection.send(new ServerboundPlayerCommandPacket(client.player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
+            connection.send(new ServerboundPlayerCommandPacket(
+                    client.player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
         }
     }
 
@@ -50,7 +54,8 @@ public final class KnockbackPlusModule extends Module {
         if (this.onlyKillAura.value() && !killAuraEnabled()) {
             return false;
         }
-        connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
+        connection.send(
+                new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         // LocalPlayer only sends sprint changes it made itself, so undo the fake sprint if the client is not sprinting.
         if (!player.isSprinting()) {
             this.pendingStop = true;

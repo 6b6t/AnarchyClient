@@ -7,8 +7,7 @@ import net.minecraft.util.StringUtil;
 
 public final class ChatActions {
 
-    private ChatActions() {
-    }
+    private ChatActions() {}
 
     /**
      * Sends chat text, or a server command when it starts with {@code /}. Text that starts with the client command
@@ -35,7 +34,8 @@ public final class ChatActions {
             return;
         }
         if (clientCommands && normalized.startsWith(CommandPrefix.get())) {
-            ClientCommands.execute(client.getConnection(), normalized.substring(1).trim());
+            ClientCommands.execute(
+                    client.getConnection(), normalized.substring(1).trim());
         } else if (normalized.startsWith("/")) {
             client.getConnection().sendCommand(normalized.substring(1));
         } else {

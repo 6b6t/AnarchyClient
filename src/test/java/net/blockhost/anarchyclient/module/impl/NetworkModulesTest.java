@@ -1,8 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 
 class NetworkModulesTest {
 
@@ -16,14 +16,14 @@ class NetworkModulesTest {
     @Test
     void serverSpoofKeepsBungeeCordForwardingData() {
         assertEquals("localhost", ServerSpoofModule.spoofedHost("play.example.org", "localhost"));
-        assertEquals("localhost\u00001.2.3.4\u0000uuid",
+        assertEquals(
+                "localhost\u00001.2.3.4\u0000uuid",
                 ServerSpoofModule.spoofedHost("play.example.org\u00001.2.3.4\u0000uuid", "localhost"));
     }
 
     @Test
     void autoLoginReadsTheTransferHostWithoutForwardingData() {
-        assertEquals("lobby.example.org:25566",
-                AutoLoginModule.handshakeHost("Lobby.Example.org\u00001.2.3.4", 25566));
+        assertEquals("lobby.example.org:25566", AutoLoginModule.handshakeHost("Lobby.Example.org\u00001.2.3.4", 25566));
     }
 
     @Test

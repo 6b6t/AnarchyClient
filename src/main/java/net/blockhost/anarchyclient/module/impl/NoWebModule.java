@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -9,8 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class NoWebModule extends Module {
 
@@ -32,7 +31,10 @@ public final class NoWebModule extends Module {
             .build()));
 
     public NoWebModule() {
-        super("no_web", "No Web", ModuleCategory.MOVEMENT,
+        super(
+                "no_web",
+                "No Web",
+                ModuleCategory.MOVEMENT,
                 "Lets the player pass through cobwebs without slowdown, or steer inside them at a set speed.");
     }
 
@@ -44,11 +46,15 @@ public final class NoWebModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || !"Motion".equals(this.mode.value()) || !insideWeb(client, player)) {
+        if (player == null
+                || client.level == null
+                || !"Motion".equals(this.mode.value())
+                || !insideWeb(client, player)) {
             return;
         }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.motionSpeed.value());
-        double y = MovementKeys.jump(client) ? this.motionSpeed.value()
+        double y = MovementKeys.jump(client)
+                ? this.motionSpeed.value()
                 : MovementKeys.sneak(client) ? -this.motionSpeed.value() : player.getDeltaMovement().y;
         player.setDeltaMovement(horizontal.x, y, horizontal.z);
     }

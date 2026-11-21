@@ -10,9 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -40,7 +40,10 @@ public final class ShieldBypassModule extends Module {
             .build()));
 
     public ShieldBypassModule() {
-        super("shield_bypass", "Shield Bypass", ModuleCategory.COMBAT,
+        super(
+                "shield_bypass",
+                "Shield Bypass",
+                ModuleCategory.COMBAT,
                 "Hits a shielding target from behind by briefly sending a position past its shield. This can flag anti-cheats.");
     }
 
@@ -50,17 +53,23 @@ public final class ShieldBypassModule extends Module {
             return false;
         }
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null || client.getConnection() == null
-                || client.gui.screen() != null || player.isUsingItem()) {
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
+                || client.getConnection() == null
+                || client.gui.screen() != null
+                || player.isUsingItem()) {
             return false;
         }
-        if (this.pauseForKillAura.value() && AnarchyClient.MODULES.find("kill_aura").map(Module::enabled).orElse(false)) {
+        if (this.pauseForKillAura.value()
+                && AnarchyClient.MODULES.find("kill_aura").map(Module::enabled).orElse(false)) {
             return false;
         }
         if (this.ignoreAxes.value() && player.getMainHandItem().is(ItemTags.AXES)) {
             return false;
         }
-        if (!(client.hitResult instanceof EntityHitResult hit) || !(hit.getEntity() instanceof LivingEntity target)
+        if (!(client.hitResult instanceof EntityHitResult hit)
+                || !(hit.getEntity() instanceof LivingEntity target)
                 || !target.isBlocking()) {
             return false;
         }
@@ -69,15 +78,18 @@ public final class ShieldBypassModule extends Module {
         if (!client.level.noCollision(player, player.getBoundingBox().move(bypass.subtract(original)))) {
             return false;
         }
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(bypass, player.onGround(), player.horizontalCollision));
+        client.getConnection()
+                .send(new ServerboundMovePlayerPacket.Pos(bypass, player.onGround(), player.horizontalCollision));
         client.gameMode.attack(player, target);
         player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         player.resetAttackStrengthTicker();
-        client.getConnection().send(new ServerboundMovePlayerPacket.Pos(original, player.onGround(), player.horizontalCollision));
+        client.getConnection()
+                .send(new ServerboundMovePlayerPacket.Pos(original, player.onGround(), player.horizontalCollision));
         return true;
     }
 
-    static Vec3 behindPosition(final Vec3 targetPosition, final Vec3 targetLook, final double y, final double distance) {
+    static Vec3 behindPosition(
+            final Vec3 targetPosition, final Vec3 targetLook, final double y, final double distance) {
         Vec3 horizontalLook = targetLook.multiply(1.0, 0.0, 1.0);
         if (horizontalLook.lengthSqr() < 1.0E-8) {
             return new Vec3(targetPosition.x, y, targetPosition.z);

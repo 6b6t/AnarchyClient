@@ -1,9 +1,9 @@
 package net.blockhost.anarchyclient.setting;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.gson.JsonPrimitive;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NumberSettingTest {
 
@@ -57,9 +57,21 @@ class NumberSettingTest {
     @Test
     void snapsSliderValuesToTheGridFromTheMinimumWithoutFloatingPointNoise() {
         NumberSetting setting = NumberSetting.from(NumberSetting.builder()
-                .id("height").name("Height").defaultValue(0.42).min(0.42).max(2.0).step(0.05).build());
+                .id("height")
+                .name("Height")
+                .defaultValue(0.42)
+                .min(0.42)
+                .max(2.0)
+                .step(0.05)
+                .build());
         NumberSetting tenths = NumberSetting.from(NumberSetting.builder()
-                .id("speed").name("Speed").defaultValue(0.1).min(0.0).max(1.0).step(0.1).build());
+                .id("speed")
+                .name("Speed")
+                .defaultValue(0.1)
+                .min(0.0)
+                .max(1.0)
+                .step(0.1)
+                .build());
 
         assertEquals(0.47, setting.snap(0.48));
         assertEquals(0.3, tenths.snap(0.1 + 0.2));

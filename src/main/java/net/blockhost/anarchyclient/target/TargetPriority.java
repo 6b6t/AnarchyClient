@@ -1,9 +1,8 @@
 package net.blockhost.anarchyclient.target;
 
+import java.util.Comparator;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.Comparator;
 
 public enum TargetPriority {
     TYPE,
@@ -15,12 +14,17 @@ public enum TargetPriority {
 
     public Comparator<LivingEntity> comparator(final Player player) {
         return switch (this) {
-            case TYPE -> Comparator.<LivingEntity>comparingInt(entity -> typeWeight(TargetClassifier.kind(entity)))
-                    .thenComparingDouble(player::distanceToSqr);
-            case HEALTH -> Comparator.comparingDouble(LivingEntity::getHealth).thenComparingDouble(player::distanceToSqr);
-            case ARMOR -> Comparator.comparingInt(LivingEntity::getArmorValue).thenComparingDouble(player::distanceToSqr);
+            case TYPE ->
+                Comparator.<LivingEntity>comparingInt(entity -> typeWeight(TargetClassifier.kind(entity)))
+                        .thenComparingDouble(player::distanceToSqr);
+            case HEALTH ->
+                Comparator.comparingDouble(LivingEntity::getHealth).thenComparingDouble(player::distanceToSqr);
+            case ARMOR ->
+                Comparator.comparingInt(LivingEntity::getArmorValue).thenComparingDouble(player::distanceToSqr);
             case CROSSHAIR -> Comparator.comparingDouble(entity -> crosshairAngle(player, entity));
-            case AGE -> Comparator.<LivingEntity>comparingInt(entity -> -entity.tickCount).thenComparingDouble(player::distanceToSqr);
+            case AGE ->
+                Comparator.<LivingEntity>comparingInt(entity -> -entity.tickCount)
+                        .thenComparingDouble(player::distanceToSqr);
             case DISTANCE -> Comparator.comparingDouble(player::distanceToSqr);
         };
     }
@@ -47,8 +51,12 @@ public enum TargetPriority {
     }
 
     private static double crosshairAngle(final Player player, final LivingEntity entity) {
-        double dot = player.getViewVector(0.0F).normalize()
-                .dot(entity.getBoundingBox().getCenter().subtract(player.getEyePosition()).normalize());
+        double dot = player.getViewVector(0.0F)
+                .normalize()
+                .dot(entity.getBoundingBox()
+                        .getCenter()
+                        .subtract(player.getEyePosition())
+                        .normalize());
         return Math.toDegrees(Math.acos(Math.max(-1.0, Math.min(1.0, dot))));
     }
 }

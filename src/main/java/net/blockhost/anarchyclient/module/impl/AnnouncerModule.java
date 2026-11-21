@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -17,10 +20,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public final class AnnouncerModule extends Module {
 
@@ -54,6 +53,7 @@ public final class AnnouncerModule extends Module {
     private final Map<BlockPos, Integer> pendingMining = new HashMap<>();
     /** Cells a block was placed toward; they count once the block really appears there. */
     private final Map<BlockPos, Integer> pendingPlacing = new HashMap<>();
+
     private Level level;
     private Vec3 lastPosition;
     private double walked;
@@ -62,7 +62,10 @@ public final class AnnouncerModule extends Module {
     private int ticks;
 
     public AnnouncerModule() {
-        super("announcer", "Announcer", ModuleCategory.MISC,
+        super(
+                "announcer",
+                "Announcer",
+                ModuleCategory.MISC,
                 "Tells chat what you have been doing, such as blocks walked, placed, or mined, at a set interval.");
     }
 
@@ -86,14 +89,18 @@ public final class AnnouncerModule extends Module {
         this.lastPosition = position;
         this.trackMining(client);
         this.trackPlacing(client);
-        this.debugValue("counts", (int) this.walked + " walked, " + this.placed + " placed, " + this.mined + " mined, "
-                + this.pendingPlacing.size() + " pending");
+        this.debugValue(
+                "counts",
+                (int) this.walked + " walked, " + this.placed + " placed, " + this.mined + " mined, "
+                        + this.pendingPlacing.size() + " pending");
         if (++this.ticks < this.interval.value().intValue() * 20) {
             return;
         }
         this.ticks = 0;
-        String message = announcement(this.walking.value() ? (int) this.walked : 0,
-                this.placing.value() ? this.placed : 0, this.mining.value() ? this.mined : 0);
+        String message = announcement(
+                this.walking.value() ? (int) this.walked : 0,
+                this.placing.value() ? this.placed : 0,
+                this.mining.value() ? this.mined : 0);
         if (message != null) {
             ChatActions.send(client, message);
             this.walked = 0.0;
@@ -116,7 +123,8 @@ public final class AnnouncerModule extends Module {
     }
 
     private void trackMining(final Minecraft client) {
-        Iterator<Map.Entry<BlockPos, Integer>> iterator = this.pendingMining.entrySet().iterator();
+        Iterator<Map.Entry<BlockPos, Integer>> iterator =
+                this.pendingMining.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<BlockPos, Integer> entry = iterator.next();
             if (client.level.getBlockState(entry.getKey()).isAir()) {
@@ -131,7 +139,8 @@ public final class AnnouncerModule extends Module {
     }
 
     private void trackPlacing(final Minecraft client) {
-        Iterator<Map.Entry<BlockPos, Integer>> iterator = this.pendingPlacing.entrySet().iterator();
+        Iterator<Map.Entry<BlockPos, Integer>> iterator =
+                this.pendingPlacing.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<BlockPos, Integer> entry = iterator.next();
             if (!client.level.getBlockState(entry.getKey()).canBeReplaced()) {
@@ -178,7 +187,7 @@ public final class AnnouncerModule extends Module {
         this.syncLevel(client);
         if (packet instanceof ServerboundPlayerActionPacket action
                 && (action.getAction() == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK
-                || action.getAction() == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK)) {
+                        || action.getAction() == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK)) {
             this.pendingMining.putIfAbsent(action.getPos().immutable(), 0);
         }
     }
@@ -189,14 +198,16 @@ public final class AnnouncerModule extends Module {
      */
     @Override
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
-        if (client.player == null || client.level == null
+        if (client.player == null
+                || client.level == null
                 || !(client.player.getItemInHand(hand).getItem() instanceof BlockItem)) {
             return false;
         }
         this.syncLevel(client);
         BlockPos clicked = hitResult.getBlockPos();
         BlockPos target = client.level.getBlockState(clicked).canBeReplaced()
-                ? clicked : clicked.relative(hitResult.getDirection());
+                ? clicked
+                : clicked.relative(hitResult.getDirection());
         if (client.level.getBlockState(target).canBeReplaced()) {
             this.pendingPlacing.putIfAbsent(target.immutable(), 0);
         }

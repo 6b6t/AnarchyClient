@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,9 +9,6 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 public final class BetterChatModule extends Module {
 
@@ -47,7 +46,10 @@ public final class BetterChatModule extends Module {
     private boolean replacesPrevious;
 
     public BetterChatModule() {
-        super("better_chat", "Better Chat", ModuleCategory.MISC,
+        super(
+                "better_chat",
+                "Better Chat",
+                ModuleCategory.MISC,
                 "Adds timestamps to chat, merges repeated messages into one line with a count, keeps chat across disconnects, and can append a suffix to sent messages.");
     }
 

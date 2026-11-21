@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
@@ -8,18 +12,16 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.world.BossEvent;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 public final class BossStackModule extends HudElementModule {
 
     private final Map<UUID, BossInfo> bosses = new LinkedHashMap<>();
 
     public BossStackModule() {
-        super("boss_stack", "Boss Stack",
-                "Lists boss bars received while enabled with their names and progress percentages.", "Top Right");
+        super(
+                "boss_stack",
+                "Boss Stack",
+                "Lists boss bars received while enabled with their names and progress percentages.",
+                "Top Right");
     }
 
     @Override
@@ -61,9 +63,15 @@ public final class BossStackModule extends HudElementModule {
     private final class Handler implements ClientboundBossEventPacket.Handler {
 
         @Override
-        public void add(final UUID id, final Component name, final float progress, final BossEvent.BossBarColor color,
-                        final BossEvent.BossBarOverlay overlay, final boolean darkenScreen, final boolean playMusic,
-                        final boolean createWorldFog) {
+        public void add(
+                final UUID id,
+                final Component name,
+                final float progress,
+                final BossEvent.BossBarColor color,
+                final BossEvent.BossBarOverlay overlay,
+                final boolean darkenScreen,
+                final boolean playMusic,
+                final boolean createWorldFog) {
             BossStackModule.this.bosses.put(id, new BossInfo(name.getString(), progress));
         }
 
@@ -89,6 +97,5 @@ public final class BossStackModule extends HudElementModule {
         }
     }
 
-    private record BossInfo(String name, float progress) {
-    }
+    private record BossInfo(String name, float progress) {}
 }

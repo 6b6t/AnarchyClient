@@ -10,8 +10,7 @@ package net.blockhost.anarchyclient.module;
  */
 public final class ModuleRegistry {
 
-    private ModuleRegistry() {
-    }
+    private ModuleRegistry() {}
 
     public static void registerDefaults(final ModuleManager modules) {
         ServerModules.register(modules);

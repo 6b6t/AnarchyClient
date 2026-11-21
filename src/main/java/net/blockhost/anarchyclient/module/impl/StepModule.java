@@ -24,7 +24,10 @@ public final class StepModule extends Module {
             .build()));
 
     public StepModule() {
-        super("step", "Step", ModuleCategory.MOVEMENT,
+        super(
+                "step",
+                "Step",
+                ModuleCategory.MOVEMENT,
                 "Raises your step height so you walk up full blocks or more without jumping.");
     }
 
@@ -38,11 +41,8 @@ public final class StepModule extends Module {
             return;
         }
         double amount = Math.max(0.0, this.height.value() - attribute.getBaseValue());
-        attribute.addOrUpdateTransientModifier(new AttributeModifier(
-                MODIFIER_ID,
-                amount,
-                AttributeModifier.Operation.ADD_VALUE
-        ));
+        attribute.addOrUpdateTransientModifier(
+                new AttributeModifier(MODIFIER_ID, amount, AttributeModifier.Operation.ADD_VALUE));
     }
 
     @Override

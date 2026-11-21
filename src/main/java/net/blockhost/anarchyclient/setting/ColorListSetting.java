@@ -2,7 +2,6 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

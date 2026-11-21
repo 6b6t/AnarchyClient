@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.inventory.ToolSelector;
 import net.blockhost.anarchyclient.mixin.MultiPlayerGameModeAccessor;
@@ -30,9 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.List;
-import java.util.OptionalInt;
-
 public final class PacketMineModule extends Module {
 
     private static final String INSTANT = "Instant";
@@ -43,8 +42,9 @@ public final class PacketMineModule extends Module {
             .name("Mode")
             .defaultValue(INSTANT)
             .addAllOptions(List.of(INSTANT, PROGRESS))
-            .description("Instant sends start and finish packets for the block under the crosshair. Progress mines "
-                    + "the block you click in the background and finishes it with the best tool once the server accepts it.")
+            .description(
+                    "Instant sends start and finish packets for the block under the crosshair. Progress mines "
+                            + "the block you click in the background and finishes it with the best tool once the server accepts it.")
             .build()));
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("range")
@@ -89,7 +89,10 @@ public final class PacketMineModule extends Module {
     private int lastSelectedSlot = -1;
 
     public PacketMineModule() {
-        super("packet_mine", "Packet Mine", ModuleCategory.WORLD,
+        super(
+                "packet_mine",
+                "Packet Mine",
+                ModuleCategory.WORLD,
                 "Breaks blocks with start and finish mining packets. Instant mode hits the block under the crosshair after "
                         + "a set delay; Progress mode keeps mining a clicked block in the background, so you can look away. "
                         + "This can flag anti-cheats.");
@@ -112,7 +115,9 @@ public final class PacketMineModule extends Module {
     }
 
     private void tickInstant(final Minecraft client, final LocalPlayer player) {
-        if (client.hitResult == null || this.cooldownTicks-- > 0 || client.hitResult.getType() != HitResult.Type.BLOCK) {
+        if (client.hitResult == null
+                || this.cooldownTicks-- > 0
+                || client.hitResult.getType() != HitResult.Type.BLOCK) {
             return;
         }
         BlockHitResult hit = (BlockHitResult) client.hitResult;
@@ -165,7 +170,8 @@ public final class PacketMineModule extends Module {
         OptionalInt toolSlot = this.switchTool.value()
                 ? ToolSelector.bestHotbarTool(player.getInventory(), state, ToolSelector.ANY)
                 : OptionalInt.empty();
-        ItemStack tool = toolSlot.isPresent() ? player.getInventory().getItem(toolSlot.getAsInt()) : player.getMainHandItem();
+        ItemStack tool =
+                toolSlot.isPresent() ? player.getInventory().getItem(toolSlot.getAsInt()) : player.getMainHandItem();
         float perTick = MiningProgress.perTick(player, client.level, current.pos(), state, tool);
         float shown = Math.min(1.0F, perTick * (ticksMined + 1) / SpeedMineModule.SERVER_BREAK_THRESHOLD);
         this.debugValue("progress", Math.round(shown * 100.0F) + "%");
@@ -202,8 +208,11 @@ public final class PacketMineModule extends Module {
     @Override
     public boolean attackBlock(final Minecraft client, final BlockPos pos, final Direction direction) {
         LocalPlayer player = client.player;
-        if (!PROGRESS.equals(this.mode.value()) || player == null || client.level == null
-                || client.getConnection() == null || player.getAbilities().instabuild) {
+        if (!PROGRESS.equals(this.mode.value())
+                || player == null
+                || client.level == null
+                || client.getConnection() == null
+                || player.getAbilities().instabuild) {
             return false;
         }
         if (this.target != null && this.target.pos().equals(pos)) {
@@ -215,7 +224,11 @@ public final class PacketMineModule extends Module {
             return false;
         }
         if (this.target != null) {
-            send(client, ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, this.target.pos(), this.target.face());
+            send(
+                    client,
+                    ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                    this.target.pos(),
+                    this.target.face());
         }
         send(client, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, direction);
         this.swing(player);
@@ -232,8 +245,7 @@ public final class PacketMineModule extends Module {
                 2,
                 2.0F,
                 RotationTurnMode.STEPPED,
-                true
-        ));
+                true));
     }
 
     private void swing(final LocalPlayer player) {
@@ -250,8 +262,11 @@ public final class PacketMineModule extends Module {
         MarkerManager.put(new CuboidMarker(this.id() + ":target", new AABB(pos).deflate(inset), MarkerStyle.CYAN, 2));
     }
 
-    private static void send(final Minecraft client, final ServerboundPlayerActionPacket.Action action, final BlockPos pos,
-                             final Direction direction) {
+    private static void send(
+            final Minecraft client,
+            final ServerboundPlayerActionPacket.Action action,
+            final BlockPos pos,
+            final Direction direction) {
         ClientPacketListener connection = client.getConnection();
         if (connection != null) {
             connection.send(new ServerboundPlayerActionPacket(action, pos, direction));
@@ -267,7 +282,11 @@ public final class PacketMineModule extends Module {
     protected void onDisable() {
         Minecraft client = Minecraft.getInstance();
         if (this.target != null) {
-            send(client, ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, this.target.pos(), this.target.face());
+            send(
+                    client,
+                    ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                    this.target.pos(),
+                    this.target.face());
         }
         this.cooldownTicks = 0;
         this.lastTarget = null;

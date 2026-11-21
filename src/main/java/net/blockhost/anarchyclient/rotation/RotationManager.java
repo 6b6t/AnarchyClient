@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.rotation;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import net.blockhost.anarchyclient.request.TimedRequestQueue;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -7,17 +10,12 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
 public final class RotationManager {
 
     private static final TimedRequestQueue<RotationRequest> REQUESTS = new TimedRequestQueue<>();
     private static final Set<String> REACHED_OWNERS = new HashSet<>();
 
-    private RotationManager() {
-    }
+    private RotationManager() {}
 
     public static void request(final RotationRequest request) {
         REQUESTS.request(request.owner(), request.priority(), request.ticksUntilReset(), request);
@@ -38,7 +36,8 @@ public final class RotationManager {
             return Optional.empty();
         }
         RotationRequest request = active.orElseThrow();
-        if (request.pauseInInventory() && player.containerMenu != null
+        if (request.pauseInInventory()
+                && player.containerMenu != null
                 && player.containerMenu.containerId != InventoryMenu.CONTAINER_ID) {
             return Optional.empty();
         }
@@ -50,7 +49,8 @@ public final class RotationManager {
         };
         player.setYRot(next.yaw());
         player.setXRot(next.pitch());
-        if (next.angleTo(request.target()) <= request.resetThreshold() && request.whenReached() != null
+        if (next.angleTo(request.target()) <= request.resetThreshold()
+                && request.whenReached() != null
                 && REACHED_OWNERS.add(request.owner())) {
             request.whenReached().run();
         }
@@ -83,7 +83,8 @@ public final class RotationManager {
         if (box.contains(eye)) {
             return true;
         }
-        Vec3 end = eye.add(Vec3.directionFromRotation(rotation.pitch(), rotation.yaw()).scale(range));
+        Vec3 end = eye.add(
+                Vec3.directionFromRotation(rotation.pitch(), rotation.yaw()).scale(range));
         return box.clip(eye, end).isPresent();
     }
 

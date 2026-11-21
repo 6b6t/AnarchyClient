@@ -22,7 +22,10 @@ public final class ElytraRecastModule extends Module {
     private boolean wasGliding;
 
     public ElytraRecastModule() {
-        super("elytra_recast", "Elytra Recast", ModuleCategory.MOVEMENT,
+        super(
+                "elytra_recast",
+                "Elytra Recast",
+                ModuleCategory.MOVEMENT,
                 "Resends the elytra start packet while airborne so gliding restarts after it stops.");
     }
 
@@ -38,8 +41,12 @@ public final class ElytraRecastModule extends Module {
             return;
         }
         // Only restart a glide that stopped mid-air; otherwise every jump or ladder climb would start gliding.
-        if (!this.wasGliding || player.onGround() || player.onClimbable() || player.getAbilities().flying
-                || player.isInWater() || !ExtraElytraModule.canGlide(player.getItemBySlot(EquipmentSlot.CHEST))) {
+        if (!this.wasGliding
+                || player.onGround()
+                || player.onClimbable()
+                || player.getAbilities().flying
+                || player.isInWater()
+                || !ExtraElytraModule.canGlide(player.getItemBySlot(EquipmentSlot.CHEST))) {
             this.wasGliding = false;
             return;
         }
@@ -47,7 +54,8 @@ public final class ElytraRecastModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        player.connection.send(new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
+        player.connection.send(
+                new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
         this.cooldownTicks = this.cooldown.value().intValue();
     }
 

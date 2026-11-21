@@ -7,10 +7,9 @@ public record Rotation(float yaw, float pitch) {
     public static Rotation lookingAt(final Vec3 point, final Vec3 from) {
         Vec3 delta = point.subtract(from);
         double horizontal = Math.sqrt(delta.x * delta.x + delta.z * delta.z);
-        return new Rotation(
-                (float) Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0F,
-                (float) -Math.toDegrees(Math.atan2(delta.y, horizontal))
-        ).clampPitch();
+        return new Rotation((float) Math.toDegrees(Math.atan2(delta.z, delta.x)) - 90.0F, (float)
+                        -Math.toDegrees(Math.atan2(delta.y, horizontal)))
+                .clampPitch();
     }
 
     // Pitch is never wrapped: it stays within [-90, 90], and wrapping a full 180 degree turn (straight up to
@@ -18,10 +17,7 @@ public record Rotation(float yaw, float pitch) {
     public Rotation stepToward(final Rotation target, final float maxStep) {
         float yawDelta = wrapDegrees(target.yaw - this.yaw);
         float pitchDelta = target.pitch - this.pitch;
-        return new Rotation(
-                this.yaw + clamp(yawDelta, maxStep),
-                this.pitch + clamp(pitchDelta, maxStep)
-        ).clampPitch();
+        return new Rotation(this.yaw + clamp(yawDelta, maxStep), this.pitch + clamp(pitchDelta, maxStep)).clampPitch();
     }
 
     public Rotation linearStepToward(final Rotation target, final float maxStep) {
@@ -32,10 +28,8 @@ public record Rotation(float yaw, float pitch) {
         double factor = maxStep / angle;
         float yawDelta = wrapDegrees(target.yaw - this.yaw);
         float pitchDelta = target.pitch - this.pitch;
-        return new Rotation(
-                this.yaw + (float) (yawDelta * factor),
-                this.pitch + (float) (pitchDelta * factor)
-        ).clampPitch();
+        return new Rotation(this.yaw + (float) (yawDelta * factor), this.pitch + (float) (pitchDelta * factor))
+                .clampPitch();
     }
 
     public double angleTo(final Rotation target) {

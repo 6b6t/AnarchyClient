@@ -43,9 +43,15 @@ public abstract class CommandSuggestionsMixin {
         return command;
     }
 
-    @Redirect(method = "updateCommandInfo", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/client/multiplayer/ClientPacketListener;getCommands()Lcom/mojang/brigadier/CommandDispatcher;"))
-    private CommandDispatcher<ClientSuggestionProvider> anarchyclient$prefixCommands(final ClientPacketListener connection) {
+    @Redirect(
+            method = "updateCommandInfo",
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/client/multiplayer/ClientPacketListener;getCommands()Lcom/mojang/brigadier/CommandDispatcher;"))
+    private CommandDispatcher<ClientSuggestionProvider> anarchyclient$prefixCommands(
+            final ClientPacketListener connection) {
         char prefix = CommandPrefix.first();
         if (prefix != '/' && this.input.getValue().startsWith(CommandPrefix.get())) {
             return ClientCommands.dispatcher();

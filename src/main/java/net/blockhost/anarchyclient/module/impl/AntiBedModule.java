@@ -7,8 +7,8 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -47,7 +47,10 @@ public final class AntiBedModule extends Module {
             .build()));
 
     public AntiBedModule() {
-        super("anti_bed", "Anti Bed", ModuleCategory.COMBAT,
+        super(
+                "anti_bed",
+                "Anti Bed",
+                ModuleCategory.COMBAT,
                 "Breaks beds placed in your head space, fills the space around you with string, and stops you from using beds.");
     }
 
@@ -85,7 +88,8 @@ public final class AntiBedModule extends Module {
 
     @Override
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
-        return client.level != null && client.level.getBlockState(hitResult.getBlockPos()).getBlock() instanceof BedBlock;
+        return client.level != null
+                && client.level.getBlockState(hitResult.getBlockPos()).getBlock() instanceof BedBlock;
     }
 
     @Override
@@ -98,12 +102,20 @@ public final class AntiBedModule extends Module {
      * cannot take string, such as one with no supporting block, is skipped so the next spot can go.
      */
     private boolean placeString(final Minecraft client, final BlockPos pos) {
-        if (client.player == null || client.level == null || !client.level.getBlockState(pos).canBeReplaced()
+        if (client.player == null
+                || client.level == null
+                || !client.level.getBlockState(pos).canBeReplaced()
                 || !WorldInteraction.hasHotbarItem(client.player.getInventory(), stack -> stack.is(Items.STRING))) {
             return false;
         }
-        BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, pos, this.rotate.value(), 60.0F,
-                stack -> stack.is(Items.STRING), BlockPlacer.PlacementOptions.NON_FULL);
+        BlockPlacement.PlacementResult result = BlockPlacement.place(
+                client,
+                this,
+                pos,
+                this.rotate.value(),
+                60.0F,
+                stack -> stack.is(Items.STRING),
+                BlockPlacer.PlacementOptions.NON_FULL);
         return result == BlockPlacement.PlacementResult.PLACED || result == BlockPlacement.PlacementResult.WAITING;
     }
 

@@ -1,23 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import com.mojang.authlib.GameProfile;
-import net.blockhost.anarchyclient.render.WorldLineRenderer;
-import net.blockhost.anarchyclient.waypoint.Waypoint;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
-import net.minecraft.network.protocol.game.ServerboundPunchPacket;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Input;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameType;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.mojang.authlib.GameProfile;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,12 +14,21 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.time.LocalTime;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import net.blockhost.anarchyclient.render.WorldLineRenderer;
+import net.blockhost.anarchyclient.waypoint.Waypoint;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundPlayerRotationPacket;
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
+import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.Test;
 
 class AdditionalModulesTest {
 
@@ -41,10 +39,10 @@ class AdditionalModulesTest {
 
     @Test
     void parsesAutoLoginCommandMap() {
-        assertEquals(Map.of(
+        assertEquals(
+                Map.of(
                         "example.org", "/login hunter2",
-                        "*", "/register hunter2 hunter2"
-                ),
+                        "*", "/register hunter2 hunter2"),
                 AutoLoginModule.parseCommands("example.org=/login hunter2; *=/register hunter2 hunter2"));
     }
 
@@ -58,9 +56,7 @@ class AdditionalModulesTest {
                         1000,
                         100_000,
                         128,
-                        4096
-                )
-        );
+                        4096));
     }
 
     @Test
@@ -107,18 +103,19 @@ class AdditionalModulesTest {
     @Test
     void blockInTargetsExpectedShellAroundPlayer() {
         BlockPos base = new BlockPos(10, 64, -5);
-        assertIterableEquals(List.of(
-                new BlockPos(10, 63, -5),
-                new BlockPos(11, 64, -5),
-                new BlockPos(9, 64, -5),
-                new BlockPos(10, 64, -4),
-                new BlockPos(10, 64, -6),
-                new BlockPos(11, 65, -5),
-                new BlockPos(9, 65, -5),
-                new BlockPos(10, 65, -4),
-                new BlockPos(10, 65, -6),
-                new BlockPos(10, 66, -5)
-        ), BlockInModule.targetPositions(base));
+        assertIterableEquals(
+                List.of(
+                        new BlockPos(10, 63, -5),
+                        new BlockPos(11, 64, -5),
+                        new BlockPos(9, 64, -5),
+                        new BlockPos(10, 64, -4),
+                        new BlockPos(10, 64, -6),
+                        new BlockPos(11, 65, -5),
+                        new BlockPos(9, 65, -5),
+                        new BlockPos(10, 65, -4),
+                        new BlockPos(10, 65, -6),
+                        new BlockPos(10, 66, -5)),
+                BlockInModule.targetPositions(base));
     }
 
     @Test
@@ -145,12 +142,20 @@ class AdditionalModulesTest {
     void antiBotUsesStrictCandidateChecks() {
         GameProfile validProfile = new GameProfile(UUID.randomUUID(), "Steve");
 
-        assertTrue(AntiBotModule.shouldRemoveCandidate(false, false, true, true, false, false,
-                false, null, null, 0));
-        assertTrue(AntiBotModule.shouldRemoveCandidate(false, false, false, true, false, false,
-                true, GameType.SURVIVAL, new GameProfile(new UUID(0L, 0L), "Bot"), 0));
-        assertFalse(AntiBotModule.shouldRemoveCandidate(false, false, true, true, false, false,
-                true, GameType.SURVIVAL, validProfile, 42));
+        assertTrue(AntiBotModule.shouldRemoveCandidate(false, false, true, true, false, false, false, null, null, 0));
+        assertTrue(AntiBotModule.shouldRemoveCandidate(
+                false,
+                false,
+                false,
+                true,
+                false,
+                false,
+                true,
+                GameType.SURVIVAL,
+                new GameProfile(new UUID(0L, 0L), "Bot"),
+                0));
+        assertFalse(AntiBotModule.shouldRemoveCandidate(
+                false, false, true, true, false, false, true, GameType.SURVIVAL, validProfile, 42));
     }
 
     @Test
@@ -159,7 +164,8 @@ class AdditionalModulesTest {
         Map<UUID, String> previous = new HashMap<>();
         previous.put(vanished, "AdminName");
 
-        assertTrue(AntiVanishModule.vanishedPlayers(previous, Map.of(), List.of("AdminName left the game"), true).isEmpty());
+        assertTrue(AntiVanishModule.vanishedPlayers(previous, Map.of(), List.of("AdminName left the game"), true)
+                .isEmpty());
         assertEquals(List.of("AdminName"), AntiVanishModule.vanishedPlayers(previous, Map.of(), List.of(), true));
     }
 
@@ -256,36 +262,16 @@ class AdditionalModulesTest {
 
     @Test
     void chestStealerIgnoresEmptySlots() {
-        List<ItemStack> stacks = List.of(
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY
-        );
+        List<ItemStack> stacks = List.of(ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY);
 
         assertEquals(-1, ChestStealerModule.firstStealableSlot(stacks, 3, true, Set.of()));
     }
 
     @Test
     void inventoryCleanerSkipsEmptyAndSelectedSlots() {
-        List<ItemStack> stacks = List.of(
-                ItemStack.EMPTY,
-                ItemStack.EMPTY,
-                ItemStack.EMPTY
-        );
+        List<ItemStack> stacks = List.of(ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY);
         InventoryCleanerModule.CleanerOptions options = new InventoryCleanerModule.CleanerOptions(
-                true,
-                Set.of(),
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true,
-                true
-        );
+                true, Set.of(), true, true, true, true, true, true, true, true, true, true);
 
         assertEquals(-1, InventoryCleanerModule.findDropSlot(stacks, 1, options));
     }
@@ -305,8 +291,10 @@ class AdditionalModulesTest {
 
     @Test
     void autoDisableParsesModuleIds() {
-        assertIterableEquals(List.of("kill_aura", "velocity", "zoom"),
-                AutoDisableModule.parseModuleIds("kill_aura, velocity; zoom").stream().toList());
+        assertIterableEquals(
+                List.of("kill_aura", "velocity", "zoom"),
+                AutoDisableModule.parseModuleIds("kill_aura, velocity; zoom").stream()
+                        .toList());
     }
 
     @Test
@@ -317,8 +305,7 @@ class AdditionalModulesTest {
 
     @Test
     void staffAlertParsesNamesCaseInsensitively() {
-        assertEquals(Set.of("admin", "moderator", "helper"),
-                StaffAlertModule.parseNames("Admin, Moderator; HELPER"));
+        assertEquals(Set.of("admin", "moderator", "helper"), StaffAlertModule.parseNames("Admin, Moderator; HELPER"));
     }
 
     @Test
@@ -333,16 +320,13 @@ class AdditionalModulesTest {
         List<BlockTargetScanner.BlockTarget> targets = new ArrayList<>(List.of(
                 new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 3), null, 9.0),
                 new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 1), null, 1.0),
-                new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 2), null, 4.0)
-        ));
+                new BlockTargetScanner.BlockTarget(new BlockPos(0, 0, 2), null, 4.0)));
 
         BlockTargetScanner.sort(targets, BlockTargetScanner.SortMode.CLOSEST);
 
-        assertIterableEquals(List.of(
-                new BlockPos(0, 0, 1),
-                new BlockPos(0, 0, 2),
-                new BlockPos(0, 0, 3)
-        ), targets.stream().map(BlockTargetScanner.BlockTarget::pos).toList());
+        assertIterableEquals(
+                List.of(new BlockPos(0, 0, 1), new BlockPos(0, 0, 2), new BlockPos(0, 0, 3)),
+                targets.stream().map(BlockTargetScanner.BlockTarget::pos).toList());
     }
 
     @Test
@@ -353,8 +337,8 @@ class AdditionalModulesTest {
 
     @Test
     void shieldBypassPositionsBehindTargetLookDirection() {
-        Vec3 position = ShieldBypassModule.behindPosition(new Vec3(10.0, 64.0, 5.0), new Vec3(0.0, 0.0, 1.0),
-                70.0, 0.6);
+        Vec3 position =
+                ShieldBypassModule.behindPosition(new Vec3(10.0, 64.0, 5.0), new Vec3(0.0, 0.0, 1.0), 70.0, 0.6);
 
         assertEquals(new Vec3(10.0, 70.0, 4.4), position);
     }
@@ -406,7 +390,8 @@ class AdditionalModulesTest {
 
     @Test
     void autoFarmMapsPlantableBaseBlocksAndScanLimits() {
-        assertIterableEquals(List.of("wheat_seeds", "carrot", "potato", "beetroot_seeds"),
+        assertIterableEquals(
+                List.of("wheat_seeds", "carrot", "potato", "beetroot_seeds"),
                 AutoFarmModule.plantItemIds("minecraft:farmland"));
         assertIterableEquals(List.of("nether_wart"), AutoFarmModule.plantItemIds("soul_sand"));
         assertTrue(AutoFarmModule.plantItemIds("stone").isEmpty());
@@ -421,17 +406,17 @@ class AdditionalModulesTest {
         assertEquals(1, AutoEnchantModule.targetLevel(-5.0));
         assertEquals(2, AutoEnchantModule.targetLevel(2.8));
         assertEquals(3, AutoEnchantModule.targetLevel(5.0));
-        assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 30, 3, false));
-        assertFalse(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 20, 3, false));
-        assertTrue(AutoEnchantModule.canUseChoice(new int[]{1, 8, 30}, 3, 0, 0, true));
+        assertTrue(AutoEnchantModule.canUseChoice(new int[] {1, 8, 30}, 3, 30, 3, false));
+        assertFalse(AutoEnchantModule.canUseChoice(new int[] {1, 8, 30}, 3, 20, 3, false));
+        assertTrue(AutoEnchantModule.canUseChoice(new int[] {1, 8, 30}, 3, 0, 0, true));
     }
 
     @Test
     void betterChatPrefixesStableTimestamps() {
-        assertEquals("[09:05] hello", BetterChatModule.withTimestamp(
-                Component.literal("hello"),
-                LocalTime.of(9, 5)
-        ).getString());
+        assertEquals(
+                "[09:05] hello",
+                BetterChatModule.withTimestamp(Component.literal("hello"), LocalTime.of(9, 5))
+                        .getString());
     }
 
     @Test
@@ -481,12 +466,7 @@ class AdditionalModulesTest {
 
     @Test
     void freecamMovesRelativeToYawAndVerticalInput() {
-        Vec3 moved = FreecamModule.move(
-                Vec3.ZERO,
-                0.0F,
-                new Input(true, false, false, false, true, false, false),
-                1.0
-        );
+        Vec3 moved = FreecamModule.move(Vec3.ZERO, 0.0F, new Input(true, false, false, false, true, false, false), 1.0);
 
         assertEquals(0.0, moved.x, 1.0E-9);
         assertEquals(Math.sqrt(0.5), moved.y, 1.0E-9);

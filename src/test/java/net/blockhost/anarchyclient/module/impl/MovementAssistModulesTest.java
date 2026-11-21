@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.blockhost.anarchyclient.test.MapBlockGetter;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.core.BlockPos;
@@ -10,11 +15,6 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class MovementAssistModulesTest {
@@ -82,6 +82,7 @@ class MovementAssistModulesTest {
         level.set(new BlockPos(0, -60, 0), Blocks.STONE);
         assertFalse(AvoidHazardsModule.isVoidColumn(level, edge));
 
-        assertFalse(AvoidHazardsModule.isVoidColumn(new MapBlockGetter().set(new BlockPos(0, 10, 0), Blocks.WATER), edge));
+        assertFalse(
+                AvoidHazardsModule.isVoidColumn(new MapBlockGetter().set(new BlockPos(0, 10, 0), Blocks.WATER), edge));
     }
 }

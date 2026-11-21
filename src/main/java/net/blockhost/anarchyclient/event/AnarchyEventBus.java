@@ -20,8 +20,7 @@ public final class AnarchyEventBus {
                         "Exception in AnarchyClient event handler {} for {}",
                         handler.getOwner().getName(),
                         event.getClass().getName(),
-                        throwable
-                ));
+                        throwable));
     }
 
     public void register(final Object listener) {

@@ -9,7 +9,10 @@ public final class SmoothCameraModule extends Module {
     private Boolean previous;
 
     public SmoothCameraModule() {
-        super("smooth_camera", "Smooth Camera", ModuleCategory.RENDER,
+        super(
+                "smooth_camera",
+                "Smooth Camera",
+                ModuleCategory.RENDER,
                 "Turns on the vanilla cinematic camera so mouse movement is smoothed out.");
     }
 

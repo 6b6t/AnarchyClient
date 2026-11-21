@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import net.blockhost.anarchyclient.rotation.Rotation;
 import net.blockhost.anarchyclient.test.MapBlockGetter;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
@@ -10,12 +15,6 @@ import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ExtendWith(MinecraftBootstrapExtension.class)
 class PistonModulesTest {
 
@@ -25,7 +24,8 @@ class PistonModulesTest {
     void pistonRotationMakesVanillaPlaceThePistonFacingTheRequestedWay() {
         for (Direction facing : Direction.Plane.HORIZONTAL) {
             Rotation rotation = PistonPlacement.rotationFor(facing);
-            Direction looking = Direction.getApproximateNearest(Vec3.directionFromRotation(rotation.pitch(), rotation.yaw()));
+            Direction looking =
+                    Direction.getApproximateNearest(Vec3.directionFromRotation(rotation.pitch(), rotation.yaw()));
 
             // Vanilla sets a piston's facing to the opposite of the nearest looking direction.
             assertEquals(facing, looking.getOpposite(), "facing " + facing);

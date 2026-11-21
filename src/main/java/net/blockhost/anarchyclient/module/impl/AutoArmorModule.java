@@ -1,11 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
-import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -20,16 +22,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-import java.util.List;
-import java.util.Set;
-
 public final class AutoArmorModule extends Module {
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
+        EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
     };
 
     private final NumberSetting delayTicksSetting = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -63,7 +59,11 @@ public final class AutoArmorModule extends Module {
             .build()));
 
     public AutoArmorModule() {
-        super("auto_armor", "Auto Armor", ModuleCategory.COMBAT, "Equips stronger armor automatically while respecting delay and replacement settings.");
+        super(
+                "auto_armor",
+                "Auto Armor",
+                ModuleCategory.COMBAT,
+                "Equips stronger armor automatically while respecting delay and replacement settings.");
     }
 
     @Override
@@ -73,7 +73,8 @@ public final class AutoArmorModule extends Module {
             return;
         }
 
-        EquipmentScorer.ProtectionPreference protection = EquipmentScorer.ProtectionPreference.fromSetting(this.preferredProtection.value());
+        EquipmentScorer.ProtectionPreference protection =
+                EquipmentScorer.ProtectionPreference.fromSetting(this.preferredProtection.value());
         Set<String> avoided = EquipmentScorer.parseIdentifiers(this.avoidedEnchantments.value());
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack current = player.getItemBySlot(slot);
@@ -83,35 +84,38 @@ public final class AutoArmorModule extends Module {
             if (EquipmentScorer.hasEnchantment(current, Enchantments.BINDING_CURSE)) {
                 continue;
             }
-            int inventorySlot = bestArmorSlot(player.getInventory(), slot, current, protection, avoided, this.antiBreak.value());
+            int inventorySlot =
+                    bestArmorSlot(player.getInventory(), slot, current, protection, avoided, this.antiBreak.value());
             if (inventorySlot >= 0) {
-                InventorySlotRef source = InventorySlots.storageSlot(inventorySlot).orElse(null);
+                InventorySlotRef source =
+                        InventorySlots.storageSlot(inventorySlot).orElse(null);
                 if (source == null) {
                     continue;
                 }
-                InventoryAction action = InventoryAction.pickupSwap(
-                        source,
-                        InventorySlots.armorSlot(slot)
-                );
+                InventoryAction action = InventoryAction.pickupSwap(source, InventorySlots.armorSlot(slot));
                 InventoryActionScheduler.schedule(InventoryActionChain.single(
                         this.id(),
                         InventoryActionScheduler.PRIORITY_EQUIPMENT,
                         this.delayTicksSetting.value().intValue(),
                         InventoryActionConstraints.cautiousPlayerInventory(),
-                        action
-                ));
+                        action));
                 return;
             }
         }
     }
 
     static int bestArmorSlot(final Inventory inventory, final EquipmentSlot slot, final ItemStack current) {
-        return bestArmorSlot(inventory, slot, current, EquipmentScorer.ProtectionPreference.PROTECTION, Set.of(), false);
+        return bestArmorSlot(
+                inventory, slot, current, EquipmentScorer.ProtectionPreference.PROTECTION, Set.of(), false);
     }
 
-    static int bestArmorSlot(final Inventory inventory, final EquipmentSlot slot, final ItemStack current,
-                             final EquipmentScorer.ProtectionPreference protection, final Set<String> avoidedEnchantments,
-                             final boolean antiBreak) {
+    static int bestArmorSlot(
+            final Inventory inventory,
+            final EquipmentSlot slot,
+            final ItemStack current,
+            final EquipmentScorer.ProtectionPreference protection,
+            final Set<String> avoidedEnchantments,
+            final boolean antiBreak) {
         double currentScore = EquipmentScorer.armorScore(current, slot, protection, avoidedEnchantments, antiBreak);
         int bestSlot = -1;
         double bestScore = currentScore;

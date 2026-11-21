@@ -1,13 +1,13 @@
 package net.blockhost.anarchyclient.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.blockhost.anarchyclient.module.impl.CrystalAuraModule;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class ModuleConfigMigrationTest {
@@ -61,7 +61,8 @@ class ModuleConfigMigrationTest {
 
         new CrystalAuraModule().migrateConfig(moduleJson, ModuleConfigMigration.VANILLA_DAMAGE_DEFAULTS);
 
-        assertEquals(4.0, moduleJson.getAsJsonObject("settings").get("min_damage").getAsDouble());
+        assertEquals(
+                4.0, moduleJson.getAsJsonObject("settings").get("min_damage").getAsDouble());
     }
 
     @Test

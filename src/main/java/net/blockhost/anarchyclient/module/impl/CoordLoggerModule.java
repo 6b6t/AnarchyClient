@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -18,11 +22,6 @@ import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 public final class CoordLoggerModule extends Module {
 
@@ -76,7 +75,10 @@ public final class CoordLoggerModule extends Module {
     private volatile Map<Integer, Tracked> tracked = Map.of();
 
     public CoordLoggerModule() {
-        super("coord_logger", "Coord Logger", ModuleCategory.MISC,
+        super(
+                "coord_logger",
+                "Coord Logger",
+                ModuleCategory.MISC,
                 "Logs distant player and tamed wolf teleports to chat. Global events like wither spawns show their"
                         + " direction, because the server only sends the exact position within 32 blocks.");
     }
@@ -94,8 +96,10 @@ public final class CoordLoggerModule extends Module {
             }
             if (entity.getType() == EntityTypes.PLAYER && this.players.value()) {
                 snapshot.put(entity.getId(), new Tracked("Player " + entity.getScoreboardName(), entity.position()));
-            } else if (entity.getType() == EntityTypes.WOLF && entity instanceof TamableAnimal tamable
-                    && tamable.isTame() && this.wolves.value()) {
+            } else if (entity.getType() == EntityTypes.WOLF
+                    && entity instanceof TamableAnimal tamable
+                    && tamable.isTame()
+                    && this.wolves.value()) {
                 snapshot.put(entity.getId(), new Tracked("Wolf", entity.position()));
             }
         }
@@ -110,13 +114,18 @@ public final class CoordLoggerModule extends Module {
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         switch (packet) {
-            case ClientboundTeleportEntityPacket teleport -> this.logTeleport(client, teleport.id(),
-                    teleportTarget(this.tracked.get(teleport.id()), teleport.change().position(), teleport.relatives()));
-            case ClientboundEntityPositionSyncPacket sync -> this.logTeleport(client, sync.id(),
-                    sync.position().endPosition());
+            case ClientboundTeleportEntityPacket teleport ->
+                this.logTeleport(
+                        client,
+                        teleport.id(),
+                        teleportTarget(
+                                this.tracked.get(teleport.id()),
+                                teleport.change().position(),
+                                teleport.relatives()));
+            case ClientboundEntityPositionSyncPacket sync ->
+                this.logTeleport(client, sync.id(), sync.position().endPosition());
             case ClientboundLevelEventPacket levelEvent -> MainThread.run(() -> this.logLevelEvent(client, levelEvent));
-            default -> {
-            }
+            default -> {}
         }
         return false;
     }
@@ -144,7 +153,9 @@ public final class CoordLoggerModule extends Module {
         if (!enabled || client.player.position().distanceTo(eventPos) <= this.minDistance.value()) {
             return;
         }
-        send(client, worldEventName(packet.getType()) + " " + describeGlobalEvent(client.player.position(), eventPos) + ".");
+        send(
+                client,
+                worldEventName(packet.getType()) + " " + describeGlobalEvent(client.player.position(), eventPos) + ".");
     }
 
     static Vec3 teleportTarget(final Tracked entity, final Vec3 change, final Set<Relative> relatives) {
@@ -155,8 +166,7 @@ public final class CoordLoggerModule extends Module {
         return new Vec3(
                 relatives.contains(Relative.X) ? base.x + change.x : change.x,
                 relatives.contains(Relative.Y) ? base.y + change.y : change.y,
-                relatives.contains(Relative.Z) ? base.z + change.z : change.z
-        );
+                relatives.contains(Relative.Z) ? base.z + change.z : change.z);
     }
 
     /**
@@ -170,8 +180,12 @@ public final class CoordLoggerModule extends Module {
             return "at " + formatPosition(eventPos);
         }
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-        return String.format(Locale.ROOT, "more than 32 blocks away toward yaw %.1f (%s) from %s",
-                yaw, cardinal(yaw), formatPosition(playerPos));
+        return String.format(
+                Locale.ROOT,
+                "more than 32 blocks away toward yaw %.1f (%s) from %s",
+                yaw,
+                cardinal(yaw),
+                formatPosition(playerPos));
     }
 
     static String cardinal(final float yaw) {
@@ -203,6 +217,5 @@ public final class CoordLoggerModule extends Module {
         }
     }
 
-    record Tracked(String label, Vec3 position) {
-    }
+    record Tracked(String label, Vec3 position) {}
 }

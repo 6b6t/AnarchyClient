@@ -12,7 +12,10 @@ public final class JumpEffectModule extends Module {
     private boolean wasOnGround;
 
     public JumpEffectModule() {
-        super("jump_effect", "Jump Effect", ModuleCategory.RENDER,
+        super(
+                "jump_effect",
+                "Jump Effect",
+                ModuleCategory.RENDER,
                 "Shows a brief marker at your feet each time you jump.");
     }
 
@@ -24,8 +27,11 @@ public final class JumpEffectModule extends Module {
         }
         boolean onGround = client.player.onGround();
         if (this.wasOnGround && !onGround && client.player.getDeltaMovement().y > 0.0) {
-            MarkerManager.put(new CuboidMarker("jump_effect:" + client.player.tickCount,
-                    client.player.getBoundingBox().inflate(0.15).move(0.0, -0.2, 0.0), MarkerStyle.CYAN, 12));
+            MarkerManager.put(new CuboidMarker(
+                    "jump_effect:" + client.player.tickCount,
+                    client.player.getBoundingBox().inflate(0.15).move(0.0, -0.2, 0.0),
+                    MarkerStyle.CYAN,
+                    12));
         }
         this.wasOnGround = onGround;
     }

@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -9,13 +15,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 public final class StrongholdFinderModule extends Module {
 
@@ -31,7 +30,10 @@ public final class StrongholdFinderModule extends Module {
     private Level level;
 
     public StrongholdFinderModule() {
-        super("stronghold_finder", "Stronghold Finder", ModuleCategory.WORLD,
+        super(
+                "stronghold_finder",
+                "Stronghold Finder",
+                ModuleCategory.WORLD,
                 "Estimates the stronghold position from the flight paths of two thrown eyes of ender and prints it in chat.");
     }
 
@@ -52,7 +54,8 @@ public final class StrongholdFinderModule extends Module {
         if (client.player == null || this.flyingEyes.isEmpty()) {
             return;
         }
-        Iterator<Map.Entry<EyeOfEnder, Vec3>> iterator = this.flyingEyes.entrySet().iterator();
+        Iterator<Map.Entry<EyeOfEnder, Vec3>> iterator =
+                this.flyingEyes.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<EyeOfEnder, Vec3> entry = iterator.next();
             EyeOfEnder eye = entry.getKey();
@@ -76,7 +79,11 @@ public final class StrongholdFinderModule extends Module {
         Optional<Vec3> estimate = this.estimate();
         if (this.notify.value() && estimate.isPresent() && client.player != null) {
             Vec3 pos = estimate.orElseThrow();
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.stronghold_finder.stronghold_estimate_x_z", "Stronghold estimate: x %s, z %s.", Math.round(pos.x), Math.round(pos.z)));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.stronghold_finder.stronghold_estimate_x_z",
+                    "Stronghold estimate: x %s, z %s.",
+                    Math.round(pos.x),
+                    Math.round(pos.z)));
         }
     }
 
@@ -105,8 +112,11 @@ public final class StrongholdFinderModule extends Module {
         return estimate(a.position(), a.direction(), b.position(), b.direction());
     }
 
-    static Optional<Vec3> estimate(final Vec3 firstPosition, final Vec3 firstDirection,
-                                   final Vec3 secondPosition, final Vec3 secondDirection) {
+    static Optional<Vec3> estimate(
+            final Vec3 firstPosition,
+            final Vec3 firstDirection,
+            final Vec3 secondPosition,
+            final Vec3 secondDirection) {
         double cross = firstDirection.x * secondDirection.z - firstDirection.z * secondDirection.x;
         if (Math.abs(cross) < 1.0E-5) {
             return Optional.empty();
@@ -114,9 +124,9 @@ public final class StrongholdFinderModule extends Module {
         double dx = secondPosition.x - firstPosition.x;
         double dz = secondPosition.z - firstPosition.z;
         double t = (dx * secondDirection.z - dz * secondDirection.x) / cross;
-        return Optional.of(new Vec3(firstPosition.x + firstDirection.x * t, firstPosition.y, firstPosition.z + firstDirection.z * t));
+        return Optional.of(new Vec3(
+                firstPosition.x + firstDirection.x * t, firstPosition.y, firstPosition.z + firstDirection.z * t));
     }
 
-    private record EyeSample(Vec3 position, Vec3 direction) {
-    }
+    private record EyeSample(Vec3 position, Vec3 direction) {}
 }

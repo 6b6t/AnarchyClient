@@ -2,6 +2,9 @@ package net.blockhost.anarchyclient.gametest;
 
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.StreamSupport;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -22,10 +25,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.StreamSupport;
-
 /**
  * Shared setup for client game tests: a cleared arena in a fresh singleplayer world, server-side
  * target players, and helpers for modules and settings.
@@ -34,8 +33,7 @@ final class GameTestSupport {
 
     static final String TARGET = "Target";
 
-    private GameTestSupport() {
-    }
+    private GameTestSupport() {}
 
     /**
      * Prepares the world for a test: hard difficulty so explosions hurt, daytime, an empty
@@ -69,8 +67,11 @@ final class GameTestSupport {
     }
 
     /** Sets a module setting through its JSON form, the same path a loaded config takes. */
-    static void setting(final ClientGameTestContext context, final String moduleId, final String settingId,
-                        final JsonElement value) {
+    static void setting(
+            final ClientGameTestContext context,
+            final String moduleId,
+            final String settingId,
+            final JsonElement value) {
         context.runOnClient(client -> {
             Setting<?> setting = module(moduleId).settings().stream()
                     .filter(candidate -> candidate.id().equals(settingId))
@@ -128,8 +129,8 @@ final class GameTestSupport {
         }
 
         void teleport(final BlockPos feet, final float yaw) {
-            this.run("tp " + this.name + " " + (feet.getX() + 0.5) + " " + feet.getY() + " " + (feet.getZ() + 0.5)
-                    + " " + yaw + " 0");
+            this.run("tp " + this.name + " " + (feet.getX() + 0.5) + " " + feet.getY() + " " + (feet.getZ() + 0.5) + " "
+                    + yaw + " 0");
         }
 
         /** Surrounds {@code feet} with obsidian on all four sides and below. */
@@ -164,11 +165,12 @@ final class GameTestSupport {
                 ServerLevel level = server.getLevel(dimension);
                 FakePlayer target = new DamageableTarget(level, new GameProfile(UUID.randomUUID(), TARGET), immortal);
                 target.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 90.0F, 0.0F);
-                server.getPlayerList().broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(target)));
+                server.getPlayerList()
+                        .broadcastAll(ClientboundPlayerInfoUpdatePacket.createPlayerInitializing(List.of(target)));
                 level.addNewPlayer(target);
             });
-            this.context.waitFor(client -> client.level.players().stream()
-                    .anyMatch(player -> TARGET.equals(player.getScoreboardName())));
+            this.context.waitFor(client ->
+                    client.level.players().stream().anyMatch(player -> TARGET.equals(player.getScoreboardName())));
         }
 
         int targetHits() {
@@ -219,6 +221,5 @@ final class GameTestSupport {
             }
             return hurt;
         }
-
     }
 }

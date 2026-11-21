@@ -1,9 +1,5 @@
 package net.blockhost.anarchyclient.friends;
 
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -16,6 +12,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class FriendManager {
 

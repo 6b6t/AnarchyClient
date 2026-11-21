@@ -19,8 +19,7 @@ public final class ItemUseControl {
 
     private static final TickClaim CLAIM = new TickClaim();
 
-    private ItemUseControl() {
-    }
+    private ItemUseControl() {}
 
     /**
      * Starts using the item in {@code hand} if the player is not using one yet, and keeps the use

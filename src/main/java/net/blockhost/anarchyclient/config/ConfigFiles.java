@@ -1,8 +1,5 @@
 package net.blockhost.anarchyclient.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +8,8 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * File helpers shared by the client's config stores.
@@ -21,8 +20,7 @@ public final class ConfigFiles {
     private static final DateTimeFormatter BACKUP_TIMESTAMP_FORMAT =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT);
 
-    private ConfigFiles() {
-    }
+    private ConfigFiles() {}
 
     /**
      * Writes the content to a temporary sibling file, then moves it over the target. A crash during the
@@ -68,7 +66,9 @@ public final class ConfigFiles {
     }
 
     private static Path backupPath(final Path path) {
-        String fileName = path.getFileName() == null ? "anarchyclient" : path.getFileName().toString();
+        String fileName = path.getFileName() == null
+                ? "anarchyclient"
+                : path.getFileName().toString();
         int dot = fileName.lastIndexOf('.');
         String extension = dot > 0 ? fileName.substring(dot) : "";
         String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);

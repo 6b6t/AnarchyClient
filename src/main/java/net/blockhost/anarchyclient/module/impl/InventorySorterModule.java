@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,15 +13,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 public final class InventorySorterModule extends Module {
 
-    static final Comparator<ItemStack> ORDER = Comparator
-            .comparing(ItemStack::isEmpty)
-            .thenComparing(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
+    static final Comparator<ItemStack> ORDER = Comparator.comparing(ItemStack::isEmpty)
+            .thenComparing(
+                    stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
             .thenComparing(stack -> stack.getComponentsPatch().toString());
 
     private final BooleanSetting hotbar = this.setting(BooleanSetting.from(BooleanSetting.builder()
@@ -39,7 +38,10 @@ public final class InventorySorterModule extends Module {
     private int cooldown;
 
     public InventorySorterModule() {
-        super("inventory_sorter", "Inventory Sorter", ModuleCategory.PLAYER,
+        super(
+                "inventory_sorter",
+                "Inventory Sorter",
+                ModuleCategory.PLAYER,
                 "Sorts your inventory by item, one swap at a time while no screen is open, then turns itself off.");
     }
 
@@ -66,7 +68,10 @@ public final class InventorySorterModule extends Module {
             this.enabled(false);
             return;
         }
-        InventoryActions.pickupSwap(client, player, InventoryActions.toInventoryMenuSlot(first + swap[0]),
+        InventoryActions.pickupSwap(
+                client,
+                player,
+                InventoryActions.toInventoryMenuSlot(first + swap[0]),
                 InventoryActions.toInventoryMenuSlot(first + swap[1]));
         this.cooldown = this.delay.value().intValue();
     }

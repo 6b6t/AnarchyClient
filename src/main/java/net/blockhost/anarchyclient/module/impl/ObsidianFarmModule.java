@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -13,10 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class ObsidianFarmModule extends Module {
 
@@ -45,7 +44,10 @@ public final class ObsidianFarmModule extends Module {
     private boolean lockedUntilNether;
 
     public ObsidianFarmModule() {
-        super("obsidian_farm", "Obsidian Farm", ModuleCategory.WORLD,
+        super(
+                "obsidian_farm",
+                "Obsidian Farm",
+                ModuleCategory.WORLD,
                 "Mines nearby obsidian with a diamond or netherite pickaxe and stops after breaking the block underfoot until you reach the Nether.");
     }
 
@@ -61,7 +63,8 @@ public final class ObsidianFarmModule extends Module {
             this.miner.stop(client);
             return;
         }
-        if (this.lockedUntilNether || this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem())
+        if (this.lockedUntilNether
+                || this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem())
                 || !WorldInteraction.hasHotbarItem(player.getInventory(), ObsidianFarmModule::isPickaxe)) {
             this.miner.stop(client);
             return;
@@ -69,8 +72,10 @@ public final class ObsidianFarmModule extends Module {
 
         BlockPos underFeet = player.blockPosition().below();
         BlockPos current = this.miner.current();
-        if (this.miner.continueCurrent(client, pos -> client.level.getBlockState(pos).is(Blocks.OBSIDIAN)
-                && CombatTargets.canReachBlock(player, pos), ObsidianFarmModule::isPickaxe)) {
+        if (this.miner.continueCurrent(
+                client,
+                pos -> client.level.getBlockState(pos).is(Blocks.OBSIDIAN) && CombatTargets.canReachBlock(player, pos),
+                ObsidianFarmModule::isPickaxe)) {
             this.lockIfBroken(client, current, underFeet);
             return;
         }
@@ -81,9 +86,10 @@ public final class ObsidianFarmModule extends Module {
                 this.range.value().intValue(),
                 this.verticalRange.value().intValue(),
                 BlockTargetScanner.SortMode.CLOSEST,
-                AutoTntModule.scanLimit(this.range.value().intValue(), this.verticalRange.value().intValue()),
-                block -> block.state().is(Blocks.OBSIDIAN) && CombatTargets.canReachBlock(player, block.pos())
-        )) {
+                AutoTntModule.scanLimit(
+                        this.range.value().intValue(),
+                        this.verticalRange.value().intValue()),
+                block -> block.state().is(Blocks.OBSIDIAN) && CombatTargets.canReachBlock(player, block.pos()))) {
             if (candidate.pos().equals(underFeet)) {
                 fallback = candidate.pos();
                 continue;
@@ -102,7 +108,9 @@ public final class ObsidianFarmModule extends Module {
 
     /** Locks only once the block underfoot has actually broken, not when mining it starts. */
     private void lockIfBroken(final Minecraft client, final BlockPos mined, final BlockPos underFeet) {
-        if (mined != null && mined.equals(underFeet) && client.level != null
+        if (mined != null
+                && mined.equals(underFeet)
+                && client.level != null
                 && !client.level.getBlockState(mined).is(Blocks.OBSIDIAN)) {
             this.lockedUntilNether = true;
             this.miner.stop(client);
@@ -123,7 +131,8 @@ public final class ObsidianFarmModule extends Module {
         return stack.is(Items.DIAMOND_PICKAXE) || stack.is(Items.NETHERITE_PICKAXE);
     }
 
-    static List<BlockPos> candidatePositions(final BlockPos center, final int horizontalRadius, final int verticalRadius) {
+    static List<BlockPos> candidatePositions(
+            final BlockPos center, final int horizontalRadius, final int verticalRadius) {
         List<BlockPos> positions = new ArrayList<>();
         int horizontal = Math.max(0, horizontalRadius);
         int vertical = Math.max(0, verticalRadius);

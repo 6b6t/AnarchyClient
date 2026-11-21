@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -12,9 +14,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class ProtectionZonesModule extends Module {
 
@@ -34,7 +33,10 @@ public final class ProtectionZonesModule extends Module {
             .build()));
 
     public ProtectionZonesModule() {
-        super("protection_zones", "Protection Zones", ModuleCategory.RENDER,
+        super(
+                "protection_zones",
+                "Protection Zones",
+                ModuleCategory.RENDER,
                 "Draws boxes around saved coordinate centers to mark protected areas.");
     }
 
@@ -49,9 +51,13 @@ public final class ProtectionZonesModule extends Module {
         for (BlockPos center : parseZones(this.zones.value())) {
             double radiusValue = this.radius.value();
             AABB box = new AABB(
-                    center.getX() - radiusValue, center.getY() - radiusValue, center.getZ() - radiusValue,
-                    center.getX() + radiusValue, center.getY() + radiusValue, center.getZ() + radiusValue
-            ).move(camera.scale(-1));
+                            center.getX() - radiusValue,
+                            center.getY() - radiusValue,
+                            center.getZ() - radiusValue,
+                            center.getX() + radiusValue,
+                            center.getY() + radiusValue,
+                            center.getZ() + radiusValue)
+                    .move(camera.scale(-1));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(80, 255, 160, 190));
         }
     }
@@ -70,8 +76,7 @@ public final class ProtectionZonesModule extends Module {
                 positions.add(new BlockPos(
                         Integer.parseInt(parts[0].trim()),
                         Integer.parseInt(parts[1].trim()),
-                        Integer.parseInt(parts[2].trim())
-                ));
+                        Integer.parseInt(parts[2].trim())));
             } catch (NumberFormatException ignored) {
                 // Invalid user entry, skip it and keep the rest of the list usable.
             }

@@ -1,21 +1,20 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
-import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.blockhost.anarchyclient.target.TargetPolicy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.component.SwingAnimation;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 
 public final class KillAuraModule extends Module {
 
@@ -153,7 +152,11 @@ public final class KillAuraModule extends Module {
     private final Random random = new Random();
 
     public KillAuraModule() {
-        super("kill_aura", "Kill Aura", ModuleCategory.COMBAT, "Attacks selected targets automatically with configurable targeting, timing, rotation, and safety checks.");
+        super(
+                "kill_aura",
+                "Kill Aura",
+                ModuleCategory.COMBAT,
+                "Attacks selected targets automatically with configurable targeting, timing, rotation, and safety checks.");
     }
 
     @Override
@@ -186,8 +189,7 @@ public final class KillAuraModule extends Module {
                     // that did nothing.
                     1.0F,
                     turnMode,
-                    this.pauseRotationsInInventory.value()
-            );
+                    this.pauseRotationsInInventory.value());
         }
         if (!this.timing.readyToAttack(player, this.minCharge.value())) {
             return;
@@ -210,8 +212,7 @@ public final class KillAuraModule extends Module {
                 this.priority.value(),
                 this.range.value(),
                 this.fov.value(),
-                this.requireLineOfSight.value()
-        );
+                this.requireLineOfSight.value());
     }
 
     private TargetPolicy targetPolicy() {
@@ -222,8 +223,7 @@ public final class KillAuraModule extends Module {
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
                 this.ignoreTeams.value(),
-                this.antiBot.value()
-        );
+                this.antiBot.value());
     }
 
     static boolean isInsideFov(final LocalPlayer player, final LivingEntity target, final double fov) {

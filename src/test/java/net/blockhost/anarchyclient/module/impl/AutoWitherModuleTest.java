@@ -1,14 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
 import net.blockhost.anarchyclient.module.impl.AutoWitherModule.WitherMaterial;
 import net.blockhost.anarchyclient.module.impl.AutoWitherModule.WitherStep;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AutoWitherModuleTest {
 
@@ -19,24 +18,31 @@ class AutoWitherModuleTest {
                 .map(WitherStep::material)
                 .toList();
 
-        assertEquals(List.of(
-                WitherMaterial.SOUL, WitherMaterial.SOUL, WitherMaterial.SOUL, WitherMaterial.SOUL,
-                WitherMaterial.SKULL, WitherMaterial.SKULL, WitherMaterial.SKULL
-        ), materials);
+        assertEquals(
+                List.of(
+                        WitherMaterial.SOUL,
+                        WitherMaterial.SOUL,
+                        WitherMaterial.SOUL,
+                        WitherMaterial.SOUL,
+                        WitherMaterial.SKULL,
+                        WitherMaterial.SKULL,
+                        WitherMaterial.SKULL),
+                materials);
     }
 
     @Test
     void buildsArmsAlongTheZAxis() {
         BlockPos foot = new BlockPos(10, 64, 10);
 
-        assertEquals(List.of(
-                foot,
-                foot.above(),
-                foot.above().north(),
-                foot.above().south(),
-                foot.above(2).north(),
-                foot.above(2),
-                foot.above(2).south()
-        ), AutoWitherModule.planPositions(foot, Direction.Axis.Z));
+        assertEquals(
+                List.of(
+                        foot,
+                        foot.above(),
+                        foot.above().north(),
+                        foot.above().south(),
+                        foot.above(2).north(),
+                        foot.above(2),
+                        foot.above(2).south()),
+                AutoWitherModule.planPositions(foot, Direction.Axis.Z));
     }
 }

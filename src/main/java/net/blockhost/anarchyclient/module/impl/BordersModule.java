@@ -44,7 +44,10 @@ public final class BordersModule extends Module {
             .build()));
 
     public BordersModule() {
-        super("borders", "Borders", ModuleCategory.RENDER,
+        super(
+                "borders",
+                "Borders",
+                ModuleCategory.RENDER,
                 "Draws the edges of the chunk you stand in and of the area one map covers, so you can line up builds and map art.");
     }
 
@@ -63,12 +66,28 @@ public final class BordersModule extends Module {
         double z = position.z;
         double reach = this.height.value();
         if (this.chunks.value()) {
-            drawArea(matrices, submits, camera, cellStart(x, CHUNK_SIZE, 0), cellStart(z, CHUNK_SIZE, 0), CHUNK_SIZE,
-                    y, reach, CHUNK_COLOR);
+            drawArea(
+                    matrices,
+                    submits,
+                    camera,
+                    cellStart(x, CHUNK_SIZE, 0),
+                    cellStart(z, CHUNK_SIZE, 0),
+                    CHUNK_SIZE,
+                    y,
+                    reach,
+                    CHUNK_COLOR);
         }
         if (this.maps.value()) {
-            drawArea(matrices, submits, camera, cellStart(x, MAP_SIZE, MAP_OFFSET), cellStart(z, MAP_SIZE, MAP_OFFSET),
-                    MAP_SIZE, y, reach, MAP_COLOR);
+            drawArea(
+                    matrices,
+                    submits,
+                    camera,
+                    cellStart(x, MAP_SIZE, MAP_OFFSET),
+                    cellStart(z, MAP_SIZE, MAP_OFFSET),
+                    MAP_SIZE,
+                    y,
+                    reach,
+                    MAP_COLOR);
         }
     }
 
@@ -77,9 +96,16 @@ public final class BordersModule extends Module {
         return Math.floorDiv((int) Math.floor(coordinate) - offset, size) * size + offset;
     }
 
-    private static void drawArea(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 camera,
-                                 final int minX, final int minZ, final int size, final double y, final double reach,
-                                 final WorldLineRenderer.Color color) {
+    private static void drawArea(
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final Vec3 camera,
+            final int minX,
+            final int minZ,
+            final int size,
+            final double y,
+            final double reach,
+            final WorldLineRenderer.Color color) {
         double maxX = minX + size;
         double maxZ = minZ + size;
         double[][] corners = {{minX, minZ}, {maxX, minZ}, {maxX, maxZ}, {minX, maxZ}};
@@ -87,13 +113,23 @@ public final class BordersModule extends Module {
             double[] corner = corners[index];
             double[] next = corners[(index + 1) % corners.length];
             line(matrices, submits, camera, new Vec3(corner[0], y, corner[1]), new Vec3(next[0], y, next[1]), color);
-            line(matrices, submits, camera, new Vec3(corner[0], y - reach, corner[1]),
-                    new Vec3(corner[0], y + reach, corner[1]), color);
+            line(
+                    matrices,
+                    submits,
+                    camera,
+                    new Vec3(corner[0], y - reach, corner[1]),
+                    new Vec3(corner[0], y + reach, corner[1]),
+                    color);
         }
     }
 
-    private static void line(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 camera,
-                             final Vec3 start, final Vec3 end, final WorldLineRenderer.Color color) {
+    private static void line(
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final Vec3 camera,
+            final Vec3 start,
+            final Vec3 end,
+            final WorldLineRenderer.Color color) {
         WorldLineRenderer.lineNoDepth(matrices, submits, start.subtract(camera), end.subtract(camera), color);
     }
 }

@@ -37,7 +37,10 @@ public final class ExtraElytraModule extends Module {
     private int jumpTimer;
 
     public ExtraElytraModule() {
-        super("extra_elytra", "Extra Elytra", ModuleCategory.MOVEMENT,
+        super(
+                "extra_elytra",
+                "Extra Elytra",
+                ModuleCategory.MOVEMENT,
                 "Starts gliding instantly on jump and adds speed and height control with movement keys while flying.");
     }
 
@@ -115,10 +118,8 @@ public final class ExtraElytraModule extends Module {
     }
 
     private static void sendFallFlyingPacket(final LocalPlayer player) {
-        player.connection.send(new ServerboundPlayerCommandPacket(
-                player,
-                ServerboundPlayerCommandPacket.Action.START_FALL_FLYING
-        ));
+        player.connection.send(
+                new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
     }
 
     static boolean canGlide(final ItemStack stack) {

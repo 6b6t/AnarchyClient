@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -11,7 +12,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.target.RenderedEntityCache;
 import net.blockhost.anarchyclient.target.TargetClassifier;
-import net.blockhost.anarchyclient.target.TargetKind;
 import net.blockhost.anarchyclient.target.TargetPolicy;
 import net.blockhost.anarchyclient.target.TargetQuery;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
@@ -22,8 +22,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class EspModule extends Module {
 
@@ -97,7 +95,10 @@ public final class EspModule extends Module {
             .build()));
 
     public EspModule() {
-        super("esp", "ESP", ModuleCategory.RENDER,
+        super(
+                "esp",
+                "ESP",
+                ModuleCategory.RENDER,
                 "Outlines players and mobs through walls with boxes or a shader glow, colored by type or distance.");
         // The shader outline is always drawn at full strength, so these only apply to boxes.
         this.opacity.visibleWhen(() -> !"Shader".equals(this.mode.value()));
@@ -146,8 +147,8 @@ public final class EspModule extends Module {
             if (shaderMode) {
                 EspOutlineRegistry.set(entity.getId(), ARGB.color(255, color.red(), color.green(), color.blue()));
             } else {
-                WorldLineRenderer.boxNoDepth(matrices, submits,
-                        WorldLineRenderer.interpolatedBox(entity, partialTick, 0.04, camera), color);
+                WorldLineRenderer.boxNoDepth(
+                        matrices, submits, WorldLineRenderer.interpolatedBox(entity, partialTick, 0.04, camera), color);
             }
         }
     }
@@ -187,7 +188,6 @@ public final class EspModule extends Module {
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
                 this.ignoreTeams.value(),
-                this.antiBot.value()
-        );
+                this.antiBot.value());
     }
 }

@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -11,10 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public final class AntiBotModule extends Module {
 
@@ -45,7 +44,10 @@ public final class AntiBotModule extends Module {
             .build()));
 
     public AntiBotModule() {
-        super("anti_bot", "Anti Bot", ModuleCategory.COMBAT,
+        super(
+                "anti_bot",
+                "Anti Bot",
+                ModuleCategory.COMBAT,
                 "Removes likely bot players from your world, based on tab list, profile, game mode, ping, or invisibility checks.");
     }
 
@@ -59,7 +61,9 @@ public final class AntiBotModule extends Module {
         List<Player> bots = new ArrayList<>();
         for (Entity entity : client.level.entitiesForRendering()) {
             // Client-only players (Fake Player) have no tab entry by design.
-            if (entity instanceof Player other && other != player && !FakePlayerModule.isClientOnly(other)
+            if (entity instanceof Player other
+                    && other != player
+                    && !FakePlayerModule.isClientOnly(other)
                     && this.shouldRemove(other, connection)) {
                 bots.add(other);
             }
@@ -79,15 +83,20 @@ public final class AntiBotModule extends Module {
                 info != null,
                 info == null ? null : info.getGameMode(),
                 info == null ? null : info.getProfile(),
-                info == null ? 0 : info.getLatency()
-        );
+                info == null ? 0 : info.getLatency());
     }
 
-    static boolean shouldRemoveCandidate(final boolean invisible, final boolean removeInvisible,
-                                         final boolean missingTabEntry, final boolean invalidProfile,
-                                         final boolean defaultGameMode, final boolean negativePing,
-                                         final boolean hasTabEntry, final GameType gameMode,
-                                         final GameProfile profile, final int latency) {
+    static boolean shouldRemoveCandidate(
+            final boolean invisible,
+            final boolean removeInvisible,
+            final boolean missingTabEntry,
+            final boolean invalidProfile,
+            final boolean defaultGameMode,
+            final boolean negativePing,
+            final boolean hasTabEntry,
+            final GameType gameMode,
+            final GameProfile profile,
+            final int latency) {
         if (removeInvisible && invisible) {
             return true;
         }

@@ -15,8 +15,8 @@ public abstract class KeyboardHandlerMixin {
 
     /** Records module bind presses before vanilla handles the key, which may open a screen with it. */
     @Inject(method = "keyPress", at = @At("HEAD"))
-    private void anarchyclient$recordKeyPress(final long handle, final int action, final KeyEvent event,
-                                              final CallbackInfo info) {
+    private void anarchyclient$recordKeyPress(
+            final long handle, final int action, final KeyEvent event, final CallbackInfo info) {
         Minecraft client = Minecraft.getInstance();
         if (action == InputConstants.PRESS && handle == client.getWindow().handle()) {
             AnarchyClient.MODULES.recordKeyPress(event.key(), client.gui.screen() == null);

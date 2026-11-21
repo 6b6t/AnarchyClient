@@ -17,7 +17,10 @@ public final class GhostModeModule extends Module {
     private boolean ghosted;
 
     public GhostModeModule() {
-        super("ghost_mode", "Ghost Mode", ModuleCategory.PLAYER,
+        super(
+                "ghost_mode",
+                "Ghost Mode",
+                ModuleCategory.PLAYER,
                 "Keeps the death screen from closing and holds client health above zero until the module is turned off.");
     }
 
@@ -26,7 +29,9 @@ public final class GhostModeModule extends Module {
         if (screen == null && client.player != null && client.player.isDeadOrDying()) {
             if (!this.ghosted) {
                 this.ghosted = true;
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.ghost_mode.ghost_mode_held_the_death_screen", "Ghost Mode held the death screen. Disable it to respawn."));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.ghost_mode.ghost_mode_held_the_death_screen",
+                        "Ghost Mode held the death screen. Disable it to respawn."));
             }
             return true;
         }

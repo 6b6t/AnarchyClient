@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -16,13 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SaplingBlock;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
 
 public final class TreeAuraModule extends Module {
 
@@ -79,7 +78,10 @@ public final class TreeAuraModule extends Module {
     private int bonemealTimer;
 
     public TreeAuraModule() {
-        super("tree_aura", "Tree Aura", ModuleCategory.WORLD,
+        super(
+                "tree_aura",
+                "Tree Aura",
+                ModuleCategory.WORLD,
                 "Plants saplings on open dirt around you and grows them with bone meal from your hotbar.");
     }
 
@@ -119,7 +121,11 @@ public final class TreeAuraModule extends Module {
         }
         BlockTargetScanner.SortMode sortMode = BlockTargetScanner.SortMode.fromSetting(this.sort.value());
         if (this.plantTimer <= 0) {
-            BlockPos plantPos = findPlantLocation(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode,
+            BlockPos plantPos = findPlantLocation(
+                    client,
+                    this.radius.value().intValue(),
+                    this.yRange.value().intValue(),
+                    sortMode,
                     pos -> CombatTargets.canReachBlock(player, pos) && !this.skipped.contains(pos));
             if (plantPos != null) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
@@ -128,10 +134,11 @@ public final class TreeAuraModule extends Module {
                         plantPos,
                         Direction.UP,
                         stack -> Block.byItem(stack.getItem()) instanceof SaplingBlock,
-                        this.rotate.value()
-                );
+                        this.rotate.value());
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(Translations.component("anarchyclient.message.tree_aura.tree_aura_disabled_no_saplings_in", "Tree Aura disabled: no saplings in hotbar."));
+                    player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.tree_aura.tree_aura_disabled_no_saplings_in",
+                            "Tree Aura disabled: no saplings in hotbar."));
                     this.enabled(false);
                     return;
                 }
@@ -144,26 +151,26 @@ public final class TreeAuraModule extends Module {
             }
         }
         if (this.bonemealTimer <= 0) {
-            BlockPos sapling = findSapling(client, this.radius.value().intValue(), this.yRange.value().intValue(), sortMode,
+            BlockPos sapling = findSapling(
+                    client,
+                    this.radius.value().intValue(),
+                    this.yRange.value().intValue(),
+                    sortMode,
                     pos -> CombatTargets.canReachBlock(player, pos) && !this.skipped.contains(pos));
             if (sapling != null) {
                 WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
-                        client,
-                        this,
-                        sapling,
-                        Direction.UP,
-                        stack -> stack.is(Items.BONE_MEAL),
-                        this.rotate.value()
-                );
+                        client, this, sapling, Direction.UP, stack -> stack.is(Items.BONE_MEAL), this.rotate.value());
                 if (result == WorldInteraction.ActionResult.MISSING_ITEM) {
-                    player.sendSystemMessage(Translations.component("anarchyclient.message.tree_aura.tree_aura_disabled_no_bone_meal", "Tree Aura disabled: no bone meal in hotbar."));
+                    player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.tree_aura.tree_aura_disabled_no_bone_meal",
+                            "Tree Aura disabled: no bone meal in hotbar."));
                     this.enabled(false);
                     return;
                 }
                 // A refused or endlessly accepted sapling cannot grow (no room, or a lone 2x2 sapling); move on.
                 if (result == WorldInteraction.ActionResult.REFUSED
                         || result == WorldInteraction.ActionResult.DONE
-                        && this.boneMealUses.merge(sapling, 1, Integer::sum) >= MAX_BONE_MEAL_USES) {
+                                && this.boneMealUses.merge(sapling, 1, Integer::sum) >= MAX_BONE_MEAL_USES) {
                     this.skipped.add(sapling);
                 }
                 if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
@@ -173,9 +180,18 @@ public final class TreeAuraModule extends Module {
         }
     }
 
-    static BlockPos findPlantLocation(final Minecraft client, final int radius, final int yRange,
-                                      final BlockTargetScanner.SortMode sortMode, final Predicate<BlockPos> usable) {
-        return BlockTargetScanner.scan(client, radius, yRange, sortMode, 1,
+    static BlockPos findPlantLocation(
+            final Minecraft client,
+            final int radius,
+            final int yRange,
+            final BlockTargetScanner.SortMode sortMode,
+            final Predicate<BlockPos> usable) {
+        return BlockTargetScanner.scan(
+                        client,
+                        radius,
+                        yRange,
+                        sortMode,
+                        1,
                         target -> usable.test(target.pos()) && canPlant(client, target.pos()))
                 .stream()
                 .map(BlockTargetScanner.BlockTarget::pos)
@@ -183,12 +199,24 @@ public final class TreeAuraModule extends Module {
                 .orElse(null);
     }
 
-    static BlockPos findSapling(final Minecraft client, final int radius, final int yRange,
-                                final BlockTargetScanner.SortMode sortMode, final Predicate<BlockPos> usable) {
-        return BlockTargetScanner.scan(client, radius, yRange, sortMode, 1,
+    static BlockPos findSapling(
+            final Minecraft client,
+            final int radius,
+            final int yRange,
+            final BlockTargetScanner.SortMode sortMode,
+            final Predicate<BlockPos> usable) {
+        return BlockTargetScanner.scan(
+                        client,
+                        radius,
+                        yRange,
+                        sortMode,
+                        1,
                         target -> target.state().getBlock() instanceof SaplingBlock
                                 && usable.test(target.pos())
-                                && canGrow(client.level, target.pos(), target.state().getBlock()))
+                                && canGrow(
+                                        client.level,
+                                        target.pos(),
+                                        target.state().getBlock()))
                 .stream()
                 .map(BlockTargetScanner.BlockTarget::pos)
                 .findFirst()
@@ -219,7 +247,10 @@ public final class TreeAuraModule extends Module {
             return false;
         }
         Block block = client.level.getBlockState(ground).getBlock();
-        if (block != Blocks.GRASS_BLOCK && block != Blocks.DIRT && block != Blocks.COARSE_DIRT && block != Blocks.ROOTED_DIRT) {
+        if (block != Blocks.GRASS_BLOCK
+                && block != Blocks.DIRT
+                && block != Blocks.COARSE_DIRT
+                && block != Blocks.ROOTED_DIRT) {
             return false;
         }
         for (int height = 2; height <= 5; height++) {

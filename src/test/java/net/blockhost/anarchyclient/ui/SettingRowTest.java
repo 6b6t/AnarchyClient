@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.DESCRIPTION_HEIGHT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -13,12 +18,6 @@ import net.lenni0451.rivet.math.Size;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.DESCRIPTION_HEIGHT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ExtendWith(MinecraftBootstrapExtension.class)
 class SettingRowTest {
 
@@ -28,31 +27,76 @@ class SettingRowTest {
     @Test
     void rowsWithoutDescriptionDropTheDescriptionLine() {
         List<Setting<?>> described = List.of(
-                BooleanSetting.from(BooleanSetting.builder().id("flag").name("Flag").defaultValue(true)
-                        .description(DESCRIPTION).build()),
-                NumberSetting.from(NumberSetting.builder().id("range").name("Range").defaultValue(4.0)
-                        .min(1.0).max(6.0).step(0.5).description(DESCRIPTION).build()));
+                BooleanSetting.from(BooleanSetting.builder()
+                        .id("flag")
+                        .name("Flag")
+                        .defaultValue(true)
+                        .description(DESCRIPTION)
+                        .build()),
+                NumberSetting.from(NumberSetting.builder()
+                        .id("range")
+                        .name("Range")
+                        .defaultValue(4.0)
+                        .min(1.0)
+                        .max(6.0)
+                        .step(0.5)
+                        .description(DESCRIPTION)
+                        .build()));
         List<Setting<?>> plain = List.of(
-                BooleanSetting.from(BooleanSetting.builder().id("flag").name("Flag").defaultValue(true).build()),
-                NumberSetting.from(NumberSetting.builder().id("range").name("Range").defaultValue(4.0)
-                        .min(1.0).max(6.0).step(0.5).build()));
+                BooleanSetting.from(BooleanSetting.builder()
+                        .id("flag")
+                        .name("Flag")
+                        .defaultValue(true)
+                        .build()),
+                NumberSetting.from(NumberSetting.builder()
+                        .id("range")
+                        .name("Range")
+                        .defaultValue(4.0)
+                        .min(1.0)
+                        .max(6.0)
+                        .step(0.5)
+                        .build()));
 
         for (int index = 0; index < described.size(); index++) {
-            float withDescription = attach(row(described.get(index))).computeIdealSize(SIZE).height();
-            float withoutDescription = attach(row(plain.get(index))).computeIdealSize(SIZE).height();
-            assertEquals(withDescription - DESCRIPTION_HEIGHT, withoutDescription, 0.01F, described.get(index).id());
+            float withDescription =
+                    attach(row(described.get(index))).computeIdealSize(SIZE).height();
+            float withoutDescription =
+                    attach(row(plain.get(index))).computeIdealSize(SIZE).height();
+            assertEquals(
+                    withDescription - DESCRIPTION_HEIGHT,
+                    withoutDescription,
+                    0.01F,
+                    described.get(index).id());
         }
     }
 
     @Test
     void rowsLayOutCleanlyWithAndWithoutDescription() {
         List<Setting<?>> settings = List.of(
-                BooleanSetting.from(BooleanSetting.builder().id("described").name("Described").defaultValue(true)
-                        .description(DESCRIPTION).build()),
-                BooleanSetting.from(BooleanSetting.builder().id("plain").name("Plain").defaultValue(true).build()),
-                NumberSetting.from(NumberSetting.builder().id("number").name("Number").defaultValue(4.0)
-                        .min(1.0).max(6.0).step(0.5).build()),
-                StringSetting.from(StringSetting.builder().id("text").name("Text").defaultValue("value").build()));
+                BooleanSetting.from(BooleanSetting.builder()
+                        .id("described")
+                        .name("Described")
+                        .defaultValue(true)
+                        .description(DESCRIPTION)
+                        .build()),
+                BooleanSetting.from(BooleanSetting.builder()
+                        .id("plain")
+                        .name("Plain")
+                        .defaultValue(true)
+                        .build()),
+                NumberSetting.from(NumberSetting.builder()
+                        .id("number")
+                        .name("Number")
+                        .defaultValue(4.0)
+                        .min(1.0)
+                        .max(6.0)
+                        .step(0.5)
+                        .build()),
+                StringSetting.from(StringSetting.builder()
+                        .id("text")
+                        .name("Text")
+                        .defaultValue("value")
+                        .build()));
         Rivet rivet = new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, SIZE);
         float y = 0F;
         for (Setting<?> setting : settings) {
@@ -71,9 +115,7 @@ class SettingRowTest {
     }
 
     private static Component row(final Setting<?> setting) {
-        return PanelWidgets.settingRow(setting, () -> {
-        }, () -> {
-        });
+        return PanelWidgets.settingRow(setting, () -> {}, () -> {});
     }
 
     private static Component attach(final Component row) {

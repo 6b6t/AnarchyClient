@@ -39,8 +39,10 @@ public final class PistonCrystalGameTest implements GameScenario {
             try {
                 arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, 300);
             } catch (AssertionError timeout) {
-                throw new AssertionError("Piston Crystal never damaged the target; debug "
-                        + DebugValueRegistry.snapshot().get("piston_crystal"), timeout);
+                throw new AssertionError(
+                        "Piston Crystal never damaged the target; debug "
+                                + DebugValueRegistry.snapshot().get("piston_crystal"),
+                        timeout);
             } finally {
                 context.takeScreenshot("piston_crystal_result");
                 GameTestSupport.enable(context, "piston_crystal", false);

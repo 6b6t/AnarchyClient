@@ -14,8 +14,12 @@ public final class EntityInteractEvent extends CancellableAnarchyClientEvent {
     private final EntityHitResult hitResult;
     private final InteractionHand hand;
 
-    public EntityInteractEvent(final Minecraft client, final Player player, final Entity entity,
-                               final EntityHitResult hitResult, final InteractionHand hand) {
+    public EntityInteractEvent(
+            final Minecraft client,
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand) {
         this.client = client;
         this.player = player;
         this.entity = entity;

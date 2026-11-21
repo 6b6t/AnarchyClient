@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -11,10 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class AutoCityModule extends Module {
 
@@ -45,7 +44,10 @@ public final class AutoCityModule extends Module {
     private final SingleBlockMiner miner = new SingleBlockMiner(this);
 
     public AutoCityModule() {
-        super("auto_city", "Auto City", ModuleCategory.COMBAT,
+        super(
+                "auto_city",
+                "Auto City",
+                ModuleCategory.COMBAT,
                 "Mines the obsidian or ender chest blocks that surround the nearest enemy, including a burrow block.");
     }
 
@@ -56,10 +58,11 @@ public final class AutoCityModule extends Module {
             this.miner.stop(client);
             return;
         }
-        List<CityTarget> targets = cityTargets(client, target, this.includeEnderChests.value(),
-                this.mineBurrow.value(), this.exposedOnly.value());
+        List<CityTarget> targets = cityTargets(
+                client, target, this.includeEnderChests.value(), this.mineBurrow.value(), this.exposedOnly.value());
         // Stay on the block in progress: switching to a closer one would throw the progress away.
-        if (this.miner.continueCurrent(client,
+        if (this.miner.continueCurrent(
+                client,
                 pos -> targets.stream().anyMatch(cityTarget -> cityTarget.pos().equals(pos)))) {
             return;
         }
@@ -77,8 +80,12 @@ public final class AutoCityModule extends Module {
     }
 
     /** Returns the reachable city blocks around {@code target}, closest first. */
-    static List<CityTarget> cityTargets(final Minecraft client, final Player target, final boolean includeEnderChests,
-                                        final boolean mineBurrow, final boolean exposedOnly) {
+    static List<CityTarget> cityTargets(
+            final Minecraft client,
+            final Player target,
+            final boolean includeEnderChests,
+            final boolean mineBurrow,
+            final boolean exposedOnly) {
         if (client.level == null || client.player == null) {
             return List.of();
         }
@@ -88,15 +95,27 @@ public final class AutoCityModule extends Module {
             addTarget(client, targets, base, Direction.UP, includeEnderChests, exposedOnly);
         }
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            addTarget(client, targets, base.relative(direction), direction.getOpposite(), includeEnderChests, exposedOnly);
+            addTarget(
+                    client,
+                    targets,
+                    base.relative(direction),
+                    direction.getOpposite(),
+                    includeEnderChests,
+                    exposedOnly);
         }
         targets.removeIf(cityTarget -> !CombatTargets.canReachBlock(client.player, cityTarget.pos()));
-        targets.sort(Comparator.comparingDouble(targetPos -> Vec3.atCenterOf(targetPos.pos()).distanceToSqr(client.player.getEyePosition())));
+        targets.sort(Comparator.comparingDouble(
+                targetPos -> Vec3.atCenterOf(targetPos.pos()).distanceToSqr(client.player.getEyePosition())));
         return targets;
     }
 
-    private static void addTarget(final Minecraft client, final List<CityTarget> targets, final BlockPos pos,
-                                  final Direction face, final boolean includeEnderChests, final boolean exposedOnly) {
+    private static void addTarget(
+            final Minecraft client,
+            final List<CityTarget> targets,
+            final BlockPos pos,
+            final Direction face,
+            final boolean includeEnderChests,
+            final boolean exposedOnly) {
         BlockState state = client.level.getBlockState(pos);
         if (!state.is(Blocks.OBSIDIAN) && (!includeEnderChests || !state.is(Blocks.ENDER_CHEST))) {
             return;
@@ -118,6 +137,5 @@ public final class AutoCityModule extends Module {
         return false;
     }
 
-    record CityTarget(BlockPos pos, Direction face) {
-    }
+    record CityTarget(BlockPos pos, Direction face) {}
 }

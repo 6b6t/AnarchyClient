@@ -1,14 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.network.chat.Component;
@@ -18,9 +20,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class FakePlayerModule extends Module {
 
@@ -48,14 +47,18 @@ public final class FakePlayerModule extends Module {
     private RemotePlayer fakePlayer;
 
     public FakePlayerModule() {
-        super("fake_player", "Fake Player", ModuleCategory.MISC,
+        super(
+                "fake_player",
+                "Fake Player",
+                ModuleCategory.MISC,
                 "Spawns a client-side copy of your player with your equipment for testing combat modules.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         // Respawn when something removed the clone or a portal replaced the level it lived in.
-        if (client.player != null && client.level != null
+        if (client.player != null
+                && client.level != null
                 && (this.fakePlayer == null || this.fakePlayer.isRemoved() || this.fakeLevel != client.level)) {
             this.spawn(client.player, client.level);
         }

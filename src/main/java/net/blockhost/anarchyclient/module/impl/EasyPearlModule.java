@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
@@ -9,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
-
-import java.util.Optional;
 
 public final class EasyPearlModule extends Module {
 
@@ -30,7 +29,10 @@ public final class EasyPearlModule extends Module {
     private int ticksLeft;
 
     public EasyPearlModule() {
-        super("easy_pearl", "Easy Pearl", ModuleCategory.PLAYER,
+        super(
+                "easy_pearl",
+                "Easy Pearl",
+                ModuleCategory.PLAYER,
                 "Throws an ender pearl from either hand at a set pitch with one keypress, then turns itself off.");
     }
 
@@ -47,7 +49,9 @@ public final class EasyPearlModule extends Module {
         // window passes without a usable pearl, turn off instead of throwing a pearl picked up much later.
         if (!this.pending || player == null || client.gameMode == null || --this.ticksLeft < 0) {
             if (player != null && this.pending) {
-                player.sendSystemMessage(Translations.component("anarchyclient.message.easy_pearl.easy_pearl_no_ender_pearl_to", "Easy Pearl: no ender pearl to throw."));
+                player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.easy_pearl.easy_pearl_no_ender_pearl_to",
+                        "Easy Pearl: no ender pearl to throw."));
             }
             this.pending = false;
             this.enabled(false);
@@ -56,8 +60,8 @@ public final class EasyPearlModule extends Module {
         if (client.gui.screen() != null) {
             return;
         }
-        Optional<InteractionHand> hand = SilentHotbar.usableHand(player, this.id(),
-                stack -> stack.is(Items.ENDER_PEARL), SilentHotbar.PRIORITY_COMBAT, 4, true);
+        Optional<InteractionHand> hand = SilentHotbar.usableHand(
+                player, this.id(), stack -> stack.is(Items.ENDER_PEARL), SilentHotbar.PRIORITY_COMBAT, 4, true);
         if (hand.isEmpty()) {
             return;
         }

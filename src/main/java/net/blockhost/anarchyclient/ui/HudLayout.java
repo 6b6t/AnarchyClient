@@ -3,11 +3,6 @@ package net.blockhost.anarchyclient.ui;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -15,6 +10,10 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /**
  * Central position store for HUD elements. Modules ask {@link #origin} for their top-left corner each
@@ -38,8 +37,7 @@ public final class HudLayout {
     /** Set when an unreadable file could not be backed up. Saving would then destroy the layout. */
     private static boolean saveBlocked;
 
-    private HudLayout() {
-    }
+    private HudLayout() {}
 
     public record Element(String id, String name, int x, int y, int width, int height) {
 
@@ -49,22 +47,28 @@ public final class HudLayout {
 
         /** Like {@link #contains(double, double)}, with the bounds grown by {@code pad} on every side. */
         public boolean contains(final double px, final double py, final double pad) {
-            return px >= this.x - pad && px <= this.x + this.width + pad
-                    && py >= this.y - pad && py <= this.y + this.height + pad;
+            return px >= this.x - pad
+                    && px <= this.x + this.width + pad
+                    && py >= this.y - pad
+                    && py <= this.y + this.height + pad;
         }
 
         /** True when any part of this element falls inside the given rectangle (box selection). */
         public boolean intersects(final double left, final double top, final double right, final double bottom) {
-            return this.x <= right && this.x + this.width >= left
-                    && this.y <= bottom && this.y + this.height >= top;
+            return this.x <= right && this.x + this.width >= left && this.y <= bottom && this.y + this.height >= top;
         }
     }
 
     /**
      * Resolve the top-left corner for a HUD element and record its bounds for the editor.
      */
-    public static int[] origin(final String id, final String name, final int width, final int height,
-                               final String defaultCorner, final GuiGraphicsExtractor graphics) {
+    public static int[] origin(
+            final String id,
+            final String name,
+            final int width,
+            final int height,
+            final String defaultCorner,
+            final GuiGraphicsExtractor graphics) {
         int guiWidth = graphics.guiWidth();
         int guiHeight = graphics.guiHeight();
         int[] pos = positions.get(id);
@@ -82,7 +86,7 @@ public final class HudLayout {
         x = clamp(x, 0, Math.max(0, guiWidth - width));
         y = clamp(y, 0, Math.max(0, guiHeight - height));
         bounds.put(id, new Element(id, name, x, y, width, height));
-        return new int[]{x, y};
+        return new int[] {x, y};
     }
 
     /** Editor: clear the recorded bounds before a fresh preview render pass. */
@@ -97,7 +101,7 @@ public final class HudLayout {
 
     /** Editor: move an element's top-left to an absolute position. */
     static void move(final String id, final int x, final int y) {
-        positions.put(id, new int[]{x, y});
+        positions.put(id, new int[] {x, y});
     }
 
     /** Editor: return an element to its default corner. */
@@ -131,7 +135,9 @@ public final class HudLayout {
             try {
                 JsonObject entry = root.getAsJsonObject(id);
                 if (entry != null && entry.has("x") && entry.has("y")) {
-                    read.put(id, new int[]{entry.get("x").getAsInt(), entry.get("y").getAsInt()});
+                    read.put(
+                            id,
+                            new int[] {entry.get("x").getAsInt(), entry.get("y").getAsInt()});
                 }
             } catch (RuntimeException exception) {
                 AnarchyClient.LOGGER.warn("Skipping invalid HUD layout entry {}", id, exception);

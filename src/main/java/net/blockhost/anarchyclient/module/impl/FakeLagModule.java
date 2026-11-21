@@ -41,7 +41,10 @@ public final class FakeLagModule extends Module {
             .build()));
 
     public FakeLagModule() {
-        super("fake_lag", "Fake Lag", ModuleCategory.MISC,
+        super(
+                "fake_lag",
+                "Fake Lag",
+                ModuleCategory.MISC,
                 "Holds back outgoing movement packets and releases them after a delay, making you appear to lag to other players.");
     }
 
@@ -53,10 +56,13 @@ public final class FakeLagModule extends Module {
 
     @Override
     public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (!this.movement.value() || client.hasSingleplayerServer() || !(packet instanceof ServerboundMovePlayerPacket)) {
+        if (!this.movement.value()
+                || client.hasSingleplayerServer()
+                || !(packet instanceof ServerboundMovePlayerPacket)) {
             return false;
         }
-        return PacketQueueManager.queueOutgoing(this.id(), connection, packet, this.maxPackets.value().intValue());
+        return PacketQueueManager.queueOutgoing(
+                this.id(), connection, packet, this.maxPackets.value().intValue());
     }
 
     @Override

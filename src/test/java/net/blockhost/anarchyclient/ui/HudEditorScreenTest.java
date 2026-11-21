@@ -1,10 +1,10 @@
 package net.blockhost.anarchyclient.ui;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
 
 class HudEditorScreenTest {
 
@@ -50,7 +50,7 @@ class HudEditorScreenTest {
     void groupKeepsItsSpacingAgainstEveryEdge() {
         // Two elements 100px apart, dragged past each edge in turn. Whatever the shift, the gap holds.
         int gap = 100;
-        for (int leading : new int[]{-80, 0, 9, 250, 999}) {
+        for (int leading : new int[] {-80, 0, 9, 250, 999}) {
             int trailing = leading + gap;
             int shift = HudEditorScreen.groupShift(leading, trailing + SIZE, SCREEN);
             int first = leading + shift;

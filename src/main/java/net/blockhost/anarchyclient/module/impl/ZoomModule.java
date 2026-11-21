@@ -19,7 +19,10 @@ public final class ZoomModule extends Module {
             .build()));
 
     public ZoomModule() {
-        super("zoom", "Zoom", ModuleCategory.RENDER,
+        super(
+                "zoom",
+                "Zoom",
+                ModuleCategory.RENDER,
                 "Narrows your rendered field of view by a set factor to zoom in. Your FOV option is not changed.");
     }
 

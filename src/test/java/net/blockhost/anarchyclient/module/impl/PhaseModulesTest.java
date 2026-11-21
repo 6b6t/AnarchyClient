@@ -1,17 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PhaseModulesTest {
 
@@ -27,36 +26,25 @@ class PhaseModulesTest {
     @Test
     void packetKickRejectsInvalidMovementPackets() {
         assertTrue(AntiPacketKickModule.isInvalidMovement(
-                new ServerboundMovePlayerPacket.Pos(Double.NaN, 64.0, 0.0, true, false),
-                30_000_000.0
-        ));
+                new ServerboundMovePlayerPacket.Pos(Double.NaN, 64.0, 0.0, true, false), 30_000_000.0));
         assertTrue(AntiPacketKickModule.isInvalidMovement(
-                new ServerboundMovePlayerPacket.Rot(0.0F, 120.0F, true, false),
-                30_000_000.0
-        ));
+                new ServerboundMovePlayerPacket.Rot(0.0F, 120.0F, true, false), 30_000_000.0));
         assertFalse(AntiPacketKickModule.isInvalidMovement(
-                new ServerboundMovePlayerPacket.Pos(0.0, 64.0, 0.0, true, false),
-                30_000_000.0
-        ));
+                new ServerboundMovePlayerPacket.Pos(0.0, 64.0, 0.0, true, false), 30_000_000.0));
     }
 
     @Test
     void packetCancellerRequiresEnabledNonBlankFilter() {
         assertFalse(PacketCancellerModule.shouldCancel(null, true, ""));
         assertTrue(PacketCancellerModule.shouldCancel(
-                new ServerboundMovePlayerPacket.StatusOnly(true, false),
-                true,
-                "move_player"
-        ));
+                new ServerboundMovePlayerPacket.StatusOnly(true, false), true, "move_player"));
     }
 
     @Test
     void highwayPlannerBuildsFloorAndRailsAhead() {
-        assertEquals(List.of(
-                new BlockPos(0, 63, 1),
-                new BlockPos(-1, 63, 1),
-                new BlockPos(1, 63, 1)
-        ), HighwayBuilderModule.plan(new BlockPos(0, 64, 0), Direction.SOUTH, 1, true));
+        assertEquals(
+                List.of(new BlockPos(0, 63, 1), new BlockPos(-1, 63, 1), new BlockPos(1, 63, 1)),
+                HighwayBuilderModule.plan(new BlockPos(0, 64, 0), Direction.SOUTH, 1, true));
     }
 
     @Test
@@ -77,7 +65,9 @@ class PhaseModulesTest {
 
     @Test
     void arrowDodgeDetectsApproachingProjectiles() {
-        assertTrue(ArrowDodgeModule.approaching(new Vec3(0.0, 0.0, 0.0), new Vec3(1.0, 0.0, 0.0), new Vec3(4.0, 0.0, 0.0)));
-        assertFalse(ArrowDodgeModule.approaching(new Vec3(0.0, 0.0, 0.0), new Vec3(-1.0, 0.0, 0.0), new Vec3(4.0, 0.0, 0.0)));
+        assertTrue(ArrowDodgeModule.approaching(
+                new Vec3(0.0, 0.0, 0.0), new Vec3(1.0, 0.0, 0.0), new Vec3(4.0, 0.0, 0.0)));
+        assertFalse(ArrowDodgeModule.approaching(
+                new Vec3(0.0, 0.0, 0.0), new Vec3(-1.0, 0.0, 0.0), new Vec3(4.0, 0.0, 0.0)));
     }
 }

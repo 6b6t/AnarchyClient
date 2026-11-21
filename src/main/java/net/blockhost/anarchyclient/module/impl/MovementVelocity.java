@@ -6,8 +6,7 @@ import net.minecraft.world.phys.Vec3;
 
 final class MovementVelocity {
 
-    private MovementVelocity() {
-    }
+    private MovementVelocity() {}
 
     static Vec3 fromKeys(final Minecraft client, final float yaw, final double speed) {
         double forward = impulse(MovementKeys.forward(client), MovementKeys.backward(client));

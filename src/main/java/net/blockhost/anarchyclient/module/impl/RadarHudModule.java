@@ -69,7 +69,10 @@ public final class RadarHudModule extends Module {
             .build()));
 
     public RadarHudModule() {
-        super("radar_hud", "Radar HUD", ModuleCategory.HUD,
+        super(
+                "radar_hud",
+                "Radar HUD",
+                ModuleCategory.HUD,
                 "Shows a top-down radar with dots for nearby players, hostile and passive mobs, and items.");
     }
 
@@ -104,16 +107,24 @@ public final class RadarHudModule extends Module {
             }
             RadarPoint point = this.point(player, entity, panelSize, rangeValue);
             int dot = this.dotSize.value().intValue();
-            graphics.fill(centerX + point.x() - dot, centerY + point.y() - dot,
-                    centerX + point.x() + dot + 1, centerY + point.y() + dot + 1, color);
+            graphics.fill(
+                    centerX + point.x() - dot,
+                    centerY + point.y() - dot,
+                    centerX + point.x() + dot + 1,
+                    centerY + point.y() + dot + 1,
+                    color);
         }
 
         String label = this.rotateWithPlayer.value() ? "^" : "N";
         graphics.text(client.font, label, centerX - client.font.width(label) / 2, y + 3, HudText.textColor(), true);
     }
 
-    private RadarPoint point(final LocalPlayer player, final Entity entity, final int panelSize, final double rangeValue) {
-        Vec2 offset = screenOffset(entity.getX() - player.getX(), entity.getZ() - player.getZ(), player.getYRot(),
+    private RadarPoint point(
+            final LocalPlayer player, final Entity entity, final int panelSize, final double rangeValue) {
+        Vec2 offset = screenOffset(
+                entity.getX() - player.getX(),
+                entity.getZ() - player.getZ(),
+                player.getYRot(),
                 this.rotateWithPlayer.value());
         double scale = (panelSize / 2.0 - 8.0) / rangeValue;
         int x = (int) Math.round(clamp(offset.x * scale, -panelSize / 2.0 + 8.0, panelSize / 2.0 - 8.0));
@@ -158,6 +169,5 @@ public final class RadarHudModule extends Module {
         return Math.max(min, Math.min(max, value));
     }
 
-    private record RadarPoint(int x, int y) {
-    }
+    private record RadarPoint(int x, int y) {}
 }

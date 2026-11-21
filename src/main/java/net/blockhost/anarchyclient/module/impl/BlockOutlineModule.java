@@ -20,14 +20,14 @@ public final class BlockOutlineModule extends Module {
             .name("Through Walls")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting fill = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("fill")
-            .name("Fill")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting fill = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("fill").name("Fill").defaultValue(true).build()));
 
     public BlockOutlineModule() {
-        super("block_outline", "Block Outline", ModuleCategory.RENDER,
+        super(
+                "block_outline",
+                "Block Outline",
+                ModuleCategory.RENDER,
                 "Draws a cyan box with optional fill around the targeted block, optionally visible through other blocks.");
     }
 

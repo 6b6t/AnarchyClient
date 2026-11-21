@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Set;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class AutoEnchantModuleTest {
@@ -26,7 +25,7 @@ class AutoEnchantModuleTest {
         Set<Item> parsed = ItemScan.parseItems("minecraft:diamond_swrod");
 
         assertFalse(AutoEnchantModule.shouldEnchantCandidate(new ItemStack(Items.DIAMOND_SWORD), parsed, true));
-        assertTrue(AutoEnchantModule.shouldEnchantCandidate(new ItemStack(Items.DIAMOND_SWORD),
-                ItemScan.parseItems("minecraft:diamond_sword"), true));
+        assertTrue(AutoEnchantModule.shouldEnchantCandidate(
+                new ItemStack(Items.DIAMOND_SWORD), ItemScan.parseItems("minecraft:diamond_sword"), true));
     }
 }

@@ -25,7 +25,10 @@ public final class EndermanLookModule extends Module {
             .build()));
 
     public EndermanLookModule() {
-        super("enderman_look", "Enderman Look", ModuleCategory.PLAYER,
+        super(
+                "enderman_look",
+                "Enderman Look",
+                ModuleCategory.PLAYER,
                 "Tilts your view to a set pitch when you look at an enderman within 64 blocks so it does not turn hostile.");
     }
 
@@ -35,11 +38,15 @@ public final class EndermanLookModule extends Module {
         if (player == null || client.level == null || !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(player)) {
             return;
         }
-        boolean staring = client.level.getEntitiesOfClass(Enderman.class, player.getBoundingBox().inflate(STARE_RANGE))
-                .stream()
-                .anyMatch(enderman -> enderman.isAlive()
-                        && enderman.distanceToSqr(player) <= STARE_RANGE * STARE_RANGE
-                        && enderman.isLookingAtMe(player, STARE_CONE, true, false, enderman.getEyeY()));
+        boolean staring =
+                client
+                        .level
+                        .getEntitiesOfClass(
+                                Enderman.class, player.getBoundingBox().inflate(STARE_RANGE))
+                        .stream()
+                        .anyMatch(enderman -> enderman.isAlive()
+                                && enderman.distanceToSqr(player) <= STARE_RANGE * STARE_RANGE
+                                && enderman.isLookingAtMe(player, STARE_CONE, true, false, enderman.getEyeY()));
         if (staring) {
             player.setXRot(this.pitch.value().floatValue());
         }

@@ -2,7 +2,6 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,9 +18,13 @@ abstract class AbstractStringListSetting extends Setting<List<String>> implement
 
     private final List<String> suggestions;
 
-    protected AbstractStringListSetting(final String id, final String name, final String description,
-                                        final List<String> defaultValue, final List<String> aliases,
-                                        final List<String> suggestions) {
+    protected AbstractStringListSetting(
+            final String id,
+            final String name,
+            final String description,
+            final List<String> defaultValue,
+            final List<String> aliases,
+            final List<String> suggestions) {
         super(id, name, description, List.copyOf(defaultValue), aliases);
         this.suggestions = suggestions.stream()
                 .filter(value -> value != null && !value.isBlank())

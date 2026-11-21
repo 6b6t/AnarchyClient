@@ -1,17 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class NameProtectModuleTest {
@@ -33,10 +32,12 @@ class NameProtectModuleTest {
 
         assertEquals("[Admin] You joined", replaced.getString());
         List<String> colors = new ArrayList<>();
-        replaced.visit((style, text) -> {
-            colors.add(text + "=" + style.getColor());
-            return Optional.empty();
-        }, Style.EMPTY);
+        replaced.visit(
+                (style, text) -> {
+                    colors.add(text + "=" + style.getColor());
+                    return Optional.empty();
+                },
+                Style.EMPTY);
         assertEquals(List.of("[Admin] =red", "You=gold", " joined=null"), colors);
     }
 }

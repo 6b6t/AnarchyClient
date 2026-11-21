@@ -49,7 +49,10 @@ public final class BlockPosSetting extends Setting<BlockPos> implements TextValu
         }
         JsonObject object = element.getAsJsonObject();
         if (object.has("x") && object.has("y") && object.has("z")) {
-            this.value(new BlockPos(object.get("x").getAsInt(), object.get("y").getAsInt(), object.get("z").getAsInt()));
+            this.value(new BlockPos(
+                    object.get("x").getAsInt(),
+                    object.get("y").getAsInt(),
+                    object.get("z").getAsInt()));
         }
     }
 

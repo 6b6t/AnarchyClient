@@ -12,7 +12,10 @@ import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 public final class NoSlotSetModule extends Module {
 
     public NoSlotSetModule() {
-        super("no_slot_set", "No Slot Set", ModuleCategory.PLAYER,
+        super(
+                "no_slot_set",
+                "No Slot Set",
+                ModuleCategory.PLAYER,
                 "Ignores server packets that change the selected hotbar slot and keeps the server on your slot.");
     }
 
@@ -24,7 +27,8 @@ public final class NoSlotSetModule extends Module {
         // The server already switched its slot; tell it which slot the client still holds so both agree.
         MainThread.run(() -> {
             if (client.player != null) {
-                connection.send(new ServerboundSetCarriedItemPacket(client.player.getInventory().getSelectedSlot()));
+                connection.send(new ServerboundSetCarriedItemPacket(
+                        client.player.getInventory().getSelectedSlot()));
             }
         });
         return true;

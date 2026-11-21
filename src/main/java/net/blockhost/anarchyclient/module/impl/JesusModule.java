@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -7,8 +8,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class JesusModule extends Module {
 
@@ -28,7 +27,10 @@ public final class JesusModule extends Module {
             .build()));
 
     public JesusModule() {
-        super("jesus", "Jesus", ModuleCategory.MOVEMENT,
+        super(
+                "jesus",
+                "Jesus",
+                ModuleCategory.MOVEMENT,
                 "Pushes you up out of water and lava so you can float, glide, or bounce across the surface.");
     }
 
@@ -42,9 +44,11 @@ public final class JesusModule extends Module {
         switch (this.mode.value()) {
             case "Dolphin" -> {
                 Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.floatSpeed.value() * 2.5);
-                player.setDeltaMovement(horizontal.x, Math.max(velocity.y, this.floatSpeed.value() * 0.5), horizontal.z);
+                player.setDeltaMovement(
+                        horizontal.x, Math.max(velocity.y, this.floatSpeed.value() * 0.5), horizontal.z);
             }
-            case "Trampoline" -> player.setDeltaMovement(velocity.x, Math.max(velocity.y, this.floatSpeed.value() * 2.2), velocity.z);
+            case "Trampoline" ->
+                player.setDeltaMovement(velocity.x, Math.max(velocity.y, this.floatSpeed.value() * 2.2), velocity.z);
             default -> player.setDeltaMovement(velocity.x, Math.max(velocity.y, this.floatSpeed.value()), velocity.z);
         }
     }

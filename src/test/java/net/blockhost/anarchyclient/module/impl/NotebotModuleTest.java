@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.impl.NotebotModule.NoteBlockPlan;
 import net.blockhost.anarchyclient.module.impl.NotebotModule.ScannedNoteBlock;
 import net.minecraft.core.BlockPos;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NotebotModuleTest {
 
@@ -19,9 +18,9 @@ class NotebotModuleTest {
 
     @Test
     void assignsTheBlockThatNeedsTheFewestTuningClicks() {
-        NoteBlockPlan plan = NoteBlockPlan.create(NotebotModule.parseSong("6"), List.of(
-                new ScannedNoteBlock(NEAR, 5, 1.0),
-                new ScannedNoteBlock(FAR, 6, 9.0)));
+        NoteBlockPlan plan = NoteBlockPlan.create(
+                NotebotModule.parseSong("6"),
+                List.of(new ScannedNoteBlock(NEAR, 5, 1.0), new ScannedNoteBlock(FAR, 6, 9.0)));
 
         assertTrue(plan.possible());
         assertEquals(Map.of(6, List.of(FAR)), plan.blocksByNote());
@@ -30,17 +29,17 @@ class NotebotModuleTest {
 
     @Test
     void prefersTheNearerBlockWhenTuningCostIsEqual() {
-        NoteBlockPlan plan = NoteBlockPlan.create(NotebotModule.parseSong("6"), List.of(
-                new ScannedNoteBlock(FAR, 6, 9.0),
-                new ScannedNoteBlock(NEAR, 6, 1.0)));
+        NoteBlockPlan plan = NoteBlockPlan.create(
+                NotebotModule.parseSong("6"),
+                List.of(new ScannedNoteBlock(FAR, 6, 9.0), new ScannedNoteBlock(NEAR, 6, 1.0)));
 
         assertEquals(Map.of(6, List.of(NEAR)), plan.blocksByNote());
     }
 
     @Test
     void recordsTuningClicksForBlocksOnTheWrongNote() {
-        NoteBlockPlan plan = NoteBlockPlan.create(NotebotModule.parseSong("8"), List.of(
-                new ScannedNoteBlock(NEAR, 6, 1.0)));
+        NoteBlockPlan plan =
+                NoteBlockPlan.create(NotebotModule.parseSong("8"), List.of(new ScannedNoteBlock(NEAR, 6, 1.0)));
 
         assertEquals(Map.of(NEAR, 2), plan.tuneHits());
         assertEquals(Map.of(NEAR, 8), plan.targetNotes());
@@ -49,8 +48,8 @@ class NotebotModuleTest {
 
     @Test
     void needsOneBlockPerNoteInAChord() {
-        NoteBlockPlan plan = NoteBlockPlan.create(NotebotModule.parseSong("6+6"), List.of(
-                new ScannedNoteBlock(NEAR, 6, 1.0)));
+        NoteBlockPlan plan =
+                NoteBlockPlan.create(NotebotModule.parseSong("6+6"), List.of(new ScannedNoteBlock(NEAR, 6, 1.0)));
 
         assertFalse(plan.possible());
         assertEquals(2, plan.requiredBlocks());

@@ -28,7 +28,10 @@ public final class ItemGeneratorModule extends Module {
     private int generated;
 
     public ItemGeneratorModule() {
-        super("item_generator", "Item Generator", ModuleCategory.MISC,
+        super(
+                "item_generator",
+                "Item Generator",
+                ModuleCategory.MISC,
                 "Fills your selected hotbar slot with a new random item at a set interval in creative mode.");
     }
 

@@ -1,6 +1,10 @@
 package net.blockhost.anarchyclient.ui;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
@@ -15,11 +19,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * BleachHack/Meteor-style HUD editor: renders the live HUD elements at their stored positions and lets
@@ -42,6 +41,7 @@ public final class HudEditorScreen extends Screen {
     private static final float FRAME_RADIUS = 6F;
     /** Below this drag distance a box selection counts as a click on empty space. */
     private static final double BOX_THRESHOLD = 3.0;
+
     private static final Color FRAME_FILL = Color.fromRGBA(255, 255, 255, 12);
     private static final Color FRAME_OUTLINE = Color.fromRGBA(255, 255, 255, 70);
     private static final Color SHADOW = Color.fromRGBA(0, 0, 0, 110);
@@ -57,6 +57,7 @@ public final class HudEditorScreen extends Screen {
     private final Set<String> selection = new LinkedHashSet<>();
     /** Cursor-to-top-left offset per element being dragged. Empty while nothing is being dragged. */
     private final Map<String, int[]> dragOffsets = new LinkedHashMap<>();
+
     private double boxAnchorX;
     private double boxAnchorY;
     private double boxCursorX;
@@ -90,15 +91,15 @@ public final class HudEditorScreen extends Screen {
     }
 
     @Override
-    public void extractBackground(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY,
-                                  final float partialTick) {
+    public void extractBackground(
+            final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         // Triggers the vanilla blur pass GlassBackdrop samples. The game stays fully visible and crisp.
         graphics.blurBeforeThisStratum();
     }
 
     @Override
-    public void extractRenderState(final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY,
-                                   final float partialTick) {
+    public void extractRenderState(
+            final GuiGraphicsExtractor graphics, final int mouseX, final int mouseY, final float partialTick) {
         // Draw the HUD elements ourselves so they appear over the game while this screen is open.
         HudLayout.clearBounds();
         rendering = true;
@@ -125,8 +126,12 @@ public final class HudEditorScreen extends Screen {
     }
 
     /** A rounded, anti-aliased frame around an element with an accent active stripe and floating label. */
-    private void renderHandle(final Blaze3DRenderer renderer, final GuiGraphicsExtractor graphics,
-                              final HudLayout.Element element, final boolean active, final Color accent) {
+    private void renderHandle(
+            final Blaze3DRenderer renderer,
+            final GuiGraphicsExtractor graphics,
+            final HudLayout.Element element,
+            final boolean active,
+            final Color accent) {
         float x = element.x() - FRAME_PAD;
         float y = element.y() - FRAME_PAD;
         float width = element.width() + FRAME_PAD * 2F;
@@ -158,8 +163,8 @@ public final class HudEditorScreen extends Screen {
 
     /** Frosted-glass hint chip, bottom-center, matching the menu's panels. */
     private void renderHint(final Blaze3DRenderer renderer, final GuiGraphicsExtractor graphics) {
-        String hint = Translations.text("anarchyclient.ui.hud_editor_hint",
-                "Drag to move  •  Box-select  •  Right-click resets  •  Esc saves");
+        String hint = Translations.text(
+                "anarchyclient.ui.hud_editor_hint", "Drag to move  •  Box-select  •  Right-click resets  •  Esc saves");
         float textWidth = this.font.width(hint);
         float width = textWidth + 24F;
         float height = 20F;
@@ -169,7 +174,13 @@ public final class HudEditorScreen extends Screen {
 
         renderer.custom(new SoftShadowCommand(x, y, width, height, radius, 10F, 3F, SHADOW));
         renderer.custom(new GlassPanelCommand(x, y, width, height, radius, GlassTheme.glass()));
-        graphics.text(this.font, hint, Math.round(x + 12F), Math.round(y + (height - 8F) / 2F), GlassTheme.TEXT.toARGB(), false);
+        graphics.text(
+                this.font,
+                hint,
+                Math.round(x + 12F),
+                Math.round(y + (height - 8F) / 2F),
+                GlassTheme.TEXT.toARGB(),
+                false);
     }
 
     @Override
@@ -212,8 +223,9 @@ public final class HudEditorScreen extends Screen {
         this.dragOffsets.clear();
         for (HudLayout.Element element : HudLayout.elements()) {
             if (this.selection.contains(element.id())) {
-                this.dragOffsets.put(element.id(),
-                        new int[]{(int) Math.round(mouseX) - element.x(), (int) Math.round(mouseY) - element.y()});
+                this.dragOffsets.put(
+                        element.id(),
+                        new int[] {(int) Math.round(mouseX) - element.x(), (int) Math.round(mouseY) - element.y()});
             }
         }
     }
@@ -235,18 +247,20 @@ public final class HudEditorScreen extends Screen {
         for (HudLayout.Element element : HudLayout.elements()) {
             int[] offset = this.dragOffsets.get(element.id());
             if (offset != null) {
-                proposed.put(element, new int[]{
-                        (int) Math.round(event.x()) - offset[0],
-                        (int) Math.round(event.y()) - offset[1]});
+                proposed.put(element, new int[] {
+                    (int) Math.round(event.x()) - offset[0], (int) Math.round(event.y()) - offset[1]
+                });
             }
         }
         if (proposed.isEmpty()) {
             return true;
         }
         if (proposed.size() == 1) {
-            Map.Entry<HudLayout.Element, int[]> only = proposed.entrySet().iterator().next();
+            Map.Entry<HudLayout.Element, int[]> only =
+                    proposed.entrySet().iterator().next();
             HudLayout.Element element = only.getKey();
-            HudLayout.move(element.id(),
+            HudLayout.move(
+                    element.id(),
                     snap(only.getValue()[0], element.width(), this.width),
                     snap(only.getValue()[1], element.height(), this.height));
         } else {
@@ -264,7 +278,8 @@ public final class HudEditorScreen extends Screen {
     }
 
     /** The one translation along an axis that pulls a whole group back on screen, or 0 if it fits. */
-    private static int groupShift(final Map<HudLayout.Element, int[]> proposed, final int screen, final boolean horizontal) {
+    private static int groupShift(
+            final Map<HudLayout.Element, int[]> proposed, final int screen, final boolean horizontal) {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         for (Map.Entry<HudLayout.Element, int[]> entry : proposed.entrySet()) {

@@ -17,11 +17,8 @@ import net.minecraft.world.phys.Vec3;
 
 public final class AntiCrashModule extends Module {
 
-    private final BooleanSetting log = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("log")
-            .name("Log")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting log = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("log").name("Log").defaultValue(false).build()));
     /** Largest coordinate inside the world border's maximum size. */
     static final double WORLD_COORDINATE_LIMIT = 30_000_000.0;
 
@@ -68,7 +65,10 @@ public final class AntiCrashModule extends Module {
     private int logCooldownTicks;
 
     public AntiCrashModule() {
-        super("anti_crash", "Anti Crash", ModuleCategory.MISC,
+        super(
+                "anti_crash",
+                "Anti Crash",
+                ModuleCategory.MISC,
                 "Drops incoming explosion, particle, position, and motion packets with extreme values that could crash or freeze the client.");
     }
 
@@ -87,15 +87,17 @@ public final class AntiCrashModule extends Module {
                 this.maxVelocity.value(),
                 this.maxParticles.value().intValue(),
                 this.maxExplosionRadius.value().floatValue(),
-                this.maxExplosionBlocks.value().intValue()
-        );
+                this.maxExplosionBlocks.value().intValue());
         if (reason == SuspiciousPacket.NONE) {
             return false;
         }
         if (this.log.value()) {
             MainThread.run(() -> {
                 if (this.logCooldownTicks == 0 && client.player != null) {
-                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.anti_crash.anti_crash_blocked", "Anti Crash blocked %s.", reason.displayName()));
+                    client.player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.anti_crash.anti_crash_blocked",
+                            "Anti Crash blocked %s.",
+                            reason.displayName()));
                     this.logCooldownTicks = 40;
                 }
             });
@@ -103,14 +105,21 @@ public final class AntiCrashModule extends Module {
         return true;
     }
 
-    static SuspiciousPacket suspiciousPacket(final Packet<?> packet, final double maxCoordinate, final double maxVelocity,
-                                            final int maxParticles, final float maxExplosionRadius,
-                                            final int maxExplosionBlocks) {
+    static SuspiciousPacket suspiciousPacket(
+            final Packet<?> packet,
+            final double maxCoordinate,
+            final double maxVelocity,
+            final int maxParticles,
+            final float maxExplosionRadius,
+            final int maxExplosionBlocks) {
         if (packet instanceof ClientboundExplodePacket explosion) {
             if (outsideLimit(explosion.center(), maxCoordinate)) {
                 return SuspiciousPacket.EXPLOSION_POSITION;
             }
-            if (explosion.playerKnockback().map(knockback -> outsideLimit(knockback, maxVelocity)).orElse(false)) {
+            if (explosion
+                    .playerKnockback()
+                    .map(knockback -> outsideLimit(knockback, maxVelocity))
+                    .orElse(false)) {
                 return SuspiciousPacket.EXPLOSION_KNOCKBACK;
             }
             if (!Float.isFinite(explosion.radius()) || explosion.radius() > maxExplosionRadius) {

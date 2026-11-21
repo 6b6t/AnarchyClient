@@ -30,7 +30,10 @@ public final class AutoJumpModule extends Module {
     private int cooldownTicks;
 
     public AutoJumpModule() {
-        super("auto_jump", "Auto Jump", ModuleCategory.MOVEMENT,
+        super(
+                "auto_jump",
+                "Auto Jump",
+                ModuleCategory.MOVEMENT,
                 "Jumps whenever you are on the ground, optionally only while moving and not in water or lava.");
     }
 
@@ -50,16 +53,19 @@ public final class AutoJumpModule extends Module {
                 moving,
                 player.isInWater() || player.isInLava(),
                 this.onlyMoving.value(),
-                this.pauseInWater.value()
-        )) {
+                this.pauseInWater.value())) {
             return;
         }
         player.jumpFromGround();
         this.cooldownTicks = this.delay.value().intValue();
     }
 
-    static boolean shouldJump(final boolean onGround, final boolean moving, final boolean inFluid,
-                              final boolean onlyMoving, final boolean pauseInWater) {
+    static boolean shouldJump(
+            final boolean onGround,
+            final boolean moving,
+            final boolean inFluid,
+            final boolean onlyMoving,
+            final boolean pauseInWater) {
         return onGround && (!onlyMoving || moving) && (!pauseInWater || !inFluid);
     }
 }

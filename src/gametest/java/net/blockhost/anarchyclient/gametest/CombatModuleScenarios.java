@@ -14,22 +14,24 @@ import net.minecraft.world.level.block.Blocks;
 /** Scenarios for established combat modules against a server-side target. */
 final class CombatModuleScenarios {
 
-    private CombatModuleScenarios() {
-    }
+    private CombatModuleScenarios() {}
 
     /** Places the target on an obsidian floor three blocks east and makes the player explosion-proof. */
     private static BlockPos targetOnObsidian(final GameTestSupport.Arena arena) {
         BlockPos origin = arena.origin();
-        arena.run("fill " + GameTestSupport.at(origin.offset(-1, -1, -3)) + " " + GameTestSupport.at(origin.offset(6, -1, 3))
-                + " obsidian");
+        arena.run("fill " + GameTestSupport.at(origin.offset(-1, -1, -3)) + " "
+                + GameTestSupport.at(origin.offset(6, -1, 3)) + " obsidian");
         arena.run("effect give " + arena.name() + " resistance infinite 4 true");
         BlockPos target = origin.offset(3, 0, 0);
         arena.spawnTarget(target);
         return target;
     }
 
-    private static void expectTargetDamaged(final ClientGameTestContext context, final GameTestSupport.Arena arena,
-                                            final String moduleId, final int timeoutTicks) {
+    private static void expectTargetDamaged(
+            final ClientGameTestContext context,
+            final GameTestSupport.Arena arena,
+            final String moduleId,
+            final int timeoutTicks) {
         GameTestSupport.enable(context, moduleId, true);
         try {
             arena.server().waitFor(server -> GameTestSupport.targetHits(server) > 0, timeoutTicks);
@@ -77,7 +79,12 @@ final class CombatModuleScenarios {
             GameTestSupport.enable(context, "auto_totem", true);
             try {
                 arena.run("damage " + arena.name() + " 15");
-                arena.server().waitFor(server -> arena.serverPlayer(server).getOffhandItem().is(Items.TOTEM_OF_UNDYING), 60);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                        .getOffhandItem()
+                                        .is(Items.TOTEM_OF_UNDYING),
+                                60);
             } finally {
                 GameTestSupport.enable(context, "auto_totem", false);
             }
@@ -92,14 +99,17 @@ final class CombatModuleScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "surround", true);
             try {
-                arena.server().waitFor(server -> {
-                    for (Direction direction : Direction.Plane.HORIZONTAL) {
-                        if (!is(server, feet.relative(direction), Blocks.OBSIDIAN)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }, 100);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                                        if (!is(server, feet.relative(direction), Blocks.OBSIDIAN)) {
+                                            return false;
+                                        }
+                                    }
+                                    return true;
+                                },
+                                100);
             } finally {
                 GameTestSupport.enable(context, "surround", false);
             }
@@ -115,15 +125,18 @@ final class CombatModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "auto_trap", true);
             try {
-                arena.server().waitFor(server -> {
-                    int placed = 0;
-                    for (Direction direction : Direction.Plane.HORIZONTAL) {
-                        if (is(server, target.above().relative(direction), Blocks.OBSIDIAN)) {
-                            placed++;
-                        }
-                    }
-                    return placed >= 3;
-                }, 200);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    int placed = 0;
+                                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                                        if (is(server, target.above().relative(direction), Blocks.OBSIDIAN)) {
+                                            placed++;
+                                        }
+                                    }
+                                    return placed >= 3;
+                                },
+                                200);
             } finally {
                 GameTestSupport.enable(context, "auto_trap", false);
             }
@@ -139,7 +152,11 @@ final class CombatModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "auto_web", true);
             try {
-                arena.server().waitFor(server -> is(server, target, Blocks.COBWEB) || is(server, target.above(), Blocks.COBWEB), 100);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        is(server, target, Blocks.COBWEB) || is(server, target.above(), Blocks.COBWEB),
+                                100);
             } finally {
                 GameTestSupport.enable(context, "auto_web", false);
             }
@@ -156,7 +173,11 @@ final class CombatModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "hole_filler", true);
             try {
-                arena.server().waitFor(server -> !server.overworld().getBlockState(hole).isAir(), 200);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        !server.overworld().getBlockState(hole).isAir(),
+                                200);
             } finally {
                 GameTestSupport.enable(context, "hole_filler", false);
             }
@@ -173,14 +194,19 @@ final class CombatModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "auto_city", true);
             try {
-                arena.server().waitFor(server -> {
-                    for (Direction direction : Direction.Plane.HORIZONTAL) {
-                        if (server.overworld().getBlockState(target.relative(direction)).isAir()) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }, 400);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                                        if (server.overworld()
+                                                .getBlockState(target.relative(direction))
+                                                .isAir()) {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                },
+                                400);
             } finally {
                 GameTestSupport.enable(context, "auto_city", false);
             }
@@ -228,11 +254,14 @@ final class CombatModuleScenarios {
             GameTestSupport.enable(context, "auto_weapon", true);
             try {
                 context.waitTicks(5);
-                int idle = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
+                int idle = context.computeOnClient(
+                        client -> client.player.getInventory().getSelectedSlot());
                 GameTestSupport.check(idle == 0, "Auto Weapon switched slots outside combat (slot " + idle + ")");
                 context.getInput().holdKeyFor(options -> options.keyAttack, 5);
-                int selected = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
-                GameTestSupport.check(selected == 4, "Auto Weapon did not pick the diamond sword (slot " + selected + ")");
+                int selected = context.computeOnClient(
+                        client -> client.player.getInventory().getSelectedSlot());
+                GameTestSupport.check(
+                        selected == 4, "Auto Weapon did not pick the diamond sword (slot " + selected + ")");
             } finally {
                 GameTestSupport.enable(context, "auto_weapon", false);
             }
@@ -250,7 +279,8 @@ final class CombatModuleScenarios {
             try {
                 context.getInput().holdKeyFor(options -> options.keyAttack, 40);
                 int hits = arena.targetHits();
-                GameTestSupport.check(hits >= 5, "Auto Clicker hit the target only " + hits + " time(s) in two seconds");
+                GameTestSupport.check(
+                        hits >= 5, "Auto Clicker hit the target only " + hits + " time(s) in two seconds");
             } finally {
                 GameTestSupport.enable(context, "auto_clicker", false);
             }
@@ -266,10 +296,16 @@ final class CombatModuleScenarios {
             GameTestSupport.enable(context, "auto_pot", true);
             try {
                 context.waitTicks(10);
-                boolean kept = arena.server().computeOnServer(server -> hasSplashPotion(arena.serverPlayer(server).getInventory()));
+                boolean kept = arena.server()
+                        .computeOnServer(server ->
+                                hasSplashPotion(arena.serverPlayer(server).getInventory()));
                 GameTestSupport.check(kept, "Auto Pot threw a potion at full health");
                 arena.run("damage " + arena.name() + " 12 minecraft:generic");
-                arena.server().waitFor(server -> !hasSplashPotion(arena.serverPlayer(server).getInventory()), 60);
+                arena.server()
+                        .waitFor(
+                                server -> !hasSplashPotion(
+                                        arena.serverPlayer(server).getInventory()),
+                                60);
             } finally {
                 GameTestSupport.enable(context, "auto_pot", false);
             }

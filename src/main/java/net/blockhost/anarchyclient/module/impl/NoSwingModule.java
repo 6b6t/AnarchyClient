@@ -21,7 +21,10 @@ public final class NoSwingModule extends Module {
             .build()));
 
     public NoSwingModule() {
-        super("no_swing", "No Swing", ModuleCategory.RENDER,
+        super(
+                "no_swing",
+                "No Swing",
+                ModuleCategory.RENDER,
                 "Hides your own hand swing animation. With Server Side on, also stops the swing packet for missed attacks from reaching the server.");
     }
 

@@ -11,17 +11,16 @@ public final class ProjectileAim {
 
     private static final double MAX_TICK_MOVEMENT_SQR = 10.0 * 10.0;
 
-    private ProjectileAim() {
-    }
+    private ProjectileAim() {}
 
-    public static Rotation rotationToHit(final Vec3 shooterEye, final LivingEntity target,
-                                         final double velocity, final double gravity) {
+    public static Rotation rotationToHit(
+            final Vec3 shooterEye, final LivingEntity target, final double velocity, final double gravity) {
         Vec3 point = predictedPoint(shooterEye, target, velocity, gravity);
         return Rotation.lookingAt(point, shooterEye);
     }
 
-    public static Vec3 predictedPoint(final Vec3 shooterEye, final LivingEntity target,
-                                      final double velocity, final double gravity) {
+    public static Vec3 predictedPoint(
+            final Vec3 shooterEye, final LivingEntity target, final double velocity, final double gravity) {
         Vec3 center = target.getBoundingBox().getCenter();
         double safeVelocity = Math.max(0.1, velocity);
         double travelTicks = shooterEye.distanceTo(center) / safeVelocity;

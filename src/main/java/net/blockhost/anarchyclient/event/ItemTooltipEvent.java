@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.event;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public final class ItemTooltipEvent implements AnarchyClientEvent {
 

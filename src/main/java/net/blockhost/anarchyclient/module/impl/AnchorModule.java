@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -9,8 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Optional;
 
 public final class AnchorModule extends Module {
 
@@ -26,14 +25,20 @@ public final class AnchorModule extends Module {
             .build()));
 
     public AnchorModule() {
-        super("anchor", "Anchor", ModuleCategory.MOVEMENT,
+        super(
+                "anchor",
+                "Anchor",
+                ModuleCategory.MOVEMENT,
                 "Pulls you down and centers you while you fall over a safe obsidian or bedrock hole, helping you drop into it.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || player.onGround() || player.isFallFlying()
+        if (player == null
+                || client.level == null
+                || player.onGround()
+                || player.isFallFlying()
                 || player.getAbilities().flying) {
             return;
         }

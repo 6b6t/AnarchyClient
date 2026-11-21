@@ -43,7 +43,11 @@ public final class TimerRangeModule extends Module {
             .build()));
 
     public TimerRangeModule() {
-        super("timer_range", "Timer Range", ModuleCategory.COMBAT, "Adjusts timer speed around nearby targets so timing changes stay tied to combat range.");
+        super(
+                "timer_range",
+                "Timer Range",
+                ModuleCategory.COMBAT,
+                "Adjusts timer speed around nearby targets so timing changes stay tied to combat range.");
     }
 
     @Override

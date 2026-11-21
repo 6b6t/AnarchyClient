@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
-
-import java.util.List;
 
 public final class MultiActionsModule extends Module {
 
@@ -31,8 +30,12 @@ public final class MultiActionsModule extends Module {
             .build()));
 
     public MultiActionsModule() {
-        super("multi_actions", "Multi Actions", ModuleCategory.MISC,
-                "Lets you attack, break, and place blocks while eating or using an item.", List.of("multitask"));
+        super(
+                "multi_actions",
+                "Multi Actions",
+                ModuleCategory.MISC,
+                "Lets you attack, break, and place blocks while eating or using an item.",
+                List.of("multitask"));
         instance = this;
     }
 

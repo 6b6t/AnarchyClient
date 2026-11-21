@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
-import net.blockhost.anarchyclient.i18n.Translations;
-
 import java.util.List;
 import java.util.function.Supplier;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 public abstract class Setting<T> {
 
@@ -25,7 +24,12 @@ public abstract class Setting<T> {
         this(id, name, "", defaultValue, aliases);
     }
 
-    protected Setting(final String id, final String name, final String description, final T defaultValue, final List<String> aliases) {
+    protected Setting(
+            final String id,
+            final String name,
+            final String description,
+            final T defaultValue,
+            final List<String> aliases) {
         this.id = id;
         this.name = name;
         this.description = description == null ? "" : description;

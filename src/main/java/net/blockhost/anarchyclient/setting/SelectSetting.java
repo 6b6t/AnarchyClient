@@ -2,9 +2,8 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import net.blockhost.anarchyclient.i18n.Translations;
-
 import java.util.List;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 public final class SelectSetting extends Setting<String> {
 

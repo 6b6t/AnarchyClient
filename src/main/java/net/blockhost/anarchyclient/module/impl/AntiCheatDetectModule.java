@@ -23,7 +23,11 @@ public final class AntiCheatDetectModule extends Module {
     private String lastAlert = "";
 
     public AntiCheatDetectModule() {
-        super("anti_cheat_detect", "AntiCheat Detect", ModuleCategory.MISC, "Looks for anti-cheat signals and exposes them to modules that need stricter timing or safer behavior.");
+        super(
+                "anti_cheat_detect",
+                "AntiCheat Detect",
+                ModuleCategory.MISC,
+                "Looks for anti-cheat signals and exposes them to modules that need stricter timing or safer behavior.");
     }
 
     @Override
@@ -37,13 +41,20 @@ public final class AntiCheatDetectModule extends Module {
         String antiCheat = snapshot.antiCheat().orElse("");
         // Keyed by server too, so joining another server with the same anti-cheat still alerts and records it.
         String key = snapshot.rootDomain() + "|" + antiCheat;
-        if (antiCheat.isBlank() || key.equals(this.lastAlert) || "Unknown".equals(antiCheat) && !this.showUnknown.value()) {
+        if (antiCheat.isBlank()
+                || key.equals(this.lastAlert)
+                || "Unknown".equals(antiCheat) && !this.showUnknown.value()) {
             return;
         }
         this.lastAlert = key;
         if (client.player != null) {
             String labels = snapshot.environmentLabels().isEmpty() ? "" : " " + snapshot.environmentLabels();
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.anti_cheat_detect.detected_anti_cheat_safety_100", "Detected anti-cheat: %s (safety %s/100).%s", antiCheat, snapshot.safetyScore(), labels));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.anti_cheat_detect.detected_anti_cheat_safety_100",
+                    "Detected anti-cheat: %s (safety %s/100).%s",
+                    antiCheat,
+                    snapshot.safetyScore(),
+                    labels));
         }
         if (this.storeProfile.value()) {
             ServerProfileStore.recordAntiCheat(snapshot.rootDomain(), antiCheat);

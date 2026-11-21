@@ -1,15 +1,13 @@
 package net.blockhost.anarchyclient.ui;
 
+import java.math.BigDecimal;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.TextValueSetting;
 
-import java.math.BigDecimal;
-
 final class SettingControls {
 
-    private SettingControls() {
-    }
+    private SettingControls() {}
 
     static String displayValue(final Setting<?> setting) {
         Object value = setting.value();

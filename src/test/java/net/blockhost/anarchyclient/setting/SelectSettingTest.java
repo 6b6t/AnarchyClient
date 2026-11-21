@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.setting;
 
-import com.google.gson.JsonPrimitive;
-import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.google.gson.JsonPrimitive;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class SelectSettingTest {
 
@@ -33,12 +32,14 @@ class SelectSettingTest {
 
     @Test
     void rejectsDefaultValuesOutsideOptions() {
-        assertThrows(IllegalArgumentException.class, () -> SelectSetting.from(SelectSetting.builder()
-                .id("mode")
-                .name("Mode")
-                .defaultValue("Missing")
-                .addAllOptions(List.of("Sequential", "Random"))
-                .build()));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> SelectSetting.from(SelectSetting.builder()
+                        .id("mode")
+                        .name("Mode")
+                        .defaultValue("Missing")
+                        .addAllOptions(List.of("Sequential", "Random"))
+                        .build()));
     }
 
     private static SelectSetting modeSetting() {

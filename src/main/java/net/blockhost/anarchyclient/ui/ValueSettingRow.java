@@ -1,11 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.setting.Setting;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-import net.lenni0451.rivet.text.model.TextOrigin;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
 import static net.blockhost.anarchyclient.ui.PanelStyle.SETTING_ROW_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
@@ -13,6 +7,12 @@ import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textNode;
+
+import net.blockhost.anarchyclient.setting.Setting;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
+import net.lenni0451.rivet.text.model.TextOrigin;
 
 final class ValueSettingRow extends SettingLine {
 
@@ -35,7 +35,19 @@ final class ValueSettingRow extends SettingLine {
     @Override
     protected void layoutControls(final Size size) {
         float valueWidth = Math.min(112F, Math.max(0F, size.width() * 0.44F));
-        place(this.value, cell(2, 0, 2, 2, 0F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(0F, 0F, PADDING, 0F), valueWidth, null));
+        place(
+                this.value,
+                cell(
+                        2,
+                        0,
+                        2,
+                        2,
+                        0F,
+                        1F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(0F, 0F, PADDING, 0F),
+                        valueWidth,
+                        null));
     }
 }

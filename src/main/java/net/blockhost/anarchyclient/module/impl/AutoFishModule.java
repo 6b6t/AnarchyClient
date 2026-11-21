@@ -61,11 +61,15 @@ public final class AutoFishModule extends Module {
     private static final int NO_HOOK = Integer.MIN_VALUE;
     /** Ticks a hook must float in water before its motion counts as a bite. */
     private static final int SETTLE_TICKS = 10;
+
     private int reeledHookId = NO_HOOK;
     private int inWaterTicks;
 
     public AutoFishModule() {
-        super("auto_fish", "Auto Fish", ModuleCategory.PLAYER,
+        super(
+                "auto_fish",
+                "Auto Fish",
+                ModuleCategory.PLAYER,
                 "Reels in the fishing rod when a fish bites and casts it again after a short delay.");
     }
 
@@ -75,10 +79,12 @@ public final class AutoFishModule extends Module {
         if (player == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        if (!player.getMainHandItem().is(Items.FISHING_ROD) && !player.getOffhandItem().is(Items.FISHING_ROD)) {
+        if (!player.getMainHandItem().is(Items.FISHING_ROD)
+                && !player.getOffhandItem().is(Items.FISHING_ROD)) {
             return;
         }
-        InteractionHand hand = player.getMainHandItem().is(Items.FISHING_ROD) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+        InteractionHand hand =
+                player.getMainHandItem().is(Items.FISHING_ROD) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
         if (player.fishing == null) {
             this.caughtFish = false;
             this.reelDelayTicks = 0;

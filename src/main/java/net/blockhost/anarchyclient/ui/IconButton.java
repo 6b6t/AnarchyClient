@@ -1,17 +1,16 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BUTTON_SIZE;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawIcon;
+
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BUTTON_SIZE;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawIcon;
 
 final class IconButton extends Component implements LayoutDebugLabel {
 
@@ -20,8 +19,11 @@ final class IconButton extends Component implements LayoutDebugLabel {
     private final Runnable action;
     private final BooleanSupplier visible;
 
-    IconButton(final Supplier<String> icon, final Supplier<Color> color, final Runnable action,
-               final BooleanSupplier visible) {
+    IconButton(
+            final Supplier<String> icon,
+            final Supplier<Color> color,
+            final Runnable action,
+            final BooleanSupplier visible) {
         this.icon = icon;
         this.color = color;
         this.action = action;

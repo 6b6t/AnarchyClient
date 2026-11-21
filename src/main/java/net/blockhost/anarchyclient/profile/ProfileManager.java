@@ -4,14 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import net.blockhost.anarchyclient.config.ModuleConfigMigration;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.setting.Setting;
-import net.fabricmc.loader.api.FabricLoader;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -26,6 +18,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.setting.Setting;
+import net.fabricmc.loader.api.FabricLoader;
 
 public final class ProfileManager {
 
@@ -41,7 +40,8 @@ public final class ProfileManager {
     }
 
     public static Path defaultPath() {
-        return FabricLoader.getInstance().getConfigDir()
+        return FabricLoader.getInstance()
+                .getConfigDir()
                 .resolve("anarchyclient")
                 .resolve("profiles.json");
     }
@@ -74,7 +74,8 @@ public final class ProfileManager {
 
     public synchronized void save() {
         if (this.saveBlocked) {
-            AnarchyClient.LOGGER.warn("Not saving AnarchyClient profiles: {} could not be read or backed up", this.path);
+            AnarchyClient.LOGGER.warn(
+                    "Not saving AnarchyClient profiles: {} could not be read or backed up", this.path);
             return;
         }
         try {
@@ -145,7 +146,9 @@ public final class ProfileManager {
             if (profile == null) {
                 throw new IOException("Profile file is empty.");
             }
-            String fallback = input.getFileName() == null ? "imported" : input.getFileName().toString().replaceFirst("\\.json$", "");
+            String fallback = input.getFileName() == null
+                    ? "imported"
+                    : input.getFileName().toString().replaceFirst("\\.json$", "");
             profile = profile.normalized(fallback);
             profile.updatedAt = Instant.now().toString();
             // Copy before storing: if anything in the file is still unusable, nothing is kept or saved.
@@ -169,8 +172,8 @@ public final class ProfileManager {
         }
         int changed = 0;
         for (Module module : modules.all()) {
-            Map<String, JsonElement> settings = migratedSettings(module, profile.settings.get(module.id()),
-                    profile.version);
+            Map<String, JsonElement> settings =
+                    migratedSettings(module, profile.settings.get(module.id()), profile.version);
             if (settings == null) {
                 continue;
             }
@@ -183,8 +186,12 @@ public final class ProfileManager {
                     setting.fromJson(value.deepCopy());
                     changed++;
                 } catch (RuntimeException exception) {
-                    AnarchyClient.LOGGER.warn("Skipping invalid value for {}.{} in profile '{}'",
-                            module.id(), setting.id(), profile.name, exception);
+                    AnarchyClient.LOGGER.warn(
+                            "Skipping invalid value for {}.{} in profile '{}'",
+                            module.id(),
+                            setting.id(),
+                            profile.name,
+                            exception);
                 }
             }
         }
@@ -195,8 +202,8 @@ public final class ProfileManager {
                     module.enabled(enabled);
                     changed++;
                 } catch (RuntimeException exception) {
-                    AnarchyClient.LOGGER.warn("Failed to toggle {} from profile '{}'", module.id(), profile.name,
-                            exception);
+                    AnarchyClient.LOGGER.warn(
+                            "Failed to toggle {} from profile '{}'", module.id(), profile.name, exception);
                 }
             }
         }
@@ -207,9 +214,10 @@ public final class ProfileManager {
      * Runs the module's config migration over settings from a profile saved by an older build, so applying it
      * does not bring back defaults the client config already moved past.
      */
-    static Map<String, JsonElement> migratedSettings(final Module module, final Map<String, JsonElement> settings,
-                                                     final int savedVersion) {
-        if (settings == null || savedVersion >= ModuleConfigMigration.CURRENT_VERSION
+    static Map<String, JsonElement> migratedSettings(
+            final Module module, final Map<String, JsonElement> settings, final int savedVersion) {
+        if (settings == null
+                || savedVersion >= ModuleConfigMigration.CURRENT_VERSION
                 || !(module instanceof ModuleConfigMigration migration)) {
             return settings;
         }
@@ -243,17 +251,16 @@ public final class ProfileManager {
         return name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
     }
 
-    private record ProfileRoot(Map<String, Profile> profiles) {
-    }
+    private record ProfileRoot(Map<String, Profile> profiles) {}
 
-    public record ProfileSummary(String name, String updatedAt, int modules) {
-    }
+    public record ProfileSummary(String name, String updatedAt, int modules) {}
 
     public static final class Profile {
 
         public String name = "";
         /** Format version the profile was saved with; profiles from before versioning count as 1. */
         public int version = 1;
+
         public String updatedAt = "";
         public Map<String, Boolean> modules = new LinkedHashMap<>();
         public Map<String, Map<String, JsonElement>> settings = new LinkedHashMap<>();

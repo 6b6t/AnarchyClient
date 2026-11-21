@@ -1,6 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -20,14 +27,6 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public final class StaffAlertModule extends Module {
 
@@ -67,7 +66,10 @@ public final class StaffAlertModule extends Module {
     private Set<String> nearby = Set.of();
 
     public StaffAlertModule(final ModuleManager modules) {
-        super("staff_alert", "Staff Alert", ModuleCategory.MISC,
+        super(
+                "staff_alert",
+                "Staff Alert",
+                ModuleCategory.MISC,
                 "Warns in chat when a known or staff-like player joins or comes near, and can disable listed modules.");
         this.modules = modules;
     }
@@ -100,7 +102,8 @@ public final class StaffAlertModule extends Module {
         double rangeSqr = this.proximityRange.value() * this.proximityRange.value();
         Set<String> nearNow = new HashSet<>();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (entity instanceof Player player && player != client.player
+            if (entity instanceof Player player
+                    && player != client.player
                     && client.player.distanceToSqr(player) <= rangeSqr
                     && this.isStaff(player.getScoreboardName())) {
                 String key = player.getScoreboardName().toLowerCase(Locale.ROOT);
@@ -130,7 +133,8 @@ public final class StaffAlertModule extends Module {
         }
         for (ClientboundPlayerInfoUpdatePacket.Entry entry : info.newEntries()) {
             GameProfile profile = entry.profile();
-            if (profile != null && this.isStaff(profile.name())
+            if (profile != null
+                    && this.isStaff(profile.name())
                     && this.joinAlerted.putIfAbsent(profile.id(), profile.name()) == null) {
                 this.alert(client, profile.name());
             }
@@ -143,13 +147,15 @@ public final class StaffAlertModule extends Module {
             return false;
         }
         Set<String> names = new LinkedHashSet<>(parseNames(this.staffNames.value()));
-        names.addAll(parseNames(String.join(",", ServerProfileStore.staffNames(ServerObserver.snapshot().rootDomain()))));
+        names.addAll(parseNames(String.join(
+                ",", ServerProfileStore.staffNames(ServerObserver.snapshot().rootDomain()))));
         return names.contains(normalized) || TargetClassifier.looksLikeStaffName(name);
     }
 
     private void alert(final Minecraft client, final String name) {
         if (client.player != null) {
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.staff_alert.staff_detected", "Staff detected: %s.", name));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.staff_alert.staff_detected", "Staff detected: %s.", name));
         }
         if (this.disableModules.value()) {
             for (String id : AutoDisableModule.parseModuleIds(this.moduleList.value())) {

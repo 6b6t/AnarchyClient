@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -10,23 +14,19 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.equipment.Equippable;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 final class EquipmentScorer {
 
-    private EquipmentScorer() {
-    }
+    private EquipmentScorer() {}
 
     static double weaponScore(final ItemStack stack) {
         if (stack.isEmpty()) {
             return 0.0;
         }
         ItemAttributeModifiers modifiers = stack.get(DataComponents.ATTRIBUTE_MODIFIERS);
-        double damage = modifiers == null ? 1.0 : modifiers.compute(Attributes.ATTACK_DAMAGE, 1.0, EquipmentSlot.MAINHAND);
-        double speed = modifiers == null ? 4.0 : modifiers.compute(Attributes.ATTACK_SPEED, 4.0, EquipmentSlot.MAINHAND);
+        double damage =
+                modifiers == null ? 1.0 : modifiers.compute(Attributes.ATTACK_DAMAGE, 1.0, EquipmentSlot.MAINHAND);
+        double speed =
+                modifiers == null ? 4.0 : modifiers.compute(Attributes.ATTACK_SPEED, 4.0, EquipmentSlot.MAINHAND);
         double weaponBonus = stack.has(DataComponents.WEAPON) ? 4.0 : 0.0;
         double durabilityBonus = durabilityRatio(stack) * 0.25;
         return damage * 2.0 + Math.max(0.0, speed) * 0.3 + weaponBonus + durabilityBonus;
@@ -36,8 +36,12 @@ final class EquipmentScorer {
         return armorScore(stack, slot, ProtectionPreference.PROTECTION, Set.of(), false);
     }
 
-    static double armorScore(final ItemStack stack, final EquipmentSlot slot, final ProtectionPreference protection,
-                             final Set<String> avoidedEnchantments, final boolean antiBreak) {
+    static double armorScore(
+            final ItemStack stack,
+            final EquipmentSlot slot,
+            final ProtectionPreference protection,
+            final Set<String> avoidedEnchantments,
+            final boolean antiBreak) {
         if (stack.isEmpty() || !fitsSlot(stack, slot)) {
             return 0.0;
         }
@@ -74,8 +78,8 @@ final class EquipmentScorer {
         return enchantmentLevel(stack, enchantment) > 0;
     }
 
-    static double enchantmentScore(final ItemStack stack, final ProtectionPreference protection,
-                                   final Set<String> avoidedEnchantments) {
+    static double enchantmentScore(
+            final ItemStack stack, final ProtectionPreference protection, final Set<String> avoidedEnchantments) {
         double score = 0.0;
         score += 3.0 * enchantmentLevel(stack, protection.enchantment());
         score += enchantmentLevel(stack, Enchantments.PROTECTION);
@@ -85,7 +89,13 @@ final class EquipmentScorer {
         score += enchantmentLevel(stack, Enchantments.UNBREAKING);
         score += 2.0 * enchantmentLevel(stack, Enchantments.MENDING);
         for (var enchantment : stack.getEnchantments().entrySet()) {
-            if (matchesAny(enchantment.getKey().unwrapKey().map(key -> key.identifier().toString()).orElse(""), avoidedEnchantments)) {
+            if (matchesAny(
+                    enchantment
+                            .getKey()
+                            .unwrapKey()
+                            .map(key -> key.identifier().toString())
+                            .orElse(""),
+                    avoidedEnchantments)) {
                 score -= 100.0;
             }
         }

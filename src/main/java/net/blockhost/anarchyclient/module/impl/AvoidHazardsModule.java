@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.mixin.ClientInputAccessor;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -16,8 +17,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
-
 public final class AvoidHazardsModule extends Module {
 
     private static final Set<Block> HAZARDS = Set.of(
@@ -27,8 +26,7 @@ public final class AvoidHazardsModule extends Module {
             Blocks.CACTUS,
             Blocks.SWEET_BERRY_BUSH,
             Blocks.WITHER_ROSE,
-            Blocks.POWDER_SNOW
-    );
+            Blocks.POWDER_SNOW);
 
     /** Blocks ahead of the player to check, before adding the distance their speed carries them. */
     private static final double LOOK_AHEAD = 0.6;
@@ -52,7 +50,10 @@ public final class AvoidHazardsModule extends Module {
             .build()));
 
     public AvoidHazardsModule() {
-        super("avoid_hazards", "Avoid Hazards", ModuleCategory.MOVEMENT,
+        super(
+                "avoid_hazards",
+                "Avoid Hazards",
+                ModuleCategory.MOVEMENT,
                 "Stops your movement when you are about to walk into lava, fire, cactus, berry bushes, wither roses, "
                         + "powder snow, or the void, and optionally into unloaded chunks. You can still walk out once inside one.");
     }
@@ -84,9 +85,12 @@ public final class AvoidHazardsModule extends Module {
                 || this.unloadedChunks.value() && !client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4)
                 // An unloaded chunk reads as void air, so only loaded columns count as void; the Unloaded Chunks
                 // setting decides about the others.
-                || this.voidEdges.value() && grounded
-                && client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4) && isVoidColumn(client.level, next)) {
-            input.keyPresses = new Input(false, false, false, false, input.keyPresses.jump(), input.keyPresses.shift(), false);
+                || this.voidEdges.value()
+                        && grounded
+                        && client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4)
+                        && isVoidColumn(client.level, next)) {
+            input.keyPresses =
+                    new Input(false, false, false, false, input.keyPresses.jump(), input.keyPresses.shift(), false);
             ((ClientInputAccessor) input).anarchyclient$setMoveVector(Vec2.ZERO);
         }
     }
@@ -112,7 +116,8 @@ public final class AvoidHazardsModule extends Module {
     static boolean isVoidColumn(final BlockGetter level, final BlockPos pos) {
         for (BlockPos below = pos.below(); below.getY() >= level.getMinY(); below = below.below()) {
             BlockState state = level.getBlockState(below);
-            if (!state.getCollisionShape(level, below).isEmpty() || !state.getFluidState().isEmpty()) {
+            if (!state.getCollisionShape(level, below).isEmpty()
+                    || !state.getFluidState().isEmpty()) {
                 return false;
             }
         }

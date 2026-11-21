@@ -9,7 +9,10 @@ public final class SilentDisconnectModule extends Module {
     private static boolean active;
 
     public SilentDisconnectModule() {
-        super("silent_disconnect", "Silent Disconnect", ModuleCategory.MISC,
+        super(
+                "silent_disconnect",
+                "Silent Disconnect",
+                ModuleCategory.MISC,
                 "Skips the disconnect screen after a kick and shows the kick reason as a toast instead.");
     }
 

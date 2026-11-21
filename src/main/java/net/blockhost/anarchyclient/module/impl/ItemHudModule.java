@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public final class ItemHudModule extends HudElementModule {
 
@@ -35,10 +34,7 @@ public final class ItemHudModule extends HudElementModule {
     protected List<String> lines(final Minecraft client) {
         ItemStack main = client.player.getMainHandItem();
         ItemStack offhand = client.player.getOffhandItem();
-        return List.of(
-                "Main " + describe(main),
-                "Offhand " + describe(offhand)
-        );
+        return List.of("Main " + describe(main), "Offhand " + describe(offhand));
     }
 
     static String describe(final ItemStack stack) {
@@ -48,8 +44,12 @@ public final class ItemHudModule extends HudElementModule {
         return stack.getCount() + "x " + stack.getHoverName().getString();
     }
 
-    private static void drawSlot(final Minecraft client, final GuiGraphicsExtractor graphics, final ItemStack stack,
-                                 final int x, final int y) {
+    private static void drawSlot(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final ItemStack stack,
+            final int x,
+            final int y) {
         graphics.fill(x - 2, y - 2, x + 18, y + 18, 0x6621262D);
         if (!stack.isEmpty()) {
             graphics.item(stack, x, y);

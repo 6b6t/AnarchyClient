@@ -9,8 +9,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public final class TestInventories {
 
-    private TestInventories() {
-    }
+    private TestInventories() {}
 
     /**
      * Returns an inventory whose slots start at index 0 with the given stacks.

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.ItemListSetting;
@@ -15,9 +17,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
-
-import java.util.List;
-import java.util.Set;
 
 public final class AutoTradeModule extends Module {
 
@@ -41,7 +40,10 @@ public final class AutoTradeModule extends Module {
     private int cooldown;
 
     public AutoTradeModule() {
-        super("auto_trade", "Auto Trade", ModuleCategory.WORLD,
+        super(
+                "auto_trade",
+                "Auto Trade",
+                ModuleCategory.WORLD,
                 "While a villager's trade screen is open, repeats every trade that gives one of your chosen items "
                         + "for as long as the villager has stock and you can pay.");
     }
@@ -49,7 +51,9 @@ public final class AutoTradeModule extends Module {
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.getConnection() == null
+        if (player == null
+                || client.gameMode == null
+                || client.getConnection() == null
                 || !(player.containerMenu instanceof MerchantMenu menu)) {
             this.cooldown = 0;
             return;
@@ -84,8 +88,10 @@ public final class AutoTradeModule extends Module {
     static int nextTrade(final MerchantOffers offers, final Set<Item> wanted, final Inventory inventory) {
         for (int index = 0; index < offers.size(); index++) {
             MerchantOffer offer = offers.get(index);
-            if (!offer.isOutOfStock() && wanted.contains(offer.getResult().getItem())
-                    && canPay(inventory, offer.getCostA()) && canPay(inventory, offer.getCostB())) {
+            if (!offer.isOutOfStock()
+                    && wanted.contains(offer.getResult().getItem())
+                    && canPay(inventory, offer.getCostA())
+                    && canPay(inventory, offer.getCostB())) {
                 return index;
             }
         }

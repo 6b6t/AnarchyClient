@@ -4,8 +4,7 @@ import java.util.Map;
 
 public final class PlaceholderFormatter {
 
-    private PlaceholderFormatter() {
-    }
+    private PlaceholderFormatter() {}
 
     public static String format(final String template, final Map<String, String> values) {
         if (template == null || template.isEmpty() || values == null || values.isEmpty()) {

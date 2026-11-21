@@ -1,12 +1,12 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.Optional;
+import java.util.OptionalInt;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-
-public sealed interface InventorySlotRef permits ArmorInventorySlot, HotbarInventorySlot, MainInventorySlot, OffhandInventorySlot {
+public sealed interface InventorySlotRef
+        permits ArmorInventorySlot, HotbarInventorySlot, MainInventorySlot, OffhandInventorySlot {
 
     int menuSlot();
 

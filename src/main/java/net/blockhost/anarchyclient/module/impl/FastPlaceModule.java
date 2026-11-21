@@ -38,7 +38,10 @@ public final class FastPlaceModule extends Module {
             .build()));
 
     public FastPlaceModule() {
-        super("fast_place", "Fast Place", ModuleCategory.WORLD,
+        super(
+                "fast_place",
+                "Fast Place",
+                ModuleCategory.WORLD,
                 "Removes the right-click delay for blocks and, optionally, XP bottles and crystals. Turn off Blocks Only to remove it for every item.");
     }
 
@@ -48,7 +51,8 @@ public final class FastPlaceModule extends Module {
         if (player == null || client.gui.screen() != null || !client.options.keyUse.isDown()) {
             return;
         }
-        if (!shouldAccelerate(player.getMainHandItem(), this.blocksOnly.value(), this.xpBottles.value(), this.crystals.value())) {
+        if (!shouldAccelerate(
+                player.getMainHandItem(), this.blocksOnly.value(), this.xpBottles.value(), this.crystals.value())) {
             return;
         }
         MinecraftAccessor accessor = (MinecraftAccessor) client;
@@ -58,16 +62,14 @@ public final class FastPlaceModule extends Module {
         }
     }
 
-    static boolean shouldAccelerate(final ItemStack stack, final boolean blocksOnly, final boolean xpBottles,
-                                    final boolean crystals) {
+    static boolean shouldAccelerate(
+            final ItemStack stack, final boolean blocksOnly, final boolean xpBottles, final boolean crystals) {
         if (stack.isEmpty()) {
             return false;
         }
         if (stack.getItem() instanceof BlockItem) {
             return true;
         }
-        return !blocksOnly
-                || xpBottles && stack.is(Items.EXPERIENCE_BOTTLE)
-                || crystals && stack.is(Items.END_CRYSTAL);
+        return !blocksOnly || xpBottles && stack.is(Items.EXPERIENCE_BOTTLE) || crystals && stack.is(Items.END_CRYSTAL);
     }
 }

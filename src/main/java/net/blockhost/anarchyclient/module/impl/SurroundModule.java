@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,9 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class SurroundModule extends Module {
 
@@ -60,7 +59,10 @@ public final class SurroundModule extends Module {
     private BlockPos startBlock;
 
     public SurroundModule() {
-        super("surround", "Surround", ModuleCategory.COMBAT,
+        super(
+                "surround",
+                "Surround",
+                ModuleCategory.COMBAT,
                 "Places obsidian or ender chests around your feet, with optional floor, second layer, and wider ring.");
     }
 
@@ -80,8 +82,13 @@ public final class SurroundModule extends Module {
         if (this.center.value()) {
             centerPlayer(player);
         }
-        List<BlockPos> targets = targetPositions(player, this.extend.value(), this.floor.value(), this.doubleHeight.value());
-        int placed = CombatPlacementPlanner.placeBatch(client, this, targets, CombatPlacementPlanner.HARD_BLOCKS,
+        List<BlockPos> targets =
+                targetPositions(player, this.extend.value(), this.floor.value(), this.doubleHeight.value());
+        int placed = CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                targets,
+                CombatPlacementPlanner.HARD_BLOCKS,
                 CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(), 5.5)
                         .withSupport(this.support.value()));
         this.debugValue("positions", targets.size());
@@ -92,13 +99,13 @@ public final class SurroundModule extends Module {
         return targetPositions(base, false, true, false);
     }
 
-    static List<BlockPos> targetPositions(final LocalPlayer player, final boolean extend, final boolean floor,
-                                          final boolean doubleHeight) {
+    static List<BlockPos> targetPositions(
+            final LocalPlayer player, final boolean extend, final boolean floor, final boolean doubleHeight) {
         return targetPositions(player.blockPosition(), extend, floor, doubleHeight);
     }
 
-    static List<BlockPos> targetPositions(final BlockPos base, final boolean extend, final boolean floor,
-                                          final boolean doubleHeight) {
+    static List<BlockPos> targetPositions(
+            final BlockPos base, final boolean extend, final boolean floor, final boolean doubleHeight) {
         List<BlockPos> positions = new ArrayList<>();
         if (floor) {
             positions.add(base.below());

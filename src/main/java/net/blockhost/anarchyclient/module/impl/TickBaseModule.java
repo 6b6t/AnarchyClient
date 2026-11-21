@@ -50,7 +50,11 @@ public final class TickBaseModule extends Module {
             .build()));
 
     public TickBaseModule() {
-        super("tick_base", "Tick Base", ModuleCategory.COMBAT, "Shifts queued player actions across ticks for burst movement or combat timing.");
+        super(
+                "tick_base",
+                "Tick Base",
+                ModuleCategory.COMBAT,
+                "Shifts queued player actions across ticks for burst movement or combat timing.");
     }
 
     @Override
@@ -60,7 +64,10 @@ public final class TickBaseModule extends Module {
             return;
         }
         Player target = CombatTargets.nearestEnemy(client, this.range.value());
-        double balance = TimerBalanceService.tick(this.id(), this.maxBalance.value(), this.recovery.value(),
+        double balance = TimerBalanceService.tick(
+                this.id(),
+                this.maxBalance.value(),
+                this.recovery.value(),
                 target == null ? 1.0 : this.multiplier.value());
         this.debugValue("balance", String.format("%.1f", balance));
         if (target != null && balance > 1.0) {

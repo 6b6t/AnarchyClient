@@ -46,7 +46,10 @@ public final class TrajectoriesModule extends Module {
             .build()));
 
     public TrajectoriesModule() {
-        super("trajectories", "Trajectories", ModuleCategory.RENDER,
+        super(
+                "trajectories",
+                "Trajectories",
+                ModuleCategory.RENDER,
                 "Draws the predicted flight path of the projectile you hold and of thrown items and arrows already in the air.");
     }
 
@@ -60,28 +63,51 @@ public final class TrajectoriesModule extends Module {
         }
 
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 245, 145, this.opacity.value().intValue());
+        WorldLineRenderer.Color color =
+                new WorldLineRenderer.Color(255, 245, 145, this.opacity.value().intValue());
         // Start where the entities are drawn this frame, not at their last tick position.
         float partialTick = client.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         drawHeldTrajectory(client, player, partialTick, matrices, submits, camera, color);
-        WorldLineRenderer.Color flying = new WorldLineRenderer.Color(145, 205, 255, this.opacity.value().intValue());
+        WorldLineRenderer.Color flying =
+                new WorldLineRenderer.Color(145, 205, 255, this.opacity.value().intValue());
         for (Entity entity : client.level.entitiesForRendering()) {
             if (entity.getDeltaMovement().lengthSqr() <= 0.0025) {
                 continue;
             }
             if (entity instanceof ThrowableProjectile) {
-                drawSimulated(client, entity.getPosition(partialTick), entity.getDeltaMovement(), entity.getGravity(), true,
-                        matrices, submits, camera, flying);
+                drawSimulated(
+                        client,
+                        entity.getPosition(partialTick),
+                        entity.getDeltaMovement(),
+                        entity.getGravity(),
+                        true,
+                        matrices,
+                        submits,
+                        camera,
+                        flying);
             } else if (entity instanceof AbstractArrow) {
-                drawSimulated(client, entity.getPosition(partialTick), entity.getDeltaMovement(), entity.getGravity(), false,
-                        matrices, submits, camera, flying);
+                drawSimulated(
+                        client,
+                        entity.getPosition(partialTick),
+                        entity.getDeltaMovement(),
+                        entity.getGravity(),
+                        false,
+                        matrices,
+                        submits,
+                        camera,
+                        flying);
             }
         }
     }
 
-    private void drawHeldTrajectory(final Minecraft client, final LocalPlayer player, final float partialTick,
-                                    final PoseStack matrices,
-                                    final SubmitNodeCollector submits, final Vec3 camera, final WorldLineRenderer.Color color) {
+    private void drawHeldTrajectory(
+            final Minecraft client,
+            final LocalPlayer player,
+            final float partialTick,
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final Vec3 camera,
+            final WorldLineRenderer.Color color) {
         Ballistics ballistics = ballistics(player, player.getMainHandItem());
         if (ballistics == null) {
             ballistics = ballistics(player, player.getOffhandItem());
@@ -94,14 +120,28 @@ public final class TrajectoriesModule extends Module {
         Vec3 shooterMovement = player.getKnownMovement();
         Vec3 motion = launchMotion(player.getXRot(), player.getYRot(), ballistics.pitchOffset(), ballistics.velocity())
                 .add(shooterMovement.x, player.onGround() ? 0.0 : shooterMovement.y, shooterMovement.z);
-        drawSimulated(client, start, motion, ballistics.gravity(), ballistics.gravityBeforeMove(),
-                matrices, submits, camera, color);
+        drawSimulated(
+                client,
+                start,
+                motion,
+                ballistics.gravity(),
+                ballistics.gravityBeforeMove(),
+                matrices,
+                submits,
+                camera,
+                color);
     }
 
-    private void drawSimulated(final Minecraft client, final Vec3 start, final Vec3 initialMotion, final double gravity,
-                               final boolean gravityBeforeMove, final PoseStack matrices,
-                               final SubmitNodeCollector submits, final Vec3 camera,
-                               final WorldLineRenderer.Color color) {
+    private void drawSimulated(
+            final Minecraft client,
+            final Vec3 start,
+            final Vec3 initialMotion,
+            final double gravity,
+            final boolean gravityBeforeMove,
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final Vec3 camera,
+            final WorldLineRenderer.Color color) {
         Vec3 position = start;
         Vec3 motion = initialMotion;
         for (int step = 0; step < this.steps.value().intValue(); step++) {
@@ -109,7 +149,8 @@ public final class TrajectoriesModule extends Module {
                 motion = throwableStep(motion, gravity);
             }
             Vec3 next = position.add(motion);
-            BlockHitResult hit = client.level.clip(new ClipContext(position, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));
+            BlockHitResult hit = client.level.clip(
+                    new ClipContext(position, next, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));
             Vec3 end = hit.getType() == HitResult.Type.MISS ? next : hit.getLocation();
             WorldLineRenderer.lineNoDepth(matrices, submits, position.subtract(camera), end.subtract(camera), color);
             if (hit.getType() != HitResult.Type.MISS) {
@@ -142,8 +183,11 @@ public final class TrajectoriesModule extends Module {
 
     /** Launch values from the vanilla item and projectile classes, or null for items that shoot nothing. */
     static Ballistics ballistics(final LocalPlayer player, final ItemStack stack) {
-        if (stack.is(Items.ENDER_PEARL) || stack.is(Items.SNOWBALL) || stack.is(Items.EGG)
-                || stack.is(Items.BLUE_EGG) || stack.is(Items.BROWN_EGG)) {
+        if (stack.is(Items.ENDER_PEARL)
+                || stack.is(Items.SNOWBALL)
+                || stack.is(Items.EGG)
+                || stack.is(Items.BLUE_EGG)
+                || stack.is(Items.BROWN_EGG)) {
             return new Ballistics(1.5, 0.03, 0.0F, true);
         }
         if (stack.is(Items.SPLASH_POTION) || stack.is(Items.LINGERING_POTION)) {
@@ -163,12 +207,12 @@ public final class TrajectoriesModule extends Module {
             return new Ballistics(power * 3.0, 0.05, 0.0F, false);
         }
         if (stack.is(Items.CROSSBOW) && CrossbowItem.isCharged(stack)) {
-            ChargedProjectiles charged = stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+            ChargedProjectiles charged =
+                    stack.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
             return charged.contains(Items.FIREWORK_ROCKET) ? null : new Ballistics(3.15, 0.05, 0.0F, false);
         }
         return null;
     }
 
-    record Ballistics(double velocity, double gravity, float pitchOffset, boolean gravityBeforeMove) {
-    }
+    record Ballistics(double velocity, double gravity, float pitchOffset, boolean gravityBeforeMove) {}
 }

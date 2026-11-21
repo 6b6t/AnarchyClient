@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.test;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -13,9 +15,6 @@ import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.tags.TagLoader;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Bootstraps the vanilla registries once per test JVM.
@@ -38,15 +37,18 @@ public final class MinecraftBootstrapExtension implements BeforeAllCallback {
             // Fabric API delays the built-in registry freeze until the client starts and then calls this.
             BuiltInRegistries.bootStrap();
             bindVanillaTags();
-            BuiltInRegistries.DATA_COMPONENT_INITIALIZERS.build(VanillaRegistries.createWorldLookup())
+            BuiltInRegistries.DATA_COMPONENT_INITIALIZERS
+                    .build(VanillaRegistries.createWorldLookup())
                     .forEach(DataComponentInitializers.PendingComponents::apply);
         }
     }
 
     private static void bindVanillaTags() {
         try (MultiPackResourceManager resources = new MultiPackResourceManager(
-                PackType.SERVER_DATA, List.of(ServerPacksSource.createVanillaPackSource().fullResources()))) {
-            TagLoader.loadTagsForExistingRegistries(resources, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY))
+                PackType.SERVER_DATA,
+                List.of(ServerPacksSource.createVanillaPackSource().fullResources()))) {
+            TagLoader.loadTagsForExistingRegistries(
+                            resources, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY))
                     .forEach(Registry.PendingTags::apply);
         }
     }

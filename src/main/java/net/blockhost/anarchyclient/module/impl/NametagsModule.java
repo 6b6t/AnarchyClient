@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -15,9 +17,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Comparator;
-import java.util.List;
 
 public final class NametagsModule extends Module {
 
@@ -55,7 +54,10 @@ public final class NametagsModule extends Module {
             .build()));
 
     public NametagsModule() {
-        super("nametags", "Nametags", ModuleCategory.RENDER,
+        super(
+                "nametags",
+                "Nametags",
+                ModuleCategory.RENDER,
                 "Shows the name, distance, and health of nearby players above their heads or in a list on screen.");
         this.maxRows.visibleWhen(() -> !this.aboveHead.value());
         this.corner.visibleWhen(() -> !this.aboveHead.value());
@@ -96,10 +98,15 @@ public final class NametagsModule extends Module {
         }
     }
 
-    private void renderAboveHead(final Minecraft client, final GuiGraphicsExtractor graphics, final LivingEntity entity,
-                                 final float partialTick) {
+    private void renderAboveHead(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final LivingEntity entity,
+            final float partialTick) {
         double x = Mth.lerp(partialTick, entity.xo, entity.getX());
-        double y = Mth.lerp(partialTick, entity.yo, entity.getY()) + entity.getBoundingBox().getYsize() + 0.5;
+        double y = Mth.lerp(partialTick, entity.yo, entity.getY())
+                + entity.getBoundingBox().getYsize()
+                + 0.5;
         double z = Mth.lerp(partialTick, entity.zo, entity.getZ());
         Vec3 projected = client.gameRenderer.projectPointToScreen(new Vec3(x, y, z));
         if (projected.z > 1.0) {
@@ -116,6 +123,8 @@ public final class NametagsModule extends Module {
 
     private String line(final Player player, final LivingEntity entity) {
         String team = entity.getTeam() == null ? "" : "[" + entity.getTeam().getName() + "] ";
-        return "%s%s %.0fm %.1fh".formatted(team, entity.getScoreboardName(), Math.sqrt(entity.distanceToSqr(player)), entity.getHealth());
+        return "%s%s %.0fm %.1fh"
+                .formatted(
+                        team, entity.getScoreboardName(), Math.sqrt(entity.distanceToSqr(player)), entity.getHealth());
     }
 }

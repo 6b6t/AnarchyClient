@@ -36,8 +36,7 @@ public record SettingColor(int red, int green, int blue, int alpha) {
                         Integer.parseInt(parts[0]),
                         Integer.parseInt(parts[1]),
                         Integer.parseInt(parts[2]),
-                        parts.length == 4 ? Integer.parseInt(parts[3]) : 255
-                );
+                        parts.length == 4 ? Integer.parseInt(parts[3]) : 255);
             } catch (NumberFormatException exception) {
                 throw new IllegalArgumentException("Expected numeric RGBA channels.", exception);
             }

@@ -28,15 +28,22 @@ public final class GlideModule extends Module {
             .build()));
 
     public GlideModule() {
-        super("glide", "Glide", ModuleCategory.MOVEMENT,
+        super(
+                "glide",
+                "Glide",
+                ModuleCategory.MOVEMENT,
                 "Caps your fall speed in the air so you drift down slowly, optionally only above open space.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || player.onGround() || player.isInWater() || player.isInLava()
-                || player.onClimbable() || player.isFallFlying()) {
+        if (player == null
+                || player.onGround()
+                || player.isInWater()
+                || player.isInLava()
+                || player.onClimbable()
+                || player.isFallFlying()) {
             return;
         }
         Vec3 velocity = player.getDeltaMovement();

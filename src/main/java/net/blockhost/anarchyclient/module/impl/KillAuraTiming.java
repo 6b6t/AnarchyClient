@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.client.player.LocalPlayer;
-
 import java.util.Random;
+import net.minecraft.client.player.LocalPlayer;
 
 final class KillAuraTiming {
 

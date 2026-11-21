@@ -1,9 +1,8 @@
 package net.blockhost.anarchyclient.setting;
 
+import java.util.List;
 import net.minecraft.core.particles.ParticleType;
 import org.immutables.value.Value;
-
-import java.util.List;
 
 @SettingStyle
 @Value.Immutable

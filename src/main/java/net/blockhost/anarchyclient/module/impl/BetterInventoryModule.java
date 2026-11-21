@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -8,8 +9,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
 
 public final class BetterInventoryModule extends Module {
 
@@ -25,7 +24,10 @@ public final class BetterInventoryModule extends Module {
             .build()));
 
     public BetterInventoryModule() {
-        super("better_inventory", "Better Inventory", ModuleCategory.PLAYER,
+        super(
+                "better_inventory",
+                "Better Inventory",
+                ModuleCategory.PLAYER,
                 "Adds stack size and remaining durability percentage lines to item tooltips.");
     }
 
@@ -35,13 +37,19 @@ public final class BetterInventoryModule extends Module {
             return;
         }
         if (this.stackLimits.value() && stack.getMaxStackSize() > 1) {
-            lines.add(Translations.component("anarchyclient.message.better_inventory.stack", "Stack: %s / %s", stack.getCount(), stack.getMaxStackSize())
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_inventory.stack",
+                            "Stack: %s / %s",
+                            stack.getCount(),
+                            stack.getMaxStackSize())
                     .withStyle(ChatFormatting.GRAY));
         }
         if (this.damagePercent.value() && stack.isDamageableItem() && stack.getMaxDamage() > 0) {
             int remaining = Math.max(0, stack.getMaxDamage() - stack.getDamageValue());
             int percent = Math.round(remaining * 100.0F / stack.getMaxDamage());
-            lines.add(Translations.component("anarchyclient.message.better_inventory.condition", "Condition: %s%%", percent).withStyle(ChatFormatting.GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_inventory.condition", "Condition: %s%%", percent)
+                    .withStyle(ChatFormatting.GRAY));
         }
     }
 

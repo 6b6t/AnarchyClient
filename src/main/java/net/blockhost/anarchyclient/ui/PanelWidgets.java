@@ -1,6 +1,21 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.CARD;
+import static net.blockhost.anarchyclient.ui.PanelStyle.CARD_HOVER;
+import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
+import static net.blockhost.anarchyclient.ui.PanelStyle.FAINT;
+import static net.blockhost.anarchyclient.ui.PanelStyle.FIELD;
+import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BOX;
+import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_TEXT_Y_FROM_CENTER;
+import static net.blockhost.anarchyclient.ui.PanelStyle.LUCIDE_FONT;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
+
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -34,22 +49,6 @@ import net.lenni0451.rivet.text.model.TextSection;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.CARD;
-import static net.blockhost.anarchyclient.ui.PanelStyle.CARD_HOVER;
-import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
-import static net.blockhost.anarchyclient.ui.PanelStyle.FAINT;
-import static net.blockhost.anarchyclient.ui.PanelStyle.FIELD;
-import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BOX;
-import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_TEXT_Y_FROM_CENTER;
-import static net.blockhost.anarchyclient.ui.PanelStyle.LUCIDE_FONT;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
-
 /**
  * Factory and drawing helpers shared by the client menu components.
  */
@@ -59,7 +58,9 @@ final class PanelWidgets {
         if (scancode == InputConstants.UNKNOWN.getValue()) {
             return Translations.text("anarchyclient.ui.none", "None");
         }
-        return RivetInputMapper.fromScancode(scancode).map(Key::name).orElse(Translations.format("anarchyclient.ui.unknown_key", "Key %s", scancode));
+        return RivetInputMapper.fromScancode(scancode)
+                .map(Key::name)
+                .orElse(Translations.format("anarchyclient.ui.unknown_key", "Key %s", scancode));
     }
 
     static List<SettingGroup> visibleSettingGroups(final Module module) {
@@ -73,7 +74,8 @@ final class PanelWidgets {
     }
 
     static boolean showGroupHeaders(final List<SettingGroup> groups) {
-        return groups.size() > 1 || (!groups.isEmpty() && !"general".equals(groups.getFirst().id()));
+        return groups.size() > 1
+                || (!groups.isEmpty() && !"general".equals(groups.getFirst().id()));
     }
 
     static Component settingRow(final Setting<?> setting, final Runnable rebuild, final Runnable save) {
@@ -103,12 +105,18 @@ final class PanelWidgets {
         if (textWidth(component, ellipsis, color) > maxWidth) {
             return "";
         }
-        return value.substring(0, fitLength(component, value, color, maxWidth, ellipsis)).stripTrailing() + ellipsis;
+        return value.substring(0, fitLength(component, value, color, maxWidth, ellipsis))
+                        .stripTrailing()
+                + ellipsis;
     }
 
     /** Longest prefix of {@code value} that, with {@code suffix} appended, still fits {@code maxWidth}. */
-    static int fitLength(final Component component, final String value, final Color color,
-                         final float maxWidth, final String suffix) {
+    static int fitLength(
+            final Component component,
+            final String value,
+            final Color color,
+            final float maxWidth,
+            final String suffix) {
         int low = 0;
         int high = value.length();
         while (low < high) {
@@ -126,8 +134,12 @@ final class PanelWidgets {
     /**
      * Greedy word wrap: break at spaces while lines fit, ellipsize only the final allowed line.
      */
-    static List<String> wrapText(final Component component, final String value, final Color color,
-                                 final float maxWidth, final int maxLines) {
+    static List<String> wrapText(
+            final Component component,
+            final String value,
+            final Color color,
+            final float maxWidth,
+            final int maxLines) {
         if (maxWidth <= 0F || value.isBlank()) {
             return List.of();
         }
@@ -154,7 +166,13 @@ final class PanelWidgets {
     }
 
     static float textWidth(final Component component, final String value, final Color color) {
-        return component.rivet().backend().font().shapeText(value, color).logicalBounds().width();
+        return component
+                .rivet()
+                .backend()
+                .font()
+                .shapeText(value, color)
+                .logicalBounds()
+                .width();
     }
 
     static GridCell fillCell(final int column, final int row) {
@@ -162,23 +180,38 @@ final class PanelWidgets {
     }
 
     static GridCell fillCell(final int column, final int row, final int columnSpan, final int rowSpan) {
-        return cell(column, row, columnSpan, rowSpan, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+        return cell(
+                column, row, columnSpan, rowSpan, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
     }
 
-    static GridCell fixedCell(final int column, final int row, final float width, final float height,
-                              final GridAnchor anchor) {
+    static GridCell fixedCell(
+            final int column, final int row, final float width, final float height, final GridAnchor anchor) {
         return cell(column, row, 1, 1, 0F, 0F, anchor, GridFill.NONE, Padding.EMPTY, width, height);
     }
 
-    static GridCell fixedCell(final int column, final int row, final int columnSpan, final int rowSpan,
-                              final float width, final float height, final GridAnchor anchor) {
+    static GridCell fixedCell(
+            final int column,
+            final int row,
+            final int columnSpan,
+            final int rowSpan,
+            final float width,
+            final float height,
+            final GridAnchor anchor) {
         return cell(column, row, columnSpan, rowSpan, 0F, 0F, anchor, GridFill.NONE, Padding.EMPTY, width, height);
     }
 
-    static GridCell cell(final int column, final int row, final int columnSpan, final int rowSpan,
-                         final float weightX, final float weightY, final GridAnchor anchor,
-                         final GridFill fill, final Padding padding,
-                         final Float width, final Float height) {
+    static GridCell cell(
+            final int column,
+            final int row,
+            final int columnSpan,
+            final int rowSpan,
+            final float weightX,
+            final float weightY,
+            final GridAnchor anchor,
+            final GridFill fill,
+            final Padding padding,
+            final Float width,
+            final Float height) {
         // Rivet's GridLayout uses child ideal sizes as row/column minimums. Flexible cells
         // need explicit zero bases so text and scroll content cannot push fixed UI outside.
         Float effectiveWidth = width;
@@ -192,8 +225,7 @@ final class PanelWidgets {
         return new GridCell(
                 new GridOptions(column, row, columnSpan, rowSpan, weightX, weightY, anchor, fill, padding),
                 effectiveWidth,
-                effectiveHeight
-        );
+                effectiveHeight);
     }
 
     static void place(final Component component, final GridCell cell) {
@@ -224,7 +256,8 @@ final class PanelWidgets {
     }
 
     static FormattedLabel label(final String text, final Color color) {
-        FormattedLabel label = new FormattedLabel(new TextLine(new TextSection(text, TextFormat.DEFAULT.withColor(color))));
+        FormattedLabel label =
+                new FormattedLabel(new TextLine(new TextSection(text, TextFormat.DEFAULT.withColor(color))));
         label.horizontalOrigin(TextOrigin.Horizontal.LOGICAL_LEFT);
         label.verticalOrigin(TextOrigin.Vertical.LOGICAL_CENTER);
         label.capabilities().all(false);
@@ -284,9 +317,15 @@ final class PanelWidgets {
         return slider;
     }
 
-    static void drawText(final Component component, final Renderer renderer, final String text, final Color color,
-                         final float x, final float y, final TextOrigin.Horizontal horizontal,
-                         final TextOrigin.Vertical vertical) {
+    static void drawText(
+            final Component component,
+            final Renderer renderer,
+            final String text,
+            final Color color,
+            final float x,
+            final float y,
+            final TextOrigin.Horizontal horizontal,
+            final TextOrigin.Vertical vertical) {
         renderer.text(component.rivet().backend().font().shapeText(text, color), x, y, horizontal, vertical);
     }
 
@@ -295,32 +334,33 @@ final class PanelWidgets {
      * using the measured glyph width; the Y axis uses the single {@link #ICON_TEXT_Y_FROM_CENTER}
      * calibration so every icon sits the same way instead of each call site guessing.
      */
-    static void drawIcon(final Renderer renderer, final String icon, final float centerX, final float centerY, final Color color) {
+    static void drawIcon(
+            final Renderer renderer, final String icon, final float centerX, final float centerY, final Color color) {
         String glyph = LucideIcons.glyph(icon);
         if (glyph.isEmpty()) {
             return;
         }
-        net.minecraft.network.chat.Component component = net.minecraft.network.chat.Component.literal(glyph)
-                .withStyle(style -> style.withFont(LUCIDE_FONT));
+        net.minecraft.network.chat.Component component =
+                net.minecraft.network.chat.Component.literal(glyph).withStyle(style -> style.withFont(LUCIDE_FONT));
         float width = Minecraft.getInstance().font.width(component);
         float left = centerX - width / 2F;
         float top = centerY - ICON_TEXT_Y_FROM_CENTER;
         renderer.custom(new Blaze3DRenderCommand(
                 (GuiGraphicsExtractor graphics) -> graphics.text(
-                        Minecraft.getInstance().font,
-                        component,
-                        Math.round(left),
-                        Math.round(top),
-                        argb(color),
-                        false
-                ),
-                new Rectangle(0F, 0F, ICON_BOX, ICON_BOX)
-        ));
+                        Minecraft.getInstance().font, component, Math.round(left), Math.round(top), argb(color), false),
+                new Rectangle(0F, 0F, ICON_BOX, ICON_BOX)));
     }
 
-    static void drawFittedText(final Component component, final Renderer renderer, final String text, final Color color,
-                               final float x, final float y, final float maxWidth,
-                               final TextOrigin.Horizontal horizontal, final TextOrigin.Vertical vertical) {
+    static void drawFittedText(
+            final Component component,
+            final Renderer renderer,
+            final String text,
+            final Color color,
+            final float x,
+            final float y,
+            final float maxWidth,
+            final TextOrigin.Horizontal horizontal,
+            final TextOrigin.Vertical vertical) {
         String fitted = fitText(component, text, color, maxWidth);
         if (!fitted.isEmpty()) {
             drawText(component, renderer, fitted, color, x, y, horizontal, vertical);
@@ -361,8 +401,8 @@ final class PanelWidgets {
         return iconButton(icon, color, action, () -> true);
     }
 
-    static IconButton iconButton(final String icon, final Supplier<Color> color, final Runnable action,
-                                 final BooleanSupplier visible) {
+    static IconButton iconButton(
+            final String icon, final Supplier<Color> color, final Runnable action, final BooleanSupplier visible) {
         return new IconButton(() -> icon, color, action, visible);
     }
 
@@ -402,6 +442,5 @@ final class PanelWidgets {
                 | (color.getBlue() & 0xFF);
     }
 
-    private PanelWidgets() {
-    }
+    private PanelWidgets() {}
 }

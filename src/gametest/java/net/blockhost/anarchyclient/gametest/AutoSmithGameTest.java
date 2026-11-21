@@ -23,17 +23,23 @@ public final class AutoSmithGameTest implements GameScenario {
             arena.give("netherite_upgrade_smithing_template");
             arena.give("netherite_ingot");
             context.waitTicks(5);
-            context.runOnClient(client -> client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
-                    new BlockHitResult(Vec3.atCenterOf(table).relative(Direction.UP, 0.5), Direction.UP, table, false)));
+            context.runOnClient(client -> client.gameMode.useItemOn(
+                    client.player,
+                    InteractionHand.MAIN_HAND,
+                    new BlockHitResult(
+                            Vec3.atCenterOf(table).relative(Direction.UP, 0.5), Direction.UP, table, false)));
             context.waitForScreen(SmithingScreen.class);
 
             GameTestSupport.enable(context, "auto_smith", true);
             try {
-                arena.server().waitFor(server -> {
-                    var inventory = arena.serverPlayer(server).getInventory();
-                    return inventory.contains(stack -> stack.is(Items.NETHERITE_SWORD))
-                            && !inventory.contains(stack -> stack.is(Items.DIAMOND_SWORD));
-                }, 100);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    var inventory = arena.serverPlayer(server).getInventory();
+                                    return inventory.contains(stack -> stack.is(Items.NETHERITE_SWORD))
+                                            && !inventory.contains(stack -> stack.is(Items.DIAMOND_SWORD));
+                                },
+                                100);
             } finally {
                 context.takeScreenshot("auto_smith_result");
                 GameTestSupport.enable(context, "auto_smith", false);

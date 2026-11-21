@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -12,8 +13,6 @@ import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
-
-import java.util.OptionalInt;
 
 public final class AutoShearerModule extends Module {
 
@@ -36,7 +35,10 @@ public final class AutoShearerModule extends Module {
     private int cooldownTicks;
 
     public AutoShearerModule() {
-        super("auto_shearer", "Auto Shearer", ModuleCategory.WORLD,
+        super(
+                "auto_shearer",
+                "Auto Shearer",
+                ModuleCategory.WORLD,
                 "Shears the nearest sheep or other shearable mob in range with shears from the hotbar.");
     }
 
@@ -59,7 +61,8 @@ public final class AutoShearerModule extends Module {
             return;
         }
         InventoryActions.selectHotbarSlot(player, shears.orElseThrow());
-        InteractionResult result = client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+        InteractionResult result =
+                client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.cooldownTicks = this.delay.value().intValue();

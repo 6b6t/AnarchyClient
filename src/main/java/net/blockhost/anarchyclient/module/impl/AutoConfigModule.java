@@ -42,7 +42,8 @@ public final class AutoConfigModule extends Module {
     private final StringSetting riskyModules = this.setting(StringSetting.from(StringSetting.builder()
             .id("risky_modules")
             .name("Risky")
-            .defaultValue("kill_aura, auto_clicker, velocity, glide, boost, blink, fake_lag, ping_spoof, scaffold, packet_mine")
+            .defaultValue(
+                    "kill_aura, auto_clicker, velocity, glide, boost, blink, fake_lag, ping_spoof, scaffold, packet_mine")
             .build()));
     private final NumberSetting timeout = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("timeout")
@@ -56,7 +57,11 @@ public final class AutoConfigModule extends Module {
     private int pendingTicks;
 
     public AutoConfigModule(final ModuleManager modules) {
-        super("auto_config", "Auto Config", ModuleCategory.MISC, "Applies safer module presets after server detection and can disable risky modules when checks look unstable.");
+        super(
+                "auto_config",
+                "Auto Config",
+                ModuleCategory.MISC,
+                "Applies safer module presets after server detection and can disable risky modules when checks look unstable.");
         this.modules = modules;
         this.enabled(true);
     }
@@ -99,14 +104,21 @@ public final class AutoConfigModule extends Module {
         }
         if (ServerProfileStore.find(domain).isEmpty()) {
             if (this.notifyMissing.value() && client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.auto_config.no_server_profile_for", "No server profile for %s.", domain));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.auto_config.no_server_profile_for",
+                        "No server profile for %s.",
+                        domain));
             }
             return;
         }
         int changed = ServerProfileStore.apply(this.modules, domain);
         AnarchyClient.CONFIG.save();
         if (client.player != null) {
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.auto_config.applied_server_profile_for_changes", "Applied server profile for %s (%s changes).", domain, changed));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.auto_config.applied_server_profile_for_changes",
+                    "Applied server profile for %s (%s changes).",
+                    domain,
+                    changed));
         }
     }
 

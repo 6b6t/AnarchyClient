@@ -23,7 +23,10 @@ public final class RoboWalkModule extends Module {
             .build()));
 
     public RoboWalkModule() {
-        super("robo_walk", "Robo Walk", ModuleCategory.MOVEMENT,
+        super(
+                "robo_walk",
+                "Robo Walk",
+                ModuleCategory.MOVEMENT,
                 "Rounds sent player and vehicle positions to a fixed grid on the X and Z axes.");
     }
 
@@ -38,7 +41,10 @@ public final class RoboWalkModule extends Module {
             double y = move.getY(client.player.getY());
             double z = snap(move.getZ(client.player.getZ()), gridValue);
             if (move.hasRotation()) {
-                return new ServerboundMovePlayerPacket.PosRot(x, y, z,
+                return new ServerboundMovePlayerPacket.PosRot(
+                        x,
+                        y,
+                        z,
                         move.getYRot(client.player.getYRot()),
                         move.getXRot(client.player.getXRot()),
                         move.isOnGround(),
@@ -49,10 +55,11 @@ public final class RoboWalkModule extends Module {
         if (packet instanceof ServerboundMoveVehiclePacket vehicle) {
             Vec3 pos = vehicle.movingTo().position();
             return new ServerboundMoveVehiclePacket(
-                    PositionAndRotation.of(new Vec3(snap(pos.x, gridValue), pos.y, snap(pos.z, gridValue)),
-                            vehicle.movingTo().yRot(), vehicle.movingTo().xRot()),
-                    vehicle.onGround()
-            );
+                    PositionAndRotation.of(
+                            new Vec3(snap(pos.x, gridValue), pos.y, snap(pos.z, gridValue)),
+                            vehicle.movingTo().yRot(),
+                            vehicle.movingTo().xRot()),
+                    vehicle.onGround());
         }
         return packet;
     }

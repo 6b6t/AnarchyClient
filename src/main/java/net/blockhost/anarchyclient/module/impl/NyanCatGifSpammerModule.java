@@ -1,21 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.ImageInputStream;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -24,13 +9,27 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.ImageInputStream;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.blockhost.anarchyclient.ui.AnarchyClientScreen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.resources.Identifier;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 public final class NyanCatGifSpammerModule extends Module {
 
-    private static final Identifier GIF_RESOURCE = Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "textures/nyan_cat.gif");
+    private static final Identifier GIF_RESOURCE =
+            Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "textures/nyan_cat.gif");
     private static final int TICKS_PER_SECOND = 20;
 
     private final NumberSetting minIntervalSeconds = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -73,7 +72,11 @@ public final class NyanCatGifSpammerModule extends Module {
     private Animation animation;
 
     public NyanCatGifSpammerModule() {
-        super("nyan_cat_gif_spammer", "Nyan Cat GIF Spammer", ModuleCategory.FUN, "Shows an animated Nyan Cat GIF at a random spot on your screen at random intervals. Only you can see it.");
+        super(
+                "nyan_cat_gif_spammer",
+                "Nyan Cat GIF Spammer",
+                ModuleCategory.FUN,
+                "Shows an animated Nyan Cat GIF at a random spot on your screen at random intervals. Only you can see it.");
     }
 
     @Override
@@ -118,7 +121,8 @@ public final class NyanCatGifSpammerModule extends Module {
         }
 
         Frame frame = loadedAnimation.currentFrame(System.currentTimeMillis());
-        graphics.blit(RenderPipelines.GUI_TEXTURED, frame.texture(), this.x, this.y, 0, 0, width, height, width, height);
+        graphics.blit(
+                RenderPipelines.GUI_TEXTURED, frame.texture(), this.x, this.y, 0, 0, width, height, width, height);
     }
 
     @Override
@@ -148,7 +152,8 @@ public final class NyanCatGifSpammerModule extends Module {
 
     private void scheduleNext() {
         this.activeTicks = 0;
-        this.cooldownTicks = randomIntervalTicks(this.minIntervalSeconds.value(), this.maxIntervalSeconds.value(), this.random);
+        this.cooldownTicks =
+                randomIntervalTicks(this.minIntervalSeconds.value(), this.maxIntervalSeconds.value(), this.random);
         this.x = -1;
         this.y = -1;
     }
@@ -180,7 +185,7 @@ public final class NyanCatGifSpammerModule extends Module {
 
     private static Animation loadAnimation(final Minecraft client) {
         try (InputStream stream = client.getResourceManager().open(GIF_RESOURCE);
-             ImageInputStream imageStream = ImageIO.createImageInputStream(stream)) {
+                ImageInputStream imageStream = ImageIO.createImageInputStream(stream)) {
             ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
             reader.setInput(imageStream, false);
             List<Frame> frames = new ArrayList<>();
@@ -198,7 +203,8 @@ public final class NyanCatGifSpammerModule extends Module {
 
                 NativeImage nativeImage = toNativeImage(image);
                 int frameIndex = index;
-                Identifier textureId = Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "nyan_cat/frame_" + frameIndex);
+                Identifier textureId =
+                        Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "nyan_cat/frame_" + frameIndex);
                 DynamicTexture texture = new DynamicTexture(() -> "AnarchyClient Nyan Cat " + frameIndex, nativeImage);
                 client.getTextureManager().register(textureId, texture);
                 frames.add(new Frame(textureId, Math.max(20, delayMillis)));
@@ -230,9 +236,7 @@ public final class NyanCatGifSpammerModule extends Module {
     }
 
     private static int argbToAbgr(final int argb) {
-        return argb & 0xFF00FF00
-                | (argb & 0x00FF0000) >> 16
-                | (argb & 0x000000FF) << 16;
+        return argb & 0xFF00FF00 | (argb & 0x00FF0000) >> 16 | (argb & 0x000000FF) << 16;
     }
 
     private static int frameDelayMillis(final IIOMetadata metadata) {
@@ -266,8 +270,7 @@ public final class NyanCatGifSpammerModule extends Module {
         return null;
     }
 
-    private record Frame(Identifier texture, int durationMillis) {
-    }
+    private record Frame(Identifier texture, int durationMillis) {}
 
     private record Animation(List<Frame> frames, int width, int height, int totalDurationMillis) {
 
@@ -285,5 +288,4 @@ public final class NyanCatGifSpammerModule extends Module {
             return this.frames.getLast();
         }
     }
-
 }

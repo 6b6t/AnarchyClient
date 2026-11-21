@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -13,28 +14,23 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 
-import java.util.Locale;
-
 public final class CustomPacketsModule extends Module {
 
-    private final BooleanSetting chat = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("chat")
-            .name("Chat")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting chat = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("chat").name("Chat").defaultValue(true).build()));
     private final BooleanSetting logger = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("logger")
             .name("Logger")
             .defaultValue(true)
             .build()));
-    private final StringSetting filter = this.setting(StringSetting.from(StringSetting.builder()
-            .id("filter")
-            .name("Filter")
-            .defaultValue("")
-            .build()));
+    private final StringSetting filter = this.setting(StringSetting.from(
+            StringSetting.builder().id("filter").name("Filter").defaultValue("").build()));
 
     public CustomPacketsModule() {
-        super("custom_packets", "Custom Packets", ModuleCategory.MISC,
+        super(
+                "custom_packets",
+                "Custom Packets",
+                ModuleCategory.MISC,
                 "Reports custom payload packets from the server, such as the server brand, in chat and the log with an optional filter.");
     }
 
@@ -53,7 +49,8 @@ public final class CustomPacketsModule extends Module {
         if (this.chat.value()) {
             MainThread.run(() -> {
                 if (client.player != null) {
-                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.custom_packets.custom_payload", "Custom payload: %s", description));
+                    client.player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.custom_packets.custom_payload", "Custom payload: %s", description));
                 }
             });
         }

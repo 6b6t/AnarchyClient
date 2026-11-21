@@ -3,6 +3,17 @@ package net.blockhost.anarchyclient.server;
 import com.google.common.net.HostAndPort;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
@@ -18,18 +29,6 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 /**
  * Tracks what the client learns about the current server.
@@ -58,14 +57,14 @@ public final class ServerObserver {
             "themis",
             "verus",
             "vulcan",
-            "watchdog"
-    );
+            "watchdog");
 
     private static String serverAddress = "";
     private static String serverName = "";
     private static String rootDomain = "";
     private static ServerType serverType = ServerType.UNKNOWN;
-    private static final TreeSet<Identifier> payloadChannels = new TreeSet<>(Comparator.comparing(Identifier::toString));
+    private static final TreeSet<Identifier> payloadChannels =
+            new TreeSet<>(Comparator.comparing(Identifier::toString));
     private static final ArrayDeque<Integer> transactionIds = new ArrayDeque<>();
     private static boolean capturingTransactions;
     private static String antiCheat = "";
@@ -77,6 +76,7 @@ public final class ServerObserver {
     private static long pluginChatDeadlineMillis;
     /** How long to keep reading {@code /plugins} lines after the first one arrives. */
     private static final long PLUGIN_CHAT_GRACE_MILLIS = 500L;
+
     private static Set<String> plugins = Set.of();
     private static int pluginScanSequence;
     private static int flagSequence;
@@ -86,8 +86,7 @@ public final class ServerObserver {
     private static int tabRemoves;
     private static int payloadSequence;
 
-    private ServerObserver() {
-    }
+    private ServerObserver() {}
 
     public static synchronized void observeTick(final Minecraft client) {
         ServerData server = client == null ? null : client.getCurrentServer();
@@ -128,7 +127,8 @@ public final class ServerObserver {
             rememberTransactionId(ping.getId());
             if (transactionIds.size() >= REQUIRED_TRANSACTION_IDS) {
                 capturingTransactions = false;
-                antiCheat = guessAntiCheat(serverAddress, List.copyOf(transactionIds)).orElse("Unknown");
+                antiCheat = guessAntiCheat(serverAddress, List.copyOf(transactionIds))
+                        .orElse("Unknown");
             }
             return;
         }
@@ -143,7 +143,9 @@ public final class ServerObserver {
             return;
         }
         if (packet instanceof ClientboundSetEntityMotionPacket motion) {
-            if (client.player != null && motion.id() == client.player.getId() && motion.movement().lengthSqr() > 0.0001) {
+            if (client.player != null
+                    && motion.id() == client.player.getId()
+                    && motion.movement().lengthSqr() > 0.0001) {
                 velocityCorrections++;
             }
             return;
@@ -193,10 +195,11 @@ public final class ServerObserver {
         return expectedSuggestionId >= 0 || pluginChatDeadlineMillis > System.currentTimeMillis();
     }
 
-    public static synchronized void recordFlag(final FlagReason reason, final Vec3 position, final float yaw, final float pitch,
-                                  final String detail) {
+    public static synchronized void recordFlag(
+            final FlagReason reason, final Vec3 position, final float yaw, final float pitch, final String detail) {
         flagSequence++;
-        lastFlag = new FlagInfo(flagSequence, reason, position, yaw, pitch, normalizeNullable(detail), System.currentTimeMillis());
+        lastFlag = new FlagInfo(
+                flagSequence, reason, position, yaw, pitch, normalizeNullable(detail), System.currentTimeMillis());
     }
 
     public static synchronized int flagSequence() {
@@ -224,8 +227,7 @@ public final class ServerObserver {
                 velocityCorrections,
                 tabAdds,
                 tabRemoves,
-                payloadSequence
-        );
+                payloadSequence);
     }
 
     public static synchronized Fingerprint fingerprint() {
@@ -235,9 +237,10 @@ public final class ServerObserver {
                 snapshot.antiCheat().orElse(""),
                 snapshot.environmentLabels(),
                 snapshot.plugins(),
-                snapshot.payloadChannels().stream().map(Identifier::toString).collect(Collectors.toCollection(LinkedHashSet::new)),
-                snapshot.safetyScore()
-        );
+                snapshot.payloadChannels().stream()
+                        .map(Identifier::toString)
+                        .collect(Collectors.toCollection(LinkedHashSet::new)),
+                snapshot.safetyScore());
     }
 
     public static Set<String> knownAntiCheatPlugins() {
@@ -264,12 +267,13 @@ public final class ServerObserver {
         int first = ids.getFirst();
         boolean constantDiff = diffs.stream().allMatch(diff -> diff.equals(diffs.getFirst()));
         if (constantDiff && diffs.getFirst() == 1) {
-            return Optional.of(switch (rangeCode(first)) {
-                case "vulcan" -> "Vulcan";
-                case "matrix" -> "Matrix";
-                case "grizzly" -> "Grizzly";
-                default -> "Verus";
-            });
+            return Optional.of(
+                    switch (rangeCode(first)) {
+                        case "vulcan" -> "Vulcan";
+                        case "matrix" -> "Matrix";
+                        case "grizzly" -> "Grizzly";
+                        default -> "Verus";
+                    });
         }
         if (constantDiff && diffs.getFirst() == -1) {
             if (first >= -8287 && first <= -8280) {
@@ -286,13 +290,20 @@ public final class ServerObserver {
         if (ids.get(0).equals(ids.get(1)) && increasingByOne(ids, 2)) {
             return Optional.of("Verus");
         }
-        if (diffs.size() >= 2 && diffs.get(0) >= 100 && diffs.get(1) == -1 && diffs.subList(2, diffs.size()).stream().allMatch(diff -> diff == -1)) {
+        if (diffs.size() >= 2
+                && diffs.get(0) >= 100
+                && diffs.get(1) == -1
+                && diffs.subList(2, diffs.size()).stream().allMatch(diff -> diff == -1)) {
             return Optional.of("Polar");
         }
         if (first < -3000 && ids.contains(0)) {
             return Optional.of("Intave");
         }
-        if (ids.size() >= 3 && ids.get(0) == -30767 && ids.get(1) == -30766 && ids.get(2) == -25767 && increasingByOne(ids, 3)) {
+        if (ids.size() >= 3
+                && ids.get(0) == -30767
+                && ids.get(1) == -30766
+                && ids.get(2) == -25767
+                && increasingByOne(ids, 3)) {
             return Optional.of("Old Vulcan");
         }
         return Optional.of("Unknown");
@@ -328,7 +339,8 @@ public final class ServerObserver {
         return host;
     }
 
-    static Set<String> extractPluginsFromSuggestions(final List<ClientboundCommandSuggestionsPacket.Entry> suggestions) {
+    static Set<String> extractPluginsFromSuggestions(
+            final List<ClientboundCommandSuggestionsPacket.Entry> suggestions) {
         Set<String> names = new LinkedHashSet<>();
         for (ClientboundCommandSuggestionsPacket.Entry entry : suggestions) {
             String text = entry.text();
@@ -512,8 +524,14 @@ public final class ServerObserver {
         INVALID_ATTRIBUTES
     }
 
-    public record FlagInfo(int sequence, FlagReason reason, Vec3 position, float yaw, float pitch, String detail,
-                           long createdAtMillis) {
+    public record FlagInfo(
+            int sequence,
+            FlagReason reason,
+            Vec3 position,
+            float yaw,
+            float pitch,
+            String detail,
+            long createdAtMillis) {
 
         static FlagInfo none() {
             return new FlagInfo(0, FlagReason.LAGBACK, Vec3.ZERO, 0.0F, 0.0F, "", 0L);
@@ -536,8 +554,7 @@ public final class ServerObserver {
             int velocityCorrections,
             int tabAdds,
             int tabRemoves,
-            int payloadSequence
-    ) {
+            int payloadSequence) {
         public Set<String> environmentLabels() {
             Set<String> labels = new LinkedHashSet<>();
             this.antiCheat.ifPresent(value -> {
@@ -586,8 +603,13 @@ public final class ServerObserver {
         }
     }
 
-    public record Fingerprint(String rootDomain, String antiCheat, Set<String> labels, Set<String> plugins,
-                              Set<String> payloadChannels, int safetyScore) {
+    public record Fingerprint(
+            String rootDomain,
+            String antiCheat,
+            Set<String> labels,
+            Set<String> plugins,
+            Set<String> payloadChannels,
+            int safetyScore) {
         public boolean hasLabel(final String label) {
             return this.labels.contains(label);
         }

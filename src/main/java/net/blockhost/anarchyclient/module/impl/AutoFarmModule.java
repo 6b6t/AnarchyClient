@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -22,11 +26,6 @@ import net.minecraft.world.level.block.NetherWartBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
 
 public final class AutoFarmModule extends Module {
 
@@ -64,11 +63,8 @@ public final class AutoFarmModule extends Module {
             .name("Bone Meal")
             .defaultValue(false)
             .build()));
-    private final BooleanSetting till = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("till")
-            .name("Till")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting till = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("till").name("Till").defaultValue(false).build()));
     private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("rotate")
             .name("Rotate")
@@ -79,7 +75,10 @@ public final class AutoFarmModule extends Module {
     private final Map<BlockPos, Integer> refused = new HashMap<>();
 
     public AutoFarmModule() {
-        super("auto_farm", "Auto Farm", ModuleCategory.WORLD,
+        super(
+                "auto_farm",
+                "Auto Farm",
+                ModuleCategory.WORLD,
                 "Harvests mature crops and can replant, bone meal, and till soil around you.");
     }
 
@@ -94,8 +93,11 @@ public final class AutoFarmModule extends Module {
             entry.setValue(entry.getValue() - 1);
             return entry.getValue() <= 0;
         });
-        if (this.miner.continueCurrent(client, pos -> this.harvest.value() && isMatureCrop(client.level.getBlockState(pos))
-                && CombatTargets.canReachBlock(player, pos))) {
+        if (this.miner.continueCurrent(
+                client,
+                pos -> this.harvest.value()
+                        && isMatureCrop(client.level.getBlockState(pos))
+                        && CombatTargets.canReachBlock(player, pos))) {
             return;
         }
         int radius = this.range.value().intValue();
@@ -107,8 +109,7 @@ public final class AutoFarmModule extends Module {
                 radius,
                 BlockTargetScanner.SortMode.CLOSEST,
                 scanLimit(radius),
-                candidate -> this.isCandidate(client, candidate)
-        )) {
+                candidate -> this.isCandidate(client, candidate))) {
             if (actions >= maxActions) {
                 break;
             }
@@ -128,7 +129,8 @@ public final class AutoFarmModule extends Module {
     private boolean isCandidate(final Minecraft client, final BlockTargetScanner.BlockTarget target) {
         BlockState state = target.state();
         Block block = state.getBlock();
-        if (client.player == null || this.refused.containsKey(target.pos())
+        if (client.player == null
+                || this.refused.containsKey(target.pos())
                 || !CombatTargets.canReachBlock(client.player, target.pos())) {
             return false;
         }
@@ -202,19 +204,25 @@ public final class AutoFarmModule extends Module {
         if (block instanceof CocoaBlock) {
             return state.getValue(CocoaBlock.AGE) >= CocoaBlock.MAX_AGE;
         }
-        return block instanceof SweetBerryBushBlock && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE;
+        return block instanceof SweetBerryBushBlock
+                && state.getValue(SweetBerryBushBlock.AGE) >= SweetBerryBushBlock.MAX_AGE;
     }
 
     /** Bone meal only goes on growing crops, not on grass, moss, or other spreading blocks. */
     private static boolean canBoneMeal(final Minecraft client, final BlockPos pos, final BlockState state) {
-        return client.level != null && isBoneMealCrop(state)
-                && ((BonemealableBlock) state.getBlock()).isValidBonemealTarget(client.level, pos, state, BonemealSource.INTERACTION);
+        return client.level != null
+                && isBoneMealCrop(state)
+                && ((BonemealableBlock) state.getBlock())
+                        .isValidBonemealTarget(client.level, pos, state, BonemealSource.INTERACTION);
     }
 
     static boolean isBoneMealCrop(final BlockState state) {
         Block block = state.getBlock();
-        return (block instanceof CropBlock || block instanceof StemBlock || block instanceof CocoaBlock
-                || block instanceof SweetBerryBushBlock) && !isMatureCrop(state);
+        return (block instanceof CropBlock
+                        || block instanceof StemBlock
+                        || block instanceof CocoaBlock
+                        || block instanceof SweetBerryBushBlock)
+                && !isMatureCrop(state);
     }
 
     static boolean isTillableBlock(final Block block) {

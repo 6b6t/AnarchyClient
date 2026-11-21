@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.Locale;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -17,8 +18,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.Locale;
 
 public final class TntTimerModule extends Module {
 
@@ -42,7 +41,10 @@ public final class TntTimerModule extends Module {
             .build()));
 
     public TntTimerModule() {
-        super("tnt_timer", "TNT Timer", ModuleCategory.RENDER,
+        super(
+                "tnt_timer",
+                "TNT Timer",
+                ModuleCategory.RENDER,
                 "Shows the remaining fuse time above primed TNT and outlines it in colors that turn red near explosion.");
     }
 
@@ -83,7 +85,9 @@ public final class TntTimerModule extends Module {
                 continue;
             }
             double x = Mth.lerp(partialTick, tnt.xo, tnt.getX());
-            double y = Mth.lerp(partialTick, tnt.yo, tnt.getY()) + tnt.getBoundingBox().getYsize() + 0.35;
+            double y = Mth.lerp(partialTick, tnt.yo, tnt.getY())
+                    + tnt.getBoundingBox().getYsize()
+                    + 0.35;
             double z = Mth.lerp(partialTick, tnt.zo, tnt.getZ());
             Vec3 projected = client.gameRenderer.projectPointToScreen(new Vec3(x, y, z));
             if (projected.z > 1.0) {

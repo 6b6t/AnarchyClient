@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.mixin;
 
+import java.util.Objects;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.impl.AutoReconnectModule;
 import net.blockhost.anarchyclient.module.impl.SilentDisconnectModule;
@@ -22,8 +23,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Objects;
-
 /**
  * Silent Disconnect replaces the disconnect screen with the screen vanilla would return to.
  * Vanilla still tears down the connection and the level, and transfers are never touched.
@@ -32,7 +31,8 @@ import java.util.Objects;
 public abstract class ClientCommonPacketListenerMixin {
 
     @Unique
-    private static final SystemToast.SystemToastId ANARCHYCLIENT$DISCONNECT_TOAST = new SystemToast.SystemToastId(10000L);
+    private static final SystemToast.SystemToastId ANARCHYCLIENT$DISCONNECT_TOAST =
+            new SystemToast.SystemToastId(10000L);
 
     @Shadow
     @Final
@@ -49,7 +49,8 @@ public abstract class ClientCommonPacketListenerMixin {
     private @Nullable Component anarchyclient$silentReason;
 
     @Inject(method = "createDisconnectScreen", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$silentDisconnect(final DisconnectionDetails details, final CallbackInfoReturnable<Screen> info) {
+    private void anarchyclient$silentDisconnect(
+            final DisconnectionDetails details, final CallbackInfoReturnable<Screen> info) {
         if (this.isTransferring || !SilentDisconnectModule.shouldSuppress(Minecraft.getInstance())) {
             return;
         }
@@ -57,8 +58,7 @@ public abstract class ClientCommonPacketListenerMixin {
         AutoReconnectModule.noteSilentDisconnect();
         info.setReturnValue(Objects.requireNonNullElseGet(
                 this.postDisconnectScreen,
-                () -> this.serverData != null ? new JoinMultiplayerScreen(new TitleScreen()) : new TitleScreen()
-        ));
+                () -> this.serverData != null ? new JoinMultiplayerScreen(new TitleScreen()) : new TitleScreen()));
     }
 
     // Vanilla clears toasts and chat while disconnecting, so the reason is shown afterwards.
@@ -72,8 +72,8 @@ public abstract class ClientCommonPacketListenerMixin {
         SystemToast.addOrUpdate(
                 Minecraft.getInstance().gui.toastManager(),
                 ANARCHYCLIENT$DISCONNECT_TOAST,
-                Translations.component("anarchyclient.message.client_common_packet_listener_mixin.disconnected", "Disconnected"),
-                reason
-        );
+                Translations.component(
+                        "anarchyclient.message.client_common_packet_listener_mixin.disconnected", "Disconnected"),
+                reason);
     }
 }

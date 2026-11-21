@@ -1,6 +1,20 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_WIDTH;
+import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawText;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.textWidth;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.wrapText;
+
 import com.mojang.blaze3d.platform.InputConstants;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.i18n.Translations;
@@ -25,21 +39,6 @@ import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.math.Size;
 import net.lenni0451.rivet.text.model.TextOrigin;
 import net.minecraft.client.Minecraft;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_WIDTH;
-import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawText;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.textWidth;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.wrapText;
 
 /**
  * Liquid glass client menu: floating glass islands over the visible game. A vertical icon dock on the
@@ -152,8 +151,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
                 this.backgroundDesign,
                 GlassTheme.glassOpacity(),
                 GlassTheme.cornerRadius(),
-                GlassTheme.glassBlur()
-        ));
+                GlassTheme.glassBlur()));
     }
 
     void resetUiPreferences() {
@@ -188,8 +186,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     public void render(final Renderer renderer, final Size size) {
         // Soft drop shadows under the floating glass islands; everything else is child components.
         for (PanelRect rect : this.shadowRects) {
-            renderer.custom(new SoftShadowCommand(rect.x(), rect.y(), rect.width(), rect.height(),
-                    rect.radius(), SHADOW_SPREAD, SHADOW_OFFSET_Y, SHADOW));
+            renderer.custom(new SoftShadowCommand(
+                    rect.x(),
+                    rect.y(),
+                    rect.width(),
+                    rect.height(),
+                    rect.radius(),
+                    SHADOW_SPREAD,
+                    SHADOW_OFFSET_Y,
+                    SHADOW));
         }
         super.render(renderer, size);
         this.renderModuleTooltip(renderer, size);
@@ -200,7 +205,10 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
      * being crammed into the cards.
      */
     private void renderModuleTooltip(final Renderer renderer, final Size size) {
-        if (!this.showSummaries || this.hoveredModule == null || this.selectedTab != Tab.MODULES || this.rivet() == null) {
+        if (!this.showSummaries
+                || this.hoveredModule == null
+                || this.selectedTab != Tab.MODULES
+                || this.rivet() == null) {
             return;
         }
         String text = this.hoveredModule.description();
@@ -225,8 +233,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         renderer.optimizedFillRoundedRect(x, y, width, height, 8F, Color.fromRGBA(14, 17, 25, 242));
         float lineY = y + 6F + fontHeight / 2F;
         for (String line : lines) {
-            drawText(this, renderer, line, MUTED, x + 8F, lineY,
-                    TextOrigin.Horizontal.LOGICAL_LEFT, TextOrigin.Vertical.LOGICAL_CENTER);
+            drawText(
+                    this,
+                    renderer,
+                    line,
+                    MUTED,
+                    x + 8F,
+                    lineY,
+                    TextOrigin.Horizontal.LOGICAL_LEFT,
+                    TextOrigin.Vertical.LOGICAL_CENTER);
             lineY += lineHeight;
         }
     }
@@ -261,12 +276,14 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             float inspectorWidth = this.wideInspector ? INSPECTOR_WIDE_WIDTH : INSPECTOR_WIDTH;
             boolean inspectorOpen = this.inspectedModule != null;
             float available = size.width() - contentX - 16F - reservedRight;
-            float panelWidth = Math.min(MODULES_PANEL_WIDTH, inspectorOpen ? available - inspectorWidth - PANEL_GAP : available);
+            float panelWidth =
+                    Math.min(MODULES_PANEL_WIDTH, inspectorOpen ? available - inspectorWidth - PANEL_GAP : available);
             panelWidth = Math.max(220F, panelWidth);
             this.modulesPanel.layoutOptions(new AbsoluteOptions(contentX, panelY, panelWidth, panelHeight));
             this.shadowRects.add(new PanelRect(contentX, panelY, panelWidth, panelHeight, panelRadius));
             if (inspectorOpen) {
-                float inspectorX = Math.min(contentX + panelWidth + PANEL_GAP, size.width() - inspectorWidth - 16F - reservedRight);
+                float inspectorX = Math.min(
+                        contentX + panelWidth + PANEL_GAP, size.width() - inspectorWidth - 16F - reservedRight);
                 this.inspector.layoutOptions(new AbsoluteOptions(inspectorX, panelY, inspectorWidth, panelHeight));
                 this.shadowRects.add(new PanelRect(inspectorX, panelY, inspectorWidth, panelHeight, panelRadius));
             } else {
@@ -316,9 +333,12 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     @Override
     public String layoutDebugLabel() {
-        String category = this.selectedCategory == null ? "none" : this.selectedCategory.name().toLowerCase(Locale.ROOT);
+        String category = this.selectedCategory == null
+                ? "none"
+                : this.selectedCategory.name().toLowerCase(Locale.ROOT);
         String module = this.inspectedModule == null ? "none" : this.inspectedModule.id();
-        return "tab=" + (this.selectedTab == null ? "none" : this.selectedTab.name().toLowerCase(Locale.ROOT))
+        return "tab="
+                + (this.selectedTab == null ? "none" : this.selectedTab.name().toLowerCase(Locale.ROOT))
                 + " category=" + category
                 + " module=" + module
                 + " drawer=" + this.drawer.name().toLowerCase(Locale.ROOT);
@@ -521,12 +541,15 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             Path file = LayoutTreeDumper.writeSnapshot(this.rivet(), directory);
             AnarchyClient.LOGGER.info("Layout tree snapshot saved to {}", file);
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.module_panel.layout_tree_saved_to", "Layout tree saved to %s.", file));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.module_panel.layout_tree_saved_to", "Layout tree saved to %s.", file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save layout tree snapshot", exception);
             if (client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.module_panel.failed_to_save_layout_tree_snapshot", "Failed to save layout tree snapshot."));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.module_panel.failed_to_save_layout_tree_snapshot",
+                        "Failed to save layout tree snapshot."));
             }
         }
     }
@@ -548,8 +571,9 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
             return !query.isEmpty() && !matchesQuery(module, query);
         });
         if (!query.isEmpty()) {
-            result.sort(Comparator.comparing((Module module) -> module.category().ordinal())
-                    .thenComparing(Module::name, String.CASE_INSENSITIVE_ORDER));
+            result.sort(
+                    Comparator.comparing((Module module) -> module.category().ordinal())
+                            .thenComparing(Module::name, String.CASE_INSENSITIVE_ORDER));
         }
         if (this.enabledFirst) {
             result.sort(Comparator.comparing((Module module) -> Boolean.valueOf(module.enabled()))
@@ -561,7 +585,8 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private ModuleCategory initialCategory() {
         ModuleCategory fallback = this.firstNonEmptyCategory();
-        return this.config.selectedCategory()
+        return this.config
+                .selectedCategory()
                 .filter(category -> !this.modules.byCategory(category).isEmpty())
                 .orElse(fallback);
     }
@@ -632,9 +657,25 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         return cell(column, row, 1, 1, weightX, weightY, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
     }
 
-    private static GridCell weightedCell(final int column, final int row, final int columnSpan, final int rowSpan,
-                                         final float weightX, final float weightY) {
-        return cell(column, row, columnSpan, rowSpan, weightX, weightY, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
+    private static GridCell weightedCell(
+            final int column,
+            final int row,
+            final int columnSpan,
+            final int rowSpan,
+            final float weightX,
+            final float weightY) {
+        return cell(
+                column,
+                row,
+                columnSpan,
+                rowSpan,
+                weightX,
+                weightY,
+                GridAnchor.CENTER,
+                GridFill.BOTH,
+                Padding.EMPTY,
+                null,
+                null);
     }
 
     GlassSurface glassPanel() {

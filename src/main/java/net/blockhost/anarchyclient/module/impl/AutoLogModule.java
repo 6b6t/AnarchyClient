@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -17,8 +18,6 @@ import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.item.PrimedTnt;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.Locale;
 
 public final class AutoLogModule extends Module {
 
@@ -84,7 +83,10 @@ public final class AutoLogModule extends Module {
     private boolean logged;
 
     public AutoLogModule() {
-        super("auto_log", "Auto Log", ModuleCategory.COMBAT,
+        super(
+                "auto_log",
+                "Auto Log",
+                ModuleCategory.COMBAT,
                 "Disconnects you when health drops too low, totems pop, an unfriended player comes close, or crystals and TNT gather nearby.");
     }
 
@@ -104,10 +106,16 @@ public final class AutoLogModule extends Module {
             return;
         }
         Player player = client.player;
-        if (shouldDisconnectForHealth(player.getHealth(), player.getAbsorptionAmount(),
-                this.healthThreshold.value(), this.includeAbsorption.value())) {
-            this.disconnect(client, "health reached " + formatHealth(effectiveHealth(player.getHealth(),
-                    player.getAbsorptionAmount(), this.includeAbsorption.value())));
+        if (shouldDisconnectForHealth(
+                player.getHealth(),
+                player.getAbsorptionAmount(),
+                this.healthThreshold.value(),
+                this.includeAbsorption.value())) {
+            this.disconnect(
+                    client,
+                    "health reached "
+                            + formatHealth(effectiveHealth(
+                                    player.getHealth(), player.getAbsorptionAmount(), this.includeAbsorption.value())));
             return;
         }
         if (this.players.value()) {
@@ -119,7 +127,8 @@ public final class AutoLogModule extends Module {
         }
         int dangerThreshold = this.dangerousEntityCount.value().intValue();
         if (dangerThreshold > 0) {
-            int count = dangerousEntityCount(client.level.entitiesForRendering(), player, this.dangerousEntityRange.value());
+            int count = dangerousEntityCount(
+                    client.level.entitiesForRendering(), player, this.dangerousEntityRange.value());
             if (count >= dangerThreshold) {
                 this.disconnect(client, count + " dangerous entities nearby");
             }
@@ -128,21 +137,25 @@ public final class AutoLogModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (packet instanceof ClientboundEntityEventPacket event && event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH) {
+        if (packet instanceof ClientboundEntityEventPacket event
+                && event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH) {
             // Runs on the network thread; entity lookups and the disconnect belong on the client thread.
             MainThread.run(() -> this.handleTotemPop(client, connection, event));
         }
         return false;
     }
 
-    private void handleTotemPop(final Minecraft client, final Connection connection,
-                                final ClientboundEntityEventPacket event) {
-        if (this.logged || client.level == null || client.player == null
+    private void handleTotemPop(
+            final Minecraft client, final Connection connection, final ClientboundEntityEventPacket event) {
+        if (this.logged
+                || client.level == null
+                || client.player == null
                 || event.getEntity(client.level) != client.player) {
             return;
         }
         this.selfTotemPops++;
-        if (shouldDisconnectForTotemPops(this.selfTotemPops, this.totemPopThreshold.value().intValue())) {
+        if (shouldDisconnectForTotemPops(
+                this.selfTotemPops, this.totemPopThreshold.value().intValue())) {
             this.disconnect(connection, "totem popped " + this.selfTotemPops + " times");
         }
     }
@@ -158,8 +171,8 @@ public final class AutoLogModule extends Module {
         this.reset();
     }
 
-    static boolean shouldDisconnectForHealth(final float health, final float absorption, final double threshold,
-                                             final boolean includeAbsorption) {
+    static boolean shouldDisconnectForHealth(
+            final float health, final float absorption, final double threshold, final boolean includeAbsorption) {
         return threshold > 0.0 && effectiveHealth(health, absorption, includeAbsorption) <= threshold;
     }
 
@@ -171,7 +184,8 @@ public final class AutoLogModule extends Module {
         return health + (includeAbsorption ? absorption : 0.0F);
     }
 
-    static int dangerousEntityCount(final Iterable<? extends Entity> entities, final Player player, final double range) {
+    static int dangerousEntityCount(
+            final Iterable<? extends Entity> entities, final Player player, final double range) {
         int count = 0;
         double rangeSqr = range * range;
         for (Entity entity : entities) {
@@ -191,8 +205,11 @@ public final class AutoLogModule extends Module {
         String nearest = null;
         double nearestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof Player player) || player == self || player.isSpectator()
-                    || !player.isAlive() || AnarchyClient.FRIENDS.isFriend(player.getScoreboardName())) {
+            if (!(entity instanceof Player player)
+                    || player == self
+                    || player.isSpectator()
+                    || !player.isAlive()
+                    || AnarchyClient.FRIENDS.isFriend(player.getScoreboardName())) {
                 continue;
             }
             double distance = self.distanceToSqr(player);
@@ -235,7 +252,8 @@ public final class AutoLogModule extends Module {
         if (this.illegalDisconnect.value()) {
             IllegalDisconnect.send(connection);
         }
-        connection.disconnect(Translations.component("anarchyclient.message.auto_log.auto_log", "Auto Log: %s", reason));
+        connection.disconnect(
+                Translations.component("anarchyclient.message.auto_log.auto_log", "Auto Log: %s", reason));
     }
 
     private void reset() {

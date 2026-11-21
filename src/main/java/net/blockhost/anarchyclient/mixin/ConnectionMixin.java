@@ -37,18 +37,14 @@ public abstract class ConnectionMixin {
     @Inject(
             method = "channelRead0(Lio/netty/channel/ChannelHandlerContext;Lnet/minecraft/network/protocol/Packet;)V",
             at = @At("HEAD"),
-            cancellable = true
-    )
-    private void anarchyclient$receivePacket(final ChannelHandlerContext context, final Packet<?> packet,
-                                             final CallbackInfo info) {
+            cancellable = true)
+    private void anarchyclient$receivePacket(
+            final ChannelHandlerContext context, final Packet<?> packet, final CallbackInfo info) {
         if (!this.anarchyclient$isClientConnection()) {
             return;
         }
-        PacketReceiveEvent event = AnarchyClient.MODULES.call(new PacketReceiveEvent(
-                Minecraft.getInstance(),
-                (Connection) (Object) this,
-                packet
-        ));
+        PacketReceiveEvent event = AnarchyClient.MODULES.call(
+                new PacketReceiveEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
         if (event.isCancelled()) {
             info.cancel();
         }
@@ -57,20 +53,19 @@ public abstract class ConnectionMixin {
     @Inject(
             method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V",
             at = @At("HEAD"),
-            cancellable = true
-    )
-    private void anarchyclient$sendPacket(final Packet<?> packet, final ChannelFutureListener listener,
-                                          final boolean flush, final CallbackInfo info) {
+            cancellable = true)
+    private void anarchyclient$sendPacket(
+            final Packet<?> packet,
+            final ChannelFutureListener listener,
+            final boolean flush,
+            final CallbackInfo info) {
         if (anarchyclient$resending.get() || !this.anarchyclient$isClientConnection()) {
             return;
         }
         Packet<?> outgoing = packet;
         if (!PacketEventSilencer.silent()) {
-            PacketSendEvent event = AnarchyClient.MODULES.call(new PacketSendEvent(
-                    Minecraft.getInstance(),
-                    (Connection) (Object) this,
-                    packet
-            ));
+            PacketSendEvent event = AnarchyClient.MODULES.call(
+                    new PacketSendEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
             if (event.isCancelled()) {
                 info.cancel();
                 return;
@@ -92,17 +87,20 @@ public abstract class ConnectionMixin {
 
     @Inject(
             method = "send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V",
-            at = @At("RETURN")
-    )
-    private void anarchyclient$sentPacket(final Packet<?> packet, final ChannelFutureListener listener,
-                                          final boolean flush, final CallbackInfo info) {
+            at = @At("RETURN"))
+    private void anarchyclient$sentPacket(
+            final Packet<?> packet,
+            final ChannelFutureListener listener,
+            final boolean flush,
+            final CallbackInfo info) {
         if (!this.anarchyclient$isClientConnection()) {
             return;
         }
         // Silent sends (replaced or delayed packets) also reach the server, so they count too.
         ServerRotationTracker.onSent(packet);
         if (!PacketEventSilencer.silent()) {
-            AnarchyClient.MODULES.call(new PacketSentEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
+            AnarchyClient.MODULES.call(
+                    new PacketSentEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
         }
     }
 

@@ -3,13 +3,6 @@ package net.blockhost.anarchyclient.server;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.setting.Setting;
-import net.fabricmc.loader.api.FabricLoader;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -20,18 +13,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleManager;
+import net.blockhost.anarchyclient.setting.Setting;
+import net.fabricmc.loader.api.FabricLoader;
 
 public final class ServerProfileStore {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-server-profiles.json");
+    private static final Path PATH =
+            FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-server-profiles.json");
     private static final Map<String, ServerProfile> PROFILES = new LinkedHashMap<>();
     private static boolean loaded;
     // Set when an unreadable file could not be backed up. Saving would then destroy the stored profiles.
     private static boolean saveBlocked;
 
-    private ServerProfileStore() {
-    }
+    private ServerProfileStore() {}
 
     public static synchronized void load() {
         PROFILES.clear();
@@ -58,7 +57,8 @@ public final class ServerProfileStore {
     public static synchronized void save() {
         ensureLoaded();
         if (saveBlocked) {
-            AnarchyClient.LOGGER.warn("Not saving AnarchyClient server profiles: {} could not be read or backed up", PATH);
+            AnarchyClient.LOGGER.warn(
+                    "Not saving AnarchyClient server profiles: {} could not be read or backed up", PATH);
             return;
         }
         try {
@@ -118,7 +118,8 @@ public final class ServerProfileStore {
                 if (module == null || moduleEntry.getValue() == null) {
                     continue;
                 }
-                for (Map.Entry<String, JsonElement> settingEntry : moduleEntry.getValue().entrySet()) {
+                for (Map.Entry<String, JsonElement> settingEntry :
+                        moduleEntry.getValue().entrySet()) {
                     Setting<?> setting = module.settings().stream()
                             .filter(candidate -> candidate.id().equals(settingEntry.getKey()))
                             .findFirst()
@@ -130,8 +131,11 @@ public final class ServerProfileStore {
                         setting.fromJson(settingEntry.getValue());
                         changed++;
                     } catch (RuntimeException exception) {
-                        AnarchyClient.LOGGER.warn("Skipping invalid server profile value {}.{}",
-                                moduleEntry.getKey(), settingEntry.getKey(), exception);
+                        AnarchyClient.LOGGER.warn(
+                                "Skipping invalid server profile value {}.{}",
+                                moduleEntry.getKey(),
+                                settingEntry.getKey(),
+                                exception);
                     }
                 }
             }
@@ -164,8 +168,7 @@ public final class ServerProfileStore {
         return domain == null ? "" : domain.trim().toLowerCase(Locale.ROOT);
     }
 
-    private record ProfileRoot(Map<String, ServerProfile> profiles) {
-    }
+    private record ProfileRoot(Map<String, ServerProfile> profiles) {}
 
     public static final class ServerProfile {
 

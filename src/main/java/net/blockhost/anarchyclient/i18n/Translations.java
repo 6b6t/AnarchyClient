@@ -1,11 +1,10 @@
 package net.blockhost.anarchyclient.i18n;
 
+import java.util.IllegalFormatException;
+import java.util.Locale;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-
-import java.util.IllegalFormatException;
-import java.util.Locale;
 
 /**
  * Looks up client text in the language selected in Minecraft's language menu.
@@ -16,8 +15,7 @@ import java.util.Locale;
  */
 public final class Translations {
 
-    private Translations() {
-    }
+    private Translations() {}
 
     /** The translation of {@code key}, or {@code fallback} when the selected language and English both lack it. */
     public static String text(final String key, final String fallback) {

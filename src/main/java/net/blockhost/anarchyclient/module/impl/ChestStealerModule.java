@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -12,9 +14,6 @@ import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.List;
-import java.util.Set;
 
 public final class ChestStealerModule extends Module {
 
@@ -44,7 +43,10 @@ public final class ChestStealerModule extends Module {
     private int cooldownTicks;
 
     public ChestStealerModule() {
-        super("chest_stealer", "Chest Stealer", ModuleCategory.PLAYER,
+        super(
+                "chest_stealer",
+                "Chest Stealer",
+                ModuleCategory.PLAYER,
                 "Shift-clicks items out of an open chest into the inventory, skipping ignored items, and closes the chest once it is empty.");
     }
 
@@ -70,7 +72,8 @@ public final class ChestStealerModule extends Module {
         if (slot >= 0) {
             client.gameMode.handleContainerInput(menu.containerId, slot, 0, ContainerInput.QUICK_MOVE, player);
             this.cooldownTicks = this.delayTicks.value().intValue();
-        } else if (this.closeWhenEmpty.value() && !hasStealable(stacks, containerSlots, this.filterJunk.value(), ignored)) {
+        } else if (this.closeWhenEmpty.value()
+                && !hasStealable(stacks, containerSlots, this.filterJunk.value(), ignored)) {
             // Close only when nothing is left to take, not when the inventory is merely full.
             player.closeContainer();
         }
@@ -80,8 +83,11 @@ public final class ChestStealerModule extends Module {
      * Returns the first container slot with an item worth taking that still fits in the player's
      * part of the menu (the slots after {@code containerSlots}), or -1.
      */
-    static int firstStealableSlot(final List<ItemStack> stacks, final int containerSlots, final boolean filterJunk,
-                                  final Set<Item> ignoredItems) {
+    static int firstStealableSlot(
+            final List<ItemStack> stacks,
+            final int containerSlots,
+            final boolean filterJunk,
+            final Set<Item> ignoredItems) {
         int limit = Math.min(Math.max(0, containerSlots), stacks.size());
         List<ItemStack> playerSlots = stacks.subList(limit, stacks.size());
         for (int slot = 0; slot < limit; slot++) {
@@ -93,8 +99,11 @@ public final class ChestStealerModule extends Module {
         return -1;
     }
 
-    static boolean hasStealable(final List<ItemStack> stacks, final int containerSlots, final boolean filterJunk,
-                                final Set<Item> ignoredItems) {
+    static boolean hasStealable(
+            final List<ItemStack> stacks,
+            final int containerSlots,
+            final boolean filterJunk,
+            final Set<Item> ignoredItems) {
         int limit = Math.min(Math.max(0, containerSlots), stacks.size());
         for (int slot = 0; slot < limit; slot++) {
             if (shouldSteal(stacks.get(slot), filterJunk, ignoredItems)) {
@@ -106,8 +115,9 @@ public final class ChestStealerModule extends Module {
 
     static boolean fits(final ItemStack stack, final List<ItemStack> slots) {
         for (ItemStack target : slots) {
-            if (target.isEmpty() || ItemStack.isSameItemSameComponents(target, stack)
-                    && target.getCount() < target.getMaxStackSize()) {
+            if (target.isEmpty()
+                    || ItemStack.isSameItemSameComponents(target, stack)
+                            && target.getCount() < target.getMaxStackSize()) {
                 return true;
             }
         }
@@ -117,6 +127,7 @@ public final class ChestStealerModule extends Module {
     static boolean shouldSteal(final ItemStack stack, final boolean filterJunk, final Set<Item> ignoredItems) {
         return !stack.isEmpty()
                 && !ignoredItems.contains(stack.getItem())
-                && (!filterJunk || !InventoryCleanerModule.isConfiguredJunk(stack, InventoryCleanerModule.defaultJunkItems()));
+                && (!filterJunk
+                        || !InventoryCleanerModule.isConfiguredJunk(stack, InventoryCleanerModule.defaultJunkItems()));
     }
 }

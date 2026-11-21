@@ -22,7 +22,10 @@ public final class HitFXModule extends Module {
             .build()));
 
     public HitFXModule() {
-        super("hit_fx", "Hit FX", ModuleCategory.RENDER,
+        super(
+                "hit_fx",
+                "Hit FX",
+                ModuleCategory.RENDER,
                 "Spawns a burst of critical-hit particles on each entity you attack.");
     }
 
@@ -32,7 +35,11 @@ public final class HitFXModule extends Module {
             Vec3 center = target.getBoundingBox().getCenter();
             RandomSource random = client.level.getRandom();
             for (int i = 0; i < this.count.value().intValue(); i++) {
-                client.level.addParticle(ParticleTypes.CRIT, center.x, center.y, center.z,
+                client.level.addParticle(
+                        ParticleTypes.CRIT,
+                        center.x,
+                        center.y,
+                        center.z,
                         (random.nextDouble() - 0.5) * 0.2,
                         random.nextDouble() * 0.2,
                         (random.nextDouble() - 0.5) * 0.2);

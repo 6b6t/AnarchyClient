@@ -31,7 +31,10 @@ public final class SneakModule extends Module {
             .build()));
 
     public SneakModule() {
-        super("sneak", "Sneak", ModuleCategory.MOVEMENT,
+        super(
+                "sneak",
+                "Sneak",
+                ModuleCategory.MOVEMENT,
                 "Holds sneak for you, with options to pause in menus, in liquids, while airborne, or while gliding.");
     }
 

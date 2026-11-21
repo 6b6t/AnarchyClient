@@ -7,11 +7,10 @@ public final class TimerBalanceService {
 
     private static final Map<String, Balance> BALANCES = new LinkedHashMap<>();
 
-    private TimerBalanceService() {
-    }
+    private TimerBalanceService() {}
 
-    public static synchronized double tick(final String owner, final double maxBalance, final double recovery,
-                                           final double requestedMultiplier) {
+    public static synchronized double tick(
+            final String owner, final double maxBalance, final double recovery, final double requestedMultiplier) {
         Balance previous = BALANCES.getOrDefault(owner, new Balance(maxBalance));
         double max = Math.max(0.0, maxBalance);
         double recovered = Math.min(max, previous.value() + Math.max(0.0, recovery));
@@ -37,6 +36,5 @@ public final class TimerBalanceService {
         BALANCES.clear();
     }
 
-    private record Balance(double value) {
-    }
+    private record Balance(double value) {}
 }

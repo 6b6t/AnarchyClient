@@ -23,15 +23,13 @@ public abstract class LocalPlayerMixin {
                 Minecraft.getInstance(),
                 player.getUsedItemHand(),
                 player.getUseItem().copy(),
-                player.getUseItemRemainingTicks()
-        ));
+                player.getUseItemRemainingTicks()));
     }
 
     // Auto Sprint's omni sprint: vanilla only keeps sprinting with forward input, so count any movement input.
     @Redirect(
             method = {"shouldStopRunSprinting", "canStartSprinting"},
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;hasForwardImpulse()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/ClientInput;hasForwardImpulse()Z"))
     private boolean anarchyclient$omniSprintImpulse(final ClientInput input) {
         return input.hasForwardImpulse() || AutoSprintModule.omniSprintImpulse((LocalPlayer) (Object) this);
     }
@@ -39,8 +37,7 @@ public abstract class LocalPlayerMixin {
     // No Slow: vanilla scales the input down while using an item after the input is read, so skip that here.
     @Redirect(
             method = "modifyInput",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
     private boolean anarchyclient$noSlowItemUse(final LocalPlayer player) {
         return player.isUsingItem() && !NoSlowModule.ignoresItemSlowdown(player);
     }

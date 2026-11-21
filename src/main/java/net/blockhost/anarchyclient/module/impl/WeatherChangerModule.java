@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-
-import java.util.List;
 
 public final class WeatherChangerModule extends Module {
 
@@ -20,7 +19,10 @@ public final class WeatherChangerModule extends Module {
     private final ServerWeather serverWeather = new ServerWeather();
 
     public WeatherChangerModule() {
-        super("weather_changer", "Weather Changer", ModuleCategory.RENDER,
+        super(
+                "weather_changer",
+                "Weather Changer",
+                ModuleCategory.RENDER,
                 "Sets client-side weather to clear, rain, or thunder regardless of the server weather, and restores the server weather when turned off.");
     }
 

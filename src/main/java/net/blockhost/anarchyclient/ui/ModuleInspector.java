@@ -1,5 +1,16 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.fillCell;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.gridLayout;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.settingRow;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.showGroupHeaders;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.visibleSettingGroups;
+
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.setting.Setting;
@@ -11,18 +22,6 @@ import net.lenni0451.rivet.layout.grid.GridFill;
 import net.lenni0451.rivet.layout.list.VerticalListLayout;
 import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.List;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.fillCell;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.gridLayout;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.settingRow;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.showGroupHeaders;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.visibleSettingGroups;
 
 final class ModuleInspector extends Container implements LayoutDebugLabel {
 
@@ -43,10 +42,10 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
         this.panel.configureScroll(this.scroll);
         place(this.background, fillCell(0, 0, 1, 2));
         // No fixed height: the header grows when the module description folds onto a second line.
-        place(this.header, cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
-                Padding.EMPTY, null, null));
-        place(this.scroll, cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(0F, 0F, 0F, PADDING), null, null));
+        place(this.header, cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null));
+        place(
+                this.scroll,
+                cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 0F, 0F, PADDING), null, null));
         this.addChild(this.background);
         this.addChild(this.header);
         this.addChild(this.scroll);
@@ -56,7 +55,8 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
         this.settings.clearChildren();
         Module module = this.panel.inspectedModule;
         if (module == null) {
-            this.settings.addChild(new EmptyState(Translations.text("anarchyclient.ui.open_a_module_to_edit_its_settings", "Open a module to edit its settings.")));
+            this.settings.addChild(new EmptyState(Translations.text(
+                    "anarchyclient.ui.open_a_module_to_edit_its_settings", "Open a module to edit its settings.")));
         } else {
             this.settings.addChild(new KeybindRow(this.panel, module));
             List<SettingGroup> groups = visibleSettingGroups(module);
@@ -67,12 +67,15 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
                 }
                 for (Setting<?> setting : group.settings()) {
                     if (setting.visible()) {
-                        this.settings.addChild(settingRow(setting, this::refreshAfterSettingChange, this.panel.config::markDirty));
+                        this.settings.addChild(
+                                settingRow(setting, this::refreshAfterSettingChange, this.panel.config::markDirty));
                     }
                 }
             }
             if (this.settings.children().isEmpty()) {
-                this.settings.addChild(new EmptyState(Translations.text("anarchyclient.ui.this_module_has_no_visible_settings", "This module has no visible settings.")));
+                this.settings.addChild(new EmptyState(Translations.text(
+                        "anarchyclient.ui.this_module_has_no_visible_settings",
+                        "This module has no visible settings.")));
             }
         }
         this.panel.requestFrame();

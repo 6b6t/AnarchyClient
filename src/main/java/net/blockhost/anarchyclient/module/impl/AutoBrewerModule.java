@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -8,14 +11,10 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.alchemy.Potions;
 
 public final class AutoBrewerModule extends Module {
 
@@ -35,7 +34,10 @@ public final class AutoBrewerModule extends Module {
     private int cooldownTicks;
 
     public AutoBrewerModule() {
-        super("auto_brewer", "Auto Brewer", ModuleCategory.WORLD,
+        super(
+                "auto_brewer",
+                "Auto Brewer",
+                ModuleCategory.WORLD,
                 "Moves fuel, nether wart, and water bottles into an open brewing stand between brews and takes out the brewed potions.");
     }
 
@@ -53,8 +55,10 @@ public final class AutoBrewerModule extends Module {
             return;
         }
         if (quickMoveFinishedPotions(client, menu)
-                || quickMoveMatching(client, menu, FUEL_SLOT, FUEL_SLOT, stack -> stack.has(DataComponents.BREWING_FUEL))
-                || quickMoveMatching(client, menu, INGREDIENT_SLOT, INGREDIENT_SLOT, stack -> stack.is(Items.NETHER_WART))
+                || quickMoveMatching(
+                        client, menu, FUEL_SLOT, FUEL_SLOT, stack -> stack.has(DataComponents.BREWING_FUEL))
+                || quickMoveMatching(
+                        client, menu, INGREDIENT_SLOT, INGREDIENT_SLOT, stack -> stack.is(Items.NETHER_WART))
                 || quickMoveMatching(client, menu, 0, LAST_BOTTLE_SLOT, AutoBrewerModule::isWaterBottle)) {
             this.cooldownTicks = this.delay.value().intValue();
         }
@@ -82,12 +86,16 @@ public final class AutoBrewerModule extends Module {
      * Quick-moves the first matching inventory stack, but only when one of the stand slots from {@code firstTarget} to
      * {@code lastTarget} can take it. Vanilla sends blaze powder to the ingredient slot when the fuel slot is full.
      */
-    private static boolean quickMoveMatching(final Minecraft client, final BrewingStandMenu menu,
-                                             final int firstTarget, final int lastTarget,
-                                             final Predicate<ItemStack> predicate) {
+    private static boolean quickMoveMatching(
+            final Minecraft client,
+            final BrewingStandMenu menu,
+            final int firstTarget,
+            final int lastTarget,
+            final Predicate<ItemStack> predicate) {
         for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
             Slot menuSlot = menu.getSlot(slot);
-            if (menuSlot.hasItem() && predicate.test(menuSlot.getItem())
+            if (menuSlot.hasItem()
+                    && predicate.test(menuSlot.getItem())
                     && hasRoom(standStacks(menu, firstTarget, lastTarget), menuSlot.getItem())) {
                 return ContainerActions.quickMove(client, menu, slot);
             }
@@ -95,8 +103,8 @@ public final class AutoBrewerModule extends Module {
         return false;
     }
 
-    private static List<ItemStack> standStacks(final BrewingStandMenu menu, final int firstTarget,
-                                               final int lastTarget) {
+    private static List<ItemStack> standStacks(
+            final BrewingStandMenu menu, final int firstTarget, final int lastTarget) {
         List<ItemStack> stacks = new ArrayList<>();
         for (int target = firstTarget; target <= lastTarget; target++) {
             stacks.add(menu.getSlot(target).getItem());

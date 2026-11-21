@@ -1,21 +1,22 @@
 package net.blockhost.anarchyclient.module;
 
-import com.google.gson.JsonObject;
-import com.mojang.blaze3d.platform.InputConstants;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.gson.JsonObject;
+import com.mojang.blaze3d.platform.InputConstants;
+import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
 class ModuleKeybindTest {
 
     @ParameterizedTest
-    @CsvSource({"65,4", "82,21", "32,44", "290,58", "301,69", "313,115", "320,98", "330,99", "335,88", "344,229", "347,231"})
+    @CsvSource({
+        "65,4", "82,21", "32,44", "290,58", "301,69", "313,115", "320,98", "330,99", "335,88", "344,229", "347,231"
+    })
     void migratesLegacyGlfwBindings(final int legacyKey, final int scancode) {
         JsonObject json = new JsonObject();
         json.addProperty("key", legacyKey);

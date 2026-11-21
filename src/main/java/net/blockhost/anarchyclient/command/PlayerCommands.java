@@ -1,5 +1,14 @@
 package net.blockhost.anarchyclient.command;
 
+import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
+import static net.blockhost.anarchyclient.command.CommandSupport.parsePosition;
+import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
+import static net.blockhost.anarchyclient.command.CommandSupport.sanitizeFileName;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.coordinate;
+import static net.blockhost.anarchyclient.command.CoordinateArgument.getCoordinate;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -9,17 +18,6 @@ import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import net.blockhost.anarchyclient.i18n.Translations;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.blockhost.anarchyclient.inventory.InventoryTracker;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.PlayerInfo;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -33,16 +31,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-
-import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
-import static net.blockhost.anarchyclient.command.CommandSupport.parsePosition;
-import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
-import static net.blockhost.anarchyclient.command.CommandSupport.sanitizeFileName;
-import static net.blockhost.anarchyclient.command.CommandSupport.suggestOnlinePlayers;
-import static net.blockhost.anarchyclient.command.CoordinateArgument.coordinate;
-import static net.blockhost.anarchyclient.command.CoordinateArgument.getCoordinate;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+import net.blockhost.anarchyclient.i18n.Translations;
+import net.blockhost.anarchyclient.inventory.InventoryTracker;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip},
@@ -52,19 +50,16 @@ final class PlayerCommands {
 
     /** Farthest a single move packet may go on a vanilla server before it sets the player back. */
     static final double MAX_MOVE_DISTANCE = 10.0;
+
     private static final int TRACKED_INVENTORY_LIMIT = 10;
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(15);
 
-    private PlayerCommands() {
-    }
+    private PlayerCommands() {}
 
     static void register(final LiteralArgumentBuilder<FabricClientCommandSource> root) {
-        root
-                .then(literal("center")
-                        .then(literal("middle")
-                                .executes(context -> centerPlayer(context, CenterMode.MIDDLE)))
-                        .then(literal("corner")
-                                .executes(context -> centerPlayer(context, CenterMode.CORNER))))
+        root.then(literal("center")
+                        .then(literal("middle").executes(context -> centerPlayer(context, CenterMode.MIDDLE)))
+                        .then(literal("corner").executes(context -> centerPlayer(context, CenterMode.CORNER))))
                 .then(literal("save-skin")
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(CommandSupport::suggestOnlinePlayers)
@@ -82,16 +77,15 @@ final class PlayerCommands {
                 .then(literal("vclip")
                         .then(argument("distance", DoubleArgumentType.doubleArg())
                                 .executes(PlayerCommands::vclip)))
-                .then(literal("dismount")
-                        .executes(PlayerCommands::dismount))
+                .then(literal("dismount").executes(PlayerCommands::dismount))
                 // "tracked", not "inventory": ItemCommands registers "inventory" too, and Brigadier merged the two
                 // nodes so the Inventory Tracker listing could not be reached.
                 .then(literal("tracked")
                         .executes(PlayerCommands::listTrackedInventories)
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(CommandSupport::suggestOnlinePlayers)
-                                .executes(context -> showTrackedInventory(context,
-                                        StringArgumentType.getString(context, "player")))))
+                                .executes(context -> showTrackedInventory(
+                                        context, StringArgumentType.getString(context, "player")))))
                 .then(literal("teleport")
                         .then(argument("x", coordinate())
                                 .then(argument("y", coordinate())
@@ -105,7 +99,10 @@ final class PlayerCommands {
     private static int listTrackedInventories(final CommandContext<FabricClientCommandSource> context) {
         List<InventoryTracker.Snapshot> snapshots = InventoryTracker.newest(TRACKED_INVENTORY_LIMIT);
         if (snapshots.isEmpty()) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.player.no_tracked_players_enable_inventory_tracker", "No tracked players. Enable Inventory Tracker and get near players."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.player.no_tracked_players_enable_inventory_tracker",
+                            "No tracked players. Enable Inventory Tracker and get near players."));
             return 0;
         }
         long now = System.currentTimeMillis();
@@ -115,17 +112,22 @@ final class PlayerCommands {
         return SUCCESS;
     }
 
-    private static int showTrackedInventory(final CommandContext<FabricClientCommandSource> context, final String playerName) {
+    private static int showTrackedInventory(
+            final CommandContext<FabricClientCommandSource> context, final String playerName) {
         return InventoryTracker.snapshots().stream()
                 .filter(snapshot -> snapshot.name().equalsIgnoreCase(playerName))
                 .findFirst()
                 .map(snapshot -> {
-                    context.getSource().sendFeedback(Component.literal(
-                            describeSnapshot(snapshot, System.currentTimeMillis())));
+                    context.getSource()
+                            .sendFeedback(Component.literal(describeSnapshot(snapshot, System.currentTimeMillis())));
                     return SUCCESS;
                 })
                 .orElseGet(() -> {
-                    context.getSource().sendError(Translations.component("anarchyclient.message.player.no_tracked_inventory_for", "No tracked inventory for %s.", playerName));
+                    context.getSource()
+                            .sendError(Translations.component(
+                                    "anarchyclient.message.player.no_tracked_inventory_for",
+                                    "No tracked inventory for %s.",
+                                    playerName));
                     return 0;
                 });
     }
@@ -143,7 +145,8 @@ final class PlayerCommands {
                 .append(", off ")
                 .append(itemName(snapshot.offhand()))
                 .append(", armor ");
-        List<String> armor = snapshot.armor().stream().map(PlayerCommands::itemName).toList();
+        List<String> armor =
+                snapshot.armor().stream().map(PlayerCommands::itemName).toList();
         text.append(String.join(" / ", armor));
         return text.toString();
     }
@@ -159,14 +162,19 @@ final class PlayerCommands {
     private static int centerPlayer(final CommandContext<FabricClientCommandSource> context, final CenterMode mode) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null || client.player.connection == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.player.you_must_be_in_game_to", "You must be in-game to center yourself."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.player.you_must_be_in_game_to",
+                            "You must be in-game to center yourself."));
             return 0;
         }
         double x = mode.coordinate(client.player.getX());
         double z = mode.coordinate(client.player.getZ());
         // Move locally only; vanilla sends the one position packet the server allows per tick.
         client.player.setPos(x, client.player.getY(), z);
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.centered_player", "Centered player."));
+        context.getSource()
+                .sendFeedback(
+                        Translations.component("anarchyclient.message.player.centered_player", "Centered player."));
         return SUCCESS;
     }
 
@@ -174,19 +182,28 @@ final class PlayerCommands {
         Minecraft client = Minecraft.getInstance();
         ClientPacketListener connection = client.getConnection();
         if (connection == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.player.you_must_be_connected_to_a", "You must be connected to a server to save a skin."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.player.you_must_be_connected_to_a",
+                            "You must be connected to a server to save a skin."));
             return 0;
         }
         String playerName = StringArgumentType.getString(context, "player");
         PlayerInfo info = connection.getPlayerInfoIgnoreCase(playerName);
         if (info == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.player.unknown_online_player", "Unknown online player: %s", playerName));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.player.unknown_online_player",
+                            "Unknown online player: %s",
+                            playerName));
             return 0;
         }
         String profileName = info.getProfile().name();
         String uuid = info.getProfile().id().toString().replace("-", "");
         downloadSkin(client, context.getSource(), profileName, uuid);
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.saving_skin_for", "Saving skin for %s...", profileName));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.player.saving_skin_for", "Saving skin for %s...", profileName));
         return SUCCESS;
     }
 
@@ -208,8 +225,7 @@ final class PlayerCommands {
         client.player.setDeltaMovement(
                 DoubleArgumentType.getDouble(context, "value"),
                 client.player.getDeltaMovement().y,
-                DoubleArgumentType.getDouble(context, "second")
-        );
+                DoubleArgumentType.getDouble(context, "second"));
         return SUCCESS;
     }
 
@@ -221,8 +237,7 @@ final class PlayerCommands {
         client.player.setDeltaMovement(
                 DoubleArgumentType.getDouble(context, "value"),
                 DoubleArgumentType.getDouble(context, "second"),
-                DoubleArgumentType.getDouble(context, "third")
-        );
+                DoubleArgumentType.getDouble(context, "third"));
         return SUCCESS;
     }
 
@@ -242,7 +257,8 @@ final class PlayerCommands {
         if (client == null || client.getConnection() == null) {
             return 0;
         }
-        return movePlayer(context, client.player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
+        return movePlayer(
+                context, client.player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
     }
 
     private static int dismount(final CommandContext<FabricClientCommandSource> context) {
@@ -252,9 +268,13 @@ final class PlayerCommands {
         }
         if (client.player.isPassenger()) {
             client.player.stopRiding();
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.dismounted", "Dismounted."));
+            context.getSource()
+                    .sendFeedback(Translations.component("anarchyclient.message.player.dismounted", "Dismounted."));
         } else {
-            context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.you_are_not_riding_anything", "You are not riding anything."));
+            context.getSource()
+                    .sendFeedback(Translations.component(
+                            "anarchyclient.message.player.you_are_not_riding_anything",
+                            "You are not riding anything."));
         }
         return SUCCESS;
     }
@@ -270,7 +290,13 @@ final class PlayerCommands {
         // Move locally only. A second position packet before the tick ends gets the player disconnected on 26.3,
         // and vanilla sends one with the new position in its next tick.
         client.player.absSnapTo(target.x, target.y, target.z);
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.player.sent_a_move_to_the_server", "Sent a move to %s, %s, %s. The server can still set you back.", formatCoordinate(target.x), formatCoordinate(target.y), formatCoordinate(target.z)));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.player.sent_a_move_to_the_server",
+                        "Sent a move to %s, %s, %s. The server can still set you back.",
+                        formatCoordinate(target.x),
+                        formatCoordinate(target.y),
+                        formatCoordinate(target.z)));
         return SUCCESS;
     }
 
@@ -278,11 +304,16 @@ final class PlayerCommands {
      * A vanilla server sets you back when one move packet goes more than 10 blocks past your velocity. Refuse such
      * moves up front instead of reporting a move that will not stick.
      */
-    private static boolean withinMoveLimit(final CommandContext<FabricClientCommandSource> context, final Vec3 from,
-                                           final Vec3 to) {
+    private static boolean withinMoveLimit(
+            final CommandContext<FabricClientCommandSource> context, final Vec3 from, final Vec3 to) {
         double distance = from.distanceTo(to);
         if (exceedsMoveLimit(distance)) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.player.that_is_blocks_the_server_only", "That is %s blocks; the server only accepts moves of up to %s blocks.", formatCoordinate(distance), (int) MAX_MOVE_DISTANCE));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.player.that_is_blocks_the_server_only",
+                            "That is %s blocks; the server only accepts moves of up to %s blocks.",
+                            formatCoordinate(distance),
+                            (int) MAX_MOVE_DISTANCE));
             return false;
         }
         return true;
@@ -296,7 +327,8 @@ final class PlayerCommands {
         return String.format(Locale.ROOT, "%.2f", value);
     }
 
-    private static int teleport(final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
+    private static int teleport(
+            final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
         Minecraft client = requireInGame(context);
         if (client == null || client.getConnection() == null) {
             return 0;
@@ -307,8 +339,7 @@ final class PlayerCommands {
                     getCoordinate(context, "x"),
                     getCoordinate(context, "y"),
                     getCoordinate(context, "z"),
-                    client.player.position()
-            );
+                    client.player.position());
         } catch (IllegalArgumentException exception) {
             context.getSource().sendError(Component.literal(exception.getMessage()));
             return 0;
@@ -330,19 +361,22 @@ final class PlayerCommands {
         return SUCCESS;
     }
 
-    private static void downloadSkin(final Minecraft client, final FabricClientCommandSource source,
-                                     final String profileName, final String uuid) {
+    private static void downloadSkin(
+            final Minecraft client,
+            final FabricClientCommandSource source,
+            final String profileName,
+            final String uuid) {
         CompletableFuture.runAsync(() -> {
             try {
-                HttpClient http = HttpClient.newBuilder()
-                        .connectTimeout(HTTP_TIMEOUT)
-                        .build();
-                HttpRequest profileRequest = HttpRequest.newBuilder(URI.create(
-                                "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
+                HttpClient http =
+                        HttpClient.newBuilder().connectTimeout(HTTP_TIMEOUT).build();
+                HttpRequest profileRequest = HttpRequest.newBuilder(
+                                URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
                         .timeout(HTTP_TIMEOUT)
                         .GET()
                         .build();
-                HttpResponse<String> profileResponse = http.send(profileRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                HttpResponse<String> profileResponse =
+                        http.send(profileRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
                 if (profileResponse.statusCode() != 200) {
                     throw new IOException("profile request returned HTTP " + profileResponse.statusCode());
                 }
@@ -351,7 +385,10 @@ final class PlayerCommands {
                     throw new IOException("profile does not contain a skin texture");
                 }
                 HttpResponse<byte[]> skinResponse = http.send(
-                        HttpRequest.newBuilder(URI.create(skinUrl)).timeout(HTTP_TIMEOUT).GET().build(),
+                        HttpRequest.newBuilder(URI.create(skinUrl))
+                                .timeout(HTTP_TIMEOUT)
+                                .GET()
+                                .build(),
                         HttpResponse.BodyHandlers.ofByteArray());
                 if (skinResponse.statusCode() != 200) {
                     throw new IOException("skin request returned HTTP " + skinResponse.statusCode());
@@ -359,14 +396,20 @@ final class PlayerCommands {
                 Path output = skinPath(profileName);
                 Files.createDirectories(output.getParent());
                 Files.write(output, skinResponse.body());
-                client.execute(() -> source.sendFeedback(Translations.component("anarchyclient.message.player.saved_skin_to", "Saved skin to %s", output)));
+                client.execute(() -> source.sendFeedback(Translations.component(
+                        "anarchyclient.message.player.saved_skin_to", "Saved skin to %s", output)));
             } catch (IOException | RuntimeException exception) {
                 // RuntimeException covers malformed profile JSON, bad Base64, and bad skin URLs, which
                 // the async task would otherwise drop silently.
-                client.execute(() -> source.sendError(Translations.component("anarchyclient.message.player.failed_to_save_skin", "Failed to save skin: %s", exception.getMessage())));
+                client.execute(() -> source.sendError(Translations.component(
+                        "anarchyclient.message.player.failed_to_save_skin",
+                        "Failed to save skin: %s",
+                        exception.getMessage())));
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                client.execute(() -> source.sendError(Translations.component("anarchyclient.message.player.failed_to_save_skin_interrupted", "Failed to save skin: interrupted")));
+                client.execute(() -> source.sendError(Translations.component(
+                        "anarchyclient.message.player.failed_to_save_skin_interrupted",
+                        "Failed to save skin: interrupted")));
             }
         });
     }
@@ -382,8 +425,10 @@ final class PlayerCommands {
             if (!"textures".equals(property.get("name").getAsString()) || !property.has("value")) {
                 continue;
             }
-            String decoded = new String(Base64.getDecoder().decode(property.get("value").getAsString()), StandardCharsets.UTF_8);
-            JsonObject textures = JsonParser.parseString(decoded).getAsJsonObject().getAsJsonObject("textures");
+            String decoded =
+                    new String(Base64.getDecoder().decode(property.get("value").getAsString()), StandardCharsets.UTF_8);
+            JsonObject textures =
+                    JsonParser.parseString(decoded).getAsJsonObject().getAsJsonObject("textures");
             if (textures != null && textures.has("SKIN")) {
                 return textures.getAsJsonObject("SKIN").get("url").getAsString();
             }
@@ -392,7 +437,8 @@ final class PlayerCommands {
     }
 
     private static Path skinPath(final String playerName) {
-        return FabricLoader.getInstance().getConfigDir()
+        return FabricLoader.getInstance()
+                .getConfigDir()
                 .resolve("anarchyclient")
                 .resolve("skins")
                 .resolve(sanitizeFileName(playerName) + ".png");

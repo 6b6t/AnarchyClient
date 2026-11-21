@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.player.Inventory;
@@ -7,13 +8,14 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.List;
-
 public final class InventoryHudModule extends HudElementModule {
 
     public InventoryHudModule() {
-        super("inventory_hud", "Inventory HUD",
-                "Shows your main inventory and hotbar as an item grid on screen.", "Bottom Right");
+        super(
+                "inventory_hud",
+                "Inventory HUD",
+                "Shows your main inventory and hotbar as an item grid on screen.",
+                "Bottom Right");
     }
 
     @Override
@@ -58,8 +60,7 @@ public final class InventoryHudModule extends HudElementModule {
                 "Totems " + count(inventory, Items.TOTEM_OF_UNDYING),
                 "Crystals " + count(inventory, Items.END_CRYSTAL),
                 "Gapples " + count(inventory, Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE),
-                "Obsidian " + count(inventory, Items.OBSIDIAN)
-        );
+                "Obsidian " + count(inventory, Items.OBSIDIAN));
     }
 
     static int occupiedSlots(final Inventory inventory, final int maxSlots) {

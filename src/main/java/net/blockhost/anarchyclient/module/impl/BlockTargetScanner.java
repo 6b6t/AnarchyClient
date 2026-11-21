@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Predicate;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -7,18 +11,17 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Predicate;
-
 final class BlockTargetScanner {
 
-    private BlockTargetScanner() {
-    }
+    private BlockTargetScanner() {}
 
-    static List<BlockTarget> scan(final Minecraft client, final int horizontalRadius, final int verticalRadius,
-                                  final SortMode sortMode, final int maxResults, final Predicate<BlockTarget> predicate) {
+    static List<BlockTarget> scan(
+            final Minecraft client,
+            final int horizontalRadius,
+            final int verticalRadius,
+            final SortMode sortMode,
+            final int maxResults,
+            final Predicate<BlockTarget> predicate) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || maxResults <= 0) {
             return List.of();
@@ -55,7 +58,9 @@ final class BlockTargetScanner {
 
     static void sort(final List<BlockTarget> targets, final SortMode sortMode) {
         switch (sortMode) {
-            case FARTHEST -> targets.sort(Comparator.comparingDouble(BlockTarget::distanceSqr).reversed());
+            case FARTHEST ->
+                targets.sort(
+                        Comparator.comparingDouble(BlockTarget::distanceSqr).reversed());
             case RANDOM -> shuffle(targets);
             case CLOSEST -> targets.sort(Comparator.comparingDouble(BlockTarget::distanceSqr));
         }
@@ -96,6 +101,5 @@ final class BlockTargetScanner {
         }
     }
 
-    record BlockTarget(BlockPos pos, BlockState state, double distanceSqr) {
-    }
+    record BlockTarget(BlockPos pos, BlockState state, double distanceSqr) {}
 }

@@ -16,14 +16,18 @@ public final class FreeLookModule extends Module {
             .id("lock_player")
             .name("Lock Player")
             .defaultValue(true)
-            .description("When on, the mouse turns only the camera. When off, the mouse turns both, but the camera ignores rotations from other modules.")
+            .description(
+                    "When on, the mouse turns only the camera. When off, the mouse turns both, but the camera ignores rotations from other modules.")
             .build()));
     private float cameraYaw;
     private float cameraPitch;
     private boolean initialized;
 
     public FreeLookModule() {
-        super("free_look", "Free Look", ModuleCategory.RENDER,
+        super(
+                "free_look",
+                "Free Look",
+                ModuleCategory.RENDER,
                 "Lets you rotate the camera independently of the player's facing direction.");
     }
 
@@ -69,8 +73,8 @@ public final class FreeLookModule extends Module {
         }
     }
 
-    public static boolean handleTurn(final Minecraft client, final LocalPlayer player,
-                                     final double xOffset, final double yOffset) {
+    public static boolean handleTurn(
+            final Minecraft client, final LocalPlayer player, final double xOffset, final double yOffset) {
         FreeLookModule module = active;
         if (module == null || client.gui.screen() != null || player == null) {
             return false;

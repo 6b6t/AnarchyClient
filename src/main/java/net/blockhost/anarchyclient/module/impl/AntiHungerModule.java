@@ -33,15 +33,20 @@ public final class AntiHungerModule extends Module {
             .id("keep_falling")
             .name("Falling")
             .defaultValue(false)
-            .description("Sends grounded movement as airborne. Lets a grounded packet through before the server's fall distance can hurt you. This can flag anti-cheats.")
+            .description(
+                    "Sends grounded movement as airborne. Lets a grounded packet through before the server's fall distance can hurt you. This can flag anti-cheats.")
             .build()));
     /** Stay well under the 3 block safe fall distance the server applies when it next sees you land. */
     static final double MAX_SPOOFED_DROP = 2.0;
+
     private double serverFallDistance;
     private double lastSentY = Double.NaN;
 
     public AntiHungerModule() {
-        super("anti_hunger", "Anti Hunger", ModuleCategory.PLAYER,
+        super(
+                "anti_hunger",
+                "Anti Hunger",
+                ModuleCategory.PLAYER,
                 "Reduces hunger loss by hiding sprinting and other actions from the server. This can flag anti-cheats.");
     }
 
@@ -109,7 +114,8 @@ public final class AntiHungerModule extends Module {
                 && this.cancelBreakStart.value();
     }
 
-    private static Packet<?> withGround(final ServerboundMovePlayerPacket packet, final Minecraft client, final boolean onGround) {
+    private static Packet<?> withGround(
+            final ServerboundMovePlayerPacket packet, final Minecraft client, final boolean onGround) {
         boolean horizontalCollision = packet.horizontalCollision();
         if (packet instanceof ServerboundMovePlayerPacket.PosRot) {
             return new ServerboundMovePlayerPacket.PosRot(
@@ -119,8 +125,7 @@ public final class AntiHungerModule extends Module {
                     packet.getYRot(client.player.getYRot()),
                     packet.getXRot(client.player.getXRot()),
                     onGround,
-                    horizontalCollision
-            );
+                    horizontalCollision);
         }
         if (packet instanceof ServerboundMovePlayerPacket.Pos) {
             return new ServerboundMovePlayerPacket.Pos(
@@ -128,16 +133,14 @@ public final class AntiHungerModule extends Module {
                     packet.getY(client.player.getY()),
                     packet.getZ(client.player.getZ()),
                     onGround,
-                    horizontalCollision
-            );
+                    horizontalCollision);
         }
         if (packet instanceof ServerboundMovePlayerPacket.Rot) {
             return new ServerboundMovePlayerPacket.Rot(
                     packet.getYRot(client.player.getYRot()),
                     packet.getXRot(client.player.getXRot()),
                     onGround,
-                    horizontalCollision
-            );
+                    horizontalCollision);
         }
         return new ServerboundMovePlayerPacket.StatusOnly(onGround, horizontalCollision);
     }

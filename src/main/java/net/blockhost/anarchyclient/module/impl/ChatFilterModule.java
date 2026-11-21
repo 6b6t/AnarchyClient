@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.blockhost.anarchyclient.setting.StringListSetting;
-import net.minecraft.network.chat.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.StringListSetting;
+import net.minecraft.network.chat.Component;
 
 public final class ChatFilterModule extends Module {
 
@@ -39,7 +38,10 @@ public final class ChatFilterModule extends Module {
     private List<Pattern> compiled = List.of();
 
     public ChatFilterModule() {
-        super("chat_filter", "Chat Filter", ModuleCategory.MISC,
+        super(
+                "chat_filter",
+                "Chat Filter",
+                ModuleCategory.MISC,
                 "Hides chat messages that contain your filter words or match your regular expressions.");
     }
 
@@ -82,7 +84,8 @@ public final class ChatFilterModule extends Module {
                 continue;
             }
             try {
-                patterns.add(Pattern.compile(regex ? filter : Pattern.quote(filter.toLowerCase(Locale.ROOT)),
+                patterns.add(Pattern.compile(
+                        regex ? filter : Pattern.quote(filter.toLowerCase(Locale.ROOT)),
                         regex ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : 0));
             } catch (PatternSyntaxException ignored) {
                 // An invalid expression filters nothing; the other entries still apply.

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.RenderSuppression;
@@ -10,9 +12,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.effect.MobEffects;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class NoRenderModule extends Module {
 
@@ -66,7 +65,11 @@ public final class NoRenderModule extends Module {
     private boolean weatherHidden;
 
     public NoRenderModule() {
-        super("no_render", "No Render", ModuleCategory.RENDER, "Suppresses selected visual effects, overlays, and entities that clutter the screen.");
+        super(
+                "no_render",
+                "No Render",
+                ModuleCategory.RENDER,
+                "Suppresses selected visual effects, overlays, and entities that clutter the screen.");
     }
 
     @Override

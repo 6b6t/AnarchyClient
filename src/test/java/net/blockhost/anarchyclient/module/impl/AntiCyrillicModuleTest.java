@@ -1,9 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import org.junit.jupiter.api.Test;
 
 class AntiCyrillicModuleTest {
 

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -10,8 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class BurrowModule extends Module {
 
@@ -30,11 +29,8 @@ public final class BurrowModule extends Module {
             .name("Support")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting jump = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("jump")
-            .name("Jump")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting jump = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("jump").name("Jump").defaultValue(true).build()));
     private final BooleanSetting rubberband = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("rubberband")
             .name("Rubberband")
@@ -64,7 +60,10 @@ public final class BurrowModule extends Module {
     private int placingTicks;
 
     public BurrowModule() {
-        super("burrow", "Burrow", ModuleCategory.COMBAT,
+        super(
+                "burrow",
+                "Burrow",
+                ModuleCategory.COMBAT,
                 "Centers you, jumps, and places a block in the space you stood in, then sends a raised position to lag you back into it.");
     }
 
@@ -84,7 +83,9 @@ public final class BurrowModule extends Module {
         if (this.target == null) {
             this.target = player.blockPosition();
         }
-        if (this.center.value() && this.phase == Phase.CENTERING && !centerPlayer(player, this.centerTolerance.value())) {
+        if (this.center.value()
+                && this.phase == Phase.CENTERING
+                && !centerPlayer(player, this.centerTolerance.value())) {
             this.debugValue("phase", "centering");
             return;
         }
@@ -97,7 +98,10 @@ public final class BurrowModule extends Module {
             return;
         }
         this.phase = Phase.PLACING;
-        int placed = CombatPlacementPlanner.placeBatch(client, this, List.of(this.target),
+        int placed = CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                List.of(this.target),
                 CombatPlacementPlanner.COMBAT_BLOCKS,
                 CombatPlacementPlanner.Options.of(1, this.rotate.value(), 5.5)
                         .withSupport(this.support.value())
@@ -105,22 +109,25 @@ public final class BurrowModule extends Module {
                         .withAvoidEntities(false));
         this.debugValue("phase", "placing");
         this.debugValue("placed", placed);
-        if (CombatPlacementPlanner.isReplaceable(client.level, this.target) && ++this.placingTicks > PLACE_TIMEOUT_TICKS) {
+        if (CombatPlacementPlanner.isReplaceable(client.level, this.target)
+                && ++this.placingTicks > PLACE_TIMEOUT_TICKS) {
             // No blocks, or the cell is still occupied by the player (Jump off): it will never work.
-            player.sendSystemMessage(Translations.component("anarchyclient.message.burrow.burrow_failed_could_not_place_a", "Burrow failed: could not place a block in your cell."));
+            player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.burrow.burrow_failed_could_not_place_a",
+                    "Burrow failed: could not place a block in your cell."));
             this.enabled(false);
             return;
         }
         if (!CombatPlacementPlanner.isReplaceable(client.level, this.target)) {
             if (this.rubberband.value() && client.getConnection() != null) {
                 Vec3 position = player.position();
-                client.getConnection().send(new ServerboundMovePlayerPacket.Pos(
-                        position.x,
-                        position.y + this.rubberbandHeight.value(),
-                        position.z,
-                        false,
-                        player.horizontalCollision
-                ));
+                client.getConnection()
+                        .send(new ServerboundMovePlayerPacket.Pos(
+                                position.x,
+                                position.y + this.rubberbandHeight.value(),
+                                position.z,
+                                false,
+                                player.horizontalCollision));
             }
             this.enabled(false);
         }

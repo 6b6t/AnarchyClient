@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.rivet;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.text.ShapedText;
 import net.lenni0451.rivet.math.Point;
@@ -9,9 +11,6 @@ import net.lenni0451.rivet.text.model.TextLine;
 import net.lenni0451.rivet.text.model.TextSection;
 import net.minecraft.client.gui.Font;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class MinecraftShapedText implements ShapedText {
 
     private final Font font;
@@ -20,7 +19,11 @@ public final class MinecraftShapedText implements ShapedText {
     private final String text;
 
     public MinecraftShapedText(final Font font, final int size, final String text, final Color color) {
-        this(font, size, List.of(new Segment(text, new TextFormat(color, Color.TRANSPARENT, false, false, false, false, false))));
+        this(
+                font,
+                size,
+                List.of(new Segment(
+                        text, new TextFormat(color, Color.TRANSPARENT, false, false, false, false, false))));
     }
 
     public MinecraftShapedText(final Font font, final int size, final TextLine line) {
@@ -88,8 +91,10 @@ public final class MinecraftShapedText implements ShapedText {
 
     /** Moves an index that falls inside a surrogate pair back to the start of that character. */
     static int codePointBoundary(final String text, final int index) {
-        if (index > 0 && index < text.length()
-                && Character.isLowSurrogate(text.charAt(index)) && Character.isHighSurrogate(text.charAt(index - 1))) {
+        if (index > 0
+                && index < text.length()
+                && Character.isLowSurrogate(text.charAt(index))
+                && Character.isHighSurrogate(text.charAt(index - 1))) {
             return index - 1;
         }
         return index;
@@ -111,6 +116,5 @@ public final class MinecraftShapedText implements ShapedText {
         return builder.toString();
     }
 
-    public record Segment(String text, TextFormat format) {
-    }
+    public record Segment(String text, TextFormat format) {}
 }

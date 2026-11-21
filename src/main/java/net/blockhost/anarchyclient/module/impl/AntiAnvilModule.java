@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -12,8 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.phys.AABB;
-
-import java.util.List;
 
 public final class AntiAnvilModule extends Module {
 
@@ -38,7 +37,10 @@ public final class AntiAnvilModule extends Module {
             .build()));
 
     public AntiAnvilModule() {
-        super("anti_anvil", "Anti Anvil", ModuleCategory.COMBAT,
+        super(
+                "anti_anvil",
+                "Anti Anvil",
+                ModuleCategory.COMBAT,
                 "Breaks anvils above your head or places obsidian under them before they land.");
     }
 
@@ -51,11 +53,12 @@ public final class AntiAnvilModule extends Module {
             BlockPos pos = client.player.blockPosition().above(y);
             if (client.level.getBlockState(pos).getBlock() instanceof AnvilBlock) {
                 if (this.shouldPlace() && y > 1 && this.canPlaceBlocker(client, pos.below())) {
-                    BlockPlacement.PlacementResult result = BlockPlacement.place(client, this, pos.below(),
-                            this.rotate.value(), 60.0F, stack -> stack.is(Items.OBSIDIAN));
+                    BlockPlacement.PlacementResult result = BlockPlacement.place(
+                            client, this, pos.below(), this.rotate.value(), 60.0F, stack -> stack.is(Items.OBSIDIAN));
                     // Placing (or waiting for the rotation) takes this tick; the anvil is handled next tick.
                     // When the blocker cannot be placed, fall through and break the anvil instead.
-                    if (result == BlockPlacement.PlacementResult.PLACED || result == BlockPlacement.PlacementResult.WAITING) {
+                    if (result == BlockPlacement.PlacementResult.PLACED
+                            || result == BlockPlacement.PlacementResult.WAITING) {
                         WorldInteraction.stopBreaking(client, this);
                         return;
                     }
@@ -78,7 +81,8 @@ public final class AntiAnvilModule extends Module {
 
     /** The blocker never goes into a cell the player occupies, such as the head cell under a low anvil. */
     private boolean canPlaceBlocker(final Minecraft client, final BlockPos blocker) {
-        return client.player != null && client.level != null
+        return client.player != null
+                && client.level != null
                 && !client.player.getBoundingBox().intersects(new AABB(blocker))
                 && client.level.getBlockState(blocker).canBeReplaced()
                 && WorldInteraction.hasHotbarItem(client.player.getInventory(), stack -> stack.is(Items.OBSIDIAN))

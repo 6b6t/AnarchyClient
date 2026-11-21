@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.UUID;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,10 +13,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.UUID;
 
 public final class TargetLockModule extends Module {
 
@@ -35,7 +34,10 @@ public final class TargetLockModule extends Module {
     private UUID locked;
 
     public TargetLockModule() {
-        super("target_lock", "Target Lock", ModuleCategory.COMBAT,
+        super(
+                "target_lock",
+                "Target Lock",
+                ModuleCategory.COMBAT,
                 "Keeps combat modules on the same target by locking onto the nearest player until it leaves range.");
     }
 
@@ -59,21 +61,30 @@ public final class TargetLockModule extends Module {
             this.locked = null;
             return;
         }
-        LivingEntity current = this.findLocked(client, TargetPolicy.of(true, this.hostiles.value(), false,
-                true, true, true, true), this.range.value()).orElse(null);
+        LivingEntity current = this.findLocked(
+                        client,
+                        TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true),
+                        this.range.value())
+                .orElse(null);
         if (current != null) {
             return;
         }
         // Only the module's own range decides when the lock ends; callers may use a smaller range.
         this.locked = null;
-        TargetQuery.closest(client.level.entitiesForRendering(), client.player,
-                TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true),
-                this.range.value(), Comparator.comparingDouble(client.player::distanceToSqr))
+        TargetQuery.closest(
+                        client.level.entitiesForRendering(),
+                        client.player,
+                        TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true),
+                        this.range.value(),
+                        Comparator.comparingDouble(client.player::distanceToSqr))
                 .ifPresent(target -> this.locked = target.getUUID());
     }
 
-    public static Optional<LivingEntity> preferred(final Iterable<? extends Entity> entities, final Player player,
-                                                   final TargetPolicy policy, final double range) {
+    public static Optional<LivingEntity> preferred(
+            final Iterable<? extends Entity> entities,
+            final Player player,
+            final TargetPolicy policy,
+            final double range) {
         TargetLockModule module = active;
         if (module == null || player == null) {
             return Optional.empty();
@@ -87,9 +98,11 @@ public final class TargetLockModule extends Module {
                 : this.findLocked(client.level.entitiesForRendering(), client.player, policy, range);
     }
 
-    private Optional<LivingEntity> findLocked(final Iterable<? extends Entity> entities,
-                                             final Player player,
-                                             final TargetPolicy policy, final double range) {
+    private Optional<LivingEntity> findLocked(
+            final Iterable<? extends Entity> entities,
+            final Player player,
+            final TargetPolicy policy,
+            final double range) {
         if (this.locked == null) {
             return Optional.empty();
         }

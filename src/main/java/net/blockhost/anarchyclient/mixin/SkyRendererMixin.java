@@ -16,8 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SkyRendererMixin {
 
     @Inject(method = "extractRenderState", at = @At("TAIL"))
-    private void anarchyclient$customSky(final ClientLevel level, final float partialTicks, final Camera camera,
-                                         final SkyRenderState state, final CallbackInfo info) {
+    private void anarchyclient$customSky(
+            final ClientLevel level,
+            final float partialTicks,
+            final Camera camera,
+            final SkyRenderState state,
+            final CallbackInfo info) {
         if (state.skybox != DimensionType.Skybox.OVERWORLD) {
             return;
         }

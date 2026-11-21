@@ -1,19 +1,18 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_BUTTON;
+import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
+import static net.blockhost.anarchyclient.ui.PanelWidgets.drawIcon;
+
+import java.util.Locale;
+import java.util.function.BooleanSupplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.Locale;
-import java.util.function.BooleanSupplier;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_BUTTON;
-import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.drawIcon;
 
 final class DockButton extends Component implements LayoutDebugLabel {
 
@@ -27,8 +26,13 @@ final class DockButton extends Component implements LayoutDebugLabel {
     private final Anim hover = new Anim();
     private boolean hovered;
 
-    DockButton(final ModulePanel panel, final String icon, final String name, final BooleanSupplier selected,
-               final Runnable action, final BooleanSupplier activeDot) {
+    DockButton(
+            final ModulePanel panel,
+            final String icon,
+            final String name,
+            final BooleanSupplier selected,
+            final Runnable action,
+            final BooleanSupplier activeDot) {
         this.panel = panel;
         this.icon = icon;
         this.name = name;
@@ -43,8 +47,8 @@ final class DockButton extends Component implements LayoutDebugLabel {
         float glow = this.hover.toward(this.hovered || isSelected ? 1F : 0F, 14F);
         if (glow > 0.01F) {
             int alpha = Math.round((isSelected ? 40F : 26F) * glow);
-            renderer.optimizedFillRoundedRect(1F, 1F, size.width() - 2F, size.height() - 2F, 9F,
-                    Color.fromRGBA(255, 255, 255, alpha));
+            renderer.optimizedFillRoundedRect(
+                    1F, 1F, size.width() - 2F, size.height() - 2F, 9F, Color.fromRGBA(255, 255, 255, alpha));
         }
         Color iconColor = isSelected ? GlassTheme.accent() : (this.hovered ? TEXT : MUTED);
         drawIcon(renderer, this.icon, size.width() / 2F, size.height() / 2F, iconColor);

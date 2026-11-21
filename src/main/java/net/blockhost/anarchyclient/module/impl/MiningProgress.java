@@ -25,12 +25,15 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 final class MiningProgress {
 
-    private MiningProgress() {
-    }
+    private MiningProgress() {}
 
     /** Returns the progress one tick of mining adds with {@code tool}, where 1.0 is a full break. */
-    static float perTick(final Player player, final BlockGetter level, final BlockPos pos, final BlockState state,
-                         final ItemStack tool) {
+    static float perTick(
+            final Player player,
+            final BlockGetter level,
+            final BlockPos pos,
+            final BlockState state,
+            final ItemStack tool) {
         float hardness = state.getDestroySpeed(level, pos);
         if (hardness < 0.0F) {
             return 0.0F;
@@ -43,7 +46,8 @@ final class MiningProgress {
             speed *= 1.0F + (MobEffectUtil.getDigSpeedAmplification(player) + 1) * 0.2F;
         }
         if (player.hasEffect(MobEffects.MINING_FATIGUE)) {
-            speed *= (float) Math.pow(0.3, player.getEffect(MobEffects.MINING_FATIGUE).getAmplifier() + 1);
+            speed *= (float)
+                    Math.pow(0.3, player.getEffect(MobEffects.MINING_FATIGUE).getAmplifier() + 1);
         }
         speed *= (float) player.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
         if (player.isEyeInFluid(FluidTags.WATER)) {
@@ -80,8 +84,10 @@ final class MiningProgress {
         if (tool.isEmpty()) {
             return 0;
         }
-        Holder<Enchantment> efficiency = player.registryAccess().lookupOrThrow(Registries.ENCHANTMENT)
-                .get(Enchantments.EFFICIENCY).orElse(null);
+        Holder<Enchantment> efficiency = player.registryAccess()
+                .lookupOrThrow(Registries.ENCHANTMENT)
+                .get(Enchantments.EFFICIENCY)
+                .orElse(null);
         return efficiency == null ? 0 : EnchantmentHelper.getItemEnchantmentLevel(efficiency, tool);
     }
 }

@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -17,17 +20,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 public final class SoundLocatorModule extends Module {
 
-    private final StringSetting sounds = this.setting(StringSetting.from(StringSetting.builder()
-            .id("sounds")
-            .name("Sounds")
-            .defaultValue("")
-            .build()));
+    private final StringSetting sounds = this.setting(StringSetting.from(
+            StringSetting.builder().id("sounds").name("Sounds").defaultValue("").build()));
     private final BooleanSetting logChat = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("log_chat")
             .name("Chat")
@@ -68,7 +64,10 @@ public final class SoundLocatorModule extends Module {
     private Level level;
 
     public SoundLocatorModule() {
-        super("sound_locator", "Sound Locator", ModuleCategory.RENDER,
+        super(
+                "sound_locator",
+                "Sound Locator",
+                ModuleCategory.RENDER,
                 "Marks where server sounds play with boxes, optionally filtered by sound ID and logged to chat.");
     }
 
@@ -104,9 +103,8 @@ public final class SoundLocatorModule extends Module {
             }
         }
         if (this.logChat.value() && client.player != null) {
-            client.player.sendSystemMessage(Component.literal(
-                    "%s at %.1f %.1f %.1f".formatted(id, position.x, position.y, position.z)
-            ));
+            client.player.sendSystemMessage(
+                    Component.literal("%s at %.1f %.1f %.1f".formatted(id, position.x, position.y, position.z)));
         }
     }
 
@@ -128,13 +126,13 @@ public final class SoundLocatorModule extends Module {
         }
         for (SoundMarker marker : snapshot) {
             AABB box = new AABB(
-                    marker.position().x - halfSize,
-                    marker.position().y - halfSize,
-                    marker.position().z - halfSize,
-                    marker.position().x + halfSize,
-                    marker.position().y + halfSize,
-                    marker.position().z + halfSize
-            ).move(camera.scale(-1));
+                            marker.position().x - halfSize,
+                            marker.position().y - halfSize,
+                            marker.position().z - halfSize,
+                            marker.position().x + halfSize,
+                            marker.position().y + halfSize,
+                            marker.position().z + halfSize)
+                    .move(camera.scale(-1));
             WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(250, 80, 80, 45));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(250, 80, 80, 210));
         }

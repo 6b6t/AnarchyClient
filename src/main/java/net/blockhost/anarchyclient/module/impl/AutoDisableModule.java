@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -9,10 +12,6 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
-
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
 
 public final class AutoDisableModule extends Module {
 
@@ -41,7 +40,10 @@ public final class AutoDisableModule extends Module {
     private int observedFlagSequence;
 
     public AutoDisableModule(final ModuleManager modules) {
-        super("auto_disable", "Auto Disable", ModuleCategory.MISC,
+        super(
+                "auto_disable",
+                "Auto Disable",
+                ModuleCategory.MISC,
                 "Turns off a configured list of modules when you die, disconnect, or get a server setback.");
         this.modules = modules;
     }

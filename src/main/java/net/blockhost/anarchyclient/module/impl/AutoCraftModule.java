@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -17,8 +18,6 @@ import net.minecraft.world.item.crafting.display.RecipeDisplayEntry;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.SlotDisplayContext;
-
-import java.util.Set;
 
 public final class AutoCraftModule extends Module {
 
@@ -49,14 +48,20 @@ public final class AutoCraftModule extends Module {
     private int cooldown;
 
     public AutoCraftModule() {
-        super("auto_craft", "Auto Craft", ModuleCategory.PLAYER,
+        super(
+                "auto_craft",
+                "Auto Craft",
+                ModuleCategory.PLAYER,
                 "Crafts the configured items from your recipe book in an open crafting table and collects or drops the result.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null || !(player.containerMenu instanceof CraftingMenu menu)) {
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
+                || !(player.containerMenu instanceof CraftingMenu menu)) {
             this.cooldown = 0;
             return;
         }
@@ -86,8 +91,8 @@ public final class AutoCraftModule extends Module {
      * inventory and grid now. Craftability is computed here because the recipe book only updates
      * it while its screen is open.
      */
-    static RecipeDisplayEntry findRecipe(final Minecraft client, final LocalPlayer player, final CraftingMenu menu,
-                                         final Set<Item> targets) {
+    static RecipeDisplayEntry findRecipe(
+            final Minecraft client, final LocalPlayer player, final CraftingMenu menu, final Set<Item> targets) {
         if (client.level == null || targets.isEmpty()) {
             return null;
         }
@@ -97,7 +102,8 @@ public final class AutoCraftModule extends Module {
         for (RecipeCollection collection : player.getRecipeBook().getCollections()) {
             for (RecipeDisplayEntry recipe : collection.getRecipes()) {
                 if (!fitsGrid(recipe.display(), menu.getGridWidth(), menu.getGridHeight())
-                        || !producesTarget(client, recipe, targets) || !recipe.canCraft(contents)) {
+                        || !producesTarget(client, recipe, targets)
+                        || !recipe.canCraft(contents)) {
                     continue;
                 }
                 return recipe;
@@ -106,8 +112,10 @@ public final class AutoCraftModule extends Module {
         return null;
     }
 
-    private static boolean producesTarget(final Minecraft client, final RecipeDisplayEntry recipe, final Set<Item> targets) {
-        for (ItemStack result : recipe.display().result().resolveForStacks(SlotDisplayContext.fromLevel(client.level))) {
+    private static boolean producesTarget(
+            final Minecraft client, final RecipeDisplayEntry recipe, final Set<Item> targets) {
+        for (ItemStack result :
+                recipe.display().result().resolveForStacks(SlotDisplayContext.fromLevel(client.level))) {
             if (targets.contains(result.getItem())) {
                 return true;
             }
@@ -118,7 +126,8 @@ public final class AutoCraftModule extends Module {
     static boolean fitsGrid(final RecipeDisplay display, final int gridWidth, final int gridHeight) {
         return switch (display) {
             case ShapedCraftingRecipeDisplay shaped -> gridWidth >= shaped.width() && gridHeight >= shaped.height();
-            case ShapelessCraftingRecipeDisplay shapeless -> gridWidth * gridHeight >= shapeless.ingredients().size();
+            case ShapelessCraftingRecipeDisplay shapeless ->
+                gridWidth * gridHeight >= shapeless.ingredients().size();
             default -> false;
         };
     }

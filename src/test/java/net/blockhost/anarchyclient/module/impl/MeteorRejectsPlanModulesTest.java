@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.util.PlaceholderFormatter;
 import net.minecraft.world.item.ItemStack;
@@ -7,20 +13,14 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 @ExtendWith(MinecraftBootstrapExtension.class)
 class MeteorRejectsPlanModulesTest {
 
     @Test
     void chatBotParsesCommandsAndReplies() {
         assertEquals("ping", ChatBotModule.command("<Steve> !ping now", "!"));
-        assertEquals(Map.of("ping", "Pong", "coords", "{player.pos}"),
+        assertEquals(
+                Map.of("ping", "Pong", "coords", "{player.pos}"),
                 ChatBotModule.parseReplies("ping=Pong\\ncoords={player.pos}"));
         assertEquals("Hello Steve", PlaceholderFormatter.format("Hello {player}", Map.of("player", "Steve")));
     }

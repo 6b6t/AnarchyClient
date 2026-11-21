@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,8 +8,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.client.player.LocalPlayer;
-
-import java.util.List;
 
 public final class AutoWalkModule extends Module {
 
@@ -35,7 +34,10 @@ public final class AutoWalkModule extends Module {
             .build()));
 
     public AutoWalkModule() {
-        super("auto_walk", "Auto Walk", ModuleCategory.MOVEMENT,
+        super(
+                "auto_walk",
+                "Auto Walk",
+                ModuleCategory.MOVEMENT,
                 "Holds the forward or backward key for you, with optional sprinting and a stop when you hit a wall.");
     }
 

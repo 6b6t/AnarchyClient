@@ -1,15 +1,13 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.Optional;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
 
-import java.util.Optional;
-
 public final class InventorySlots {
 
-    private InventorySlots() {
-    }
+    private InventorySlots() {}
 
     public static int toInventoryMenuSlot(final int inventorySlot) {
         if (Inventory.isHotbarSlot(inventorySlot)) {

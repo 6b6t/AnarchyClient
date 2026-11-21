@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Random;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -15,9 +17,6 @@ import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-
-import java.util.List;
-import java.util.Random;
 
 public final class AutoClickerModule extends Module {
 
@@ -61,8 +60,12 @@ public final class AutoClickerModule extends Module {
     private final AttackCadence cadence = new AttackCadence(new Random());
 
     public AutoClickerModule() {
-        super("auto_clicker", "Auto Clicker", ModuleCategory.COMBAT,
-                "Attacks or uses items at a randomized CPS, optionally only while the button is held with a weapon.", List.of("trigger_bot"));
+        super(
+                "auto_clicker",
+                "Auto Clicker",
+                ModuleCategory.COMBAT,
+                "Attacks or uses items at a randomized CPS, optionally only while the button is held with a weapon.",
+                List.of("trigger_bot"));
     }
 
     @Override
@@ -88,8 +91,9 @@ public final class AutoClickerModule extends Module {
     private boolean shouldClick(final Minecraft client, final LocalPlayer player) {
         return (!this.weaponsOnly.value() || isWeapon(player.getMainHandItem()))
                 && (!this.requireCooldown.value() || player.getAttackStrengthScale(0.0F) >= 1.0F)
-                && (!this.holdRequired.value() || this.shouldAttack(client) && client.options.keyAttack.isDown()
-                || this.shouldUse(client) && client.options.keyUse.isDown());
+                && (!this.holdRequired.value()
+                        || this.shouldAttack(client) && client.options.keyAttack.isDown()
+                        || this.shouldUse(client) && client.options.keyUse.isDown());
     }
 
     private boolean shouldAttack(final Minecraft client) {
@@ -122,7 +126,9 @@ public final class AutoClickerModule extends Module {
 
     private boolean use(final Minecraft client, final LocalPlayer player) {
         if (client.hitResult instanceof BlockHitResult blockHit && blockHit.getType() == HitResult.Type.BLOCK) {
-            if (client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, blockHit).consumesAction()) {
+            if (client.gameMode
+                    .useItemOn(player, InteractionHand.MAIN_HAND, blockHit)
+                    .consumesAction()) {
                 player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 return true;
             }
@@ -136,9 +142,7 @@ public final class AutoClickerModule extends Module {
 
     static boolean isWeapon(final ItemStack stack) {
         return !stack.isEmpty()
-                && (stack.has(DataComponents.WEAPON)
-                || stack.is(ItemTags.SWORDS)
-                || stack.is(ItemTags.AXES));
+                && (stack.has(DataComponents.WEAPON) || stack.is(ItemTags.SWORDS) || stack.is(ItemTags.AXES));
     }
 
     static int delayTicks(final double minCps, final double maxCps) {

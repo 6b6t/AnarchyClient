@@ -1,11 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import org.joml.Vector3fc;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.joml.Vector3fc;
+import org.junit.jupiter.api.Test;
 
 class RenderEffectsModulesTest {
 
@@ -51,6 +51,7 @@ class RenderEffectsModulesTest {
 
     @Test
     void skinFlickerCanLeaveTheCapeAlone() {
-        assertTrue(SkinFlickerModule.parts(true).size() > SkinFlickerModule.parts(false).size());
+        assertTrue(SkinFlickerModule.parts(true).size()
+                > SkinFlickerModule.parts(false).size());
     }
 }

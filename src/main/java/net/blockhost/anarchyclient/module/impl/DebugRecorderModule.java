@@ -1,5 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -12,18 +22,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Locale;
 
 public final class DebugRecorderModule extends Module {
 
@@ -56,7 +54,10 @@ public final class DebugRecorderModule extends Module {
     private int observedFlagSequence;
 
     public DebugRecorderModule() {
-        super("debug_recorder", "Debug Recorder", ModuleCategory.MISC,
+        super(
+                "debug_recorder",
+                "Debug Recorder",
+                ModuleCategory.MISC,
                 "Records recent packet names and saves them to a log file when disabled or when the server flags you.");
     }
 
@@ -129,7 +130,8 @@ public final class DebugRecorderModule extends Module {
             Files.createDirectories(dir);
             Files.write(file, new ArrayList<>(this.records), StandardCharsets.UTF_8);
             if (client != null && client.player != null) {
-                client.player.sendSystemMessage(Translations.component("anarchyclient.message.debug_recorder.debug_log_saved_to", "Debug log saved to %s.", file));
+                client.player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.debug_recorder.debug_log_saved_to", "Debug log saved to %s.", file));
             }
         } catch (IOException exception) {
             AnarchyClient.LOGGER.warn("Failed to save debug recorder log", exception);

@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.notification;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
@@ -11,9 +13,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * BleachHack-style module toggle feedback. Either a stack of glass toasts in a screen corner (POPUP)
  * or a styled chat line (CHAT). Colors follow the client's theme accent so it matches the menu.
@@ -24,6 +23,7 @@ public final class ToggleNotifications {
     private static final int ROW_HEIGHT = 20;
     /** Text inset, and therefore the chip's horizontal padding. */
     private static final float TEXT_INSET = 12F;
+
     private static final Color OUTLINE = Color.fromRGBA(255, 255, 255, 70);
     private static final int ROW_GAP = 5;
     private static final int MARGIN = 6;
@@ -40,8 +40,7 @@ public final class ToggleNotifications {
     private static Corner corner = Corner.TOP_RIGHT;
     private static int durationMs = 2000;
 
-    private ToggleNotifications() {
-    }
+    private ToggleNotifications() {}
 
     public static boolean enabled() {
         return enabled;
@@ -106,10 +105,14 @@ public final class ToggleNotifications {
         int accentRgb = GlassTheme.accent().toARGB() & 0xFFFFFF;
         int offRgb = GlassTheme.OFF.toARGB() & 0xFFFFFF;
         Component message = Component.literal("")
-                .append(Component.literal("[AnarchyClient] ").withStyle(style -> style.withColor(accentRgb).withBold(true)))
+                .append(Component.literal("[AnarchyClient] ")
+                        .withStyle(style -> style.withColor(accentRgb).withBold(true)))
                 .append(Component.literal(moduleName + " "))
-                .append((on ? Translations.component("anarchyclient.message.toggle_notifications.enabled", "enabled")
-                        : Translations.component("anarchyclient.message.toggle_notifications.disabled", "disabled"))
+                .append((on
+                                ? Translations.component(
+                                        "anarchyclient.message.toggle_notifications.enabled", "enabled")
+                                : Translations.component(
+                                        "anarchyclient.message.toggle_notifications.disabled", "disabled"))
                         .withStyle(style -> style.withColor(on ? accentRgb : offRgb)));
         client.player.sendSystemMessage(message);
     }
@@ -144,19 +147,25 @@ public final class ToggleNotifications {
                 // The HUD editor's hint chip, minus its drop shadow: in-game the panel has no blurred
                 // scene to sample and stays translucent, so a shadow underneath shows straight through
                 // it — brightest at the rim, darkest at the center. The rim carries the edge instead.
-                renderer.custom(new GlassPanelCommand(x, y, width, ROW_HEIGHT, radius,
-                        fade(GlassTheme.glass(), alpha)));
+                renderer.custom(
+                        new GlassPanelCommand(x, y, width, ROW_HEIGHT, radius, fade(GlassTheme.glass(), alpha)));
                 // One 1px ring on the panel's own bounds, at the width sdf_outline renders, so it frames
                 // the fill exactly instead of stacking a second ring inside it.
                 renderer.outlineRoundedRect(x, y, width, ROW_HEIGHT, radius, 1F, fade(OUTLINE, alpha));
-                graphics.text(font, text, Math.round(x + TEXT_INSET), Math.round(y + (ROW_HEIGHT - 8F) / 2F),
-                        fade(GlassTheme.TEXT, alpha).toARGB(), false);
+                graphics.text(
+                        font,
+                        text,
+                        Math.round(x + TEXT_INSET),
+                        Math.round(y + (ROW_HEIGHT - 8F) / 2F),
+                        fade(GlassTheme.TEXT, alpha).toARGB(),
+                        false);
             }
         } catch (RuntimeException exception) {
             // A render failure must never take down the HUD; the toast simply won't show this frame.
             if (!renderFailureLogged) {
                 renderFailureLogged = true;
-                AnarchyClient.LOGGER.warn("Toggle notification render failed; further failures are not logged", exception);
+                AnarchyClient.LOGGER.warn(
+                        "Toggle notification render failed; further failures are not logged", exception);
             }
         }
     }
@@ -253,6 +262,5 @@ public final class ToggleNotifications {
         }
     }
 
-    private record Toast(String name, boolean on, long createdAt) {
-    }
+    private record Toast(String name, boolean on, long createdAt) {}
 }

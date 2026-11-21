@@ -19,8 +19,7 @@ import net.blockhost.anarchyclient.module.impl.YggdrasilSignatureFixModule;
  */
 final class ServerModules {
 
-    private ServerModules() {
-    }
+    private ServerModules() {}
 
     static void register(final ModuleManager modules) {
         // Packet filters come first, so no module queues, replays, or rebuilds a packet they would drop.

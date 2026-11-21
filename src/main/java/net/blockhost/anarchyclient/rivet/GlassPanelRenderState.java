@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.rivet;
 
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import java.util.List;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2fc;
-
-import java.util.List;
 
 /**
  * Glass panel mesh with explicit texture coordinates. Unlike {@link Blaze3DGuiShapeRenderState},
@@ -22,11 +21,10 @@ record GlassPanelRenderState(
         List<Vertex> vertices,
         int color,
         ScreenRectangle scissorArea,
-        ScreenRectangle bounds
-) implements GuiElementRenderState {
+        ScreenRectangle bounds)
+        implements GuiElementRenderState {
 
-    record Vertex(float x, float y, float u, float v) {
-    }
+    record Vertex(float x, float y, float u, float v) {}
 
     @Override
     public void buildVertices(final VertexConsumer consumer) {

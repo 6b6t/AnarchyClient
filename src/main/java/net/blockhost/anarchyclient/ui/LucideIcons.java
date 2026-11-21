@@ -1,7 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.AnarchyClient;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import net.blockhost.anarchyclient.AnarchyClient;
 
 final class LucideIcons {
 
@@ -19,8 +18,7 @@ final class LucideIcons {
 
     private static volatile Map<String, String> glyphs;
 
-    private LucideIcons() {
-    }
+    private LucideIcons() {}
 
     static String glyph(final String name) {
         String glyph = glyphs().get(name);

@@ -8,7 +8,10 @@ import net.minecraft.client.Minecraft;
 public final class NoJumpDelayModule extends Module {
 
     public NoJumpDelayModule() {
-        super("no_jump_delay", "No Jump Delay", ModuleCategory.MOVEMENT,
+        super(
+                "no_jump_delay",
+                "No Jump Delay",
+                ModuleCategory.MOVEMENT,
                 "Removes the short delay between jumps when holding the jump key.");
     }
 

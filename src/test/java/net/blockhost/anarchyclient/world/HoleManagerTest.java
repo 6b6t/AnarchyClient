@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.world;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,14 +18,6 @@ import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class HoleManagerTest {
@@ -68,7 +67,8 @@ class HoleManagerTest {
         blocks.remove(second);
         blocks.remove(second.north());
 
-        assertTrue(HoleManager.nearbyDoubleHoleCells(new MapBlockGetter(blocks), HOLE, 2).isEmpty());
+        assertTrue(HoleManager.nearbyDoubleHoleCells(new MapBlockGetter(blocks), HOLE, 2)
+                .isEmpty());
     }
 
     private static BlockGetter walledHole(final BlockState inside) {

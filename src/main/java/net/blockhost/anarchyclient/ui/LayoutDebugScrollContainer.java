@@ -1,12 +1,11 @@
 package net.blockhost.anarchyclient.ui;
 
+import java.util.List;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.Parent;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.List;
 
 final class LayoutDebugScrollContainer extends ScrollContainer implements LayoutDebugChildren {
 
@@ -29,10 +28,7 @@ final class LayoutDebugScrollContainer extends ScrollContainer implements Layout
     @Override
     public List<LayoutDebugChild> layoutDebugChildren(final Rectangle bounds) {
         Rectangle childBounds = new Rectangle(
-                scrollOffset(this.scrollX()),
-                scrollOffset(this.scrollY()),
-                this.debugChildSize(bounds.size())
-        );
+                scrollOffset(this.scrollX()), scrollOffset(this.scrollY()), this.debugChildSize(bounds.size()));
         return List.of(new LayoutDebugChild("content", this.child, childBounds, true));
     }
 
@@ -40,12 +36,23 @@ final class LayoutDebugScrollContainer extends ScrollContainer implements Layout
         Size contentSize = this.debugContentSize(viewportSize);
         return new Size(
                 this.horizontalScrolling()
-                        ? clamp(Math.max(viewportSize.width(), contentSize.width()), this.child.minSize().width(), this.child.maxSize().width())
-                        : clamp(viewportSize.width(), this.child.minSize().width(), this.child.maxSize().width()),
+                        ? clamp(
+                                Math.max(viewportSize.width(), contentSize.width()),
+                                this.child.minSize().width(),
+                                this.child.maxSize().width())
+                        : clamp(
+                                viewportSize.width(),
+                                this.child.minSize().width(),
+                                this.child.maxSize().width()),
                 this.verticalScrolling()
-                        ? clamp(Math.max(viewportSize.height(), contentSize.height()), this.child.minSize().height(), this.child.maxSize().height())
-                        : clamp(viewportSize.height(), this.child.minSize().height(), this.child.maxSize().height())
-        );
+                        ? clamp(
+                                Math.max(viewportSize.height(), contentSize.height()),
+                                this.child.minSize().height(),
+                                this.child.maxSize().height())
+                        : clamp(
+                                viewportSize.height(),
+                                this.child.minSize().height(),
+                                this.child.maxSize().height()));
     }
 
     private Size debugContentSize(final Size viewportSize) {
@@ -54,8 +61,7 @@ final class LayoutDebugScrollContainer extends ScrollContainer implements Layout
         }
         return this.child.computeIdealSize(new Size(
                 this.horizontalScrolling() ? Float.MAX_VALUE : viewportSize.width(),
-                this.verticalScrolling() ? Float.MAX_VALUE : viewportSize.height()
-        ));
+                this.verticalScrolling() ? Float.MAX_VALUE : viewportSize.height()));
     }
 
     private static float scrollOffset(final float scroll) {

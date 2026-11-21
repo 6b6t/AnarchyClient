@@ -1,17 +1,25 @@
 package net.blockhost.anarchyclient.module;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.blockhost.anarchyclient.event.AnarchyEventBus;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import net.blockhost.anarchyclient.event.AnarchyClientEvent;
+import net.blockhost.anarchyclient.event.AnarchyEventBus;
 import net.blockhost.anarchyclient.event.CameraTransformEvent;
 import net.blockhost.anarchyclient.event.ChatMessageEvent;
 import net.blockhost.anarchyclient.event.ClientInputEvent;
 import net.blockhost.anarchyclient.event.ClientTickEvent;
 import net.blockhost.anarchyclient.event.FovEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
+import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.blockhost.anarchyclient.event.SendChatEvent;
 import net.blockhost.anarchyclient.event.TabPlayerNameEvent;
-import net.blockhost.anarchyclient.event.PreventEdgeFallEvent;
 import net.blockhost.anarchyclient.event.WorldRenderEvent;
 import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
@@ -23,23 +31,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 public final class ModuleManager {
 
     private final AnarchyEventBus events = new AnarchyEventBus();
     private final Map<String, Module> modules = new LinkedHashMap<>();
     private final ModuleKeybindController keybindController = new ModuleKeybindController();
     private final Set<Integer> freshPresses = new HashSet<>();
-    private Runnable activationObserver = () -> {
-    };
+    private Runnable activationObserver = () -> {};
 
     public void register(final Module module) {
         Module previous = this.modules.putIfAbsent(module.id(), module);
@@ -57,8 +55,7 @@ public final class ModuleManager {
      * It can run on any thread that toggles a module.
      */
     public void activationObserver(final Runnable observer) {
-        this.activationObserver = observer == null ? () -> {
-        } : observer;
+        this.activationObserver = observer == null ? () -> {} : observer;
     }
 
     public Optional<Module> find(final String id) {
@@ -113,7 +110,9 @@ public final class ModuleManager {
                 this.keybindController.clear(module);
                 continue;
             }
-            this.keybindController.update(module, keyPressed(client, keybind.key()),
+            this.keybindController.update(
+                    module,
+                    keyPressed(client, keybind.key()),
                     client != null && this.freshPresses.contains(keybind.key()));
         }
         this.freshPresses.clear();
@@ -143,8 +142,8 @@ public final class ModuleManager {
         return this.call(new FovEvent(client, fov)).fov();
     }
 
-    public CameraTransformEvent cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                                final float pitch) {
+    public CameraTransformEvent cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         return this.call(new CameraTransformEvent(client, position, yaw, pitch));
     }
 
@@ -167,8 +166,6 @@ public final class ModuleManager {
     }
 
     private static boolean keyPressed(final Minecraft client, final int key) {
-        return client != null
-                && client.getWindow() != null
-                && InputConstants.isKeyDown(key);
+        return client != null && client.getWindow() != null && InputConstants.isKeyDown(key);
     }
 }

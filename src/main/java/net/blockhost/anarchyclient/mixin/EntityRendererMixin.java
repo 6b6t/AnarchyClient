@@ -13,8 +13,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityRendererMixin<T extends Entity, S extends EntityRenderState> {
 
     @Inject(method = "extractRenderState", at = @At("RETURN"))
-    private void anarchyclient$setOutlineColor(final T entity, final S state, final float partialTick,
-                                               final CallbackInfo info) {
+    private void anarchyclient$setOutlineColor(
+            final T entity, final S state, final float partialTick, final CallbackInfo info) {
         int outlineColor = EspOutlineRegistry.get(entity.getId());
         if (outlineColor != EntityRenderState.NO_OUTLINE) {
             state.outlineColor = outlineColor;

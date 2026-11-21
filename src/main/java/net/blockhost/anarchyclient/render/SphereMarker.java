@@ -5,13 +5,13 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.phys.Vec3;
 
-public record SphereMarker(String id, Vec3 center, double radius, MarkerStyle style, int lifetimeTicks,
-                           int ageTicks) implements Marker {
+public record SphereMarker(String id, Vec3 center, double radius, MarkerStyle style, int lifetimeTicks, int ageTicks)
+        implements Marker {
 
     private static final int SEGMENTS = 36;
 
-    public SphereMarker(final String id, final Vec3 center, final double radius, final MarkerStyle style,
-                        final int lifetimeTicks) {
+    public SphereMarker(
+            final String id, final Vec3 center, final double radius, final MarkerStyle style, final int lifetimeTicks) {
         this(id, center, radius, style, lifetimeTicks, 0);
     }
 
@@ -33,8 +33,8 @@ public record SphereMarker(String id, Vec3 center, double radius, MarkerStyle st
         renderCircle(matrices, submits, moved, Axis.Z);
     }
 
-    private void renderCircle(final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 center,
-                              final Axis axis) {
+    private void renderCircle(
+            final PoseStack matrices, final SubmitNodeCollector submits, final Vec3 center, final Axis axis) {
         Vec3 previous = null;
         for (int index = 0; index <= SEGMENTS; index++) {
             double angle = Math.PI * 2.0 * index / SEGMENTS;

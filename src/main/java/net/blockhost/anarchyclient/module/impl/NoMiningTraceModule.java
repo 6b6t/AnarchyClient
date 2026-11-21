@@ -15,7 +15,10 @@ public final class NoMiningTraceModule extends Module {
     private static boolean active;
 
     public NoMiningTraceModule() {
-        super("no_mining_trace", "No Mining Trace", ModuleCategory.PLAYER,
+        super(
+                "no_mining_trace",
+                "No Mining Trace",
+                ModuleCategory.PLAYER,
                 "Lets block clicks pass through entities in the way so the block behind them gets mined or used.");
     }
 
@@ -36,7 +39,8 @@ public final class NoMiningTraceModule extends Module {
         }
         Vec3 from = player.getEyePosition();
         Vec3 to = from.add(player.getLookAngle().scale(player.blockInteractionRange()));
-        BlockHitResult blockHit = client.level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        BlockHitResult blockHit =
+                client.level.clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
         return blockHit.getType() == HitResult.Type.BLOCK ? blockHit : current;
     }
 }

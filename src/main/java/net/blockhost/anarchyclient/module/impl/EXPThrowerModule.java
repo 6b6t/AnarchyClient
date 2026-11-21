@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
@@ -14,17 +16,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
-import java.util.List;
-import java.util.OptionalInt;
-
 public final class EXPThrowerModule extends Module {
 
-    private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
-    );
+    private static final List<EquipmentSlot> ARMOR_SLOTS =
+            List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
 
     private final NumberSetting minArmorPercent = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("min_armor_percent")
@@ -50,7 +45,10 @@ public final class EXPThrowerModule extends Module {
     private int cooldownTicks;
 
     public EXPThrowerModule() {
-        super("exp_thrower", "EXP Thrower", ModuleCategory.PLAYER,
+        super(
+                "exp_thrower",
+                "EXP Thrower",
+                ModuleCategory.PLAYER,
                 "Throws XP bottles from the hotbar whenever any worn armor piece drops below the durability threshold.");
     }
 
@@ -67,7 +65,8 @@ public final class EXPThrowerModule extends Module {
         if (!needsArmorRepair(player, this.minArmorPercent.value())) {
             return;
         }
-        OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.EXPERIENCE_BOTTLE));
+        OptionalInt slot =
+                InventoryActions.findHotbarSlot(player.getInventory(), stack -> stack.is(Items.EXPERIENCE_BOTTLE));
         if (slot.isEmpty()) {
             return;
         }
@@ -76,8 +75,7 @@ public final class EXPThrowerModule extends Module {
                 InventoryActionScheduler.PRIORITY_EQUIPMENT,
                 this.delay.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.useHotbarItem(slot.orElseThrow(), Items.EXPERIENCE_BOTTLE, this.restoreSlot.value())
-        ));
+                InventoryAction.useHotbarItem(slot.orElseThrow(), Items.EXPERIENCE_BOTTLE, this.restoreSlot.value())));
         this.cooldownTicks = this.delay.value().intValue();
     }
 

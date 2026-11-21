@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -19,11 +23,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 public final class AutoShootModule extends Module {
 
@@ -63,7 +62,10 @@ public final class AutoShootModule extends Module {
     private int cooldownTicks;
 
     public AutoShootModule() {
-        super("auto_shoot", "Auto Shoot", ModuleCategory.COMBAT,
+        super(
+                "auto_shoot",
+                "Auto Shoot",
+                ModuleCategory.COMBAT,
                 "Turns toward the nearest target in range, then throws snowballs, eggs, pearls, experience bottles, or casts a fishing rod once aimed.");
     }
 
@@ -77,32 +79,33 @@ public final class AutoShootModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        TargetPolicy policy = TargetPolicy.of(this.players.value(), this.hostiles.value(), false,
-                true, true, true, true);
-        Optional<LivingEntity> target = TargetQuery.closest(client.level.entitiesForRendering(), player, policy,
-                this.range.value(), Comparator.comparingDouble(player::distanceToSqr));
+        TargetPolicy policy =
+                TargetPolicy.of(this.players.value(), this.hostiles.value(), false, true, true, true, true);
+        Optional<LivingEntity> target = TargetQuery.closest(
+                client.level.entitiesForRendering(),
+                player,
+                policy,
+                this.range.value(),
+                Comparator.comparingDouble(player::distanceToSqr));
         if (target.isEmpty()) {
             return;
         }
-        OptionalInt slot = SilentHotbar.selectMatching(player, this.id(), stack -> this.matchesProjectile(stack),
-                SilentHotbar.PRIORITY_COMBAT, 6, true);
+        OptionalInt slot = SilentHotbar.selectMatching(
+                player, this.id(), stack -> this.matchesProjectile(stack), SilentHotbar.PRIORITY_COMBAT, 6, true);
         if (slot.isEmpty()) {
             return;
         }
         // Each item flies differently: experience bottles are slower, heavier, and leave 20 degrees above the view.
         String type = ProjectileAim.typeOf(player.getInventory().getItem(slot.getAsInt()));
-        Rotation aim = ProjectileAim.viewForLaunch(ProjectileAim.rotationToHit(player.getEyePosition(),
-                target.orElseThrow(), ProjectileAim.throwableVelocity(type), ProjectileAim.gravity(type)), type);
-        RotationManager.request(new RotationRequest(
-                this.id(),
-                aim,
-                80,
-                60.0F,
-                2,
-                AIM_TOLERANCE,
-                RotationTurnMode.STEPPED,
-                true
-        ));
+        Rotation aim = ProjectileAim.viewForLaunch(
+                ProjectileAim.rotationToHit(
+                        player.getEyePosition(),
+                        target.orElseThrow(),
+                        ProjectileAim.throwableVelocity(type),
+                        ProjectileAim.gravity(type)),
+                type);
+        RotationManager.request(
+                new RotationRequest(this.id(), aim, 80, 60.0F, 2, AIM_TOLERANCE, RotationTurnMode.STEPPED, true));
         Optional<Rotation> applied = RotationManager.apply(player);
         // The use packet carries the current rotation, so wait until the turn has reached the aim.
         if (!RotationManager.isActiveOwner(this.id()) || !isAimed(applied.orElse(null), aim)) {

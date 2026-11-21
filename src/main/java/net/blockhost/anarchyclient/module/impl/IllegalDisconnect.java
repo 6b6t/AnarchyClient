@@ -11,8 +11,7 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
  */
 final class IllegalDisconnect {
 
-    private IllegalDisconnect() {
-    }
+    private IllegalDisconnect() {}
 
     static ServerboundMovePlayerPacket packet() {
         return new ServerboundMovePlayerPacket.Pos(Double.NaN, Double.NaN, Double.NaN, false, false);

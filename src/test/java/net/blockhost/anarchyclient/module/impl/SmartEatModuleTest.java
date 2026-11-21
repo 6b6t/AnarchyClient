@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.OptionalInt;
+import java.util.Set;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.test.TestInventories;
 import net.minecraft.world.InteractionHand;
@@ -9,14 +16,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.OptionalInt;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class SmartEatModuleTest {
@@ -34,7 +33,8 @@ class SmartEatModuleTest {
 
     @Test
     void parsesBlacklistTokens() {
-        assertEquals(Set.of("pufferfish", "minecraft:chicken", "rotten_flesh"),
+        assertEquals(
+                Set.of("pufferfish", "minecraft:chicken", "rotten_flesh"),
                 SmartEatModule.parseBlacklist("pufferfish, minecraft:chicken | rotten_flesh"));
     }
 
@@ -56,8 +56,10 @@ class SmartEatModuleTest {
 
     @Test
     void choosesGappleTypeByPreference() {
-        Inventory inventory = TestInventories.withSlots(new ItemStack(Items.BREAD),
-                new ItemStack(Items.GOLDEN_APPLE), new ItemStack(Items.ENCHANTED_GOLDEN_APPLE));
+        Inventory inventory = TestInventories.withSlots(
+                new ItemStack(Items.BREAD),
+                new ItemStack(Items.GOLDEN_APPLE),
+                new ItemStack(Items.ENCHANTED_GOLDEN_APPLE));
 
         assertEquals(OptionalInt.of(2), SmartEatModule.bestGappleSlot(inventory, true));
         assertEquals(OptionalInt.of(1), SmartEatModule.bestGappleSlot(inventory, false));
@@ -75,8 +77,8 @@ class SmartEatModuleTest {
 
     @Test
     void findsSoupButNotEmptyBowls() {
-        Inventory inventory = TestInventories.withSlots(new ItemStack(Items.BOWL), new ItemStack(Items.BREAD),
-                new ItemStack(Items.RABBIT_STEW));
+        Inventory inventory = TestInventories.withSlots(
+                new ItemStack(Items.BOWL), new ItemStack(Items.BREAD), new ItemStack(Items.RABBIT_STEW));
 
         assertEquals(OptionalInt.of(2), SmartEatModule.findSoupSlot(inventory, 0, 8));
         assertEquals(OptionalInt.empty(), SmartEatModule.findSoupSlot(inventory, 0, 1));

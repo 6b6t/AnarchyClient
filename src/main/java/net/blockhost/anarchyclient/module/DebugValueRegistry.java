@@ -8,8 +8,7 @@ public final class DebugValueRegistry {
 
     private static final Map<String, LinkedHashMap<String, String>> VALUES = new LinkedHashMap<>();
 
-    private DebugValueRegistry() {
-    }
+    private DebugValueRegistry() {}
 
     public static synchronized void put(final String owner, final String key, final Object value) {
         if (owner == null || owner.isBlank() || key == null || key.isBlank()) {

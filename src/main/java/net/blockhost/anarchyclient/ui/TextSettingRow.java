@@ -1,13 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.setting.Setting;
-import net.blockhost.anarchyclient.setting.TextValueSetting;
-import net.lenni0451.rivet.component.container.Container;
-import net.lenni0451.rivet.component.impl.TextField;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.DESCRIPTION_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
 import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
@@ -16,13 +8,20 @@ import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT_FIELD_ROW_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT_ROW_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.gridLayout;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.label;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.settingDescription;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.surface;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textField;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textNode;
+
+import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.setting.TextValueSetting;
+import net.lenni0451.rivet.component.container.Container;
+import net.lenni0451.rivet.component.impl.TextField;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
 
 final class TextSettingRow extends Container implements LayoutDebugLabel {
 
@@ -62,16 +61,42 @@ final class TextSettingRow extends Container implements LayoutDebugLabel {
     @Override
     public void computeLayout(final Size size) {
         float extra = this.extraHeight(size.width());
-        place(this.divider, cell(0, 2, 2, 1, 0F, 0F, GridAnchor.BOTTOM, GridFill.HORIZONTAL,
-                padding(PADDING, 0F, PADDING, 0F), null, 1F));
-        place(this.label, cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(PADDING, 4F, 8F, 0F), null, 18F));
+        place(
+                this.divider,
+                cell(
+                        0,
+                        2,
+                        2,
+                        1,
+                        0F,
+                        0F,
+                        GridAnchor.BOTTOM,
+                        GridFill.HORIZONTAL,
+                        padding(PADDING, 0F, PADDING, 0F),
+                        null,
+                        1F));
+        place(
+                this.label,
+                cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(PADDING, 4F, 8F, 0F), null, 18F));
         if (this.description != null) {
-            place(this.description, cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                    padding(PADDING, 0F, 8F, 5F), null, DESCRIPTION_HEIGHT + extra));
+            place(
+                    this.description,
+                    cell(
+                            0,
+                            1,
+                            1,
+                            1,
+                            1F,
+                            1F,
+                            GridAnchor.CENTER,
+                            GridFill.BOTH,
+                            padding(PADDING, 0F, 8F, 5F),
+                            null,
+                            DESCRIPTION_HEIGHT + extra));
         }
-        place(this.field, cell(1, 0, 1, 2, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(0F, 7F, 10F, 7F), null, 24F));
+        place(
+                this.field,
+                cell(1, 0, 1, 2, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 7F, 10F, 7F), null, 24F));
         super.computeLayout(size);
     }
 

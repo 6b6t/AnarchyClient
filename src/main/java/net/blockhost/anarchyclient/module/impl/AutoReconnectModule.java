@@ -39,7 +39,11 @@ public final class AutoReconnectModule extends Module {
     private int reconnectTicks;
 
     public AutoReconnectModule() {
-        super("auto_reconnect", "Auto Reconnect", ModuleCategory.MISC, "Reconnects to the last server after a disconnect, except when Auto Log disconnected you.");
+        super(
+                "auto_reconnect",
+                "Auto Reconnect",
+                ModuleCategory.MISC,
+                "Reconnects to the last server after a disconnect, except when Auto Log disconnected you.");
     }
 
     @Override
@@ -74,18 +78,18 @@ public final class AutoReconnectModule extends Module {
             return;
         }
         if (this.notify.value()) {
-            SystemToast.addOrUpdate(client.gui.toastManager(), RECONNECT_TOAST, Translations.component("anarchyclient.message.auto_reconnect.auto_reconnect", "Auto Reconnect"),
-                    Translations.component("anarchyclient.message.auto_reconnect.reconnecting_to", "Reconnecting to %s...", this.lastServer.ip));
+            SystemToast.addOrUpdate(
+                    client.gui.toastManager(),
+                    RECONNECT_TOAST,
+                    Translations.component("anarchyclient.message.auto_reconnect.auto_reconnect", "Auto Reconnect"),
+                    Translations.component(
+                            "anarchyclient.message.auto_reconnect.reconnecting_to",
+                            "Reconnecting to %s...",
+                            this.lastServer.ip));
         }
         silentDisconnect = false;
         ConnectScreen.startConnecting(
-                new TitleScreen(),
-                client,
-                ServerAddress.parseString(this.lastServer.ip),
-                this.lastServer,
-                false,
-                null
-        );
+                new TitleScreen(), client, ServerAddress.parseString(this.lastServer.ip), this.lastServer, false, null);
         this.reconnectTicks = this.delaySeconds.value().intValue() * 20;
     }
 

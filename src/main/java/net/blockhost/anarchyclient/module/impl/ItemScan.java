@@ -1,17 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 
-import java.util.LinkedHashSet;
-import java.util.Locale;
-import java.util.Set;
-
 final class ItemScan {
 
-    private ItemScan() {
-    }
+    private ItemScan() {}
 
     static Set<Item> parseItems(final String value) {
         if (value == null || value.isBlank()) {

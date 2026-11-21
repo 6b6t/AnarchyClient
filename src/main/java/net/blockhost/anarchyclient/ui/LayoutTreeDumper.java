@@ -1,5 +1,14 @@
 package net.blockhost.anarchyclient.ui;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.backend.render.deferred.DeferredRenderer;
 import net.lenni0451.rivet.component.Component;
@@ -11,23 +20,12 @@ import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
 import net.lenni0451.rivet.math.Rectangle;
 import net.lenni0451.rivet.math.Size;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 final class LayoutTreeDumper {
 
     private static final DateTimeFormatter FILE_TIME = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT);
     private static final float EPSILON = 0.5F;
 
-    private LayoutTreeDumper() {
-    }
+    private LayoutTreeDumper() {}
 
     static Path writeSnapshot(final Rivet rivet, final Path directory) throws IOException {
         Files.createDirectories(directory);
@@ -53,9 +51,12 @@ final class LayoutTreeDumper {
         for (int index = 0; index < layers.size(); index++) {
             Layer layer = layers.get(index);
             Rectangle bounds = new Rectangle(scaledSize);
-            builder.append("layer ").append(index)
-                    .append(" bucket=").append(layer.bucket())
-                    .append(" recalc=").append(layer.recalculateNextFrame())
+            builder.append("layer ")
+                    .append(index)
+                    .append(" bucket=")
+                    .append(layer.bucket())
+                    .append(" recalc=")
+                    .append(layer.recalculateNextFrame())
                     .append('\n');
             String rootName = componentName(layer.container());
             appendComponent(builder, issues, layer.container(), bounds, bounds, rootName, rootName, false, 1);
@@ -64,30 +65,51 @@ final class LayoutTreeDumper {
 
         builder.append("issues=").append(issues.size()).append('\n');
         for (LayoutIssue issue : issues) {
-            builder.append("- ").append(issue.path()).append(": ").append(issue.message()).append('\n');
+            builder.append("- ")
+                    .append(issue.path())
+                    .append(": ")
+                    .append(issue.message())
+                    .append('\n');
         }
         return builder.toString();
     }
 
-    private static void appendComponent(final StringBuilder builder, final List<LayoutIssue> issues,
-                                        final Component component, final Rectangle localBounds,
-                                        final Rectangle absoluteBounds, final String displayName,
-                                        final String path, final boolean hiddenAncestor, final int depth) {
+    private static void appendComponent(
+            final StringBuilder builder,
+            final List<LayoutIssue> issues,
+            final Component component,
+            final Rectangle localBounds,
+            final Rectangle absoluteBounds,
+            final String displayName,
+            final String path,
+            final boolean hiddenAncestor,
+            final int depth) {
         indent(builder, depth);
         builder.append(displayName)
-                .append(" local=").append(format(localBounds))
-                .append(" abs=").append(format(absoluteBounds))
-                .append(" min=").append(format(component.minSize()))
-                .append(" max=").append(format(component.maxSize()))
-                .append(" interactive=").append(component.capabilities().hasAny());
+                .append(" local=")
+                .append(format(localBounds))
+                .append(" abs=")
+                .append(format(absoluteBounds))
+                .append(" min=")
+                .append(format(component.minSize()))
+                .append(" max=")
+                .append(format(component.maxSize()))
+                .append(" interactive=")
+                .append(component.capabilities().hasAny());
 
         if (component instanceof Container container) {
-            builder.append(" layout=").append(simpleName(container.layout()))
-                    .append(" content=").append(format(container.contentSize()))
-                    .append(" children=").append(container.children().size());
+            builder.append(" layout=")
+                    .append(simpleName(container.layout()))
+                    .append(" content=")
+                    .append(format(container.contentSize()))
+                    .append(" children=")
+                    .append(container.children().size());
         }
         if (component instanceof ScrollContainer scroll) {
-            builder.append(" scroll=").append(format(scroll.scrollX())).append(',').append(format(scroll.scrollY()));
+            builder.append(" scroll=")
+                    .append(format(scroll.scrollX()))
+                    .append(',')
+                    .append(format(scroll.scrollY()));
         }
 
         List<String> flags = flags(component, localBounds, hiddenAncestor);
@@ -106,11 +128,24 @@ final class LayoutTreeDumper {
         for (TreeChild child : treeChildren(component, localBounds)) {
             Rectangle childAbsoluteBounds = child.bounds().add(absoluteBounds.x(), absoluteBounds.y());
             if (!child.clippedByParent()) {
-                collectIssues(issues, path + "/" + child.pathSegment(),
-                        child.component(), child.bounds(), localBounds.size(), hiddenInTree);
+                collectIssues(
+                        issues,
+                        path + "/" + child.pathSegment(),
+                        child.component(),
+                        child.bounds(),
+                        localBounds.size(),
+                        hiddenInTree);
             }
-            appendComponent(builder, issues, child.component(), child.bounds(), childAbsoluteBounds,
-                    child.displayName(), path + "/" + child.pathSegment(), hiddenInTree, depth + 1);
+            appendComponent(
+                    builder,
+                    issues,
+                    child.component(),
+                    child.bounds(),
+                    childAbsoluteBounds,
+                    child.displayName(),
+                    path + "/" + child.pathSegment(),
+                    hiddenInTree,
+                    depth + 1);
         }
     }
 
@@ -155,14 +190,19 @@ final class LayoutTreeDumper {
         if (!isHidden(component, bounds)
                 && component instanceof Container container
                 && (container.contentSize().width() > bounds.width() + EPSILON
-                || container.contentSize().height() > bounds.height() + EPSILON)) {
+                        || container.contentSize().height() > bounds.height() + EPSILON)) {
             flags.add("CONTENT_OVERFLOW");
         }
         return flags;
     }
 
-    private static void collectIssues(final List<LayoutIssue> issues, final String path, final Component component,
-                                      final Rectangle bounds, final Size parentSize, final boolean hiddenAncestor) {
+    private static void collectIssues(
+            final List<LayoutIssue> issues,
+            final String path,
+            final Component component,
+            final Rectangle bounds,
+            final Size parentSize,
+            final boolean hiddenAncestor) {
         if (hiddenAncestor || isHidden(component, bounds)) {
             return;
         }
@@ -172,7 +212,8 @@ final class LayoutTreeDumper {
         if (bounds.width() <= EPSILON || bounds.height() <= EPSILON) {
             issues.add(new LayoutIssue(path, "zero-size visible component " + format(bounds)));
         }
-        if (bounds.x() < -EPSILON || bounds.y() < -EPSILON
+        if (bounds.x() < -EPSILON
+                || bounds.y() < -EPSILON
                 || bounds.maxX() > parentSize.width() + EPSILON
                 || bounds.maxY() > parentSize.height() + EPSILON) {
             issues.add(new LayoutIssue(path, "outside parent " + format(bounds) + " parent=" + format(parentSize)));
@@ -211,7 +252,8 @@ final class LayoutTreeDumper {
     }
 
     private static String format(final Rectangle bounds) {
-        return format(bounds.x()) + "," + format(bounds.y()) + " " + format(bounds.width()) + "x" + format(bounds.height());
+        return format(bounds.x()) + "," + format(bounds.y()) + " " + format(bounds.width()) + "x"
+                + format(bounds.height());
     }
 
     private static String format(final Size size) {
@@ -226,10 +268,8 @@ final class LayoutTreeDumper {
         builder.append("  ".repeat(Math.max(0, depth)));
     }
 
-    private record LayoutIssue(String path, String message) {
-    }
+    private record LayoutIssue(String path, String message) {}
 
-    private record TreeChild(String pathSegment, String displayName, Component component, Rectangle bounds,
-                             boolean clippedByParent) {
-    }
+    private record TreeChild(
+            String pathSegment, String displayName, Component component, Rectangle bounds, boolean clippedByParent) {}
 }

@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -7,17 +13,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
 final class BlockScan {
 
-    private BlockScan() {
-    }
+    private BlockScan() {}
 
     static Set<Block> parseBlocks(final String value) {
         if (value == null || value.isBlank()) {
@@ -37,8 +35,12 @@ final class BlockScan {
         return Set.copyOf(blocks);
     }
 
-    static List<BlockPos> matchingBlocks(final Minecraft client, final Set<Block> blocks, final int horizontalRadius,
-                                         final int verticalRadius, final int maxResults) {
+    static List<BlockPos> matchingBlocks(
+            final Minecraft client,
+            final Set<Block> blocks,
+            final int horizontalRadius,
+            final int verticalRadius,
+            final int maxResults) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || blocks.isEmpty() || maxResults <= 0) {
             return List.of();
@@ -50,10 +52,15 @@ final class BlockScan {
         List<BlockPos> results = new ArrayList<>();
         Set<Long> seen = new HashSet<>();
         for (int y = minY; y <= maxY && results.size() < maxResults; y++) {
-            for (int x = center.getX() - horizontalRadius; x <= center.getX() + horizontalRadius && results.size() < maxResults; x++) {
-                for (int z = center.getZ() - horizontalRadius; z <= center.getZ() + horizontalRadius && results.size() < maxResults; z++) {
+            for (int x = center.getX() - horizontalRadius;
+                    x <= center.getX() + horizontalRadius && results.size() < maxResults;
+                    x++) {
+                for (int z = center.getZ() - horizontalRadius;
+                        z <= center.getZ() + horizontalRadius && results.size() < maxResults;
+                        z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (!client.level.isLoaded(pos) || !blocks.contains(client.level.getBlockState(pos).getBlock())) {
+                    if (!client.level.isLoaded(pos)
+                            || !blocks.contains(client.level.getBlockState(pos).getBlock())) {
                         continue;
                     }
                     long key = pos.asLong();

@@ -28,7 +28,10 @@ public final class InstantRebreakModule extends Module {
     private int cooldown;
 
     public InstantRebreakModule() {
-        super("instant_rebreak", "Instant Rebreak", ModuleCategory.WORLD,
+        super(
+                "instant_rebreak",
+                "Instant Rebreak",
+                ModuleCategory.WORLD,
                 "After you mine a block, breaks it again instantly each time a block reappears at that spot. "
                         + "Uses the item in your hand.");
     }
@@ -58,14 +61,18 @@ public final class InstantRebreakModule extends Module {
             this.attacked = null;
         }
         BlockPos pos = this.rebreakPos;
-        if (pos == null || this.cooldown > 0 || client.level.getBlockState(pos).isAir()
+        if (pos == null
+                || this.cooldown > 0
+                || client.level.getBlockState(pos).isAir()
                 || !CombatTargets.canReachBlock(client.player, pos)) {
             return;
         }
         // The server still remembers this spot as the block being mined, so a stop packet breaks it at once.
-        client.getConnection().send(new ServerboundPlayerActionPacket(
-                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, this.rebreakFace));
-        client.player.swing(InteractionHand.MAIN_HAND, client.player.getMainHandItem().getAttackAnimation(), false);
+        client.getConnection()
+                .send(new ServerboundPlayerActionPacket(
+                        ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, this.rebreakFace));
+        client.player.swing(
+                InteractionHand.MAIN_HAND, client.player.getMainHandItem().getAttackAnimation(), false);
         client.player.connection.send(ServerboundPunchPacket.INSTANCE);
         this.cooldown = this.delayTicks.value().intValue();
     }

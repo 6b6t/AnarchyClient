@@ -1,20 +1,18 @@
 package net.blockhost.anarchyclient.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.phys.Vec3;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.Vec3;
 
 public final class MarkerManager {
 
     private static final Map<String, Marker> MARKERS = new ConcurrentHashMap<>();
 
-    private MarkerManager() {
-    }
+    private MarkerManager() {}
 
     public static void put(final Marker marker) {
         if (marker != null && marker.id() != null && !marker.id().isBlank()) {

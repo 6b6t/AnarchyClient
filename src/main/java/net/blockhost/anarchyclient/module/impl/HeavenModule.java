@@ -36,7 +36,10 @@ public final class HeavenModule extends Module {
     private long deathMillis = -1L;
 
     public HeavenModule() {
-        super("heaven", "Heaven", ModuleCategory.RENDER,
+        super(
+                "heaven",
+                "Heaven",
+                ModuleCategory.RENDER,
                 "Slowly lifts your camera into the sky after you die, until you respawn.");
     }
 
@@ -51,8 +54,8 @@ public final class HeavenModule extends Module {
     }
 
     @Override
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                           final float pitch) {
+    public CameraTransform cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         if (this.deathMillis < 0L || client.player == null || !client.player.isDeadOrDying()) {
             return new CameraTransform(position, yaw, pitch);
         }

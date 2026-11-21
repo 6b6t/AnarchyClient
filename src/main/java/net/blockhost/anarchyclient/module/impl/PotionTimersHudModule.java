@@ -1,23 +1,26 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 
-import java.util.Comparator;
-import java.util.List;
-
 public final class PotionTimersHudModule extends HudElementModule {
 
     public PotionTimersHudModule() {
-        super("potion_timers_hud", "Potion Timers",
-                "Lists active potion effects with their level and remaining time.", "Top Left");
+        super(
+                "potion_timers_hud",
+                "Potion Timers",
+                "Lists active potion effects with their level and remaining time.",
+                "Top Left");
     }
 
     @Override
     protected List<String> lines(final Minecraft client) {
         return client.player.getActiveEffects().stream()
-                .sorted(Comparator.comparing(effect -> Component.translatable(effect.getDescriptionId()).getString()))
+                .sorted(Comparator.comparing(effect ->
+                        Component.translatable(effect.getDescriptionId()).getString()))
                 .map(PotionTimersHudModule::line)
                 .toList();
     }

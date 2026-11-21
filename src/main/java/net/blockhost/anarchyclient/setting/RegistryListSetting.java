@@ -2,8 +2,6 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import net.minecraft.resources.Identifier;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.resources.Identifier;
 
 public abstract class RegistryListSetting<T> extends Setting<List<T>> implements TextValueSetting {
 
@@ -18,20 +17,27 @@ public abstract class RegistryListSetting<T> extends Setting<List<T>> implements
     private final Function<T, Identifier> keyGetter;
     private final List<String> suggestions;
 
-    protected RegistryListSetting(final String id, final String name, final String description,
-                                  final List<T> defaultValue, final List<String> aliases,
-                                  final Function<Identifier, Optional<T>> resolver,
-                                  final Function<T, Identifier> keyGetter,
-                                  final List<Identifier> suggestions) {
+    protected RegistryListSetting(
+            final String id,
+            final String name,
+            final String description,
+            final List<T> defaultValue,
+            final List<String> aliases,
+            final Function<Identifier, Optional<T>> resolver,
+            final Function<T, Identifier> keyGetter,
+            final List<Identifier> suggestions) {
         super(id, name, description, List.copyOf(defaultValue), aliases);
         this.resolver = resolver;
         this.keyGetter = keyGetter;
-        this.suggestions = suggestions.stream().map(Identifier::toString).sorted().toList();
+        this.suggestions =
+                suggestions.stream().map(Identifier::toString).sorted().toList();
         this.value(defaultValue);
     }
 
     public final List<String> ids() {
-        return this.value().stream().map(value -> this.keyGetter.apply(value).toString()).toList();
+        return this.value().stream()
+                .map(value -> this.keyGetter.apply(value).toString())
+                .toList();
     }
 
     public final List<String> suggestions() {

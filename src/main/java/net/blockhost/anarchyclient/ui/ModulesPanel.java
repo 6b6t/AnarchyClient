@@ -1,17 +1,5 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.i18n.Translations;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.lenni0451.rivet.component.container.Container;
-import net.lenni0451.rivet.component.container.ScrollContainer;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-import net.lenni0451.rivet.text.model.TextOrigin;
-
-import java.util.List;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.HEADER_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.ICON_BUTTON_SIZE;
 import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
@@ -24,6 +12,17 @@ import static net.blockhost.anarchyclient.ui.PanelWidgets.iconButton;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textNode;
+
+import java.util.List;
+import net.blockhost.anarchyclient.i18n.Translations;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.lenni0451.rivet.component.container.Container;
+import net.lenni0451.rivet.component.container.ScrollContainer;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
+import net.lenni0451.rivet.text.model.TextOrigin;
 
 final class ModulesPanel extends Container implements LayoutDebugLabel {
 
@@ -46,9 +45,9 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
         this.title = textNode(this::title, () -> TEXT);
         this.count = textNode(this::countText, GlassTheme::accent)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        this.search = new SearchInput(this.panel, Translations.text("anarchyclient.ui.search_all_modules", "Search all modules..."));
-        this.editHud = iconButton("move", GlassTheme::accent,
-                this.panel::openHudEditor, this::showEditHud);
+        this.search = new SearchInput(
+                this.panel, Translations.text("anarchyclient.ui.search_all_modules", "Search all modules..."));
+        this.editHud = iconButton("move", GlassTheme::accent, this.panel::openHudEditor, this::showEditHud);
         this.cards = new CardGrid(this.panel);
         this.scroll = new LayoutDebugScrollContainer(this.cards);
         this.panel.configureScroll(this.scroll);
@@ -57,16 +56,76 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
             this.panel.refreshModuleList();
         });
         place(this.background, fillCell(0, 0, 2, 3));
-        place(this.title, cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(PADDING + 2F, 6F, 8F, 0F), null, HEADER_HEIGHT));
-        place(this.count, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(0F, 6F, PADDING + 2F, 0F), 52F, HEADER_HEIGHT));
-        place(this.editHud, cell(1, 0, 1, 1, 0F, 0F, GridAnchor.RIGHT, GridFill.NONE,
-                padding(0F, 6F, PADDING, 0F), ICON_BUTTON_SIZE, ICON_BUTTON_SIZE));
-        place(this.search, cell(0, 1, 2, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(PADDING, 0F, PADDING, 6F), null, SEARCH_HEIGHT));
-        place(this.scroll, cell(0, 2, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH,
-                padding(PADDING, 4F, PADDING, PADDING), null, null));
+        place(
+                this.title,
+                cell(
+                        0,
+                        0,
+                        1,
+                        1,
+                        1F,
+                        0F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(PADDING + 2F, 6F, 8F, 0F),
+                        null,
+                        HEADER_HEIGHT));
+        place(
+                this.count,
+                cell(
+                        1,
+                        0,
+                        1,
+                        1,
+                        0F,
+                        0F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(0F, 6F, PADDING + 2F, 0F),
+                        52F,
+                        HEADER_HEIGHT));
+        place(
+                this.editHud,
+                cell(
+                        1,
+                        0,
+                        1,
+                        1,
+                        0F,
+                        0F,
+                        GridAnchor.RIGHT,
+                        GridFill.NONE,
+                        padding(0F, 6F, PADDING, 0F),
+                        ICON_BUTTON_SIZE,
+                        ICON_BUTTON_SIZE));
+        place(
+                this.search,
+                cell(
+                        0,
+                        1,
+                        2,
+                        1,
+                        1F,
+                        0F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(PADDING, 0F, PADDING, 6F),
+                        null,
+                        SEARCH_HEIGHT));
+        place(
+                this.scroll,
+                cell(
+                        0,
+                        2,
+                        2,
+                        1,
+                        1F,
+                        1F,
+                        GridAnchor.CENTER,
+                        GridFill.BOTH,
+                        padding(PADDING, 4F, PADDING, PADDING),
+                        null,
+                        null));
         this.addChild(this.background);
         this.addChild(this.title);
         this.addChild(this.count);
@@ -85,7 +144,8 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
         this.cards.clearChildren();
         List<Module> visible = this.panel.visibleModules();
         if (visible.isEmpty()) {
-            this.cards.addChild(new EmptyState(Translations.text("anarchyclient.ui.no_modules_match_the_current_filter", "No modules match the current filter.")));
+            this.cards.addChild(new EmptyState(Translations.text(
+                    "anarchyclient.ui.no_modules_match_the_current_filter", "No modules match the current filter.")));
         } else {
             for (Module module : visible) {
                 this.cards.addChild(new ModuleCard(this.panel, module));
@@ -97,7 +157,9 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
         if (!this.panel.searchQuery.isEmpty()) {
             return Translations.text("anarchyclient.ui.search", "Search");
         }
-        return this.panel.selectedCategory == null ? Translations.text("anarchyclient.ui.modules", "Modules") : this.panel.selectedCategory.displayName();
+        return this.panel.selectedCategory == null
+                ? Translations.text("anarchyclient.ui.modules", "Modules")
+                : this.panel.selectedCategory.displayName();
     }
 
     private String countText() {

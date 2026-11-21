@@ -1,20 +1,23 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.stream.Collectors;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.minecraft.client.Minecraft;
 
-import java.util.Comparator;
-import java.util.stream.Collectors;
-
 public final class PayloadInspectorModule extends Module {
 
     private int lastPayloadSequence = -1;
 
     public PayloadInspectorModule() {
-        super("payload_inspector", "Payload Inspector", ModuleCategory.MISC, "Shows custom payload traffic so plugin channels and server messages are easier to debug.");
+        super(
+                "payload_inspector",
+                "Payload Inspector",
+                ModuleCategory.MISC,
+                "Shows custom payload traffic so plugin channels and server messages are easier to debug.");
     }
 
     @Override
@@ -36,6 +39,7 @@ public final class PayloadInspectorModule extends Module {
         if (channels.isBlank()) {
             channels = "none";
         }
-        client.player.sendSystemMessage(Translations.component("anarchyclient.message.payload_inspector.payload_channels", "Payload channels: %s.", channels));
+        client.player.sendSystemMessage(Translations.component(
+                "anarchyclient.message.payload_inspector.payload_channels", "Payload channels: %s.", channels));
     }
 }

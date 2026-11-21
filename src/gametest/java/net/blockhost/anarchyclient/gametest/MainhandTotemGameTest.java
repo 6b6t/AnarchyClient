@@ -22,13 +22,24 @@ public final class MainhandTotemGameTest implements GameScenario {
             GameTestSupport.enable(context, "mainhand_totem", true);
             try {
                 context.waitTicks(10);
-                GameTestSupport.check(context.computeOnClient(client -> client.player.getInventory().getSelectedSlot()) == 0,
+                GameTestSupport.check(
+                        context.computeOnClient(
+                                        client -> client.player.getInventory().getSelectedSlot())
+                                == 0,
                         "Mainhand Totem switched while the player was healthy");
 
                 arena.run("damage " + arena.name() + " 15");
                 context.waitFor(client -> client.player.getMainHandItem().is(Items.TOTEM_OF_UNDYING), 60);
-                arena.server().waitFor(server -> arena.serverPlayer(server).getMainHandItem().is(Items.TOTEM_OF_UNDYING), 40);
-                GameTestSupport.check(context.computeOnClient(client -> client.player.getInventory().getSelectedSlot()) == 8,
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                        .getMainHandItem()
+                                        .is(Items.TOTEM_OF_UNDYING),
+                                40);
+                GameTestSupport.check(
+                        context.computeOnClient(
+                                        client -> client.player.getInventory().getSelectedSlot())
+                                == 8,
                         "Mainhand Totem did not use the configured totem slot");
 
                 arena.run("effect give " + arena.name() + " instant_health 1 5");

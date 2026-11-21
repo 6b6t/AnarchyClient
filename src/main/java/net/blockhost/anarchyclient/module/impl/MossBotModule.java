@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -12,10 +15,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class MossBotModule extends Module {
 
@@ -51,7 +50,10 @@ public final class MossBotModule extends Module {
     private final Map<BlockPos, Integer> cooldowns = new HashMap<>();
 
     public MossBotModule() {
-        super("moss_bot", "Moss Bot", ModuleCategory.WORLD,
+        super(
+                "moss_bot",
+                "Moss Bot",
+                ModuleCategory.WORLD,
                 "Bone meals moss blocks with the most moss-replaceable blocks nearby to spread moss.");
     }
 
@@ -74,21 +76,34 @@ public final class MossBotModule extends Module {
             return;
         }
         // bestMossBlock only returns reachable moss with air above, which bone meal needs.
-        BlockPos best = bestMossBlock(client, player, this.range.value().intValue(),
-                this.minReplaceableBlocks.value().intValue(), this.cooldowns);
+        BlockPos best = bestMossBlock(
+                client,
+                player,
+                this.range.value().intValue(),
+                this.minReplaceableBlocks.value().intValue(),
+                this.cooldowns);
         if (best == null) {
             return;
         }
-        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, best, Direction.UP,
-                stack -> stack.is(Items.BONE_MEAL), this.rotate.value());
+        WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
+                client, this, best, Direction.UP, stack -> stack.is(Items.BONE_MEAL), this.rotate.value());
         if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
             this.cooldowns.put(best, this.cooldownTicks.value().intValue());
         }
     }
 
-    static BlockPos bestMossBlock(final Minecraft client, final LocalPlayer player, final int range,
-                                  final int minReplaceableBlocks, final Map<BlockPos, Integer> cooldowns) {
-        return BlockTargetScanner.scan(client, range, range, BlockTargetScanner.SortMode.CLOSEST, 64,
+    static BlockPos bestMossBlock(
+            final Minecraft client,
+            final LocalPlayer player,
+            final int range,
+            final int minReplaceableBlocks,
+            final Map<BlockPos, Integer> cooldowns) {
+        return BlockTargetScanner.scan(
+                        client,
+                        range,
+                        range,
+                        BlockTargetScanner.SortMode.CLOSEST,
+                        64,
                         target -> !cooldowns.containsKey(target.pos())
                                 && isMoss(target.state())
                                 && CombatTargets.canReachBlock(player, target.pos())

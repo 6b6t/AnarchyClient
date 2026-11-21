@@ -1,11 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.time.LocalTime;
+import java.util.List;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-
-import java.time.LocalTime;
-import java.util.List;
 
 public final class WelcomerHudModule extends HudElementModule {
 

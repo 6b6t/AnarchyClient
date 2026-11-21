@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,9 +12,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class AutoTrapModule extends Module {
 
@@ -53,16 +52,10 @@ public final class AutoTrapModule extends Module {
             .name("Feet")
             .defaultValue(false)
             .build()));
-    private final BooleanSetting face = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("face")
-            .name("Face")
-            .defaultValue(true)
-            .build()));
-    private final BooleanSetting top = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("top")
-            .name("Top")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting face = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("face").name("Face").defaultValue(true).build()));
+    private final BooleanSetting top = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("top").name("Top").defaultValue(true).build()));
     private final BooleanSetting antiStep = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("anti_step")
             .name("Anti Step")
@@ -75,7 +68,10 @@ public final class AutoTrapModule extends Module {
             .build()));
 
     public AutoTrapModule() {
-        super("auto_trap", "Auto Trap", ModuleCategory.COMBAT,
+        super(
+                "auto_trap",
+                "Auto Trap",
+                ModuleCategory.COMBAT,
                 "Places hard blocks around the nearest enemy's head, or your own, to box them in, with optional feet and anti-step layers.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
@@ -86,13 +82,23 @@ public final class AutoTrapModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = "Self".equals(this.targetMode.value()) ? player : CombatTargets.nearestEnemy(client, this.range.value());
+        Player target = "Self".equals(this.targetMode.value())
+                ? player
+                : CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null) {
             return;
         }
-        List<BlockPos> targets = trapPositions(target.blockPosition(), this.includeFeet.value(), this.face.value(),
-                this.top.value(), this.antiStep.value());
-        int placed = CombatPlacementPlanner.placeBatch(client, this, targets, CombatPlacementPlanner.HARD_BLOCKS,
+        List<BlockPos> targets = trapPositions(
+                target.blockPosition(),
+                this.includeFeet.value(),
+                this.face.value(),
+                this.top.value(),
+                this.antiStep.value());
+        int placed = CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                targets,
+                CombatPlacementPlanner.HARD_BLOCKS,
                 CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(), 5.5)
                         .withSupport(this.support.value())
                         .withAvoidSelf(this.selfTrap.value()));
@@ -109,8 +115,12 @@ public final class AutoTrapModule extends Module {
         return trapPositions(base, includeFeet, true, true, false);
     }
 
-    static List<BlockPos> trapPositions(final BlockPos base, final boolean includeFeet, final boolean face,
-                                        final boolean top, final boolean antiStep) {
+    static List<BlockPos> trapPositions(
+            final BlockPos base,
+            final boolean includeFeet,
+            final boolean face,
+            final boolean top,
+            final boolean antiStep) {
         List<BlockPos> positions = new ArrayList<>();
         if (top) {
             positions.add(base.above(2));
@@ -128,5 +138,4 @@ public final class AutoTrapModule extends Module {
         }
         return CombatPlacementPlanner.unique(positions);
     }
-
 }

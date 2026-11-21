@@ -1,12 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.google.gson.JsonObject;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.StringSetting;
-import net.minecraft.client.Minecraft;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -23,6 +17,11 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.setting.StringSetting;
+import net.minecraft.client.Minecraft;
 
 public final class DiscordPresenceModule extends Module {
 
@@ -48,7 +47,11 @@ public final class DiscordPresenceModule extends Module {
     private String lastPayload = "";
 
     public DiscordPresenceModule() {
-        super("discord_presence", "Discord Presence", ModuleCategory.MISC, "Updates Discord Rich Presence with configurable client and server status.");
+        super(
+                "discord_presence",
+                "Discord Presence",
+                ModuleCategory.MISC,
+                "Updates Discord Rich Presence with configurable client and server status.");
     }
 
     @Override
@@ -114,10 +117,9 @@ public final class DiscordPresenceModule extends Module {
 
     private String renderState(final Minecraft client) {
         String server = client.getCurrentServer() == null ? "Singleplayer" : client.getCurrentServer().ip;
-        String player = client.player == null ? "Player" : client.player.getName().getString();
-        return this.state.value()
-                .replace("{server}", server)
-                .replace("{player}", player);
+        String player =
+                client.player == null ? "Player" : client.player.getName().getString();
+        return this.state.value().replace("{server}", server).replace("{player}", player);
     }
 
     private void closeIpc() {
@@ -192,7 +194,8 @@ public final class DiscordPresenceModule extends Module {
             return null;
         }
 
-        private void setActivity(final String details, final String state, final long startEpochSeconds) throws IOException {
+        private void setActivity(final String details, final String state, final long startEpochSeconds)
+                throws IOException {
             JsonObject activity = new JsonObject();
             activity.addProperty("details", details);
             if (!state.isBlank()) {
@@ -222,7 +225,7 @@ public final class DiscordPresenceModule extends Module {
             header.putInt(op);
             header.putInt(data.length);
             header.flip();
-            this.channel.write(new ByteBuffer[]{header, ByteBuffer.wrap(data)});
+            this.channel.write(new ByteBuffer[] {header, ByteBuffer.wrap(data)});
         }
 
         @Override

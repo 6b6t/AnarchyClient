@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.function.Function;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.minecraft.client.Minecraft;
@@ -13,12 +14,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 
-import java.util.function.Function;
-
 public final class PotionSaverModule extends Module {
 
     public PotionSaverModule() {
-        super("potion_saver", "Potion Saver", ModuleCategory.PLAYER,
+        super(
+                "potion_saver",
+                "Potion Saver",
+                ModuleCategory.PLAYER,
                 "Blocks drinking a potion when you already have all of its effects at the same or a higher level and duration.");
     }
 
@@ -40,8 +42,8 @@ public final class PotionSaverModule extends Module {
      * Returns whether drinking the potion would add nothing, because every effect it gives is already
      * active at the same or a higher amplifier with at least as much time left.
      */
-    static boolean wouldWaste(final PotionContents contents,
-                              final Function<Holder<MobEffect>, MobEffectInstance> activeEffects) {
+    static boolean wouldWaste(
+            final PotionContents contents, final Function<Holder<MobEffect>, MobEffectInstance> activeEffects) {
         if (!contents.hasEffects()) {
             return false;
         }

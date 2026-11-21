@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,19 +13,18 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 
-import java.util.List;
-
 public final class YggdrasilSignatureFixModule extends Module {
 
-    private final BooleanSetting warn = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("warn")
-            .name("Warn")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting warn = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("warn").name("Warn").defaultValue(true).build()));
     private int warnCooldown;
 
     public YggdrasilSignatureFixModule() {
-        super("yggdrasil_signature_fix", "Yggdrasil Signature Fix", ModuleCategory.MISC, "Warns in chat when the server sends player skins without a valid Yggdrasil signature. Vanilla can show"
+        super(
+                "yggdrasil_signature_fix",
+                "Yggdrasil Signature Fix",
+                ModuleCategory.MISC,
+                "Warns in chat when the server sends player skins without a valid Yggdrasil signature. Vanilla can show"
                         + " the default skin for those players.",
                 List.of("signature_fix"));
     }
@@ -54,7 +54,10 @@ public final class YggdrasilSignatureFixModule extends Module {
 
     private void warn(final Minecraft client, final String name) {
         if (this.warnCooldown == 0 && client.player != null) {
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.yggdrasil_signature_fix.unsigned_yggdrasil_textures_for", "Unsigned Yggdrasil textures for %s.", name));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.yggdrasil_signature_fix.unsigned_yggdrasil_textures_for",
+                    "Unsigned Yggdrasil textures for %s.",
+                    name));
             this.warnCooldown = 80;
         }
     }

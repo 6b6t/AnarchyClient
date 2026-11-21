@@ -31,13 +31,20 @@ public final class PacketMineGameTest implements GameScenario {
                 context.waitTicks(2);
                 // Look away: the break must finish without the crosshair on the block.
                 context.getInput().lookAt(90.0F, -30.0F);
-                arena.server().waitFor(server -> server.overworld().getBlockState(block).isAir(), 120);
+                arena.server()
+                        .waitFor(
+                                server ->
+                                        server.overworld().getBlockState(block).isAir(),
+                                120);
                 context.waitTicks(5);
-                int selected = context.computeOnClient(client -> client.player.getInventory().getSelectedSlot());
+                int selected = context.computeOnClient(
+                        client -> client.player.getInventory().getSelectedSlot());
                 GameTestSupport.check(selected == 0, "Packet Mine left the hotbar on slot " + selected);
             } catch (AssertionError failure) {
-                throw new AssertionError("Packet Mine did not finish the block; debug "
-                        + DebugValueRegistry.snapshot().get("packet_mine"), failure);
+                throw new AssertionError(
+                        "Packet Mine did not finish the block; debug "
+                                + DebugValueRegistry.snapshot().get("packet_mine"),
+                        failure);
             } finally {
                 GameTestSupport.enable(context, "packet_mine", false);
                 GameTestSupport.setting(context, "packet_mine", "mode", new JsonPrimitive("Instant"));

@@ -14,7 +14,10 @@ public final class AntiQuitModule extends Module {
     private static boolean confirmed;
 
     public AntiQuitModule() {
-        super("anti_quit", "Anti Quit", ModuleCategory.MISC,
+        super(
+                "anti_quit",
+                "Anti Quit",
+                ModuleCategory.MISC,
                 "Asks for confirmation when you press Disconnect or Save and Quit in the pause menu, so a misclick does not log you out.");
     }
 
@@ -52,8 +55,8 @@ public final class AntiQuitModule extends Module {
                     }
                 },
                 Translations.component("anarchyclient.message.anti_quit.title", "Leave this world?"),
-                Translations.component("anarchyclient.message.anti_quit.message",
-                        "Anti Quit is on. Choose Yes to disconnect.")));
+                Translations.component(
+                        "anarchyclient.message.anti_quit.message", "Anti Quit is on. Choose Yes to disconnect.")));
         return true;
     }
 }

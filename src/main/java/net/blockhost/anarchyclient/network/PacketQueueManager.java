@@ -1,11 +1,5 @@
 package net.blockhost.anarchyclient.network;
 
-import net.blockhost.anarchyclient.event.PacketEventSilencer;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.Connection;
-import net.minecraft.network.PacketListener;
-import net.minecraft.network.protocol.Packet;
-
 import java.util.ArrayDeque;
 import java.util.Comparator;
 import java.util.Deque;
@@ -16,6 +10,11 @@ import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import net.blockhost.anarchyclient.event.PacketEventSilencer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
 
 /**
  * Delays packets for lag modules while keeping each module's order.
@@ -31,16 +30,15 @@ public final class PacketQueueManager {
     private static final DirectionQueue INCOMING = new DirectionQueue(PacketQueueManager::deliverIncoming);
     private static final DirectionQueue OUTGOING = new DirectionQueue(PacketQueueManager::deliverOutgoing);
 
-    private PacketQueueManager() {
-    }
+    private PacketQueueManager() {}
 
-    public static synchronized boolean queueIncoming(final String owner, final Connection connection,
-                                                     final Packet<?> packet, final int maxPackets) {
+    public static synchronized boolean queueIncoming(
+            final String owner, final Connection connection, final Packet<?> packet, final int maxPackets) {
         return INCOMING.queue(owner, connection, packet, maxPackets, System.currentTimeMillis());
     }
 
-    public static synchronized boolean queueOutgoing(final String owner, final Connection connection,
-                                                     final Packet<?> packet, final int maxPackets) {
+    public static synchronized boolean queueOutgoing(
+            final String owner, final Connection connection, final Packet<?> packet, final int maxPackets) {
         return OUTGOING.queue(owner, connection, packet, maxPackets, System.currentTimeMillis());
     }
 
@@ -106,8 +104,7 @@ public final class PacketQueueManager {
                 INCOMING.oldestAgeMillis(now),
                 OUTGOING.oldestAgeMillis(now),
                 INCOMING.sampleTypes(),
-                OUTGOING.sampleTypes()
-        );
+                OUTGOING.sampleTypes());
     }
 
     private static Predicate<QueuedPacket> olderThan(final long ageMillis) {
@@ -151,8 +148,12 @@ public final class PacketQueueManager {
             this.delivery = delivery;
         }
 
-        boolean queue(final String owner, final Connection connection, final Packet<?> packet, final int maxPackets,
-                      final long nowMillis) {
+        boolean queue(
+                final String owner,
+                final Connection connection,
+                final Packet<?> packet,
+                final int maxPackets,
+                final long nowMillis) {
             if (owner == null || owner.isBlank() || connection == null || packet == null) {
                 return false;
             }
@@ -228,7 +229,8 @@ public final class PacketQueueManager {
         private final Packet<?> packet;
         private final long createdAtMillis;
 
-        QueuedPacket(final String owner, final Connection connection, final Packet<?> packet, final long createdAtMillis) {
+        QueuedPacket(
+                final String owner, final Connection connection, final Packet<?> packet, final long createdAtMillis) {
             this.owner = owner;
             this.connection = Objects.requireNonNull(connection);
             this.packet = Objects.requireNonNull(packet);
@@ -244,7 +246,11 @@ public final class PacketQueueManager {
         }
     }
 
-    public record Snapshot(int incomingSize, int outgoingSize, long oldestIncomingAgeMillis,
-                           long oldestOutgoingAgeMillis, List<String> incomingTypes, List<String> outgoingTypes) {
-    }
+    public record Snapshot(
+            int incomingSize,
+            int outgoingSize,
+            long oldestIncomingAgeMillis,
+            long oldestOutgoingAgeMillis,
+            List<String> incomingTypes,
+            List<String> outgoingTypes) {}
 }

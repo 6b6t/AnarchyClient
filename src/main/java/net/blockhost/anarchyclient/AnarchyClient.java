@@ -12,8 +12,8 @@ import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.notification.ToggleNotifications;
-import net.blockhost.anarchyclient.render.EspOutlineRegistry;
 import net.blockhost.anarchyclient.profile.ProfileManager;
+import net.blockhost.anarchyclient.render.EspOutlineRegistry;
 import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.rivet.AnarchyClientRenderPipelines;
 import net.blockhost.anarchyclient.rotation.RotationManager;
@@ -32,8 +32,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping.Category;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +43,8 @@ public final class AnarchyClient implements ClientModInitializer {
     public static final String MOD_ID = "anarchyclient";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final ModuleManager MODULES = new ModuleManager();
-    public static final FriendManager FRIENDS = new FriendManager(
-            FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + "-friends.txt")
-    );
+    public static final FriendManager FRIENDS =
+            new FriendManager(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID + "-friends.txt"));
     public static final ProfileManager PROFILES = new ProfileManager(ProfileManager.defaultPath());
     public static final WaypointStore WAYPOINTS = new WaypointStore(WaypointStore.defaultPath());
     public static final ClientConfig CONFIG = new ClientConfig(MODULES, FRIENDS);
@@ -65,11 +64,8 @@ public final class AnarchyClient implements ClientModInitializer {
         // Keybind and command toggles change module state outside the menu, so save them too.
         MODULES.activationObserver(CONFIG::markDirty);
 
-        this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-                "key.anarchyclient.open_menu",
-                InputConstants.KEY_RSHIFT,
-                Category.MISC
-        ));
+        this.openMenuKey = KeyMappingHelper.registerKeyMapping(
+                new KeyMapping("key.anarchyclient.open_menu", InputConstants.KEY_RSHIFT, Category.MISC));
         AnarchyClientCommands.register();
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
@@ -79,11 +75,10 @@ public final class AnarchyClient implements ClientModInitializer {
             MODULES.call(new WorldRenderEvent(Minecraft.getInstance(), context));
             MarkerManager.render(context);
         });
-        HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID,
-                (graphics, deltaTracker) -> {
-                    MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics));
-                    ToggleNotifications.render(Minecraft.getInstance(), graphics);
-                });
+        HudElementRegistry.attachElementAfter(VanillaHudElements.CHAT, HUD_MODULES_ID, (graphics, deltaTracker) -> {
+            MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics));
+            ToggleNotifications.render(Minecraft.getInstance(), graphics);
+        });
     }
 
     private void onClientTick(final Minecraft client) {

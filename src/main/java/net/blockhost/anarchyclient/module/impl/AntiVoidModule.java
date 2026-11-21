@@ -24,20 +24,17 @@ public final class AntiVoidModule extends Module {
             .name("Freeze")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting jump = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("jump")
-            .name("Jump")
-            .defaultValue(false)
-            .build()));
-    private final BooleanSetting warn = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("warn")
-            .name("Warn")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting jump = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("jump").name("Jump").defaultValue(false).build()));
+    private final BooleanSetting warn = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("warn").name("Warn").defaultValue(true).build()));
     private boolean warned;
 
     public AntiVoidModule() {
-        super("anti_void", "Anti Void", ModuleCategory.MOVEMENT,
+        super(
+                "anti_void",
+                "Anti Void",
+                ModuleCategory.MOVEMENT,
                 "Stops your fall and holds you in place when you drop below the bottom of the world plus an offset, optionally boosting you upward.");
     }
 
@@ -62,11 +59,13 @@ public final class AntiVoidModule extends Module {
         player.setDeltaMovement(
                 this.freezeHorizontal.value() ? 0.0 : velocity.x,
                 upward,
-                this.freezeHorizontal.value() ? 0.0 : velocity.z
-        );
+                this.freezeHorizontal.value() ? 0.0 : velocity.z);
         player.fallDistance = 0.0;
         if (this.warn.value() && !this.warned) {
-            player.sendSystemMessage(Translations.component("anarchyclient.message.anti_void.anti_void_stopped_a_fall_below", "Anti Void stopped a fall below Y %s", (int) Math.floor(triggerY)));
+            player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.anti_void.anti_void_stopped_a_fall_below",
+                    "Anti Void stopped a fall below Y %s",
+                    (int) Math.floor(triggerY)));
             this.warned = true;
         }
     }

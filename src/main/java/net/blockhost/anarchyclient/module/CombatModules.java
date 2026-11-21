@@ -66,8 +66,7 @@ import net.blockhost.anarchyclient.module.impl.VehicleOneHitModule;
  */
 final class CombatModules {
 
-    private CombatModules() {
-    }
+    private CombatModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new AutoTotemModule());

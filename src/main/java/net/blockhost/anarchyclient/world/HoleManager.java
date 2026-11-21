@@ -1,19 +1,17 @@
 package net.blockhost.anarchyclient.world;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 public final class HoleManager {
 
-    private HoleManager() {
-    }
+    private HoleManager() {}
 
     public static List<BlockPos> nearbyHoles(final BlockGetter level, final BlockPos center, final int radius) {
         List<BlockPos> holes = new ArrayList<>();
@@ -50,7 +48,8 @@ public final class HoleManager {
      * Returns the cells within {@code radius} that belong to a double hole: two open cells side by side, walled on the
      * six outer sides and floored with safe blocks.
      */
-    public static List<BlockPos> nearbyDoubleHoleCells(final BlockGetter level, final BlockPos center, final int radius) {
+    public static List<BlockPos> nearbyDoubleHoleCells(
+            final BlockGetter level, final BlockPos center, final int radius) {
         List<BlockPos> cells = new ArrayList<>();
         for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
             for (int y = center.getY() - 1; y <= center.getY() + 1; y++) {
@@ -69,7 +68,8 @@ public final class HoleManager {
     /** Returns whether {@code pos} is one half of a double hole, open towards its partner in any direction. */
     public static boolean isDoubleHoleCell(final BlockGetter level, final BlockPos pos) {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (isDoubleHoleHalf(level, pos, direction) && isDoubleHoleHalf(level, pos.relative(direction), direction.getOpposite())) {
+            if (isDoubleHoleHalf(level, pos, direction)
+                    && isDoubleHoleHalf(level, pos.relative(direction), direction.getOpposite())) {
                 return true;
             }
         }

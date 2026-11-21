@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.UUID;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -19,14 +20,15 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-import java.util.UUID;
-
 public final class EntityOwnerModule extends Module {
 
     private static final double LABEL_RANGE = 64.0;
 
     public EntityOwnerModule() {
-        super("entity_owner", "Entity Owner", ModuleCategory.RENDER,
+        super(
+                "entity_owner",
+                "Entity Owner",
+                ModuleCategory.RENDER,
                 "Outlines every tamed animal that has an owner through walls and labels nearby ones with the owner's name.");
     }
 
@@ -40,7 +42,10 @@ public final class EntityOwnerModule extends Module {
         Vec3 camera = client.gameRenderer.mainCamera().position();
         for (Entity entity : client.level.entitiesForRendering()) {
             if (entity instanceof TamableAnimal animal && animal.getOwnerReference() != null) {
-                WorldLineRenderer.boxNoDepth(matrices, submits, entity.getBoundingBox().inflate(0.05).move(camera.scale(-1)),
+                WorldLineRenderer.boxNoDepth(
+                        matrices,
+                        submits,
+                        entity.getBoundingBox().inflate(0.05).move(camera.scale(-1)),
                         new WorldLineRenderer.Color(120, 230, 255, 210));
             }
         }
@@ -61,10 +66,16 @@ public final class EntityOwnerModule extends Module {
         }
     }
 
-    private void renderLabel(final Minecraft client, final GuiGraphicsExtractor graphics, final TamableAnimal animal,
-                             final EntityReference<LivingEntity> owner, final float partialTick) {
+    private void renderLabel(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final TamableAnimal animal,
+            final EntityReference<LivingEntity> owner,
+            final float partialTick) {
         double x = Mth.lerp(partialTick, animal.xo, animal.getX());
-        double y = Mth.lerp(partialTick, animal.yo, animal.getY()) + animal.getBoundingBox().getYsize() + 0.5;
+        double y = Mth.lerp(partialTick, animal.yo, animal.getY())
+                + animal.getBoundingBox().getYsize()
+                + 0.5;
         double z = Mth.lerp(partialTick, animal.zo, animal.getZ());
         Vec3 projected = client.gameRenderer.projectPointToScreen(new Vec3(x, y, z));
         if (projected.z > 1.0) {
@@ -79,7 +90,8 @@ public final class EntityOwnerModule extends Module {
     }
 
     static String ownerLabel(final @Nullable String ownerName, final UUID ownerId) {
-        String owner = ownerName == null || ownerName.isBlank() ? ownerId.toString().substring(0, 8) : ownerName;
+        String owner =
+                ownerName == null || ownerName.isBlank() ? ownerId.toString().substring(0, 8) : ownerName;
         return "Owner: " + owner;
     }
 

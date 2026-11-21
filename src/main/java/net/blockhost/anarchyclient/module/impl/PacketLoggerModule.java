@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -11,8 +12,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.BundlePacket;
 import net.minecraft.network.protocol.Packet;
-
-import java.util.Locale;
 
 public final class PacketLoggerModule extends Module {
 
@@ -26,19 +25,17 @@ public final class PacketLoggerModule extends Module {
             .name("Outgoing")
             .defaultValue(false)
             .build()));
-    private final BooleanSetting chat = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("chat")
-            .name("Chat")
-            .defaultValue(false)
-            .build()));
-    private final StringSetting filter = this.setting(StringSetting.from(StringSetting.builder()
-            .id("filter")
-            .name("Filter")
-            .defaultValue("")
-            .build()));
+    private final BooleanSetting chat = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("chat").name("Chat").defaultValue(false).build()));
+    private final StringSetting filter = this.setting(StringSetting.from(
+            StringSetting.builder().id("filter").name("Filter").defaultValue("").build()));
 
     public PacketLoggerModule() {
-        super("packet_logger", "Packet Logger", ModuleCategory.MISC, "Records packet traffic for debugging protocol behavior and module interactions.");
+        super(
+                "packet_logger",
+                "Packet Logger",
+                ModuleCategory.MISC,
+                "Records packet traffic for debugging protocol behavior and module interactions.");
     }
 
     @Override
@@ -90,6 +87,8 @@ public final class PacketLoggerModule extends Module {
     static boolean matchesFilter(final String packetName, final String filter) {
         return filter == null
                 || filter.isBlank()
-                || packetName.toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT).trim());
+                || packetName
+                        .toLowerCase(Locale.ROOT)
+                        .contains(filter.toLowerCase(Locale.ROOT).trim());
     }
 }

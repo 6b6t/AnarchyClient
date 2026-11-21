@@ -1,11 +1,5 @@
 package net.blockhost.anarchyclient.gametest;
 
-import net.blockhost.anarchyclient.module.DebugValueRegistry;
-import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
-import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -14,6 +8,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import net.blockhost.anarchyclient.module.DebugValueRegistry;
+import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
+import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Runs every scenario and reports all failures at the end, so one broken module does not hide
@@ -51,7 +50,9 @@ public final class AnarchyClientGameTests implements FabricClientGameTest {
                 failures.put(name, String.valueOf(failure.getMessage()));
                 LOGGER.error("SCENARIO FAIL {}", name, failure);
                 LOGGER.error("SCENARIO DEBUG {} {}", name, DebugValueRegistry.snapshot());
-                HandlerErrors.drain().stream().limit(3).forEach(error -> LOGGER.error("SCENARIO HANDLER ERROR {} {}", name, error));
+                HandlerErrors.drain().stream()
+                        .limit(3)
+                        .forEach(error -> LOGGER.error("SCENARIO HANDLER ERROR {} {}", name, error));
                 context.setScreen(() -> null);
             }
         }

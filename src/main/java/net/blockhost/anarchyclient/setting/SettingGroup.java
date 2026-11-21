@@ -1,9 +1,9 @@
 package net.blockhost.anarchyclient.setting;
 
-import net.blockhost.anarchyclient.i18n.Translations;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 public final class SettingGroup {
 

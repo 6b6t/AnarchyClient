@@ -30,7 +30,10 @@ public final class BoatGlitchModule extends Module {
     private int ticks;
 
     public BoatGlitchModule() {
-        super("boat_glitch", "Boat Glitch", ModuleCategory.MOVEMENT,
+        super(
+                "boat_glitch",
+                "Boat Glitch",
+                ModuleCategory.MOVEMENT,
                 "Periodically sends a raised vehicle position followed by the real one while riding, to glitch the boat on the server.");
     }
 
@@ -46,10 +49,11 @@ public final class BoatGlitchModule extends Module {
         this.ticks = 0;
         Entity vehicle = client.player.getVehicle();
         Vec3 pos = vehicle.position();
-        client.getConnection().send(new ServerboundMoveVehiclePacket(
-                PositionAndRotation.of(pos.add(0.0, this.offset.value(), 0.0), vehicle.getYRot(), vehicle.getXRot()),
-                false
-        ));
+        client.getConnection()
+                .send(new ServerboundMoveVehiclePacket(
+                        PositionAndRotation.of(
+                                pos.add(0.0, this.offset.value(), 0.0), vehicle.getYRot(), vehicle.getXRot()),
+                        false));
         client.getConnection().send(ServerboundMoveVehiclePacket.fromEntity(vehicle));
     }
 }

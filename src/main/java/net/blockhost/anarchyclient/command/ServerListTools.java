@@ -6,10 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.ServerList;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -21,13 +17,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.client.multiplayer.ServerList;
 
 final class ServerListTools {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-    private ServerListTools() {
-    }
+    private ServerListTools() {}
 
     static ServerList load(final Minecraft client) {
         ServerList list = new ServerList(client);
@@ -140,6 +138,5 @@ final class ServerListTools {
         return trimmed.length() > 64 ? trimmed.substring(0, 64) : trimmed;
     }
 
-    record ServerEntry(String name, String address) {
-    }
+    record ServerEntry(String name, String address) {}
 }

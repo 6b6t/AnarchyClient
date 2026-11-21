@@ -15,8 +15,8 @@ import net.blockhost.anarchyclient.event.FovEvent;
 import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
 import net.blockhost.anarchyclient.event.HudRenderEvent;
-import net.blockhost.anarchyclient.event.ItemTooltipEvent;
 import net.blockhost.anarchyclient.event.ItemStopUseEvent;
+import net.blockhost.anarchyclient.event.ItemTooltipEvent;
 import net.blockhost.anarchyclient.event.ItemUseEvent;
 import net.blockhost.anarchyclient.event.MouseClickEvent;
 import net.blockhost.anarchyclient.event.MouseScrollInputEvent;
@@ -188,7 +188,8 @@ public final class ModuleEventListener {
         if (!this.module.enabled()) {
             return;
         }
-        if (this.module.entityInteract(event.client(), event.player(), event.entity(), event.hitResult(), event.hand())) {
+        if (this.module.entityInteract(
+                event.client(), event.player(), event.entity(), event.hitResult(), event.hand())) {
             event.cancel();
         }
     }
@@ -254,12 +255,8 @@ public final class ModuleEventListener {
         if (!this.module.enabled()) {
             return;
         }
-        Module.CameraTransform transform = this.module.cameraTransform(
-                event.client(),
-                event.position(),
-                event.yaw(),
-                event.pitch()
-        );
+        Module.CameraTransform transform =
+                this.module.cameraTransform(event.client(), event.position(), event.yaw(), event.pitch());
         if (transform != null) {
             event.position(transform.position());
             event.yaw(transform.yaw());

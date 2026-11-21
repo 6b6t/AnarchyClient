@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -13,29 +14,25 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 
-import java.util.List;
-
 public final class InventoryMoveModule extends Module {
 
-    private final BooleanSetting allowJump = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("jump")
-            .name("Jump")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting allowJump = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("jump").name("Jump").defaultValue(true).build()));
     private final BooleanSetting allowSneak = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("sneak")
             .name("Sneak")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting allowChat = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("chat")
-            .name("Chat")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting allowChat = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("chat").name("Chat").defaultValue(false).build()));
 
     public InventoryMoveModule() {
-        super("inventory_move", "Inventory Move", ModuleCategory.MOVEMENT,
-                "Lets you walk, jump, and sneak while an inventory or other screen is open.", List.of("inv_move"));
+        super(
+                "inventory_move",
+                "Inventory Move",
+                ModuleCategory.MOVEMENT,
+                "Lets you walk, jump, and sneak while an inventory or other screen is open.",
+                List.of("inv_move"));
     }
 
     @Override
@@ -58,8 +55,7 @@ public final class InventoryMoveModule extends Module {
                 current.right() || physicallyDown(client, client.options.keyRight),
                 current.jump() || this.allowJump.value() && physicallyDown(client, client.options.keyJump),
                 current.shift() || this.allowSneak.value() && physicallyDown(client, client.options.keyShift),
-                current.sprint() || physicallyDown(client, client.options.keySprint)
-        );
+                current.sprint() || physicallyDown(client, client.options.keySprint));
         InputStates.refreshMoveVector(input);
     }
 

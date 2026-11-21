@@ -1,15 +1,17 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
-
-import java.util.List;
 
 public final class CompassHudModule extends HudElementModule {
 
     public CompassHudModule() {
-        super("compass_hud", "Compass HUD",
-                "Shows the facing direction, yaw in degrees, and a small N E S W compass strip.", "Top Left");
+        super(
+                "compass_hud",
+                "Compass HUD",
+                "Shows the facing direction, yaw in degrees, and a small N E S W compass strip.",
+                "Top Left");
     }
 
     @Override
@@ -18,8 +20,7 @@ public final class CompassHudModule extends HudElementModule {
         return List.of(
                 "Facing " + direction.getName(),
                 "Yaw " + Math.round(wrapYaw(client.player.getYRot())),
-                compassLine(direction)
-        );
+                compassLine(direction));
     }
 
     static String compassLine(final Direction direction) {

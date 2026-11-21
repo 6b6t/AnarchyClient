@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -13,8 +14,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Set;
 
 public final class AutoShopModule extends Module {
 
@@ -40,14 +39,19 @@ public final class AutoShopModule extends Module {
     private int cooldownTicks;
 
     public AutoShopModule() {
-        super("auto_shop", "Auto Shop", ModuleCategory.PLAYER,
+        super(
+                "auto_shop",
+                "Auto Shop",
+                ModuleCategory.PLAYER,
                 "Quick-moves configured items out of open container menus, such as server shop GUIs, on a fixed delay.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || this.screenOnly.value() && !(client.gui.screen() instanceof AbstractContainerScreen<?>)) {
+        if (player == null
+                || client.gameMode == null
+                || this.screenOnly.value() && !(client.gui.screen() instanceof AbstractContainerScreen<?>)) {
             this.cooldownTicks = 0;
             return;
         }

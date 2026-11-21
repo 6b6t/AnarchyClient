@@ -4,9 +4,9 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.item.component.SwingAnimation;
@@ -24,7 +24,10 @@ public final class ProjectilePuncherModule extends Module {
     private int cooldown;
 
     public ProjectilePuncherModule() {
-        super("projectile_puncher", "Projectile Puncher", ModuleCategory.COMBAT,
+        super(
+                "projectile_puncher",
+                "Projectile Puncher",
+                ModuleCategory.COMBAT,
                 "Hits fireballs, wind charges, and shulker bullets that fly toward you within range to deflect or destroy them.");
     }
 
@@ -40,7 +43,8 @@ public final class ProjectilePuncherModule extends Module {
         for (Entity entity : client.level.entitiesForRendering()) {
             if (isPunchable(entity)
                     && CombatTargets.canReachEntity(client.player, entity, this.range.value())
-                    && ArrowDodgeModule.approaching(entity.position(), entity.getDeltaMovement(), client.player.position())) {
+                    && ArrowDodgeModule.approaching(
+                            entity.position(), entity.getDeltaMovement(), client.player.position())) {
                 client.gameMode.attack(client.player, entity);
                 client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 this.cooldown = 5;

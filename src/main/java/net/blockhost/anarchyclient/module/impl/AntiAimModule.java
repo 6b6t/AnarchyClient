@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.rotation.Rotation;
@@ -12,8 +13,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
-
-import java.util.List;
 
 public final class AntiAimModule extends Module {
 
@@ -64,7 +63,10 @@ public final class AntiAimModule extends Module {
     private int ticks;
 
     public AntiAimModule() {
-        super("anti_aim", "Anti Aim", ModuleCategory.MISC,
+        super(
+                "anti_aim",
+                "Anti Aim",
+                ModuleCategory.MISC,
                 "Sends spinning or jittering rotations to the server so other players see your head move oddly. "
                         + "Your own camera does not move, and other modules that rotate you take priority.");
         this.spinSpeed.visibleWhen(() -> "Spin".equals(this.yawMode.value()));
@@ -86,13 +88,21 @@ public final class AntiAimModule extends Module {
             return;
         }
         this.fake = new Rotation(
-                yaw(this.yawMode.value(), player.getYRot(), this.ticks, this.spinSpeed.value().floatValue(),
+                yaw(
+                        this.yawMode.value(),
+                        player.getYRot(),
+                        this.ticks,
+                        this.spinSpeed.value().floatValue(),
                         this.staticYaw.value().floatValue()),
-                pitch(this.pitchMode.value(), player.getXRot(), this.ticks, this.staticPitch.value().floatValue()));
+                pitch(
+                        this.pitchMode.value(),
+                        player.getXRot(),
+                        this.ticks,
+                        this.staticPitch.value().floatValue()));
     }
 
-    static float yaw(final String mode, final float realYaw, final int ticks, final float spinSpeed,
-                     final float staticYaw) {
+    static float yaw(
+            final String mode, final float realYaw, final int ticks, final float spinSpeed, final float staticYaw) {
         return switch (mode) {
             case "Spin" -> Rotation.wrapDegrees(ticks * spinSpeed);
             case "Jitter" -> Rotation.wrapDegrees(realYaw + (ticks % 2 == 0 ? 90.0F : -90.0F));
@@ -120,12 +130,17 @@ public final class AntiAimModule extends Module {
             return packet;
         }
         if (move.hasPosition()) {
-            return new ServerboundMovePlayerPacket.PosRot(move.getX(player.getX()), move.getY(player.getY()),
-                    move.getZ(player.getZ()), rotation.yaw(), rotation.pitch(), move.isOnGround(),
+            return new ServerboundMovePlayerPacket.PosRot(
+                    move.getX(player.getX()),
+                    move.getY(player.getY()),
+                    move.getZ(player.getZ()),
+                    rotation.yaw(),
+                    rotation.pitch(),
+                    move.isOnGround(),
                     move.horizontalCollision());
         }
-        return new ServerboundMovePlayerPacket.Rot(rotation.yaw(), rotation.pitch(), move.isOnGround(),
-                move.horizontalCollision());
+        return new ServerboundMovePlayerPacket.Rot(
+                rotation.yaw(), rotation.pitch(), move.isOnGround(), move.horizontalCollision());
     }
 
     @Override

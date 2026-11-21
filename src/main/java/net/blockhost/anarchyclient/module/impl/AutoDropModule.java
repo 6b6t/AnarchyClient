@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
+import java.util.Set;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
@@ -13,9 +15,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.OptionalInt;
-import java.util.Set;
 
 public final class AutoDropModule extends Module {
 
@@ -46,7 +45,10 @@ public final class AutoDropModule extends Module {
     private Set<Item> parsedItems = Set.of();
 
     public AutoDropModule() {
-        super("auto_drop", "Auto Drop", ModuleCategory.PLAYER,
+        super(
+                "auto_drop",
+                "Auto Drop",
+                ModuleCategory.PLAYER,
                 "Drops configured items from your inventory, with an option to include the hotbar.");
     }
 
@@ -72,8 +74,7 @@ public final class AutoDropModule extends Module {
                 InventoryActionScheduler.PRIORITY_NORMAL,
                 this.delay.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryActions.dropSlot(slot.orElseThrow(), this.fullStack.value())
-        ));
+                InventoryActions.dropSlot(slot.orElseThrow(), this.fullStack.value())));
     }
 
     private OptionalInt findDropSlot(final Inventory inventory) {

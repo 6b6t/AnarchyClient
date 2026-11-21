@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,12 +13,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.world.entity.player.PlayerModelPart;
-
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public final class SkinFlickerModule extends Module {
 
@@ -43,7 +42,10 @@ public final class SkinFlickerModule extends Module {
     private int step;
 
     public SkinFlickerModule() {
-        super("skin_flicker", "Skin Flicker", ModuleCategory.MISC,
+        super(
+                "skin_flicker",
+                "Skin Flicker",
+                ModuleCategory.MISC,
                 "Toggles the outer layers of your skin on a timer so other players see them flicker. Restores your settings when turned off.");
     }
 
@@ -63,7 +65,9 @@ public final class SkinFlickerModule extends Module {
                 this.original.put(part, client.options.isModelPartEnabled(part));
             }
         }
-        if (client.player == null || client.options == null || ++this.ticks < this.delay.value().intValue()) {
+        if (client.player == null
+                || client.options == null
+                || ++this.ticks < this.delay.value().intValue()) {
             return;
         }
         this.ticks = 0;

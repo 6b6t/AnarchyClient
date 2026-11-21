@@ -23,6 +23,7 @@ public final class GlassTheme {
     static final Color WARNING = Color.fromRGB(240, 173, 78);
     /** Off-brand red for "disabled" feedback. */
     public static final Color OFF = Color.fromRGB(224, 85, 99);
+
     private static final Color GLASS_BASE = Color.fromRGB(13, 17, 26);
     /** Vanilla {@code GameRenderer.MAX_BLUR_RADIUS}. */
     private static final int BLUR_MAX = 10;
@@ -33,8 +34,7 @@ public final class GlassTheme {
     private static float glassOpacity = ClientConfig.UiPreferences.DEFAULT.glassOpacity();
     private static float cornerRadius = ClientConfig.UiPreferences.DEFAULT.cornerRadius();
 
-    private GlassTheme() {
-    }
+    private GlassTheme() {}
 
     static void load(final ClientConfig.UiPreferences preferences) {
         preset = preferences.guiTheme();

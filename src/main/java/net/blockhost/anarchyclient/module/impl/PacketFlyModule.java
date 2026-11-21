@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -11,8 +12,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class PacketFlyModule extends Module {
 
@@ -68,7 +67,11 @@ public final class PacketFlyModule extends Module {
     private boolean sendingOwn;
 
     public PacketFlyModule() {
-        super("packet_fly", "Packet Fly", ModuleCategory.MOVEMENT, "Uses packet movement to handle flight-like movement on servers where normal movement is restricted.");
+        super(
+                "packet_fly",
+                "Packet Fly",
+                ModuleCategory.MOVEMENT,
+                "Uses packet movement to handle flight-like movement on servers where normal movement is restricted.");
     }
 
     @Override
@@ -84,7 +87,8 @@ public final class PacketFlyModule extends Module {
             player.setSprinting(true);
         }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.speed.value());
-        double y = client.options.keyJump.isDown() ? this.vertical.value()
+        double y = client.options.keyJump.isDown()
+                ? this.vertical.value()
                 : client.options.keyShift.isDown() ? -this.vertical.value() : 0.0;
         int antiKick = this.antiKickTicks.value().intValue();
         this.ticks++;
@@ -105,8 +109,8 @@ public final class PacketFlyModule extends Module {
         } else if ("Setback".equals(this.mode.value())) {
             packet = new ServerboundMovePlayerPacket.Pos(player.position(), true, player.horizontalCollision);
         } else {
-            packet = new ServerboundMovePlayerPacket.Pos(next.x, next.y - this.bounds.value(), next.z, true,
-                    player.horizontalCollision);
+            packet = new ServerboundMovePlayerPacket.Pos(
+                    next.x, next.y - this.bounds.value(), next.z, true, player.horizontalCollision);
         }
         this.sendingOwn = true;
         try {
@@ -120,12 +124,14 @@ public final class PacketFlyModule extends Module {
     /** Keeps only the rotation of vanilla's movement packet, so the tick still has one position packet. */
     @Override
     public Packet<?> replaceSendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        if (this.sendingOwn || !(packet instanceof ServerboundMovePlayerPacket move) || !move.hasPosition()
+        if (this.sendingOwn
+                || !(packet instanceof ServerboundMovePlayerPacket move)
+                || !move.hasPosition()
                 || !move.hasRotation()) {
             return packet;
         }
-        return new ServerboundMovePlayerPacket.Rot(move.getYRot(0.0F), move.getXRot(0.0F), move.isOnGround(),
-                move.horizontalCollision());
+        return new ServerboundMovePlayerPacket.Rot(
+                move.getYRot(0.0F), move.getXRot(0.0F), move.isOnGround(), move.horizontalCollision());
     }
 
     @Override

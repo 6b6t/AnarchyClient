@@ -1,17 +1,16 @@
 package net.blockhost.anarchyclient.command;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class SeedStoreTest {
 
@@ -28,8 +27,8 @@ class SeedStoreTest {
         assertThrows(IllegalArgumentException.class, () -> SeedStore.normalizeSeed("   "));
         assertNull(SeedStore.get(path, world));
 
-        SeedStore.SeedRecord saved = SeedStore.put(path, world, " 12345 ",
-                Instant.parse("2026-06-25T00:00:00Z"), "26.2", "minecraft:overworld", "manual");
+        SeedStore.SeedRecord saved = SeedStore.put(
+                path, world, " 12345 ", Instant.parse("2026-06-25T00:00:00Z"), "26.2", "minecraft:overworld", "manual");
         assertEquals(world, saved.world());
         assertEquals("12345", saved.seed());
         assertEquals("2026-06-25T00:00:00Z", saved.savedAt());

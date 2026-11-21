@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.timer;
 
-import net.blockhost.anarchyclient.request.TimedRequestQueue;
-
 import java.util.Optional;
+import net.blockhost.anarchyclient.request.TimedRequestQueue;
 
 public final class TimerManager {
 
@@ -12,10 +11,10 @@ public final class TimerManager {
 
     private static final TimedRequestQueue<TimerRequest> REQUESTS = new TimedRequestQueue<>();
 
-    private TimerManager() {
-    }
+    private TimerManager() {}
 
-    public static void request(final String owner, final double multiplier, final int priority, final int ticksUntilReset) {
+    public static void request(
+            final String owner, final double multiplier, final int priority, final int ticksUntilReset) {
         REQUESTS.request(owner, priority, ticksUntilReset, new TimerRequest(clampMultiplier(multiplier)));
     }
 
@@ -50,6 +49,5 @@ public final class TimerManager {
         return Math.max(0.1, Math.min(10.0, multiplier));
     }
 
-    private record TimerRequest(double multiplier) {
-    }
+    private record TimerRequest(double multiplier) {}
 }

@@ -62,8 +62,7 @@ import net.blockhost.anarchyclient.module.impl.VelocityModule;
  */
 final class MovementModules {
 
-    private MovementModules() {
-    }
+    private MovementModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new AutoSprintModule());

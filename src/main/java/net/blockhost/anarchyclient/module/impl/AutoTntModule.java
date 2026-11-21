@@ -63,7 +63,10 @@ public final class AutoTntModule extends Module {
     private int cooldownTicks;
 
     public AutoTntModule() {
-        super("auto_tnt", "Auto TNT", ModuleCategory.COMBAT,
+        super(
+                "auto_tnt",
+                "Auto TNT",
+                ModuleCategory.COMBAT,
                 "Ignites nearby TNT with flint and steel or fire charges, skipping lighters that are close to breaking.");
     }
 
@@ -87,22 +90,16 @@ public final class AutoTntModule extends Module {
                 BlockTargetScanner.SortMode.CLOSEST,
                 scanLimit(horizontal, vertical),
                 candidate -> candidate.state().getBlock() instanceof TntBlock
-                        && CombatTargets.canReachBlock(player, candidate.pos())
-        )) {
+                        && CombatTargets.canReachBlock(player, candidate.pos()))) {
             WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
-                    client,
-                    this,
-                    target.pos(),
-                    Direction.UP,
-                    this::isIgniter,
-                    this.rotate.value()
-            );
+                    client, this, target.pos(), Direction.UP, this::isIgniter, this.rotate.value());
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.cooldownTicks = this.delay.value().intValue();
                 return;
             }
             // WAITING: still rotating to this TNT; trying the next one would replace the rotation request.
-            if (result == WorldInteraction.ActionResult.MISSING_ITEM || result == WorldInteraction.ActionResult.WAITING) {
+            if (result == WorldInteraction.ActionResult.MISSING_ITEM
+                    || result == WorldInteraction.ActionResult.WAITING) {
                 return;
             }
         }
@@ -114,12 +111,18 @@ public final class AutoTntModule extends Module {
     }
 
     private boolean isIgniter(final ItemStack stack) {
-        return isIgniter(stack, this.fireCharges.value(), this.protectDurability.value(),
+        return isIgniter(
+                stack,
+                this.fireCharges.value(),
+                this.protectDurability.value(),
                 this.minimumDurability.value().intValue());
     }
 
-    static boolean isIgniter(final ItemStack stack, final boolean fireCharges, final boolean protectDurability,
-                             final int minimumDurability) {
+    static boolean isIgniter(
+            final ItemStack stack,
+            final boolean fireCharges,
+            final boolean protectDurability,
+            final int minimumDurability) {
         return acceptsIgniter(
                 stack.is(Items.FLINT_AND_STEEL),
                 stack.is(Items.FIRE_CHARGE),
@@ -127,13 +130,17 @@ public final class AutoTntModule extends Module {
                 protectDurability,
                 stack.getMaxDamage(),
                 stack.getDamageValue(),
-                minimumDurability
-        );
+                minimumDurability);
     }
 
-    static boolean acceptsIgniter(final boolean flintAndSteel, final boolean fireCharge,
-                                  final boolean fireCharges, final boolean protectDurability,
-                                  final int maxDamage, final int damageValue, final int minimumDurability) {
+    static boolean acceptsIgniter(
+            final boolean flintAndSteel,
+            final boolean fireCharge,
+            final boolean fireCharges,
+            final boolean protectDurability,
+            final int maxDamage,
+            final int damageValue,
+            final int minimumDurability) {
         if (fireCharge) {
             return fireCharges;
         }

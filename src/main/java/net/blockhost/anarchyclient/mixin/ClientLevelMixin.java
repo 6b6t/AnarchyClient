@@ -38,17 +38,25 @@ public abstract class ClientLevelMixin {
     }
 
     @Inject(method = "destroyBlockProgress", at = @At("HEAD"))
-    private void anarchyclient$blockBreakingProgress(final int id, final BlockPos pos, final int progress,
-                                                     final CallbackInfo info) {
+    private void anarchyclient$blockBreakingProgress(
+            final int id, final BlockPos pos, final int progress, final CallbackInfo info) {
         AnarchyClient.MODULES.call(new BlockBreakingProgressEvent(Minecraft.getInstance(), id, pos, progress));
     }
 
     @Inject(method = "doAddParticle", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$particle(final ParticleOptions particle, final boolean overrideLimiter,
-                                        final boolean alwaysShowParticles, final double x, final double y,
-                                        final double z, final double xd, final double yd, final double zd,
-                                        final CallbackInfo info) {
-        ParticleEvent event = AnarchyClient.MODULES.call(new ParticleEvent(Minecraft.getInstance(), particle, alwaysShowParticles));
+    private void anarchyclient$particle(
+            final ParticleOptions particle,
+            final boolean overrideLimiter,
+            final boolean alwaysShowParticles,
+            final double x,
+            final double y,
+            final double z,
+            final double xd,
+            final double yd,
+            final double zd,
+            final CallbackInfo info) {
+        ParticleEvent event =
+                AnarchyClient.MODULES.call(new ParticleEvent(Minecraft.getInstance(), particle, alwaysShowParticles));
         if (event.isCancelled()) {
             info.cancel();
         }

@@ -28,7 +28,10 @@ public final class ReachModule extends Module {
             .build()));
 
     public ReachModule() {
-        super("reach", "Reach", ModuleCategory.PLAYER,
+        super(
+                "reach",
+                "Reach",
+                ModuleCategory.PLAYER,
                 "Extends block and entity interaction range by a set number of blocks. This can flag anti-cheats.");
     }
 

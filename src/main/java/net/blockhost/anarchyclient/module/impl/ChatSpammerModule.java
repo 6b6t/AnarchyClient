@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 
 public final class ChatSpammerModule extends Module {
 
@@ -45,7 +44,12 @@ public final class ChatSpammerModule extends Module {
     private int messageIndex;
 
     public ChatSpammerModule() {
-        super("chat_spammer", "Chat Spammer", ModuleCategory.FUN, "Sends configured chat messages on a timer with optional formatting and variation.", List.of("spam"));
+        super(
+                "chat_spammer",
+                "Chat Spammer",
+                ModuleCategory.FUN,
+                "Sends configured chat messages on a timer with optional formatting and variation.",
+                List.of("spam"));
     }
 
     @Override
@@ -88,7 +92,9 @@ public final class ChatSpammerModule extends Module {
     }
 
     private void schedule() {
-        double jitter = this.jitterSeconds.value() <= 0.0 ? 0.0 : this.random.nextDouble() * this.jitterSeconds.value() * 2.0 - this.jitterSeconds.value();
+        double jitter = this.jitterSeconds.value() <= 0.0
+                ? 0.0
+                : this.random.nextDouble() * this.jitterSeconds.value() * 2.0 - this.jitterSeconds.value();
         this.cooldownTicks = Math.max(1, (int) Math.round((this.intervalSeconds.value() + jitter) * 20));
     }
 }

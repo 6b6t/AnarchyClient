@@ -7,10 +7,10 @@ import net.blockhost.anarchyclient.util.MainThread;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.util.RandomSource;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundDamageEventPacket;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
@@ -26,7 +26,10 @@ public final class DamageParticlesModule extends Module {
             .build()));
 
     public DamageParticlesModule() {
-        super("damage_particles", "Damage Particles", ModuleCategory.RENDER,
+        super(
+                "damage_particles",
+                "Damage Particles",
+                ModuleCategory.RENDER,
                 "Spawns damage indicator particles on any entity that takes damage.");
     }
 
@@ -50,7 +53,11 @@ public final class DamageParticlesModule extends Module {
         Vec3 center = entity.getBoundingBox().getCenter();
         RandomSource random = level.getRandom();
         for (int i = 0; i < this.count.value().intValue(); i++) {
-            level.addParticle(ParticleTypes.DAMAGE_INDICATOR, center.x, center.y + 0.4, center.z,
+            level.addParticle(
+                    ParticleTypes.DAMAGE_INDICATOR,
+                    center.x,
+                    center.y + 0.4,
+                    center.z,
                     (random.nextDouble() - 0.5) * 0.12,
                     random.nextDouble() * 0.18,
                     (random.nextDouble() - 0.5) * 0.12);

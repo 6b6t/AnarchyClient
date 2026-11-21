@@ -23,7 +23,10 @@ public final class HighJumpModule extends Module {
     private boolean wasOnGround;
 
     public HighJumpModule() {
-        super("high_jump", "High Jump", ModuleCategory.MOVEMENT,
+        super(
+                "high_jump",
+                "High Jump",
+                ModuleCategory.MOVEMENT,
                 "Sets a higher upward velocity when you jump from the ground so you clear taller obstacles.");
     }
 
@@ -36,9 +39,14 @@ public final class HighJumpModule extends Module {
         }
         // Module ticks run after the player tick, so a jump has already left the ground by now.
         double velocityY = player.getDeltaMovement().y;
-        if (this.wasOnGround && !player.onGround() && velocityY > 0.0 && player.input != null
+        if (this.wasOnGround
+                && !player.onGround()
+                && velocityY > 0.0
+                && player.input != null
                 && player.input.keyPresses.jump()) {
-            player.setDeltaMovement(player.getDeltaMovement().x, boostedVelocity(velocityY, this.height.value()),
+            player.setDeltaMovement(
+                    player.getDeltaMovement().x,
+                    boostedVelocity(velocityY, this.height.value()),
                     player.getDeltaMovement().z);
         }
         this.wasOnGround = player.onGround();

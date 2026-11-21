@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,10 +13,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public final class ItemPhysicsModule extends Module {
 
@@ -50,7 +49,10 @@ public final class ItemPhysicsModule extends Module {
             .build()));
 
     public ItemPhysicsModule() {
-        super("item_physics", "Item Physics", ModuleCategory.RENDER,
+        super(
+                "item_physics",
+                "Item Physics",
+                ModuleCategory.RENDER,
                 "Renders dropped items flat, spinning, or bobbing, and can stop them falling on your client until turned off.");
     }
 
@@ -69,7 +71,8 @@ public final class ItemPhysicsModule extends Module {
         Set<Integer> floating = new HashSet<>();
         for (Entity entity : client.level.entitiesForRendering()) {
             // Only take over items that fall, so items the server already made weightless keep that state on restore.
-            if (entity instanceof ItemEntity item && (this.floatedItems.contains(item.getId()) || !item.isNoGravity())) {
+            if (entity instanceof ItemEntity item
+                    && (this.floatedItems.contains(item.getId()) || !item.isNoGravity())) {
                 item.setNoGravity(true);
                 floating.add(item.getId());
             }

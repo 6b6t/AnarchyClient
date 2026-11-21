@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -15,15 +16,10 @@ import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
-
 public final class FlagCheckModule extends Module {
 
-    private final BooleanSetting chat = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("chat")
-            .name("Chat")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting chat = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("chat").name("Chat").defaultValue(true).build()));
     private final BooleanSetting invalidAttributes = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("invalid_attributes")
             .name("Invalid")
@@ -40,7 +36,10 @@ public final class FlagCheckModule extends Module {
     private int lastInvalidAlertTick;
 
     public FlagCheckModule() {
-        super("flag_check", "Flag Check", ModuleCategory.MISC,
+        super(
+                "flag_check",
+                "Flag Check",
+                ModuleCategory.MISC,
                 "Detects server lagbacks and forced rotations, records them, and alerts you in chat.");
     }
 
@@ -53,18 +52,23 @@ public final class FlagCheckModule extends Module {
         // Vanilla applies the packet before queued tasks run, so read the current rotation now.
         Set<Relative> relatives = position.relatives();
         float yawDelta = rotationDelta(position.change().yRot(), player.getYRot(), relatives.contains(Relative.Y_ROT));
-        float pitchDelta = rotationDelta(position.change().xRot(), player.getXRot(), relatives.contains(Relative.X_ROT));
+        float pitchDelta =
+                rotationDelta(position.change().xRot(), player.getXRot(), relatives.contains(Relative.X_ROT));
         Vec3 current = player.position();
         Vec3 change = position.change().position();
         Vec3 target = new Vec3(
                 relatives.contains(Relative.X) ? current.x + change.x : change.x,
                 relatives.contains(Relative.Y) ? current.y + change.y : change.y,
-                relatives.contains(Relative.Z) ? current.z + change.z : change.z
-        );
-        float yaw = relatives.contains(Relative.Y_ROT) ? player.getYRot() + position.change().yRot() : position.change().yRot();
-        float pitch = relatives.contains(Relative.X_ROT) ? player.getXRot() + position.change().xRot() : position.change().xRot();
+                relatives.contains(Relative.Z) ? current.z + change.z : change.z);
+        float yaw = relatives.contains(Relative.Y_ROT)
+                ? player.getYRot() + position.change().yRot()
+                : position.change().yRot();
+        float pitch = relatives.contains(Relative.X_ROT)
+                ? player.getXRot() + position.change().xRot()
+                : position.change().xRot();
         boolean forceRotate = yawDelta >= this.forceRotateAngle.value() || pitchDelta >= this.forceRotateAngle.value();
-        ServerObserver.FlagReason reason = forceRotate ? ServerObserver.FlagReason.FORCE_ROTATE : ServerObserver.FlagReason.LAGBACK;
+        ServerObserver.FlagReason reason =
+                forceRotate ? ServerObserver.FlagReason.FORCE_ROTATE : ServerObserver.FlagReason.LAGBACK;
         String detail = forceRotate ? Math.round(yawDelta) + " yaw / " + Math.round(pitchDelta) + " pitch" : "";
         MainThread.run(() -> {
             ServerObserver.recordFlag(reason, target, yaw, pitch, detail);
@@ -80,7 +84,9 @@ public final class FlagCheckModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (!this.invalidAttributes.value() || client.player == null || client.player.tickCount - this.lastInvalidAlertTick < 20) {
+        if (!this.invalidAttributes.value()
+                || client.player == null
+                || client.player.tickCount - this.lastInvalidAlertTick < 20) {
             return;
         }
         boolean invalidHealth = client.player.getHealth() <= 0.0F && client.player.isAlive();
@@ -89,9 +95,15 @@ public final class FlagCheckModule extends Module {
             return;
         }
         this.lastInvalidAlertTick = client.player.tickCount;
-        String detail = (invalidHealth ? "health" : "") + (invalidHealth && invalidHunger ? ", " : "") + (invalidHunger ? "hunger" : "");
-        ServerObserver.recordFlag(ServerObserver.FlagReason.INVALID_ATTRIBUTES, client.player.position(),
-                client.player.getYRot(), client.player.getXRot(), detail);
+        String detail = (invalidHealth ? "health" : "")
+                + (invalidHealth && invalidHunger ? ", " : "")
+                + (invalidHunger ? "hunger" : "");
+        ServerObserver.recordFlag(
+                ServerObserver.FlagReason.INVALID_ATTRIBUTES,
+                client.player.position(),
+                client.player.getYRot(),
+                client.player.getXRot(),
+                detail);
         this.notify(client, ServerObserver.FlagReason.INVALID_ATTRIBUTES, detail);
     }
 
@@ -100,7 +112,8 @@ public final class FlagCheckModule extends Module {
             return;
         }
         String suffix = detail == null || detail.isBlank() ? "" : " (" + detail + ")";
-        client.player.sendSystemMessage(Translations.component("anarchyclient.message.flag_check.flag_detected", "Flag detected: %s%s.", label(reason), suffix));
+        client.player.sendSystemMessage(Translations.component(
+                "anarchyclient.message.flag_check.flag_detected", "Flag detected: %s%s.", label(reason), suffix));
     }
 
     private static String label(final ServerObserver.FlagReason reason) {

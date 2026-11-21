@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.setting;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TextValueSettingsTest {
 
@@ -51,10 +50,8 @@ class TextValueSettingsTest {
 
     @Test
     void identifierListsAlsoSplitOnWhitespace() {
-        ModuleListSetting setting = ModuleListSetting.from(ModuleListSetting.builder()
-                .id("modules")
-                .name("Modules")
-                .build());
+        ModuleListSetting setting = ModuleListSetting.from(
+                ModuleListSetting.builder().id("modules").name("Modules").build());
 
         setting.valueFromString("kill_aura velocity,freecam");
 
@@ -63,10 +60,8 @@ class TextValueSettingsTest {
 
     @Test
     void blockPositionsParseTextAndObjectJson() {
-        BlockPosSetting setting = BlockPosSetting.from(BlockPosSetting.builder()
-                .id("target")
-                .name("Target")
-                .build());
+        BlockPosSetting setting = BlockPosSetting.from(
+                BlockPosSetting.builder().id("target").name("Target").build());
 
         setting.valueFromString("12 64 -5");
 
@@ -85,10 +80,8 @@ class TextValueSettingsTest {
 
     @Test
     void vectorsParseTextAndObjectJson() {
-        Vector3dSetting setting = Vector3dSetting.from(Vector3dSetting.builder()
-                .id("velocity")
-                .name("Velocity")
-                .build());
+        Vector3dSetting setting = Vector3dSetting.from(
+                Vector3dSetting.builder().id("velocity").name("Velocity").build());
 
         setting.valueFromString("1.5, -2, 3.25");
 
@@ -120,17 +113,13 @@ class TextValueSettingsTest {
         assertEquals(0x80336699, setting.value().argb());
         assertEquals("#ff0080", SettingColor.parse("300, -4, 128").hex());
 
-        ColorListSetting list = ColorListSetting.from(ColorListSetting.builder()
-                .id("palette")
-                .name("Palette")
-                .build());
+        ColorListSetting list = ColorListSetting.from(
+                ColorListSetting.builder().id("palette").name("Palette").build());
         list.valueFromString("#ff0000,#00ff00 0,0,255,64 #ff0000");
 
-        assertEquals(List.of(
-                SettingColor.rgb(255, 0, 0),
-                SettingColor.rgb(0, 255, 0),
-                new SettingColor(0, 0, 255, 64)
-        ), list.value());
+        assertEquals(
+                List.of(SettingColor.rgb(255, 0, 0), SettingColor.rgb(0, 255, 0), new SettingColor(0, 0, 255, 64)),
+                list.value());
         assertEquals("#ff0000,#00ff00,#0000ff40", list.valueString());
 
         list.valueFromString("#ff0000, #00ff00");

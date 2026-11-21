@@ -1,11 +1,20 @@
 package net.blockhost.anarchyclient.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.mojang.blaze3d.platform.InputConstants;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleBindAction;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.module.ModuleManager;
-import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -13,16 +22,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientConfigTest {
 
@@ -71,8 +70,7 @@ class ClientConfigTest {
                 ModuleCategory.PLAYER,
                 ModuleCategory.MOVEMENT,
                 ModuleCategory.RENDER,
-                ModuleCategory.COMBAT
-        ));
+                ModuleCategory.COMBAT));
         saved.expandedModules(Set.of("auto_gg", "nyan_cat_gif_spammer"));
         saved.favoriteModules(Set.of("auto_gg", "esp"));
         saved.selectedCategory(ModuleCategory.COMBAT);
@@ -87,43 +85,50 @@ class ClientConfigTest {
                 BackgroundDesign.DEEP,
                 0.7F,
                 10F,
-                3F
-        ));
+                3F));
 
         saved.save();
 
         ClientConfig loaded = new ClientConfig(new ModuleManager(), path);
         loaded.load();
 
-        assertEquals(new ClientConfig.CategoryWindowState(24.5F, 48.25F), loaded.categoryWindow(ModuleCategory.COMBAT).orElseThrow());
-        assertEquals(new ClientConfig.CategoryWindowState(96F, 128F), loaded.categoryWindow(ModuleCategory.FUN).orElseThrow());
-        assertEquals(List.of(
-                ModuleCategory.FUN,
-                ModuleCategory.HUD,
-                ModuleCategory.PLAYER,
-                ModuleCategory.MOVEMENT,
-                ModuleCategory.RENDER,
-                ModuleCategory.COMBAT,
-                ModuleCategory.WORLD,
-                ModuleCategory.MISC
-        ), loaded.categoryOrder().orElseThrow());
-        assertEquals(Set.of("auto_gg", "nyan_cat_gif_spammer"), loaded.expandedModules().orElseThrow());
+        assertEquals(
+                new ClientConfig.CategoryWindowState(24.5F, 48.25F),
+                loaded.categoryWindow(ModuleCategory.COMBAT).orElseThrow());
+        assertEquals(
+                new ClientConfig.CategoryWindowState(96F, 128F),
+                loaded.categoryWindow(ModuleCategory.FUN).orElseThrow());
+        assertEquals(
+                List.of(
+                        ModuleCategory.FUN,
+                        ModuleCategory.HUD,
+                        ModuleCategory.PLAYER,
+                        ModuleCategory.MOVEMENT,
+                        ModuleCategory.RENDER,
+                        ModuleCategory.COMBAT,
+                        ModuleCategory.WORLD,
+                        ModuleCategory.MISC),
+                loaded.categoryOrder().orElseThrow());
+        assertEquals(
+                Set.of("auto_gg", "nyan_cat_gif_spammer"),
+                loaded.expandedModules().orElseThrow());
         assertEquals(Set.of("auto_gg", "esp"), loaded.favoriteModules().orElseThrow());
         assertTrue(loaded.moduleFavorite("auto_gg"));
         assertEquals(ModuleCategory.COMBAT, loaded.selectedCategory().orElseThrow());
         assertEquals("auto_gg", loaded.selectedModuleId().orElseThrow());
-        assertEquals(new ClientConfig.UiPreferences(
-                false,
-                true,
-                false,
-                true,
-                true,
-                ClientConfig.GuiThemePreset.ROSE,
-                BackgroundDesign.DEEP,
-                0.7F,
-                10F,
-                3F
-        ), loaded.uiPreferences());
+        assertEquals(
+                new ClientConfig.UiPreferences(
+                        false,
+                        true,
+                        false,
+                        true,
+                        true,
+                        ClientConfig.GuiThemePreset.ROSE,
+                        BackgroundDesign.DEEP,
+                        0.7F,
+                        10F,
+                        3F),
+                loaded.uiPreferences());
     }
 
     @Test
@@ -288,8 +293,7 @@ class ClientConfigTest {
 
     private static List<Path> backupFiles(final Path configPath) throws Exception {
         try (var files = Files.list(configPath.getParent())) {
-            return files
-                    .filter(path -> path.getFileName().toString().startsWith(configPath.getFileName() + "."))
+            return files.filter(path -> path.getFileName().toString().startsWith(configPath.getFileName() + "."))
                     .filter(path -> path.getFileName().toString().endsWith(".backup.json"))
                     .sorted(Comparator.comparing(Path::toString))
                     .toList();

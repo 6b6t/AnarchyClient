@@ -15,8 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class AtmosphericFogEnvironmentMixin {
 
     @Inject(method = "getBaseColor", at = @At("RETURN"), cancellable = true)
-    private void anarchyclient$customFog(final ClientLevel level, final Camera camera, final int renderDistance,
-                                         final float partialTicks, final CallbackInfoReturnable<Vector3fc> info) {
+    private void anarchyclient$customFog(
+            final ClientLevel level,
+            final Camera camera,
+            final int renderDistance,
+            final float partialTicks,
+            final CallbackInfoReturnable<Vector3fc> info) {
         Vector3fc color = SkyboxModule.fogColor();
         if (color != null && level.dimensionType().skybox() == DimensionType.Skybox.OVERWORLD) {
             info.setReturnValue(color);

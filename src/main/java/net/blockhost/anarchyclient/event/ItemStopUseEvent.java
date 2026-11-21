@@ -11,8 +11,8 @@ public final class ItemStopUseEvent implements AnarchyClientEvent {
     private final ItemStack stack;
     private final int remainingTicks;
 
-    public ItemStopUseEvent(final Minecraft client, final InteractionHand hand, final ItemStack stack,
-                            final int remainingTicks) {
+    public ItemStopUseEvent(
+            final Minecraft client, final InteractionHand hand, final ItemStack stack, final int remainingTicks) {
         this.client = client;
         this.hand = hand;
         this.stack = stack;

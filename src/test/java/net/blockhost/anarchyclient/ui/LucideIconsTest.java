@@ -1,20 +1,19 @@
 package net.blockhost.anarchyclient.ui;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class LucideIconsTest {
@@ -34,7 +33,8 @@ class LucideIconsTest {
 
     @Test
     void generatedResourceContainsUsedIcons() throws Exception {
-        try (InputStream input = LucideIcons.class.getResourceAsStream("/assets/anarchyclient/font/lucide-icons.properties")) {
+        try (InputStream input =
+                LucideIcons.class.getResourceAsStream("/assets/anarchyclient/font/lucide-icons.properties")) {
             assertNotNull(input);
 
             Map<String, String> glyphs = LucideIcons.parse(input);
@@ -52,7 +52,8 @@ class LucideIconsTest {
         ModuleManager modules = new ModuleManager();
         ModuleRegistry.registerDefaults(modules);
 
-        try (InputStream input = LucideIcons.class.getResourceAsStream("/assets/anarchyclient/font/lucide-icons.properties")) {
+        try (InputStream input =
+                LucideIcons.class.getResourceAsStream("/assets/anarchyclient/font/lucide-icons.properties")) {
             assertNotNull(input);
 
             Map<String, String> glyphs = LucideIcons.parse(input);

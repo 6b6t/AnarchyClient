@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.ToDoubleFunction;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -10,11 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.ToDoubleFunction;
 
 public final class CrystalBlockerModule extends Module {
 
@@ -51,7 +50,10 @@ public final class CrystalBlockerModule extends Module {
             .build()));
 
     public CrystalBlockerModule() {
-        super("crystal_blocker", "Crystal Blocker", ModuleCategory.COMBAT,
+        super(
+                "crystal_blocker",
+                "Crystal Blocker",
+                ModuleCategory.COMBAT,
                 "Fills the open spots around you where an enemy could place an end crystal that would hurt you, "
                         + "most dangerous spots first. Uses obsidian or ender chests.");
     }
@@ -66,17 +68,26 @@ public final class CrystalBlockerModule extends Module {
         if (range > 0.0 && CombatTargets.nearestEnemy(client, range) == null) {
             return;
         }
-        List<BlockPos> spots = dangerousSpots(client.level, player.blockPosition(),
-                spot -> DamageEstimator.explosionDamage(player, DamageEstimator.crystalCenter(spot),
-                        DamageEstimator.CRYSTAL_POWER),
+        List<BlockPos> spots = dangerousSpots(
+                client.level,
+                player.blockPosition(),
+                spot -> DamageEstimator.explosionDamage(
+                        player, DamageEstimator.crystalCenter(spot), DamageEstimator.CRYSTAL_POWER),
                 this.minDamage.value());
         this.debugValue("spots", spots.size());
         if (spots.isEmpty()) {
             return;
         }
-        CombatPlacementPlanner.placeBatch(client, this, spots, CombatPlacementPlanner.HARD_BLOCKS,
-                CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(),
-                        player.blockInteractionRange()).withSupport(false));
+        CombatPlacementPlanner.placeBatch(
+                client,
+                this,
+                spots,
+                CombatPlacementPlanner.HARD_BLOCKS,
+                CombatPlacementPlanner.Options.of(
+                                this.blocksPerTick.value().intValue(),
+                                this.rotate.value(),
+                                player.blockInteractionRange())
+                        .withSupport(false));
     }
 
     /**
@@ -84,8 +95,11 @@ public final class CrystalBlockerModule extends Module {
      * {@code minDamage}, most damaging first. A spot is open air resting on obsidian or bedrock.
      * The player's own cells are never returned.
      */
-    static List<BlockPos> dangerousSpots(final BlockGetter level, final BlockPos feet,
-                                         final ToDoubleFunction<BlockPos> damage, final double minDamage) {
+    static List<BlockPos> dangerousSpots(
+            final BlockGetter level,
+            final BlockPos feet,
+            final ToDoubleFunction<BlockPos> damage,
+            final double minDamage) {
         List<BlockPos> spots = new ArrayList<>();
         List<Double> damages = new ArrayList<>();
         for (int dy = -1; dy <= 2; dy++) {

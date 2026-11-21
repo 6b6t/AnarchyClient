@@ -24,18 +24,20 @@ public enum InventoryActionConstraint {
     NOT_BREAKING_BLOCK {
         @Override
         boolean allows(final InventoryActionContext context) {
-            return context.client().gameMode == null || !context.client().gameMode.isDestroying();
+            return context.client().gameMode == null
+                    || !context.client().gameMode.isDestroying();
         }
     },
     NO_MOVEMENT {
         @Override
         boolean allows(final InventoryActionContext context) {
             var input = context.player().input;
-            return input == null || !input.keyPresses.forward()
-                    && !input.keyPresses.backward()
-                    && !input.keyPresses.left()
-                    && !input.keyPresses.right()
-                    && !input.keyPresses.jump();
+            return input == null
+                    || !input.keyPresses.forward()
+                            && !input.keyPresses.backward()
+                            && !input.keyPresses.left()
+                            && !input.keyPresses.right()
+                            && !input.keyPresses.jump();
         }
     },
     NO_ACTIVE_ROTATION {

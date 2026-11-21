@@ -10,7 +10,10 @@ import net.minecraft.client.gui.screens.Screen;
 public final class BlurModule extends Module {
 
     public BlurModule() {
-        super("blur", "Blur", ModuleCategory.RENDER,
+        super(
+                "blur",
+                "Blur",
+                ModuleCategory.RENDER,
                 "Blurs the world behind inventories, containers, and other in-game screens using the vanilla Menu Background Blur strength.");
     }
 

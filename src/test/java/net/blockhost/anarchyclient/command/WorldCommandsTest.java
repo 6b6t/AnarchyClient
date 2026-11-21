@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.command;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Random;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import org.junit.jupiter.api.Test;
-
-import java.util.Random;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WorldCommandsTest {
 
@@ -18,9 +17,8 @@ class WorldCommandsTest {
 
         BlockPos slimeChunk = WorldCommands.closestSlimeChunk(12345L, 0, 0, 64);
 
-        assertTrue(WorldCommands.isSlimeChunk(12345L,
-                Math.floorDiv(slimeChunk.getX(), 16),
-                Math.floorDiv(slimeChunk.getZ(), 16)));
+        assertTrue(WorldCommands.isSlimeChunk(
+                12345L, Math.floorDiv(slimeChunk.getX(), 16), Math.floorDiv(slimeChunk.getZ(), 16)));
     }
 
     @Test
@@ -30,7 +28,9 @@ class WorldCommandsTest {
         for (int i = 0; i < 2_000; i++) {
             int chunkX = coords.nextInt(200_001) - 100_000;
             int chunkZ = coords.nextInt(200_001) - 100_000;
-            boolean vanilla = WorldgenRandom.seedSlimeChunk(chunkX, chunkZ, seed, 987234911L).nextInt(10) == 0;
+            boolean vanilla = WorldgenRandom.seedSlimeChunk(chunkX, chunkZ, seed, 987234911L)
+                            .nextInt(10)
+                    == 0;
             assertEquals(vanilla, WorldCommands.isSlimeChunk(seed, chunkX, chunkZ), chunkX + ", " + chunkZ);
             assertEquals(referenceSlimeChunk(seed, chunkX, chunkZ), vanilla, chunkX + ", " + chunkZ);
         }

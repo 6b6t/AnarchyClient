@@ -27,7 +27,10 @@ public final class RotationModule extends Module {
             .build()));
 
     public RotationModule() {
-        super("rotation", "Rotation", ModuleCategory.PLAYER,
+        super(
+                "rotation",
+                "Rotation",
+                ModuleCategory.PLAYER,
                 "Locks your player to a fixed yaw and pitch, so you look, walk, and hit in that direction.");
     }
 
@@ -37,11 +40,12 @@ public final class RotationModule extends Module {
     }
 
     @Override
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                           final float pitch) {
+    public CameraTransform cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         // The camera updates every frame before the crosshair target is picked, so undo mouse turns here too.
         this.lockPlayer(client.player);
-        return new CameraTransform(position, this.yaw.value().floatValue(), this.pitch.value().floatValue());
+        return new CameraTransform(
+                position, this.yaw.value().floatValue(), this.pitch.value().floatValue());
     }
 
     private void lockPlayer(final LocalPlayer player) {

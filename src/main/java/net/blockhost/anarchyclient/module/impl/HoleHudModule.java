@@ -1,14 +1,16 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.client.Minecraft;
-
 import java.util.List;
+import net.minecraft.client.Minecraft;
 
 public final class HoleHudModule extends HudElementModule {
 
     public HoleHudModule() {
-        super("hole_hud", "Hole HUD",
-                "Shows whether bedrock, obsidian, or other blast-proof blocks surround you on all four sides and below.", "Top Right");
+        super(
+                "hole_hud",
+                "Hole HUD",
+                "Shows whether bedrock, obsidian, or other blast-proof blocks surround you on all four sides and below.",
+                "Top Right");
     }
 
     @Override

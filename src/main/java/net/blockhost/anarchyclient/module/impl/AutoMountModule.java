@@ -40,14 +40,20 @@ public final class AutoMountModule extends Module {
     private int cooldownTicks;
 
     public AutoMountModule() {
-        super("auto_mount", "Auto Mount", ModuleCategory.PLAYER,
+        super(
+                "auto_mount",
+                "Auto Mount",
+                ModuleCategory.PLAYER,
                 "Mounts the nearest free horse, camel, boat, minecart, or saddled pig or strider in range.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
+                || client.gui.screen() != null
                 || player.isPassenger()) {
             return;
         }
@@ -59,7 +65,8 @@ public final class AutoMountModule extends Module {
         if (target == null) {
             return;
         }
-        InteractionResult result = client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+        InteractionResult result =
+                client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
@@ -71,8 +78,11 @@ public final class AutoMountModule extends Module {
         Entity best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!isMountCandidate(entity) || entity.getControllingPassenger() != null || !entity.isAlive()
-                    || !canRide(entity) || !CombatTargets.canReachEntity(player, entity)
+            if (!isMountCandidate(entity)
+                    || entity.getControllingPassenger() != null
+                    || !entity.isAlive()
+                    || !canRide(entity)
+                    || !CombatTargets.canReachEntity(player, entity)
                     // Holding the animal's food would feed it instead of mounting it.
                     || entity instanceof Animal animal && animal.isFood(player.getMainHandItem())) {
                 continue;

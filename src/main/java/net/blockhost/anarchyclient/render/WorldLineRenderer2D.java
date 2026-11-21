@@ -5,11 +5,15 @@ import org.joml.Matrix3x2fStack;
 
 public final class WorldLineRenderer2D {
 
-    private WorldLineRenderer2D() {
-    }
+    private WorldLineRenderer2D() {}
 
-    public static void line(final GuiGraphicsExtractor graphics, final float x0, final float y0, final float x1, final float y1,
-                     final int argb) {
+    public static void line(
+            final GuiGraphicsExtractor graphics,
+            final float x0,
+            final float y0,
+            final float x1,
+            final float y1,
+            final int argb) {
         float dx = x1 - x0;
         float dy = y1 - y0;
         float length = (float) Math.sqrt(dx * dx + dy * dy);

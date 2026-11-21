@@ -26,7 +26,10 @@ public final class DebugRenderModule extends Module {
             .build()));
 
     public DebugRenderModule() {
-        super("debug_render", "Debug Render", ModuleCategory.RENDER,
+        super(
+                "debug_render",
+                "Debug Render",
+                ModuleCategory.RENDER,
                 "Outlines your own hitbox and the current chunk boundary around your height.");
     }
 
@@ -42,18 +45,17 @@ public final class DebugRenderModule extends Module {
             WorldLineRenderer.boxNoDepth(
                     matrices,
                     submits,
-                    WorldLineRenderer.interpolatedBox(client.player,
-                            client.getDeltaTracker().getGameTimeDeltaPartialTick(false), 0.0, camera),
-                    new WorldLineRenderer.Color(80, 220, 255, 220)
-            );
+                    WorldLineRenderer.interpolatedBox(
+                            client.player, client.getDeltaTracker().getGameTimeDeltaPartialTick(false), 0.0, camera),
+                    new WorldLineRenderer.Color(80, 220, 255, 220));
         }
         if (this.chunk.value()) {
             renderChunk(matrices, submits, client.player.blockPosition(), camera);
         }
     }
 
-    private static void renderChunk(final PoseStack matrices, final SubmitNodeCollector submits, final BlockPos playerPos,
-                                    final Vec3 camera) {
+    private static void renderChunk(
+            final PoseStack matrices, final SubmitNodeCollector submits, final BlockPos playerPos, final Vec3 camera) {
         int minX = Math.floorDiv(playerPos.getX(), 16) * 16;
         int minZ = Math.floorDiv(playerPos.getZ(), 16) * 16;
         int minY = playerPos.getY() - 8;

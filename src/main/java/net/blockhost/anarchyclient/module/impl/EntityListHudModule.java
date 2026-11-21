@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.item.ItemEntity;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.blockhost.anarchyclient.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 
 public final class EntityListHudModule extends HudElementModule {
 
@@ -38,8 +37,11 @@ public final class EntityListHudModule extends HudElementModule {
             .build()));
 
     public EntityListHudModule() {
-        super("entity_list_hud", "Entity List HUD",
-                "Lists the entities near you grouped by type, with a count for each, most common first.", "Top Right");
+        super(
+                "entity_list_hud",
+                "Entity List HUD",
+                "Lists the entities near you grouped by type, with a count for each, most common first.",
+                "Top Right");
     }
 
     @Override

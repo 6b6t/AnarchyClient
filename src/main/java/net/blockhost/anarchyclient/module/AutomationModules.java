@@ -32,8 +32,7 @@ import net.blockhost.anarchyclient.module.impl.TreeAuraModule;
  */
 final class AutomationModules {
 
-    private AutomationModules() {
-    }
+    private AutomationModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new ChestSwapModule());

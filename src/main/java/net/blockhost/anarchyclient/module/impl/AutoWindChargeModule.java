@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Optional;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -8,8 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
-
-import java.util.Optional;
 
 public final class AutoWindChargeModule extends Module {
 
@@ -32,7 +31,10 @@ public final class AutoWindChargeModule extends Module {
     private int cooldownTicks;
 
     public AutoWindChargeModule() {
-        super("auto_wind_charge", "Auto Wind Charge", ModuleCategory.MOVEMENT,
+        super(
+                "auto_wind_charge",
+                "Auto Wind Charge",
+                ModuleCategory.MOVEMENT,
                 "Looks straight down and fires a wind charge once you fall farther than the set distance, to break the fall.");
     }
 
@@ -49,8 +51,8 @@ public final class AutoWindChargeModule extends Module {
         if (player.fallDistance < this.fallDistance.value()) {
             return;
         }
-        Optional<InteractionHand> hand = SilentHotbar.usableHand(player, this.id(), stack -> stack.is(Items.WIND_CHARGE),
-                SilentHotbar.PRIORITY_LIFE, 6, true);
+        Optional<InteractionHand> hand = SilentHotbar.usableHand(
+                player, this.id(), stack -> stack.is(Items.WIND_CHARGE), SilentHotbar.PRIORITY_LIFE, 6, true);
         if (hand.isPresent()) {
             player.setXRot(90.0F);
             client.gameMode.useItem(player, hand.orElseThrow());

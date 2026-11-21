@@ -19,7 +19,10 @@ public final class EagleModule extends Module {
             .build()));
 
     public EagleModule() {
-        super("eagle", "Eagle", ModuleCategory.MOVEMENT,
+        super(
+                "eagle",
+                "Eagle",
+                ModuleCategory.MOVEMENT,
                 "Sneaks automatically at block edges so you do not walk off while bridging.");
     }
 
@@ -29,7 +32,8 @@ public final class EagleModule extends Module {
         if (player == null || player.input != input || client.gui.screen() != null) {
             return;
         }
-        boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value());
+        boolean shouldSneak =
+                player.onGround() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value());
         input.keyPresses = InputStates.withShift(input.keyPresses, input.keyPresses.shift() || shouldSneak);
     }
 }

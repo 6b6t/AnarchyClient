@@ -1,14 +1,13 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
+
+import java.util.List;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.List;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.PADDING;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
 
 final class ColorStrip extends Component implements LayoutDebugLabel {
 
@@ -49,7 +48,6 @@ final class ColorStrip extends Component implements LayoutDebugLabel {
                 Color.fromRGB(245, 204, 60),
                 GlassTheme.accent(),
                 Color.fromRGB(70, 116, 240),
-                Color.fromRGB(227, 70, 150)
-        );
+                Color.fromRGB(227, 70, 150));
     }
 }

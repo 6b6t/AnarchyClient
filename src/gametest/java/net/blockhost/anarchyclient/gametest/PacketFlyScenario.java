@@ -10,8 +10,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
  */
 final class PacketFlyScenario {
 
-    private PacketFlyScenario() {
-    }
+    private PacketFlyScenario() {}
 
     static void run(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -20,18 +19,24 @@ final class PacketFlyScenario {
                 // Normal mode's follow-up packet only works where the server rejects it. Singleplayer skips
                 // movement checks and accepts it as a real move, so check the rise in Setback mode.
                 GameTestSupport.setting(context, "packet_fly", "mode", new JsonPrimitive("Setback"));
-                double startY = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+                double startY = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server).getY());
                 GameTestSupport.enable(context, "packet_fly", true);
                 context.getInput().holdKeyFor(options -> options.keyJump, 30);
-                double risen = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY()) - startY;
-                GameTestSupport.check(risen > 1.0, "Packet Fly did not carry the player up on the server (rose " + risen + ")");
+                double risen = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getY())
+                        - startY;
+                GameTestSupport.check(
+                        risen > 1.0, "Packet Fly did not carry the player up on the server (rose " + risen + ")");
                 GameTestSupport.enable(context, "packet_fly", false);
 
                 GameTestSupport.setting(context, "packet_fly", "mode", new JsonPrimitive("Normal"));
                 GameTestSupport.enable(context, "packet_fly", true);
                 for (int tick = 0; tick < 40; tick++) {
                     context.waitTick();
-                    boolean connected = context.computeOnClient(client -> client.level != null && client.getConnection() != null);
+                    boolean connected =
+                            context.computeOnClient(client -> client.level != null && client.getConnection() != null);
                     GameTestSupport.check(connected, "Packet Fly got the player kicked after " + tick + " ticks");
                 }
             } finally {

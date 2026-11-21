@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
 import net.blockhost.anarchyclient.inventory.InventorySlots;
@@ -10,13 +12,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.OptionalInt;
-import java.util.function.Predicate;
-
 final class InventoryActions {
 
-    private InventoryActions() {
-    }
+    private InventoryActions() {}
 
     static OptionalInt findSlot(final Inventory inventory, final Predicate<ItemStack> predicate) {
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
@@ -50,11 +48,17 @@ final class InventoryActions {
         return pickupSwap(client, player, InventorySlots.toInventoryMenuSlot(inventorySlot), InventoryMenu.SHIELD_SLOT);
     }
 
-    static boolean equipArmor(final Minecraft client, final LocalPlayer player, final int inventorySlot, final EquipmentSlot armorSlot) {
-        return pickupSwap(client, player, InventorySlots.toInventoryMenuSlot(inventorySlot), InventorySlots.armorMenuSlot(armorSlot));
+    static boolean equipArmor(
+            final Minecraft client, final LocalPlayer player, final int inventorySlot, final EquipmentSlot armorSlot) {
+        return pickupSwap(
+                client,
+                player,
+                InventorySlots.toInventoryMenuSlot(inventorySlot),
+                InventorySlots.armorMenuSlot(armorSlot));
     }
 
-    static boolean pickupSwap(final Minecraft client, final LocalPlayer player, final int sourceMenuSlot, final int targetMenuSlot) {
+    static boolean pickupSwap(
+            final Minecraft client, final LocalPlayer player, final int sourceMenuSlot, final int targetMenuSlot) {
         return InventoryAction.pickupSwap(sourceMenuSlot, targetMenuSlot).execute(client, player);
     }
 

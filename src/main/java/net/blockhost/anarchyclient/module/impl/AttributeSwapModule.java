@@ -18,7 +18,10 @@ public final class AttributeSwapModule extends Module {
     private int previousSlot = -1;
 
     public AttributeSwapModule() {
-        super("attribute_swap", "Attribute Swap", ModuleCategory.COMBAT,
+        super(
+                "attribute_swap",
+                "Attribute Swap",
+                ModuleCategory.COMBAT,
                 "Switches to the best hotbar weapon when you hit an entity and switches back on the next tick.");
     }
 

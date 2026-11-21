@@ -1,12 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.google.gson.JsonObject;
+import java.util.List;
+import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
-import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
-import net.blockhost.anarchyclient.config.ModuleConfigMigration;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -18,8 +19,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
 
 public final class AutoTotemModule extends Module implements ModuleConfigMigration {
 
@@ -97,7 +96,11 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
     private Item lastDesiredItem;
 
     public AutoTotemModule() {
-        super("auto_totem", "Auto Totem", ModuleCategory.COMBAT, "Keeps a totem ready in the offhand by scoring danger, inventory state, and configured replacement rules.");
+        super(
+                "auto_totem",
+                "Auto Totem",
+                ModuleCategory.COMBAT,
+                "Keeps a totem ready in the offhand by scoring danger, inventory state, and configured replacement rules.");
         instance = this;
     }
 
@@ -146,10 +149,7 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
             return;
         }
 
-        InventoryAction action = InventoryAction.pickupSwap(
-                source,
-                InventorySlots.offhandSlot()
-        );
+        InventoryAction action = InventoryAction.pickupSwap(source, InventorySlots.offhandSlot());
         boolean totem = desiredItem == Items.TOTEM_OF_UNDYING;
         InventoryActionScheduler.schedule(InventoryActionChain.single(
                 // Totem swaps use their own owner, so the delay after swapping in a gapple or crystal never holds
@@ -158,8 +158,7 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
                 InventoryActionScheduler.PRIORITY_LIFE,
                 // A totem may be needed again soon after a pop; other items can wait longer between swaps.
                 totem ? 2 : 5,
-                action
-        ));
+                action));
     }
 
     private Item desiredItem(final boolean needsEmergencyTotem) {
@@ -175,8 +174,8 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
         };
     }
 
-    private boolean waitingForSwitchBack(final LocalPlayer player, final Item desiredItem,
-                                         final boolean needsEmergencyTotem) {
+    private boolean waitingForSwitchBack(
+            final LocalPlayer player, final Item desiredItem, final boolean needsEmergencyTotem) {
         if (needsEmergencyTotem) {
             this.emergencyWasActive = true;
             this.switchBackTicks = this.switchBackDelayTicks.value().intValue();
@@ -208,8 +207,7 @@ public final class AutoTotemModule extends Module implements ModuleConfigMigrati
                 this.fallDistanceThreshold.value(),
                 this.fireTotem.value(),
                 this.predictExplosions.value(),
-                this.explosionRange.value()
-        );
+                this.explosionRange.value());
     }
 
     static double damageUntilThreshold(final double health, final double threshold) {

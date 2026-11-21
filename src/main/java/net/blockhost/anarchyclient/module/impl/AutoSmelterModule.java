@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -15,8 +16,6 @@ import net.minecraft.world.inventory.SmokerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipePropertySet;
-
-import java.util.function.Predicate;
 
 public final class AutoSmelterModule extends Module {
 
@@ -36,14 +35,19 @@ public final class AutoSmelterModule extends Module {
     private int cooldownTicks;
 
     public AutoSmelterModule() {
-        super("auto_smelter", "Auto Smelter", ModuleCategory.WORLD,
+        super(
+                "auto_smelter",
+                "Auto Smelter",
+                ModuleCategory.WORLD,
                 "Takes furnace output, then loads coal or charcoal as fuel and smeltable inventory items as input in an open furnace.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
                 || !(player.containerMenu instanceof AbstractFurnaceMenu menu)) {
             return;
         }
@@ -54,8 +58,9 @@ public final class AutoSmelterModule extends Module {
         RecipePropertySet inputs = client.level.recipeAccess().propertySet(inputSet(menu));
         // Each move only happens when its target slot can take the stack, so nothing bounces between
         // the inventory and the hotbar and a full fuel slot never blocks loading the input.
-        boolean moved = menu.getSlot(OUTPUT_SLOT).hasItem() && hasRoomFor(menu, menu.getSlot(OUTPUT_SLOT).getItem())
-                && ContainerActions.quickMove(client, menu, OUTPUT_SLOT)
+        boolean moved = menu.getSlot(OUTPUT_SLOT).hasItem()
+                        && hasRoomFor(menu, menu.getSlot(OUTPUT_SLOT).getItem())
+                        && ContainerActions.quickMove(client, menu, OUTPUT_SLOT)
                 || this.load(client, menu, FUEL_SLOT, AutoSmelterModule::isFuel)
                 || this.load(client, menu, INPUT_SLOT, stack -> !isFuel(stack) && inputs.test(stack));
         if (moved) {
@@ -68,8 +73,11 @@ public final class AutoSmelterModule extends Module {
         this.cooldownTicks = 0;
     }
 
-    private boolean load(final Minecraft client, final AbstractFurnaceMenu menu, final int target,
-                         final Predicate<ItemStack> accepts) {
+    private boolean load(
+            final Minecraft client,
+            final AbstractFurnaceMenu menu,
+            final int target,
+            final Predicate<ItemStack> accepts) {
         ItemStack current = menu.getSlot(target).getItem();
         for (int slot = FIRST_PLAYER_SLOT; slot < menu.slots.size(); slot++) {
             ItemStack stack = menu.getSlot(slot).getItem();

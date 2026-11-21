@@ -1,18 +1,17 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_HEIGHT;
+import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_TRACK_HEIGHT;
+import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_WIDTH;
+import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
+
+import java.util.function.BooleanSupplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.function.BooleanSupplier;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_HEIGHT;
-import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_TRACK_HEIGHT;
-import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_WIDTH;
-import static net.blockhost.anarchyclient.ui.PanelStyle.TRACK;
 
 /**
  * Animated pill toggle. Owns its bounds and click handling so the painted switch and its

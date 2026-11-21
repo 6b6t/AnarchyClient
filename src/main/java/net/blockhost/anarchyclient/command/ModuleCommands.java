@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.command;
 
+import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
+import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -7,6 +12,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -24,55 +33,41 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import org.lwjgl.sdl.SDLScancode;
 
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
-import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
-import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
-
 /**
  * Registers and handles the {@code modules}, {@code toggle}, {@code panic}, {@code prefix}, {@code bind}, {@code unbind}, {@code setting}, {@code notebot}, and {@code swarm} subcommands.
  */
 final class ModuleCommands {
 
-    private ModuleCommands() {
-    }
+    private ModuleCommands() {}
 
     static void register(final LiteralArgumentBuilder<FabricClientCommandSource> root) {
-        root
-                .then(literal("modules")
-                        .executes(ModuleCommands::listModules))
+        root.then(literal("modules").executes(ModuleCommands::listModules))
                 .then(literal("toggle")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(ModuleCommands::suggestModules)
                                 .executes(ModuleCommands::toggleModule)))
-                .then(literal("panic")
-                        .executes(ModuleCommands::panic))
+                .then(literal("panic").executes(ModuleCommands::panic))
                 .then(literal("prefix")
                         .executes(ModuleCommands::showPrefix)
                         // word() only accepts letters, digits and _-.+, which rules out most prefixes.
                         .then(argument("prefix", StringArgumentType.greedyString())
                                 .executes(ModuleCommands::setPrefix)))
                 .then(literal("notebot")
-                        .then(literal("status")
-                                .executes(ModuleCommands::notebotStatus))
+                        .then(literal("status").executes(ModuleCommands::notebotStatus))
                         .then(literal("play")
                                 .then(argument("note", IntegerArgumentType.integer(0, 24))
                                         .executes(ModuleCommands::notebotPlayNote))))
                 .then(literal("swarm")
-                        .then(literal("status")
-                                .executes(ModuleCommands::swarmStatus))
+                        .then(literal("status").executes(ModuleCommands::swarmStatus))
                         .then(literal("send")
                                 .then(argument("message", StringArgumentType.greedyString())
                                         .executes(ModuleCommands::swarmSend))))
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(ModuleCommands::suggestModules)
-                                .then(argument("key", IntegerArgumentType.integer(1, SDLScancode.SDL_SCANCODE_COUNT - 1))
+                                .then(argument(
+                                                "key",
+                                                IntegerArgumentType.integer(1, SDLScancode.SDL_SCANCODE_COUNT - 1))
                                         .executes(context -> bindModule(context, ModuleBindAction.TOGGLE))
                                         .then(argument("action", StringArgumentType.word())
                                                 .suggests(ModuleCommands::suggestBindActions)
@@ -103,19 +98,30 @@ final class ModuleCommands {
     }
 
     private static int showPrefix(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.command_prefix_is", "Command prefix is \"%s\".", CommandPrefix.get()));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.module.command_prefix_is",
+                        "Command prefix is \"%s\".",
+                        CommandPrefix.get()));
         return SUCCESS;
     }
 
     private static int setPrefix(final CommandContext<FabricClientCommandSource> context) {
         String prefix = StringArgumentType.getString(context, "prefix").trim();
         if (!CommandPrefix.isAllowed(prefix)) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.prefix_must_be_a_symbol", "The prefix must be a single symbol, not a letter, digit, or /."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.module.prefix_must_be_a_symbol",
+                            "The prefix must be a single symbol, not a letter, digit, or /."));
             return 0;
         }
         CommandPrefix.set(prefix);
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.command_prefix_set_to", "Command prefix set to \"%s\".", CommandPrefix.get()));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.module.command_prefix_set_to",
+                        "Command prefix set to \"%s\".",
+                        CommandPrefix.get()));
         return SUCCESS;
     }
 
@@ -126,9 +132,13 @@ final class ModuleCommands {
         }
         module.toggle();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback((module.enabled()
-                ? Translations.component("anarchyclient.message.module.is_now_on", "%s is now on.", module.name())
-                : Translations.component("anarchyclient.message.module.is_now_off", "%s is now off.", module.name())));
+        context.getSource()
+                .sendFeedback(
+                        (module.enabled()
+                                ? Translations.component(
+                                        "anarchyclient.message.module.is_now_on", "%s is now on.", module.name())
+                                : Translations.component(
+                                        "anarchyclient.message.module.is_now_off", "%s is now off.", module.name())));
         return SUCCESS;
     }
 
@@ -138,12 +148,18 @@ final class ModuleCommands {
                 .peek(module -> module.enabled(false))
                 .count();
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.disabled_modules", "Modules disabled: %s.", disabled));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.module.disabled_modules", "Modules disabled: %s.", disabled));
         return SUCCESS;
     }
 
     private static int notebotStatus(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.notebot_scans_nearby_note_blocks_when", "Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
+        context.getSource()
+                .sendFeedback(
+                        Translations.component(
+                                "anarchyclient.message.module.notebot_scans_nearby_note_blocks_when",
+                                "Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
         return SUCCESS;
     }
 
@@ -154,28 +170,41 @@ final class ModuleCommands {
         }
         int note = IntegerArgumentType.getInteger(context, "note");
         client.player.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 2.0F, notePitch(note));
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.played_note", "Played note %s.", note));
+        context.getSource()
+                .sendFeedback(
+                        Translations.component("anarchyclient.message.module.played_note", "Played note %s.", note));
         return SUCCESS;
     }
 
     private static int swarmStatus(final CommandContext<FabricClientCommandSource> context) {
         SwarmModule swarm = swarmModule();
         if (swarm == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.swarm_module_is_not_registered", "Swarm module is not registered."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.module.swarm_module_is_not_registered",
+                            "Swarm module is not registered."));
             return 0;
         }
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.swarm", "Swarm %s", swarm.status()));
+        context.getSource()
+                .sendFeedback(Translations.component("anarchyclient.message.module.swarm", "Swarm %s", swarm.status()));
         return SUCCESS;
     }
 
     private static int swarmSend(final CommandContext<FabricClientCommandSource> context) {
         SwarmModule swarm = swarmModule();
         if (swarm == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.swarm_module_is_not_registered", "Swarm module is not registered."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.module.swarm_module_is_not_registered",
+                            "Swarm module is not registered."));
             return 0;
         }
         int sent = swarm.broadcast(StringArgumentType.getString(context, "message"));
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.sent_swarm_action_to_worker_s", "Sent swarm action to %s worker(s).", sent));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.module.sent_swarm_action_to_worker_s",
+                        "Sent swarm action to %s worker(s).",
+                        sent));
         return sent > 0 ? SUCCESS : 0;
     }
 
@@ -192,13 +221,18 @@ final class ModuleCommands {
         String name = StringArgumentType.getString(context, "action");
         Optional<ModuleBindAction> action = ModuleBindAction.tryParse(name);
         if (action.isEmpty()) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_bind_action_use_toggle_hold", "Unknown bind action '%s'. Use toggle, hold, or smart.", name));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.module.unknown_bind_action_use_toggle_hold",
+                            "Unknown bind action '%s'. Use toggle, hold, or smart.",
+                            name));
             return 0;
         }
         return bindModule(context, action.get());
     }
 
-    private static int bindModule(final CommandContext<FabricClientCommandSource> context, final ModuleBindAction action) {
+    private static int bindModule(
+            final CommandContext<FabricClientCommandSource> context, final ModuleBindAction action) {
         Module module = findModule(context);
         if (module == null) {
             return 0;
@@ -213,7 +247,13 @@ final class ModuleCommands {
             case HOLD -> Translations.text("anarchyclient.ui.bind_action.hold", "hold");
             case SMART -> Translations.text("anarchyclient.ui.bind_action.smart", "smart");
         };
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.bound_to_key_as", "Bound %s to key %s as %s.", module.name(), key, actionLabel));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.module.bound_to_key_as",
+                        "Bound %s to key %s as %s.",
+                        module.name(),
+                        key,
+                        actionLabel));
         return SUCCESS;
     }
 
@@ -224,7 +264,9 @@ final class ModuleCommands {
         }
         module.keybind().key(InputConstants.UNKNOWN.getValue());
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.module.unbound", "Unbound %s.", module.name()));
+        context.getSource()
+                .sendFeedback(
+                        Translations.component("anarchyclient.message.module.unbound", "Unbound %s.", module.name()));
         return SUCCESS;
     }
 
@@ -234,7 +276,9 @@ final class ModuleCommands {
         if (setting == null) {
             return 0;
         }
-        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
+        context.getSource()
+                .sendFeedback(
+                        Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
         return SUCCESS;
     }
 
@@ -252,7 +296,9 @@ final class ModuleCommands {
             return 0;
         }
         AnarchyClient.CONFIG.save();
-        context.getSource().sendFeedback(Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
+        context.getSource()
+                .sendFeedback(
+                        Component.literal(module.name() + " " + setting.name() + " = " + settingValueString(setting)));
         return SUCCESS;
     }
 
@@ -302,12 +348,15 @@ final class ModuleCommands {
         String id = StringArgumentType.getString(context, "module");
         Module module = AnarchyClient.MODULES.find(id).orElse(null);
         if (module == null) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_module", "Unknown module: %s", id));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.module.unknown_module", "Unknown module: %s", id));
         }
         return module;
     }
 
-    private static Setting<?> findSetting(final CommandContext<FabricClientCommandSource> context, final Module module) {
+    private static Setting<?> findSetting(
+            final CommandContext<FabricClientCommandSource> context, final Module module) {
         if (module == null) {
             return null;
         }
@@ -317,41 +366,53 @@ final class ModuleCommands {
                 return setting;
             }
         }
-        context.getSource().sendError(Translations.component("anarchyclient.message.module.unknown_setting", "Unknown setting: %s", id));
+        context.getSource()
+                .sendError(Translations.component(
+                        "anarchyclient.message.module.unknown_setting", "Unknown setting: %s", id));
         return null;
     }
 
-    private static CompletableFuture<Suggestions> suggestModules(final CommandContext<FabricClientCommandSource> context,
-                                                                 final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(AnarchyClient.MODULES.all().stream().map(Module::id), builder);
+    private static CompletableFuture<Suggestions> suggestModules(
+            final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggest(
+                AnarchyClient.MODULES.all().stream().map(Module::id), builder);
     }
 
-    private static CompletableFuture<Suggestions> suggestSettings(final CommandContext<FabricClientCommandSource> context,
-                                                                  final SuggestionsBuilder builder) {
-        Module module = AnarchyClient.MODULES.find(StringArgumentType.getString(context, "module")).orElse(null);
+    private static CompletableFuture<Suggestions> suggestSettings(
+            final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) {
+        Module module = AnarchyClient.MODULES
+                .find(StringArgumentType.getString(context, "module"))
+                .orElse(null);
         if (module == null) {
             return builder.buildFuture();
         }
         return SharedSuggestionProvider.suggest(module.settings().stream().map(Setting::id), builder);
     }
 
-    private static CompletableFuture<Suggestions> suggestBindActions(final CommandContext<FabricClientCommandSource> context,
-                                                                    final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggest(Arrays.stream(ModuleBindAction.values())
-                .map(action -> action.name().toLowerCase(Locale.ROOT)), builder);
+    private static CompletableFuture<Suggestions> suggestBindActions(
+            final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) {
+        return SharedSuggestionProvider.suggest(
+                Arrays.stream(ModuleBindAction.values())
+                        .map(action -> action.name().toLowerCase(Locale.ROOT)),
+                builder);
     }
 
-    private static CompletableFuture<Suggestions> suggestSettingValues(final CommandContext<FabricClientCommandSource> context,
-                                                                      final SuggestionsBuilder builder) {
-        Module module = AnarchyClient.MODULES.find(StringArgumentType.getString(context, "module")).orElse(null);
+    private static CompletableFuture<Suggestions> suggestSettingValues(
+            final CommandContext<FabricClientCommandSource> context, final SuggestionsBuilder builder) {
+        Module module = AnarchyClient.MODULES
+                .find(StringArgumentType.getString(context, "module"))
+                .orElse(null);
         String typed = StringArgumentType.getString(context, "setting");
         // Match aliases too, like the set command itself does.
-        Setting<?> setting = module == null ? null : module.settings().stream()
-                .filter(candidate -> candidate.id().equals(typed) || candidate.aliases().contains(typed))
-                .findFirst()
-                .orElse(null);
+        Setting<?> setting = module == null
+                ? null
+                : module.settings().stream()
+                        .filter(candidate -> candidate.id().equals(typed)
+                                || candidate.aliases().contains(typed))
+                        .findFirst()
+                        .orElse(null);
         if (setting instanceof BooleanSetting) {
-            return SharedSuggestionProvider.suggest(new String[]{"true", "false"}, builder);
+            return SharedSuggestionProvider.suggest(new String[] {"true", "false"}, builder);
         }
         if (setting instanceof SelectSetting select) {
             return SharedSuggestionProvider.suggest(select.options(), builder);

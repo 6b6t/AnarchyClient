@@ -40,7 +40,10 @@ public final class VoidEspModule extends Module {
             .build()));
 
     public VoidEspModule() {
-        super("void_esp", "Void ESP", ModuleCategory.RENDER,
+        super(
+                "void_esp",
+                "Void ESP",
+                ModuleCategory.RENDER,
                 "Draws a red plane at a set height around you to mark where the void or a dangerous drop starts.");
     }
 
@@ -57,15 +60,16 @@ public final class VoidEspModule extends Module {
         Vec3 camera = client.gameRenderer.mainCamera().position();
         Vec3 center = player.getPosition(client.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         AABB plane = new AABB(
-                center.x - radiusValue,
-                y,
-                center.z - radiusValue,
-                center.x + radiusValue,
-                y + 0.05,
-                center.z + radiusValue
-        ).move(camera.scale(-1));
+                        center.x - radiusValue,
+                        y,
+                        center.z - radiusValue,
+                        center.x + radiusValue,
+                        y + 0.05,
+                        center.z + radiusValue)
+                .move(camera.scale(-1));
         int alpha = this.opacity.value().intValue();
         WorldLineRenderer.fillNoDepth(matrices, submits, plane, new WorldLineRenderer.Color(255, 50, 70, alpha));
-        WorldLineRenderer.boxNoDepth(matrices, submits, plane, new WorldLineRenderer.Color(255, 80, 95, Math.min(255, alpha + 80)));
+        WorldLineRenderer.boxNoDepth(
+                matrices, submits, plane, new WorldLineRenderer.Color(255, 80, 95, Math.min(255, alpha + 80)));
     }
 }

@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.setting;
 
-import org.immutables.value.Value;
-
 import java.util.List;
+import org.immutables.value.Value;
 
 @SettingStyle
 @Value.Immutable

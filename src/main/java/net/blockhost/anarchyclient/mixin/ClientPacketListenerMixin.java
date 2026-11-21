@@ -25,12 +25,12 @@ public abstract class ClientPacketListenerMixin {
 
     @Inject(
             method = "handleSoundEvent",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V",
-                    shift = At.Shift.AFTER
-            )
-    )
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/network/PacketProcessor;)V",
+                            shift = At.Shift.AFTER))
     private void anarchyclient$handleSoundEvent(final ClientboundSoundPacket packet, final CallbackInfo info) {
         AnarchyClient.MODULES.call(new SoundPacketEvent(Minecraft.getInstance(), packet));
     }
@@ -68,7 +68,9 @@ public abstract class ClientPacketListenerMixin {
 
     @ModifyVariable(method = "sendChat", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String anarchyclient$sendChat(final String message) {
-        String changed = AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), message, false)).message();
+        String changed = AnarchyClient.MODULES
+                .call(new SendChatEvent(Minecraft.getInstance(), message, false))
+                .message();
         // Modules may lengthen the message (Better Chat's suffix); past 256 characters the chat packet cannot be
         // encoded and the client disconnects.
         return changed == null ? message : StringUtil.trimChatMessage(changed);
@@ -76,6 +78,8 @@ public abstract class ClientPacketListenerMixin {
 
     @ModifyVariable(method = "sendCommand", at = @At("HEAD"), argsOnly = true, ordinal = 0)
     private String anarchyclient$sendCommand(final String command) {
-        return AnarchyClient.MODULES.call(new SendChatEvent(Minecraft.getInstance(), command, true)).message();
+        return AnarchyClient.MODULES
+                .call(new SendChatEvent(Minecraft.getInstance(), command, true))
+                .message();
     }
 }

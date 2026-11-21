@@ -35,15 +35,15 @@ public final class TargetStrafeModule extends Module {
             .max(6.0)
             .step(0.1)
             .build()));
-    private final BooleanSetting jump = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("jump")
-            .name("Jump")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting jump = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("jump").name("Jump").defaultValue(true).build()));
     private int direction = 1;
 
     public TargetStrafeModule() {
-        super("target_strafe", "Target Strafe", ModuleCategory.MOVEMENT,
+        super(
+                "target_strafe",
+                "Target Strafe",
+                ModuleCategory.MOVEMENT,
                 "Circles around the nearest enemy at a set radius while you move, and can jump to keep speed.");
     }
 

@@ -28,7 +28,10 @@ public final class AutoWaspModule extends Module {
             .build()));
 
     public AutoWaspModule() {
-        super("auto_wasp", "Auto Wasp", ModuleCategory.MOVEMENT,
+        super(
+                "auto_wasp",
+                "Auto Wasp",
+                ModuleCategory.MOVEMENT,
                 "Flies you toward the nearest enemy player by setting your velocity in their direction each tick.");
     }
 

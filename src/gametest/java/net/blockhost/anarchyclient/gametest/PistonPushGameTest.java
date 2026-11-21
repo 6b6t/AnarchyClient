@@ -26,19 +26,26 @@ public final class PistonPushGameTest implements GameScenario {
 
             GameTestSupport.enable(context, "piston_push", true);
             try {
-                arena.server().waitFor(server -> {
-                    for (Direction facing : Direction.Plane.HORIZONTAL) {
-                        BlockState state = server.overworld().getBlockState(head.relative(facing.getOpposite()));
-                        if (state.getBlock() instanceof PistonBaseBlock && state.getValue(PistonBaseBlock.FACING) == facing
-                                && state.getValue(PistonBaseBlock.EXTENDED)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }, 200);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    for (Direction facing : Direction.Plane.HORIZONTAL) {
+                                        BlockState state =
+                                                server.overworld().getBlockState(head.relative(facing.getOpposite()));
+                                        if (state.getBlock() instanceof PistonBaseBlock
+                                                && state.getValue(PistonBaseBlock.FACING) == facing
+                                                && state.getValue(PistonBaseBlock.EXTENDED)) {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                },
+                                200);
             } catch (AssertionError timeout) {
-                throw new AssertionError("Piston Push never fired a piston at the target; debug "
-                        + DebugValueRegistry.snapshot().get("piston_push"), timeout);
+                throw new AssertionError(
+                        "Piston Push never fired a piston at the target; debug "
+                                + DebugValueRegistry.snapshot().get("piston_push"),
+                        timeout);
             } finally {
                 context.takeScreenshot("piston_push_result");
                 GameTestSupport.enable(context, "piston_push", false);

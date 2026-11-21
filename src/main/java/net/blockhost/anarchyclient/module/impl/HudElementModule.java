@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,8 +8,6 @@ import net.blockhost.anarchyclient.ui.HudEditorScreen;
 import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-
-import java.util.List;
 
 abstract class HudElementModule extends Module {
 
@@ -21,8 +20,8 @@ abstract class HudElementModule extends Module {
             .defaultValue(true)
             .build()));
 
-    protected HudElementModule(final String id, final String name, final String description,
-                               final String defaultCorner) {
+    protected HudElementModule(
+            final String id, final String name, final String description, final String defaultCorner) {
         super(id, name, ModuleCategory.HUD, description);
         this.defaultCorner = defaultCorner;
     }
@@ -42,12 +41,18 @@ abstract class HudElementModule extends Module {
         }
         int[] size = HudText.size(client, lines);
         HudPosition position = this.position(graphics, size[0], size[1]);
-        HudText.panelAt(client, graphics, lines, position.x(), position.y(), this.color(client), this.background.value());
+        HudText.panelAt(
+                client, graphics, lines, position.x(), position.y(), this.color(client), this.background.value());
     }
 
     /** Draws the element's panel, unless the player turned the Background setting off. */
-    protected void drawBackground(final GuiGraphicsExtractor graphics, final int x, final int y, final int width,
-                                  final int height, final int fillColor) {
+    protected void drawBackground(
+            final GuiGraphicsExtractor graphics,
+            final int x,
+            final int y,
+            final int width,
+            final int height,
+            final int fillColor) {
         if (this.background.value()) {
             graphics.fill(x, y, x + width, y + height, fillColor);
             graphics.outline(x, y, width, height, 0x55FFFFFF);
@@ -65,6 +70,5 @@ abstract class HudElementModule extends Module {
 
     protected abstract List<String> lines(Minecraft client);
 
-    protected record HudPosition(int x, int y) {
-    }
+    protected record HudPosition(int x, int y) {}
 }

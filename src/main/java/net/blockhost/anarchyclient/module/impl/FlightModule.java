@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -8,8 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class FlightModule extends Module {
 
@@ -40,8 +39,12 @@ public final class FlightModule extends Module {
 
     public FlightModule() {
         // "fly" is the id Auto Disable's default list used, and saved lists may still name it.
-        super("flight", "Flight", ModuleCategory.MOVEMENT,
-                "Provides configurable flight movement for creative-style travel or server-specific modes.", List.of("fly"));
+        super(
+                "flight",
+                "Flight",
+                ModuleCategory.MOVEMENT,
+                "Provides configurable flight movement for creative-style travel or server-specific modes.",
+                List.of("fly"));
     }
 
     @Override

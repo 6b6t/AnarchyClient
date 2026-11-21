@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.ToolSelector;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -9,16 +13,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-
-import java.util.LinkedHashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.function.Predicate;
 
 public final class LawnBotModule extends Module {
 
@@ -48,7 +47,10 @@ public final class LawnBotModule extends Module {
     private int delay;
 
     public LawnBotModule() {
-        super("lawn_bot", "Lawn Bot", ModuleCategory.WORLD,
+        super(
+                "lawn_bot",
+                "Lawn Bot",
+                ModuleCategory.WORLD,
                 "Replaces nearby mycelium, podzol, and other dirt variants with grass blocks from your hotbar.");
     }
 
@@ -68,8 +70,10 @@ public final class LawnBotModule extends Module {
         }
         BlockPos mining = this.miner.current();
         if (mining != null) {
-            if (this.miner.continueCurrent(client, pos -> isReplaceable(client, pos)
-                    && CombatTargets.canReachBlock(player, pos), this.tools())) {
+            if (this.miner.continueCurrent(
+                    client,
+                    pos -> isReplaceable(client, pos) && CombatTargets.canReachBlock(player, pos),
+                    this.tools())) {
                 this.queueIfBroken(client, mining);
                 return;
             }
@@ -111,14 +115,18 @@ public final class LawnBotModule extends Module {
         if (client.level == null) {
             return false;
         }
-        this.pendingGrass.removeIf(pos -> !client.level.isLoaded(pos) || !client.level.isEmptyBlock(pos) && !isReplaceable(client, pos));
+        this.pendingGrass.removeIf(
+                pos -> !client.level.isLoaded(pos) || !client.level.isEmptyBlock(pos) && !isReplaceable(client, pos));
         Iterator<BlockPos> iterator = this.pendingGrass.iterator();
         while (iterator.hasNext()) {
             BlockPos pos = iterator.next();
-            if (client.level.isEmptyBlock(pos) && !client.level.isEmptyBlock(pos.below())
-                    && client.player != null && CombatTargets.canReachBlock(client.player, pos.below())) {
-                if (WorldInteraction.useOnBlock(client, this, pos.below(), Direction.UP,
-                        stack -> stack.is(Items.GRASS_BLOCK), false) == WorldInteraction.ActionResult.DONE) {
+            if (client.level.isEmptyBlock(pos)
+                    && !client.level.isEmptyBlock(pos.below())
+                    && client.player != null
+                    && CombatTargets.canReachBlock(client.player, pos.below())) {
+                if (WorldInteraction.useOnBlock(
+                                client, this, pos.below(), Direction.UP, stack -> stack.is(Items.GRASS_BLOCK), false)
+                        == WorldInteraction.ActionResult.DONE) {
                     iterator.remove();
                     return true;
                 }
@@ -128,9 +136,15 @@ public final class LawnBotModule extends Module {
     }
 
     static BlockPos findReplaceable(final Minecraft client, final int range) {
-        return BlockTargetScanner.scan(client, range, 3, BlockTargetScanner.SortMode.CLOSEST, 1,
+        return BlockTargetScanner.scan(
+                        client,
+                        range,
+                        3,
+                        BlockTargetScanner.SortMode.CLOSEST,
+                        1,
                         target -> isReplaceableBlock(target.state().getBlock())
-                                && client.player != null && CombatTargets.canReachBlock(client.player, target.pos()))
+                                && client.player != null
+                                && CombatTargets.canReachBlock(client.player, target.pos()))
                 .stream()
                 .map(BlockTargetScanner.BlockTarget::pos)
                 .findFirst()
@@ -138,7 +152,8 @@ public final class LawnBotModule extends Module {
     }
 
     private static boolean isReplaceable(final Minecraft client, final BlockPos pos) {
-        return client.level != null && isReplaceableBlock(client.level.getBlockState(pos).getBlock());
+        return client.level != null
+                && isReplaceableBlock(client.level.getBlockState(pos).getBlock());
     }
 
     static boolean isReplaceableBlock(final Block block) {

@@ -1,7 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.google.gson.JsonObject;
-import net.minecraft.world.InteractionHand;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -16,6 +18,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundAttackPacket;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
 import net.minecraft.world.entity.player.Player;
@@ -23,10 +26,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public final class CrystalAuraModule extends Module implements ModuleConfigMigration {
 
@@ -140,7 +139,10 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
     private int placeCooldown;
 
     public CrystalAuraModule() {
-        super("crystal_aura", "Crystal Aura", ModuleCategory.COMBAT,
+        super(
+                "crystal_aura",
+                "Crystal Aura",
+                ModuleCategory.COMBAT,
                 "Places and breaks end crystals within reach near targets. Damage values are in HP and skip crystals that would kill you.");
         this.predictAttacks.visibleWhen(this.idPredict::value);
     }
@@ -181,12 +183,7 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         SelfDamagePolicy policy = new SelfDamagePolicy(this.maxSelfDamage.value(), 0.0, 1.1);
         ExplosionPlacementScorer scorer = new ExplosionPlacementScorer(policy, DamageEstimator.CRYSTAL_POWER);
         List<ExplosionPlacementScorer.PlacementScore> scores = TargetPlacementPlanner.explosionPlacements(
-                client,
-                player,
-                target,
-                this.placeRadius.value().intValue(),
-                scorer
-        );
+                client, player, target, this.placeRadius.value().intValue(), scorer);
         boolean facePlace = targetHealth(target) <= this.facePlaceHealth.value();
         List<ExplosionPlacementScorer.PlacementScore> allowed = scores.stream()
                 .filter(score -> isSafe(score.selfDamage(), selfHealth(player))
@@ -194,8 +191,8 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
                 .toList();
         if (!allowed.isEmpty()) {
             ExplosionPlacementScorer.PlacementScore best = allowed.getFirst();
-            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, best.pos().below(), Direction.UP,
-                    stack -> stack.is(Items.END_CRYSTAL), true);
+            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
+                    client, this, best.pos().below(), Direction.UP, stack -> stack.is(Items.END_CRYSTAL), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.placeCooldown = this.placeDelay.value().intValue();
                 if (this.idPredict.value()) {
@@ -216,14 +213,17 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         // beyond the entity interaction range.
         double breakRange = player.blockInteractionRange();
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof EndCrystal) || !entity.isAlive() || this.attackedAt.containsKey(entity.getId())
+            if (!(entity instanceof EndCrystal)
+                    || !entity.isAlive()
+                    || this.attackedAt.containsKey(entity.getId())
                     || !CombatTargets.canReachEntity(player, entity, breakRange)) {
                 continue;
             }
             Vec3 explosion = entity.position();
             double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.CRYSTAL_POWER);
             double selfDamage = DamageEstimator.explosionDamage(player, explosion, DamageEstimator.CRYSTAL_POWER);
-            if (selfDamage > this.maxSelfDamage.value() || !isSafe(selfDamage, health)
+            if (selfDamage > this.maxSelfDamage.value()
+                    || !isSafe(selfDamage, health)
                     || !facePlace && targetDamage < this.minDamage.value()) {
                 continue;
             }
@@ -250,7 +250,8 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
         if (this.highestEntityId == Integer.MIN_VALUE || client.getConnection() == null) {
             return;
         }
-        for (int id : predictedIds(this.highestEntityId, this.predictAttacks.value().intValue())) {
+        for (int id :
+                predictedIds(this.highestEntityId, this.predictAttacks.value().intValue())) {
             if (this.attackedAt.containsKey(id)) {
                 continue;
             }

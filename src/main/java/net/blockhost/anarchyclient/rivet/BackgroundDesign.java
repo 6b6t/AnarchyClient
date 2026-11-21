@@ -1,7 +1,6 @@
 package net.blockhost.anarchyclient.rivet;
 
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
-
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -10,7 +9,6 @@ import java.util.stream.Stream;
  * {@link #NONE} which leaves the panels as a plain dark fill.
  */
 public enum BackgroundDesign {
-
     NONE("None", null),
     MATRIX("Matrix", AnarchyClientRenderPipelines.MATRIX_PANEL),
     CAUSTICS("Caustics", AnarchyClientRenderPipelines.CAUSTICS_PANEL),

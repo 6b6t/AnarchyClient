@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.ItemUseControl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,8 +18,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
-
-import java.util.OptionalInt;
 
 public final class AutoPotModule extends Module {
 
@@ -68,7 +67,11 @@ public final class AutoPotModule extends Module {
     private boolean drinking;
 
     public AutoPotModule() {
-        super("auto_pot", "Auto Pot", ModuleCategory.COMBAT, "Drinks or throws healing and strength potions when health or effect conditions make them useful.");
+        super(
+                "auto_pot",
+                "Auto Pot",
+                ModuleCategory.COMBAT,
+                "Drinks or throws healing and strength potions when health or effect conditions make them useful.");
     }
 
     @Override
@@ -79,7 +82,8 @@ public final class AutoPotModule extends Module {
         }
         if (this.drinking) {
             // Keep holding the use until the potion is drunk; vanilla would release it next tick.
-            if (client.gui.screen() == null && player.isUsingItem()
+            if (client.gui.screen() == null
+                    && player.isUsingItem()
                     && player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
                 ItemUseControl.use(client, this.id(), InteractionHand.MAIN_HAND);
                 return;
@@ -171,7 +175,8 @@ public final class AutoPotModule extends Module {
         }
     }
 
-    static OptionalInt findPotionSlot(final Inventory inventory, final Holder<MobEffect> effect, final boolean allowSplash) {
+    static OptionalInt findPotionSlot(
+            final Inventory inventory, final Holder<MobEffect> effect, final boolean allowSplash) {
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             if (matchesPotion(inventory.getItem(slot), effect, allowSplash)) {
                 return OptionalInt.of(slot);
@@ -200,7 +205,8 @@ public final class AutoPotModule extends Module {
         if (!drinkable && !(allowSplash && splash)) {
             return false;
         }
-        PotionContents contents = stack.getComponents().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+        PotionContents contents =
+                stack.getComponents().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
         for (MobEffectInstance instance : contents.getAllEffects()) {
             if (instance.is(effect)) {
                 return true;
@@ -209,6 +215,5 @@ public final class AutoPotModule extends Module {
         return false;
     }
 
-    private record PotionTarget(Holder<MobEffect> effect) {
-    }
+    private record PotionTarget(Holder<MobEffect> effect) {}
 }

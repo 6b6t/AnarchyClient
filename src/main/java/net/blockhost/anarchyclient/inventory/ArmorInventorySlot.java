@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.inventory;
 
-import net.minecraft.world.entity.EquipmentSlot;
-
 import java.util.OptionalInt;
+import net.minecraft.world.entity.EquipmentSlot;
 
 public record ArmorInventorySlot(EquipmentSlot equipmentSlot) implements InventorySlotRef {
 

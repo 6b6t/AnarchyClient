@@ -5,8 +5,7 @@ import org.lwjgl.sdl.SDLScancode;
 
 final class LegacyKeyCodes {
 
-    private LegacyKeyCodes() {
-    }
+    private LegacyKeyCodes() {}
 
     // Configuration files before Minecraft 26.3 store GLFW key codes.
     static int toScancode(final int key) {

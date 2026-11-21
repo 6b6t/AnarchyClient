@@ -1,12 +1,5 @@
 package net.blockhost.anarchyclient.inventory;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,13 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public final class InventoryTracker {
 
     private static final Map<UUID, Snapshot> SNAPSHOTS = new LinkedHashMap<>();
 
-    private InventoryTracker() {
-    }
+    private InventoryTracker() {}
 
     public static void recordVisiblePlayers(final Minecraft client) {
         LocalPlayer localPlayer = client == null ? null : client.player;
@@ -70,11 +68,10 @@ public final class InventoryTracker {
             float absorption,
             double distance,
             int observedTick,
-            long lastSeenMillis
-    ) {
+            long lastSeenMillis) {
 
-        private static Snapshot from(final Player player, final double distance, final int observedTick,
-                                     final long lastSeenMillis) {
+        private static Snapshot from(
+                final Player player, final double distance, final int observedTick, final long lastSeenMillis) {
             return new Snapshot(
                     player.getUUID(),
                     player.getScoreboardName(),
@@ -84,14 +81,12 @@ public final class InventoryTracker {
                             player.getItemBySlot(EquipmentSlot.HEAD).copy(),
                             player.getItemBySlot(EquipmentSlot.CHEST).copy(),
                             player.getItemBySlot(EquipmentSlot.LEGS).copy(),
-                            player.getItemBySlot(EquipmentSlot.FEET).copy()
-                    ),
+                            player.getItemBySlot(EquipmentSlot.FEET).copy()),
                     player.getHealth(),
                     player.getAbsorptionAmount(),
                     distance,
                     observedTick,
-                    lastSeenMillis
-            );
+                    lastSeenMillis);
         }
     }
 }

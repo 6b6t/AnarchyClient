@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.EntityTypeListSetting;
@@ -8,13 +9,10 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.EntityHitResult;
-
-import java.util.List;
 
 public final class NoEntityInteractModule extends Module {
 
@@ -41,24 +39,36 @@ public final class NoEntityInteractModule extends Module {
             .name("Held List")
             .addAllDefaultValue(List.of(Items.SHEARS, Items.TNT, Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.COBWEB))
             .build()));
-    private final EntityTypeListSetting entityTypes = this.setting(EntityTypeListSetting.from(EntityTypeListSetting.builder()
-            .id("entity_types")
-            .name("Entities")
-            .addAllDefaultValue(List.of(EntityTypes.ARMOR_STAND, EntityTypes.ITEM_FRAME, EntityTypes.GLOW_ITEM_FRAME))
-            .build()));
+    private final EntityTypeListSetting entityTypes =
+            this.setting(EntityTypeListSetting.from(EntityTypeListSetting.builder()
+                    .id("entity_types")
+                    .name("Entities")
+                    .addAllDefaultValue(
+                            List.of(EntityTypes.ARMOR_STAND, EntityTypes.ITEM_FRAME, EntityTypes.GLOW_ITEM_FRAME))
+                    .build()));
 
     public NoEntityInteractModule() {
-        super("no_entity_interact", "No Entity Interact", ModuleCategory.PLAYER,
+        super(
+                "no_entity_interact",
+                "No Entity Interact",
+                ModuleCategory.PLAYER,
                 "Blocks right-click use on chosen entity types, such as armor stands and item frames, optionally only with certain held items.");
         this.heldItems.visibleWhen(() -> !"Any".equals(this.heldItemMode.value()));
     }
 
     @Override
-    public boolean entityInteract(final Minecraft client, final Player player, final Entity entity,
-                                  final EntityHitResult hitResult, final InteractionHand hand) {
+    public boolean entityInteract(
+            final Minecraft client,
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand) {
         return NoInteractModule.matchesHand(this.hand.value(), hand)
                 && NoInteractModule.matchesList(this.entityMode.value(), this.entityTypes.value(), entity.getType())
                 && ("Any".equals(this.heldItemMode.value())
-                || NoInteractModule.matchesList(this.heldItemMode.value(), this.heldItems.value(), player.getItemInHand(hand).getItem()));
+                        || NoInteractModule.matchesList(
+                                this.heldItemMode.value(),
+                                this.heldItems.value(),
+                                player.getItemInHand(hand).getItem()));
     }
 }

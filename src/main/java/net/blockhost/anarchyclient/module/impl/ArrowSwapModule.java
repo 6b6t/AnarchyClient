@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -15,18 +18,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.alchemy.PotionContents;
 
-import java.util.List;
-import java.util.OptionalInt;
-import java.util.function.Predicate;
-
 public final class ArrowSwapModule extends Module {
 
-    private final StatusEffectListSetting effects = this.setting(StatusEffectListSetting.from(StatusEffectListSetting.builder()
-            .id("effects")
-            .name("Effects")
-            .description("Tipped arrow effects to fire first, in order.")
-            .addAllDefaultValue(List.of(MobEffects.STRENGTH.value(), MobEffects.SPEED.value()))
-            .build()));
+    private final StatusEffectListSetting effects =
+            this.setting(StatusEffectListSetting.from(StatusEffectListSetting.builder()
+                    .id("effects")
+                    .name("Effects")
+                    .description("Tipped arrow effects to fire first, in order.")
+                    .addAllDefaultValue(List.of(MobEffects.STRENGTH.value(), MobEffects.SPEED.value()))
+                    .build()));
     private final BooleanSetting skipActive = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("skip_active")
             .name("Skip Active")
@@ -35,7 +35,10 @@ public final class ArrowSwapModule extends Module {
             .build()));
 
     public ArrowSwapModule() {
-        super("arrow_swap", "Arrow Swap", ModuleCategory.COMBAT,
+        super(
+                "arrow_swap",
+                "Arrow Swap",
+                ModuleCategory.COMBAT,
                 "Moves the tipped arrow you want next to the front of your inventory, so your bow or crossbow fires "
                         + "it. Works through the effect list in order.");
     }
@@ -52,7 +55,8 @@ public final class ArrowSwapModule extends Module {
         }
         ProjectileWeaponItem weaponItem = (ProjectileWeaponItem) weapon.getItem();
         // Arrows held in a hand always fire first; there is nothing to reorder.
-        if (!ProjectileWeaponItem.getHeldProjectile(player, weaponItem.getSupportedHeldProjectiles()).isEmpty()) {
+        if (!ProjectileWeaponItem.getHeldProjectile(player, weaponItem.getSupportedHeldProjectiles())
+                .isEmpty()) {
             return;
         }
         Inventory inventory = player.getInventory();
@@ -62,12 +66,16 @@ public final class ArrowSwapModule extends Module {
         if (first.isEmpty() || wanted.isEmpty() || first.getAsInt() == wanted.getAsInt()) {
             return;
         }
-        InventoryActions.pickupSwap(client, player, InventoryActions.toInventoryMenuSlot(wanted.getAsInt()),
+        InventoryActions.pickupSwap(
+                client,
+                player,
+                InventoryActions.toInventoryMenuSlot(wanted.getAsInt()),
                 InventoryActions.toInventoryMenuSlot(first.getAsInt()));
         this.debugValue("swapped", wanted.getAsInt() + " -> " + first.getAsInt());
     }
 
-    private OptionalInt wantedSlot(final LocalPlayer player, final Inventory inventory, final Predicate<ItemStack> ammo) {
+    private OptionalInt wantedSlot(
+            final LocalPlayer player, final Inventory inventory, final Predicate<ItemStack> ammo) {
         for (MobEffect effect : this.effects.value()) {
             if (this.skipActive.value() && hasEffect(player.getActiveEffects(), effect)) {
                 continue;

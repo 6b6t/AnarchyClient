@@ -48,10 +48,8 @@ final class PanelStyle {
     static final Color FIELD = GlassTheme.FIELD;
     static final Color TRACK = GlassTheme.TRACK;
     static final Color WARNING = GlassTheme.WARNING;
-    static final FontDescription LUCIDE_FONT = new FontDescription.Resource(
-            Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "lucide")
-    );
+    static final FontDescription LUCIDE_FONT =
+            new FontDescription.Resource(Identifier.fromNamespaceAndPath(AnarchyClient.MOD_ID, "lucide"));
 
-    private PanelStyle() {
-    }
+    private PanelStyle() {}
 }

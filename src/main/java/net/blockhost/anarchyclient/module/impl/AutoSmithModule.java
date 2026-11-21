@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -12,8 +13,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.SmithingMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.function.Predicate;
 
 public final class AutoSmithModule extends Module {
 
@@ -29,7 +28,10 @@ public final class AutoSmithModule extends Module {
     private int cooldown;
 
     public AutoSmithModule() {
-        super("auto_smith", "Auto Smith", ModuleCategory.WORLD,
+        super(
+                "auto_smith",
+                "Auto Smith",
+                ModuleCategory.WORLD,
                 "While a smithing table is open, upgrades every diamond tool, weapon, and armor piece in your "
                         + "inventory to netherite, using your upgrade templates and netherite ingots.");
     }
@@ -85,7 +87,8 @@ public final class AutoSmithModule extends Module {
     }
 
     static boolean isDiamondGear(final ItemStack stack) {
-        return !stack.isEmpty() && stack.isDamageableItem()
+        return !stack.isEmpty()
+                && stack.isDamageableItem()
                 && BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().startsWith("diamond_");
     }
 

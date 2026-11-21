@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.test;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
@@ -8,9 +10,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import org.jspecify.annotations.Nullable;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A block getter backed by a map, with air everywhere else, for tests that need a small world.

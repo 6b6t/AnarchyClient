@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.inventory;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 class InventoryActionSchedulerTest {
 
@@ -15,24 +14,33 @@ class InventoryActionSchedulerTest {
 
     @Test
     void ordersChainsByPriorityKeepingLowerOnesAsFallbacks() {
-        assertEquals(List.of(TOTEM, ARMOR, MEND),
+        assertEquals(
+                List.of(TOTEM, ARMOR, MEND),
                 InventoryActionScheduler.eligible(List.of(MEND, ARMOR, TOTEM), false, Integer.MIN_VALUE, ""));
     }
 
     @Test
     void cooldownOnlyHoldsBackChainsOfTheSameOrLowerPriority() {
-        assertEquals(List.of(TOTEM),
-                InventoryActionScheduler.eligible(List.of(MEND, ARMOR, TOTEM), true, InventoryActionScheduler.PRIORITY_EQUIPMENT, "auto_armor"));
-        assertEquals(List.of(),
-                InventoryActionScheduler.eligible(List.of(MEND, ARMOR), true, InventoryActionScheduler.PRIORITY_EQUIPMENT, "auto_armor"));
+        assertEquals(
+                List.of(TOTEM),
+                InventoryActionScheduler.eligible(
+                        List.of(MEND, ARMOR, TOTEM), true, InventoryActionScheduler.PRIORITY_EQUIPMENT, "auto_armor"));
+        assertEquals(
+                List.of(),
+                InventoryActionScheduler.eligible(
+                        List.of(MEND, ARMOR), true, InventoryActionScheduler.PRIORITY_EQUIPMENT, "auto_armor"));
     }
 
     @Test
     void lifeChainsSkipOnlyAnotherOwnersCooldown() {
-        assertEquals(List.of(TOTEM),
-                InventoryActionScheduler.eligible(List.of(MEND, TOTEM), true, InventoryActionScheduler.PRIORITY_LIFE, "smart_eat"));
-        assertEquals(List.of(EAT),
-                InventoryActionScheduler.eligible(List.of(EAT, TOTEM), true, InventoryActionScheduler.PRIORITY_LIFE, "auto_totem"));
+        assertEquals(
+                List.of(TOTEM),
+                InventoryActionScheduler.eligible(
+                        List.of(MEND, TOTEM), true, InventoryActionScheduler.PRIORITY_LIFE, "smart_eat"));
+        assertEquals(
+                List.of(EAT),
+                InventoryActionScheduler.eligible(
+                        List.of(EAT, TOTEM), true, InventoryActionScheduler.PRIORITY_LIFE, "auto_totem"));
     }
 
     private static InventoryActionChain chain(final String owner, final int priority) {

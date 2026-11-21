@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.mixin.MinecraftAccessor;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,8 +13,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
 
 public final class FastUseModule extends Module {
 
@@ -43,7 +42,10 @@ public final class FastUseModule extends Module {
             .build()));
 
     public FastUseModule() {
-        super("fast_use", "Fast Use", ModuleCategory.PLAYER,
+        super(
+                "fast_use",
+                "Fast Use",
+                ModuleCategory.PLAYER,
                 "Removes the right-click delay for all items or a chosen item list.");
         this.items.visibleWhen(() -> "Some".equals(this.mode.value()));
         this.blocks.visibleWhen(() -> "Some".equals(this.mode.value()));
@@ -68,8 +70,7 @@ public final class FastUseModule extends Module {
         return shouldApply(stack, this.mode.value(), this.items.value(), this.blocks.value());
     }
 
-    static boolean shouldApply(final ItemStack stack, final String mode,
-                               final List<Item> items, final boolean blocks) {
+    static boolean shouldApply(final ItemStack stack, final String mode, final List<Item> items, final boolean blocks) {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
@@ -77,9 +78,6 @@ public final class FastUseModule extends Module {
     }
 
     static boolean shouldApplyItem(final Item item, final String mode, final List<Item> items, final boolean blocks) {
-        return item != null
-                && (!"Some".equals(mode)
-                || items.contains(item)
-                || blocks && item instanceof BlockItem);
+        return item != null && (!"Some".equals(mode) || items.contains(item) || blocks && item instanceof BlockItem);
     }
 }

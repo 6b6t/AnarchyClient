@@ -3,16 +3,26 @@ package net.blockhost.anarchyclient.target;
 import java.util.EnumSet;
 import java.util.Set;
 
-public record TargetPolicy(Set<TargetKind> kinds, boolean invisibles, boolean dead, boolean ignoreFriends,
-                           boolean ignoreTeams, boolean antiBot) {
+public record TargetPolicy(
+        Set<TargetKind> kinds,
+        boolean invisibles,
+        boolean dead,
+        boolean ignoreFriends,
+        boolean ignoreTeams,
+        boolean antiBot) {
 
     public TargetPolicy {
         kinds = kinds.isEmpty() ? Set.of() : Set.copyOf(kinds);
     }
 
-    public static TargetPolicy of(final boolean players, final boolean hostiles, final boolean passives,
-                                  final boolean invisibles, final boolean ignoreFriends, final boolean ignoreTeams,
-                                  final boolean antiBot) {
+    public static TargetPolicy of(
+            final boolean players,
+            final boolean hostiles,
+            final boolean passives,
+            final boolean invisibles,
+            final boolean ignoreFriends,
+            final boolean ignoreTeams,
+            final boolean antiBot) {
         EnumSet<TargetKind> kinds = EnumSet.noneOf(TargetKind.class);
         if (players) {
             kinds.add(TargetKind.PLAYER);

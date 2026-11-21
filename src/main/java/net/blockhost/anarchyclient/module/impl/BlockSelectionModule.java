@@ -15,14 +15,14 @@ import net.minecraft.world.phys.Vec3;
 
 public final class BlockSelectionModule extends Module {
 
-    private final BooleanSetting fill = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("fill")
-            .name("Fill")
-            .defaultValue(false)
-            .build()));
+    private final BooleanSetting fill = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("fill").name("Fill").defaultValue(false).build()));
 
     public BlockSelectionModule() {
-        super("block_selection", "Block Selection", ModuleCategory.RENDER,
+        super(
+                "block_selection",
+                "Block Selection",
+                ModuleCategory.RENDER,
                 "Draws a cyan outline, with optional fill, around the block you are looking at.");
     }
 

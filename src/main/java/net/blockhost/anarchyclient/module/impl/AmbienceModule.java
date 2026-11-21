@@ -42,14 +42,20 @@ public final class AmbienceModule extends Module {
             .build()));
 
     public AmbienceModule() {
-        super("ambience", "Ambience", ModuleCategory.RENDER,
+        super(
+                "ambience",
+                "Ambience",
+                ModuleCategory.RENDER,
                 "Tints the whole screen with a configurable color and opacity overlay.");
     }
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        int color = argb(this.alpha.value().intValue(), this.red.value().intValue(),
-                this.green.value().intValue(), this.blue.value().intValue());
+        int color = argb(
+                this.alpha.value().intValue(),
+                this.red.value().intValue(),
+                this.green.value().intValue(),
+                this.blue.value().intValue());
         if ((color >>> 24) > 0) {
             graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(), color);
         }

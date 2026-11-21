@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.util;
 
-import org.jspecify.annotations.Nullable;
-
 import java.util.Objects;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A claim that a module renews every client tick while it needs control of a vanilla action.

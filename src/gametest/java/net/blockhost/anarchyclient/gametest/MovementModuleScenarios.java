@@ -10,8 +10,7 @@ import net.minecraft.world.level.block.Blocks;
 /** Scenarios for movement modules. */
 final class MovementModuleScenarios {
 
-    private MovementModuleScenarios() {
-    }
+    private MovementModuleScenarios() {}
 
     /** Block In centers the player and boxes them in without getting them kicked. */
     static void blockIn(final ClientGameTestContext context) {
@@ -50,9 +49,12 @@ final class MovementModuleScenarios {
             try {
                 context.waitFor(client -> !GameTestSupport.module("burrow").enabled(), 100);
                 context.waitTicks(10);
-                boolean connected = context.computeOnClient(client -> client.level != null && client.getConnection() != null);
+                boolean connected =
+                        context.computeOnClient(client -> client.level != null && client.getConnection() != null);
                 GameTestSupport.check(connected, "Burrow got the player kicked");
-                boolean filled = arena.server().computeOnServer(server -> server.overworld().getBlockState(feet).is(Blocks.OBSIDIAN));
+                boolean filled = arena.server()
+                        .computeOnServer(
+                                server -> server.overworld().getBlockState(feet).is(Blocks.OBSIDIAN));
                 GameTestSupport.check(filled, "Burrow did not place a block in the player's cell");
             } finally {
                 if (context.computeOnClient(client -> client.level != null)) {
@@ -67,12 +69,14 @@ final class MovementModuleScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(1, 0, -1)) + " " + GameTestSupport.at(origin.offset(1, 8, 1)) + " stone");
+            arena.run("fill " + GameTestSupport.at(origin.offset(1, 0, -1)) + " "
+                    + GameTestSupport.at(origin.offset(1, 8, 1)) + " stone");
             context.waitTicks(5);
             GameTestSupport.enable(context, "spider", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 30);
-                double y = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+                double y = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server).getY());
                 GameTestSupport.check(y >= origin.getY() + 3.0, "Spider climbed only to y " + y);
             } finally {
                 GameTestSupport.enable(context, "spider", false);
@@ -84,7 +88,8 @@ final class MovementModuleScenarios {
     static void highJump(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
-            double startY = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+            double startY = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).getY());
             GameTestSupport.enable(context, "high_jump", true);
             try {
                 // High Jump needs one tick on the ground to know that the next jump leaves it.
@@ -93,7 +98,11 @@ final class MovementModuleScenarios {
                 double peak = startY;
                 for (int tick = 0; tick < 20; tick++) {
                     context.waitTick();
-                    peak = Math.max(peak, arena.server().computeOnServer(server -> arena.serverPlayer(server).getY()));
+                    peak = Math.max(
+                            peak,
+                            arena.server()
+                                    .computeOnServer(
+                                            server -> arena.serverPlayer(server).getY()));
                 }
                 double height = peak - startY;
                 GameTestSupport.check(height > 2.0, "High Jump reached only " + height + " blocks");
@@ -117,8 +126,9 @@ final class MovementModuleScenarios {
                 context.getInput().releaseKey(options -> options.keyUp);
                 double y = context.computeOnClient(client -> client.player.getY());
                 // Vanilla falls only about one block in five ticks.
-                GameTestSupport.check(y < origin.getY() + 0.5, "Reverse Step left the player at y " + y
-                        + " five ticks after the ledge");
+                GameTestSupport.check(
+                        y < origin.getY() + 0.5,
+                        "Reverse Step left the player at y " + y + " five ticks after the ledge");
             } finally {
                 context.getInput().releaseKey(options -> options.keyUp);
                 GameTestSupport.enable(context, "reverse_step", false);
@@ -136,7 +146,8 @@ final class MovementModuleScenarios {
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 30);
                 context.waitTicks(5);
-                double y = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+                double y = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server).getY());
                 GameTestSupport.check(y >= origin.getY() + 4.0 - 0.01, "Safe Walk let the player fall to y " + y);
             } finally {
                 GameTestSupport.enable(context, "safe_walk", false);
@@ -147,7 +158,8 @@ final class MovementModuleScenarios {
     /** Puts the player, facing east, on a stone platform four blocks up whose east edge is one block ahead. */
     private static void ledge(final GameTestSupport.Arena arena) {
         BlockPos origin = arena.origin();
-        arena.run("fill " + GameTestSupport.at(origin.offset(-2, 3, -1)) + " " + GameTestSupport.at(origin.offset(0, 3, 1)) + " stone");
+        arena.run("fill " + GameTestSupport.at(origin.offset(-2, 3, -1)) + " "
+                + GameTestSupport.at(origin.offset(0, 3, 1)) + " stone");
         arena.teleport(origin.above(4), -90.0F);
         arena.context().waitFor(client -> client.player.onGround(), 40);
         arena.context().waitTicks(5);
@@ -166,8 +178,10 @@ final class MovementModuleScenarios {
                 context.waitTicks(40);
                 double y = context.computeOnClient(client -> client.player.getY());
                 GameTestSupport.check(y > -4.0, "Anti Void let the player fall to y " + y);
-                GameTestSupport.check(context.computeOnClient(client -> client.player.isAlive()), "The player died in the void");
-                GameTestSupport.check(context.computeOnClient(client -> ClientChat.contains(client, "Anti Void stopped a fall")),
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.player.isAlive()), "The player died in the void");
+                GameTestSupport.check(
+                        context.computeOnClient(client -> ClientChat.contains(client, "Anti Void stopped a fall")),
                         "Anti Void did not warn in chat: " + context.computeOnClient(ClientChat::messages));
             } finally {
                 GameTestSupport.enable(context, "anti_void", false);
@@ -180,13 +194,18 @@ final class MovementModuleScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(1, 0, -1)) + " " + GameTestSupport.at(origin.offset(8, 1, 1)) + " cobweb");
+            arena.run("fill " + GameTestSupport.at(origin.offset(1, 0, -1)) + " "
+                    + GameTestSupport.at(origin.offset(8, 1, 1)) + " cobweb");
             context.waitTicks(5);
-            double startX = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX());
+            double startX = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).getX());
             GameTestSupport.enable(context, "no_web", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 20);
-                double moved = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX()) - startX;
+                double moved = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getX())
+                        - startX;
                 // Cobwebs cut walking to a quarter, about one block a second.
                 GameTestSupport.check(moved > 3.0, "No Web moved the player only " + moved + " blocks through cobwebs");
             } finally {
@@ -201,14 +220,19 @@ final class MovementModuleScenarios {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             arena.hotbar(0, "shield");
             context.waitTicks(5);
-            double startX = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX());
+            double startX = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).getX());
             GameTestSupport.enable(context, "no_slow", true);
             try {
                 context.getInput().holdKey(options -> options.keyUse);
                 context.getInput().holdKeyFor(options -> options.keyUp, 20);
-                GameTestSupport.check(context.computeOnClient(client -> client.player.isUsingItem()),
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.player.isUsingItem()),
                         "The player was not blocking with the shield");
-                double moved = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX()) - startX;
+                double moved = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getX())
+                        - startX;
                 // Using an item cuts walking to a fifth, under one block a second.
                 GameTestSupport.check(moved > 3.0, "No Slow moved the player only " + moved + " blocks while blocking");
             } finally {

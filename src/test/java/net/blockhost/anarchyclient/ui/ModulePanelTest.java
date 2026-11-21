@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.ui;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
@@ -11,13 +17,6 @@ import net.lenni0451.rivet.math.Size;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
-
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class ModulePanelTest {
@@ -43,12 +42,16 @@ class ModulePanelTest {
         for (Tab tab : List.of(Tab.FRIENDS, Tab.PROFILES, Tab.THEME, Tab.MODULES)) {
             panel.selectTab(tab);
             panel.computeLayout(SIZE);
-            assertTrue(panel.layoutDebugLabel().startsWith("tab=" + tab.name().toLowerCase(Locale.ROOT) + " "), tab.name());
+            assertTrue(
+                    panel.layoutDebugLabel().startsWith("tab=" + tab.name().toLowerCase(Locale.ROOT) + " "),
+                    tab.name());
         }
         for (Drawer drawer : List.of(Drawer.ROOT, Drawer.GENERAL, Drawer.MODULES, Drawer.SOUND, Drawer.NOTIFICATIONS)) {
             panel.openDrawer(drawer);
             panel.computeLayout(SIZE);
-            assertTrue(panel.layoutDebugLabel().endsWith("drawer=" + drawer.name().toLowerCase(Locale.ROOT)), drawer.name());
+            assertTrue(
+                    panel.layoutDebugLabel().endsWith("drawer=" + drawer.name().toLowerCase(Locale.ROOT)),
+                    drawer.name());
         }
     }
 

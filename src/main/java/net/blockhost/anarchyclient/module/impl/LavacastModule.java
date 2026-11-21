@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -11,8 +12,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.HitResult;
-
-import java.util.OptionalInt;
 
 public final class LavacastModule extends Module {
 
@@ -28,14 +27,19 @@ public final class LavacastModule extends Module {
     private boolean lava = true;
 
     public LavacastModule() {
-        super("lavacast", "Lavacast", ModuleCategory.WORLD,
+        super(
+                "lavacast",
+                "Lavacast",
+                ModuleCategory.WORLD,
                 "Alternates lava and water buckets on the block you look at to build a lavacast.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.gameMode == null || client.hitResult == null
+        if (player == null
+                || client.gameMode == null
+                || client.hitResult == null
                 || client.hitResult.getType() != HitResult.Type.BLOCK) {
             return;
         }

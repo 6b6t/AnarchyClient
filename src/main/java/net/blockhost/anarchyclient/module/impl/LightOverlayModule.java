@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -14,10 +17,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class LightOverlayModule extends Module {
 
@@ -65,7 +64,10 @@ public final class LightOverlayModule extends Module {
     private int scanCooldown;
 
     public LightOverlayModule() {
-        super("light_overlay", "Light Overlay", ModuleCategory.RENDER,
+        super(
+                "light_overlay",
+                "Light Overlay",
+                ModuleCategory.RENDER,
                 "Marks nearby blocks with a red cross where light is low enough for mobs to spawn.");
     }
 
@@ -82,8 +84,12 @@ public final class LightOverlayModule extends Module {
             return;
         }
         this.markers.clear();
-        this.markers.addAll(scanMarkers(client, this.radius.value().intValue(), this.vertical.value().intValue(),
-                this.lightLevel.value().intValue(), this.maxMarkers.value().intValue()));
+        this.markers.addAll(scanMarkers(
+                client,
+                this.radius.value().intValue(),
+                this.vertical.value().intValue(),
+                this.lightLevel.value().intValue(),
+                this.maxMarkers.value().intValue()));
         this.scanCooldown = 10;
     }
 
@@ -95,7 +101,8 @@ public final class LightOverlayModule extends Module {
             return;
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
-        WorldLineRenderer.Color color = new WorldLineRenderer.Color(255, 92, 92, this.opacity.value().intValue());
+        WorldLineRenderer.Color color =
+                new WorldLineRenderer.Color(255, 92, 92, this.opacity.value().intValue());
         for (BlockPos pos : this.markers) {
             renderMarker(matrices, submits, pos, camera, color);
         }
@@ -107,13 +114,21 @@ public final class LightOverlayModule extends Module {
         this.scanCooldown = 0;
     }
 
-    static boolean shouldRenderSpawnMarker(final boolean feetAir, final boolean headAir, final boolean floorSturdy,
-                                           final int rawBrightness, final int maxLightLevel) {
+    static boolean shouldRenderSpawnMarker(
+            final boolean feetAir,
+            final boolean headAir,
+            final boolean floorSturdy,
+            final int rawBrightness,
+            final int maxLightLevel) {
         return feetAir && headAir && floorSturdy && rawBrightness <= maxLightLevel;
     }
 
-    private static List<BlockPos> scanMarkers(final Minecraft client, final int radius, final int vertical,
-                                              final int maxLightLevel, final int maxMarkers) {
+    private static List<BlockPos> scanMarkers(
+            final Minecraft client,
+            final int radius,
+            final int vertical,
+            final int maxLightLevel,
+            final int maxMarkers) {
         LocalPlayer player = client.player;
         if (player == null || client.level == null || maxMarkers <= 0) {
             return List.of();
@@ -134,10 +149,7 @@ public final class LightOverlayModule extends Module {
             }
         }
         candidates.sort(Comparator.comparingDouble(MarkerCandidate::distanceSqr));
-        return candidates.stream()
-                .limit(maxMarkers)
-                .map(MarkerCandidate::pos)
-                .toList();
+        return candidates.stream().limit(maxMarkers).map(MarkerCandidate::pos).toList();
     }
 
     private static boolean isSpawnMarker(final LevelReader level, final BlockPos pos, final int maxLightLevel) {
@@ -150,12 +162,15 @@ public final class LightOverlayModule extends Module {
                 head.isAir(),
                 floor.isFaceSturdy(level, floorPos, Direction.UP),
                 level.getMaxLocalRawBrightness(pos),
-                maxLightLevel
-        );
+                maxLightLevel);
     }
 
-    private static void renderMarker(final PoseStack matrices, final SubmitNodeCollector submits, final BlockPos pos,
-                                     final Vec3 camera, final WorldLineRenderer.Color color) {
+    private static void renderMarker(
+            final PoseStack matrices,
+            final SubmitNodeCollector submits,
+            final BlockPos pos,
+            final Vec3 camera,
+            final WorldLineRenderer.Color color) {
         double y = pos.getY() + 0.03;
         Vec3 a = new Vec3(pos.getX() + 0.18, y, pos.getZ() + 0.18).subtract(camera);
         Vec3 b = new Vec3(pos.getX() + 0.82, y, pos.getZ() + 0.82).subtract(camera);
@@ -165,6 +180,5 @@ public final class LightOverlayModule extends Module {
         WorldLineRenderer.lineNoDepth(matrices, submits, c, d, color);
     }
 
-    private record MarkerCandidate(BlockPos pos, double distanceSqr) {
-    }
+    private record MarkerCandidate(BlockPos pos, double distanceSqr) {}
 }

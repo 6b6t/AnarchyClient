@@ -1,27 +1,25 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.module.ModuleRegistry;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class MeteorExpansionModulesTest {
@@ -67,12 +65,13 @@ class MeteorExpansionModulesTest {
                 "notebot",
                 "discord_presence",
                 "fake_player",
-                "swarm"
-        )) {
+                "swarm")) {
             assertTrue(modules.find(id).isPresent(), "missing module " + id);
         }
 
-        assertEquals("middle_click_action", modules.find("middle_click_extra").orElseThrow().id());
+        assertEquals(
+                "middle_click_action",
+                modules.find("middle_click_extra").orElseThrow().id());
         assertEquals("multi_actions", modules.find("multitask").orElseThrow().id());
         assertEquals("chat_spammer", modules.find("spam").orElseThrow().id());
         assertEquals("hitbox", modules.find("hitboxes").orElseThrow().id());
@@ -96,17 +95,19 @@ class MeteorExpansionModulesTest {
     void notebotKeepsSongTimingAndDuplicateNotes() {
         NotebotModule.ParsedSong song = NotebotModule.parseSong("0 2:4+7 2:4 3:4+4");
 
-        assertEquals(Map.of(
-                0, List.of(0),
-                2, List.of(4, 7, 4),
-                3, List.of(4, 4)
-        ), song.notesByTick());
+        assertEquals(
+                Map.of(
+                        0, List.of(0),
+                        2, List.of(4, 7, 4),
+                        3, List.of(4, 4)),
+                song.notesByTick());
         assertEquals(3, song.lastTick());
-        assertEquals(Map.of(
-                0, 1,
-                4, 2,
-                7, 1
-        ), song.requiredBlocksByNote());
+        assertEquals(
+                Map.of(
+                        0, 1,
+                        4, 2,
+                        7, 1),
+                song.requiredBlocksByNote());
     }
 
     @Test
@@ -168,10 +169,10 @@ class MeteorExpansionModulesTest {
         StringSetting host = stringSetting(module, "host");
         host.value("spoof.example");
 
-        Packet<?> rewritten = module.replaceSendPacket(null, null,
-                new ClientIntentionPacket(999, "real.example", 25565, ClientIntent.LOGIN));
-        Packet<?> status = module.replaceSendPacket(null, null,
-                new ClientIntentionPacket(999, "real.example", 25565, ClientIntent.STATUS));
+        Packet<?> rewritten = module.replaceSendPacket(
+                null, null, new ClientIntentionPacket(999, "real.example", 25565, ClientIntent.LOGIN));
+        Packet<?> status = module.replaceSendPacket(
+                null, null, new ClientIntentionPacket(999, "real.example", 25565, ClientIntent.STATUS));
 
         ClientIntentionPacket login = assertInstanceOf(ClientIntentionPacket.class, rewritten);
         ClientIntentionPacket unchanged = assertInstanceOf(ClientIntentionPacket.class, status);

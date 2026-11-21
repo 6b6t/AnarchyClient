@@ -1,11 +1,10 @@
 package net.blockhost.anarchyclient.ui;
 
+import java.util.function.Supplier;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.math.Size;
-
-import java.util.function.Supplier;
 
 final class Surface extends Component {
 

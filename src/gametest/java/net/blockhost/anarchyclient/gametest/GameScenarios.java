@@ -6,8 +6,7 @@ import java.util.Map;
 /** Every client game test scenario, in run order. */
 final class GameScenarios {
 
-    private GameScenarios() {
-    }
+    private GameScenarios() {}
 
     static Map<String, GameScenario> all() {
         Map<String, GameScenario> scenarios = new LinkedHashMap<>();

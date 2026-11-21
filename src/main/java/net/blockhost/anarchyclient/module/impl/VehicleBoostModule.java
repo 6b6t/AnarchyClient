@@ -19,7 +19,10 @@ public final class VehicleBoostModule extends Module {
             .build()));
 
     public VehicleBoostModule() {
-        super("vehicle_boost", "Vehicle Boost", ModuleCategory.MOVEMENT,
+        super(
+                "vehicle_boost",
+                "Vehicle Boost",
+                ModuleCategory.MOVEMENT,
                 "Pushes your vehicle forward in your look direction while you hold the forward key.");
     }
 
@@ -31,7 +34,8 @@ public final class VehicleBoostModule extends Module {
         Entity vehicle = client.player.getVehicle();
         Vec3 boost = client.player.getViewVector(0.0F).multiply(1.0, 0.0, 1.0);
         if (boost.horizontalDistanceSqr() > 1.0E-6) {
-            vehicle.setDeltaMovement(vehicle.getDeltaMovement().add(boost.normalize().scale(this.strength.value())));
+            vehicle.setDeltaMovement(
+                    vehicle.getDeltaMovement().add(boost.normalize().scale(this.strength.value())));
         }
     }
 }

@@ -1,11 +1,10 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.OptionalInt;
-import java.util.function.Predicate;
 
 /** Picks the hotbar item that mines a block fastest. */
 public final class ToolSelector {
@@ -15,8 +14,7 @@ public final class ToolSelector {
 
     private static final double CORRECT_TOOL_BONUS = 1_000_000.0;
 
-    private ToolSelector() {
-    }
+    private ToolSelector() {}
 
     /**
      * Returns the hotbar slot whose item mines {@code state} best among the items accepted by
@@ -24,8 +22,8 @@ public final class ToolSelector {
      * cannot. The selected slot wins ties, so the hand only changes for a better tool. Empty
      * slots are only considered when they are the selected slot.
      */
-    public static OptionalInt bestHotbarTool(final Inventory inventory, final BlockState state,
-                                             final Predicate<ItemStack> candidates) {
+    public static OptionalInt bestHotbarTool(
+            final Inventory inventory, final BlockState state, final Predicate<ItemStack> candidates) {
         int selected = inventory.getSelectedSlot();
         int bestSlot = -1;
         double bestScore = Double.NEGATIVE_INFINITY;

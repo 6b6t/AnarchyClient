@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -18,9 +20,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 public final class CityEspModule extends Module {
 
     private final NumberSetting range = this.setting(NumberSetting.from(NumberSetting.builder()
@@ -35,7 +34,10 @@ public final class CityEspModule extends Module {
     private int cooldownTicks;
 
     public CityEspModule() {
-        super("city_esp", "City ESP", ModuleCategory.RENDER,
+        super(
+                "city_esp",
+                "City ESP",
+                ModuleCategory.RENDER,
                 "Outlines obsidian, anchors, and ender chests directly beside nearby players, showing which blocks can be mined to city them.");
     }
 
@@ -76,7 +78,10 @@ public final class CityEspModule extends Module {
         }
         Vec3 camera = client.gameRenderer.mainCamera().position();
         for (BlockPos pos : this.positions) {
-            WorldLineRenderer.boxNoDepth(matrices, submits, new AABB(pos).move(camera.scale(-1)),
+            WorldLineRenderer.boxNoDepth(
+                    matrices,
+                    submits,
+                    new AABB(pos).move(camera.scale(-1)),
                     new WorldLineRenderer.Color(255, 95, 90, 190));
         }
     }

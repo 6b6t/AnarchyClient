@@ -19,7 +19,10 @@ public final class BuildHeightModule extends Module {
     private int cooldown;
 
     public BuildHeightModule() {
-        super("build_height", "Build Height", ModuleCategory.WORLD,
+        super(
+                "build_height",
+                "Build Height",
+                ModuleCategory.WORLD,
                 "Warns you in chat when you get within the set distance of the world's build height limit.");
     }
 
@@ -31,7 +34,10 @@ public final class BuildHeightModule extends Module {
         int maxY = client.level.getMinY() + client.level.getHeight() - 1;
         int distance = maxY - client.player.blockPosition().getY();
         if (distance <= this.warningDistance.value().intValue()) {
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.build_height.build_height_in_blocks", "Build height in %s blocks.", Math.max(0, distance)));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.build_height.build_height_in_blocks",
+                    "Build height in %s blocks.",
+                    Math.max(0, distance)));
             this.cooldown = 60;
         }
     }

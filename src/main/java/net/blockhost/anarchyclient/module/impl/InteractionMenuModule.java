@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -13,9 +15,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-
-import java.util.List;
-import java.util.Locale;
 
 public final class InteractionMenuModule extends Module {
 
@@ -33,7 +32,10 @@ public final class InteractionMenuModule extends Module {
     private boolean wasPressed;
 
     public InteractionMenuModule() {
-        super("interaction_menu", "Interaction Menu", ModuleCategory.MISC,
+        super(
+                "interaction_menu",
+                "Interaction Menu",
+                ModuleCategory.MISC,
                 "Copies the target's info, sends a command, or adds a friend when you middle click a target.");
     }
 
@@ -53,19 +55,27 @@ public final class InteractionMenuModule extends Module {
     private void execute(final Minecraft client) {
         String info = targetInfo(client);
         switch (this.mode.value()) {
-            case "Command" -> ChatActions.run(client, this.command.value()
-                    .replace("{target}", targetName(client))
-                    .replace("{info}", info));
+            case "Command" ->
+                ChatActions.run(
+                        client,
+                        this.command
+                                .value()
+                                .replace("{target}", targetName(client))
+                                .replace("{info}", info));
             case "Friend" -> {
                 if (client.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof Player player) {
                     AnarchyClient.FRIENDS.add(player.getScoreboardName());
-                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.interaction_menu.added_friend", "Added friend %s.", player.getScoreboardName()));
+                    client.player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.interaction_menu.added_friend",
+                            "Added friend %s.",
+                            player.getScoreboardName()));
                 }
             }
             default -> {
                 if (!info.isBlank()) {
                     client.keyboardHandler.setClipboard(info);
-                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.interaction_menu.copied", "Copied %s", info));
+                    client.player.sendSystemMessage(
+                            Translations.component("anarchyclient.message.interaction_menu.copied", "Copied %s", info));
                 }
             }
         }
@@ -79,7 +89,8 @@ public final class InteractionMenuModule extends Module {
                     + String.format(Locale.ROOT, "%.2f %.2f %.2f", entity.getX(), entity.getY(), entity.getZ());
         }
         if (client.hitResult instanceof BlockHitResult hit) {
-            return hit.getBlockPos().getX() + " " + hit.getBlockPos().getY() + " " + hit.getBlockPos().getZ();
+            return hit.getBlockPos().getX() + " " + hit.getBlockPos().getY() + " "
+                    + hit.getBlockPos().getZ();
         }
         return "";
     }

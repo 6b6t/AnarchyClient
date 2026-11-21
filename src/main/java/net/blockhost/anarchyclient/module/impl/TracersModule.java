@@ -1,11 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.render.WorldLineRenderer2D;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
+import net.blockhost.anarchyclient.render.WorldLineRenderer2D;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -24,8 +25,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class TracersModule extends Module {
 
@@ -88,7 +87,10 @@ public final class TracersModule extends Module {
             .build()));
 
     public TracersModule() {
-        super("tracers", "Tracers", ModuleCategory.RENDER,
+        super(
+                "tracers",
+                "Tracers",
+                ModuleCategory.RENDER,
                 "Draws lines from your view to nearby players and mobs, colored by entity type and friend status.");
     }
 
@@ -127,7 +129,8 @@ public final class TracersModule extends Module {
             if (entity.distanceToSqr(player) > rangeValue * rangeValue) {
                 continue;
             }
-            Vec3 end = WorldLineRenderer.interpolatedBox(entity, partialTick, 0.0, camera).getCenter();
+            Vec3 end = WorldLineRenderer.interpolatedBox(entity, partialTick, 0.0, camera)
+                    .getCenter();
             WorldLineRenderer.lineNoDepth(matrices, submits, start, end, this.color(entity));
         }
     }
@@ -155,7 +158,8 @@ public final class TracersModule extends Module {
                 continue;
             }
             double x = Mth.lerp(partialTick, entity.xo, entity.getX());
-            double y = Mth.lerp(partialTick, entity.yo, entity.getY()) + entity.getBoundingBox().getYsize() * 0.5;
+            double y = Mth.lerp(partialTick, entity.yo, entity.getY())
+                    + entity.getBoundingBox().getYsize() * 0.5;
             double z = Mth.lerp(partialTick, entity.zo, entity.getZ());
             Vec3 projected = client.gameRenderer.projectPointToScreen(new Vec3(x, y, z));
             if (projected.z > 1.0) {
@@ -164,7 +168,12 @@ public final class TracersModule extends Module {
             float targetX = (float) ((projected.x + 1.0) * 0.5 * graphics.guiWidth());
             float targetY = (float) ((1.0 - projected.y) * 0.5 * graphics.guiHeight());
             WorldLineRenderer.Color color = this.color(entity);
-            WorldLineRenderer2D.line(graphics, centerX, centerY, targetX, targetY,
+            WorldLineRenderer2D.line(
+                    graphics,
+                    centerX,
+                    centerY,
+                    targetX,
+                    targetY,
                     ARGB.color(color.alpha(), color.red(), color.green(), color.blue()));
         }
     }
@@ -191,7 +200,6 @@ public final class TracersModule extends Module {
                 this.invisibles.value(),
                 this.ignoreFriends.value(),
                 this.ignoreTeams.value(),
-                this.antiBot.value()
-        );
+                this.antiBot.value());
     }
 }

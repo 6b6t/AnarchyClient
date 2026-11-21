@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -11,8 +12,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
 
 public final class AutoWebModule extends Module {
 
@@ -37,7 +36,10 @@ public final class AutoWebModule extends Module {
             .build()));
 
     public AutoWebModule() {
-        super("auto_web", "Auto Web", ModuleCategory.COMBAT,
+        super(
+                "auto_web",
+                "Auto Web",
+                ModuleCategory.COMBAT,
                 "Places cobwebs at the feet or head of the nearest non-friend player in range, or on yourself.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
@@ -48,18 +50,28 @@ public final class AutoWebModule extends Module {
         if (player == null || client.level == null || client.gameMode == null || client.gui.screen() != null) {
             return;
         }
-        Player target = "Self".equals(this.targetMode.value()) ? player : CombatTargets.nearestEnemy(client, this.range.value());
+        Player target = "Self".equals(this.targetMode.value())
+                ? player
+                : CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null) {
             return;
         }
-        for (BlockPos pos : List.of(target.blockPosition(), target.blockPosition().above())) {
-            if (!BlockPlacement.needsPlacement(client.level, pos) || !CombatTargets.canReachBlock(player, pos)
+        for (BlockPos pos :
+                List.of(target.blockPosition(), target.blockPosition().above())) {
+            if (!BlockPlacement.needsPlacement(client.level, pos)
+                    || !CombatTargets.canReachBlock(player, pos)
                     || BlockPlacer.findPlacementTarget(client.level, pos).isEmpty()) {
                 continue;
             }
             // Placed, or still turning toward the spot: either way this tick is spent on it.
-            BlockPlacement.place(client, this, pos, this.rotate.value(), 70.0F,
-                    stack -> stack.is(Items.COBWEB), BlockPlacer.PlacementOptions.NON_FULL);
+            BlockPlacement.place(
+                    client,
+                    this,
+                    pos,
+                    this.rotate.value(),
+                    70.0F,
+                    stack -> stack.is(Items.COBWEB),
+                    BlockPlacer.PlacementOptions.NON_FULL);
             return;
         }
     }

@@ -1,6 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -19,10 +22,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 public final class PopChamsModule extends Module {
 
     private static final byte TOTEM_POP_EVENT = 35;
@@ -39,7 +38,10 @@ public final class PopChamsModule extends Module {
     private ClientLevel trackedLevel;
 
     public PopChamsModule() {
-        super("pop_chams", "Pop Chams", ModuleCategory.RENDER,
+        super(
+                "pop_chams",
+                "Pop Chams",
+                ModuleCategory.RENDER,
                 "Draws a fading outline that floats up where an entity pops a totem.");
     }
 
@@ -105,7 +107,8 @@ public final class PopChamsModule extends Module {
         for (PopGhost ghost : this.ghosts) {
             int alpha = Math.max(20, 180 - ghost.age * 180 / lifetime);
             AABB box = ghost.box.move(0.0, ghost.age * 0.02, 0.0).move(camera.scale(-1));
-            WorldLineRenderer.fillNoDepth(matrices, submits, box, new WorldLineRenderer.Color(255, 210, 90, Math.max(12, alpha / 4)));
+            WorldLineRenderer.fillNoDepth(
+                    matrices, submits, box, new WorldLineRenderer.Color(255, 210, 90, Math.max(12, alpha / 4)));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, new WorldLineRenderer.Color(255, 210, 90, alpha));
         }
     }

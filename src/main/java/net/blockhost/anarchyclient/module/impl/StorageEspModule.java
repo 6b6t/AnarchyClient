@@ -1,6 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -24,18 +29,15 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public final class StorageEspModule extends Module {
 
-    enum Category { REGULAR, SHULKER, ENDER }
-
-    record MergedBox(AABB box, Category category) {
+    enum Category {
+        REGULAR,
+        SHULKER,
+        ENDER
     }
+
+    record MergedBox(AABB box, Category category) {}
 
     private final SelectSetting mode = this.setting(SelectSetting.from(SelectSetting.builder()
             .id("mode")
@@ -69,7 +71,11 @@ public final class StorageEspModule extends Module {
     private Level level;
 
     public StorageEspModule() {
-        super("storage_esp", "Storage ESP", ModuleCategory.RENDER, "Highlights storage blocks in the world so chests, shulkers, and similar containers are easier to find.");
+        super(
+                "storage_esp",
+                "Storage ESP",
+                ModuleCategory.RENDER,
+                "Highlights storage blocks in the world so chests, shulkers, and similar containers are easier to find.");
     }
 
     @Override
@@ -109,7 +115,10 @@ public final class StorageEspModule extends Module {
             AABB moved = box.box().move(camera.scale(-1));
             WorldLineRenderer.Color color = color(box.category(), alpha);
             if (filled) {
-                WorldLineRenderer.fillNoDepth(matrices, submits, moved,
+                WorldLineRenderer.fillNoDepth(
+                        matrices,
+                        submits,
+                        moved,
                         new WorldLineRenderer.Color(color.red(), color.green(), color.blue(), Math.max(40, alpha / 3)));
             }
             WorldLineRenderer.boxNoDepth(matrices, submits, moved, color);
@@ -220,8 +229,8 @@ public final class StorageEspModule extends Module {
         return true;
     }
 
-    private static boolean planePresent(final Set<Long> positions, final int x0, final int x1, final int y, final int z0,
-                                        final int z1) {
+    private static boolean planePresent(
+            final Set<Long> positions, final int x0, final int x1, final int y, final int z0, final int z1) {
         for (int z = z0; z <= z1; z++) {
             if (!rowPresent(positions, x0, x1, y, z)) {
                 return false;

@@ -19,14 +19,20 @@ public final class QuiverModule extends Module {
             .build()));
 
     public QuiverModule() {
-        super("quiver", "Quiver", ModuleCategory.COMBAT,
+        super(
+                "quiver",
+                "Quiver",
+                ModuleCategory.COMBAT,
                 "While you hold use with a bow, releases it after a set number of draw ticks and draws it again right away.");
     }
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.gameMode == null || client.gui.screen() != null
-                || !client.options.keyUse.isDown() || !client.player.getMainHandItem().is(Items.BOW)) {
+        if (client.player == null
+                || client.gameMode == null
+                || client.gui.screen() != null
+                || !client.options.keyUse.isDown()
+                || !client.player.getMainHandItem().is(Items.BOW)) {
             return;
         }
         if (!client.player.isUsingItem()) {

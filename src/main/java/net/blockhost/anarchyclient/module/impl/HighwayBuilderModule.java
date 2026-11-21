@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -8,9 +10,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class HighwayBuilderModule extends Module {
 
@@ -29,7 +28,10 @@ public final class HighwayBuilderModule extends Module {
             .build()));
 
     public HighwayBuilderModule() {
-        super("highway_builder", "Highway Builder", ModuleCategory.WORLD,
+        super(
+                "highway_builder",
+                "Highway Builder",
+                ModuleCategory.WORLD,
                 "Places blocks under the path ahead of you to pave a highway, with optional side rails.");
     }
 
@@ -38,12 +40,18 @@ public final class HighwayBuilderModule extends Module {
         if (client.player == null || client.level == null) {
             return;
         }
-        for (BlockPos pos : plan(client.player.blockPosition(), client.player.getDirection(), this.length.value().intValue(), this.rails.value())) {
-            if (BlockPlacement.needsPlacement(client.level, pos) && CombatTargets.canReachBlock(client.player, pos)
+        for (BlockPos pos : plan(
+                client.player.blockPosition(),
+                client.player.getDirection(),
+                this.length.value().intValue(),
+                this.rails.value())) {
+            if (BlockPlacement.needsPlacement(client.level, pos)
+                    && CombatTargets.canReachBlock(client.player, pos)
                     && BlockPlacer.findPlacementTarget(client.level, pos).isPresent()) {
                 // Placed or still rotating: one block per tick, retried until it is in place. A blocked spot
                 // (a mob standing there) is skipped so the rest of the path still gets paved.
-                if (BlockPlacement.place(client, this, pos, true, 70.0F) != BlockPlacement.PlacementResult.UNPLACEABLE) {
+                if (BlockPlacement.place(client, this, pos, true, 70.0F)
+                        != BlockPlacement.PlacementResult.UNPLACEABLE) {
                     return;
                 }
             }

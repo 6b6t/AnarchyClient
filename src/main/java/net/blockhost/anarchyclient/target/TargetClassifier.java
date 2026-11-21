@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.target;
 
+import java.util.Locale;
+import java.util.regex.Pattern;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.server.ServerObserver;
 import net.blockhost.anarchyclient.server.ServerProfileStore;
@@ -15,18 +17,14 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.Locale;
-import java.util.regex.Pattern;
-
 public final class TargetClassifier {
 
-    private static final Pattern UUID_PATTERN = Pattern.compile(
-            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-    );
-    private static final Pattern STAFF_HINT_PATTERN = Pattern.compile("(admin|mod|staff|helper|owner|srmod)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern UUID_PATTERN =
+            Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+    private static final Pattern STAFF_HINT_PATTERN =
+            Pattern.compile("(admin|mod|staff|helper|owner|srmod)", Pattern.CASE_INSENSITIVE);
 
-    private TargetClassifier() {
-    }
+    private TargetClassifier() {}
 
     public static TargetKind kind(final Entity entity) {
         if (entity instanceof Player) {

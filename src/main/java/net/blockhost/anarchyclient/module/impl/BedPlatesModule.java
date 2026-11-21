@@ -34,7 +34,11 @@ public final class BedPlatesModule extends Module {
     private int scanCooldown;
 
     public BedPlatesModule() {
-        super("bed_plates", "Bed Plates", ModuleCategory.RENDER, "Outlines beds, including straw beds, within range with cyan boxes.");
+        super(
+                "bed_plates",
+                "Bed Plates",
+                ModuleCategory.RENDER,
+                "Outlines beds, including straw beds, within range with cyan boxes.");
     }
 
     @Override
@@ -56,19 +60,26 @@ public final class BedPlatesModule extends Module {
         int maxY = Math.min(level.getMaxY(), center.getY() + VERTICAL_RANGE);
         int minZ = center.getZ() - radius;
         int maxZ = center.getZ() + radius;
-        for (int chunkX = SectionPos.blockToSectionCoord(minX); chunkX <= SectionPos.blockToSectionCoord(maxX); chunkX++) {
-            for (int chunkZ = SectionPos.blockToSectionCoord(minZ); chunkZ <= SectionPos.blockToSectionCoord(maxZ); chunkZ++) {
+        for (int chunkX = SectionPos.blockToSectionCoord(minX);
+                chunkX <= SectionPos.blockToSectionCoord(maxX);
+                chunkX++) {
+            for (int chunkZ = SectionPos.blockToSectionCoord(minZ);
+                    chunkZ <= SectionPos.blockToSectionCoord(maxZ);
+                    chunkZ++) {
                 if (!level.hasChunk(chunkX, chunkZ)) {
                     continue;
                 }
                 LevelChunk chunk = level.getChunk(chunkX, chunkZ);
-                for (int sectionY = SectionPos.blockToSectionCoord(minY); sectionY <= SectionPos.blockToSectionCoord(maxY); sectionY++) {
+                for (int sectionY = SectionPos.blockToSectionCoord(minY);
+                        sectionY <= SectionPos.blockToSectionCoord(maxY);
+                        sectionY++) {
                     LevelChunkSection section = chunk.getSection(chunk.getSectionIndexFromSectionY(sectionY));
                     // The palette check skips the vast majority of sections, which contain no bed at all.
                     if (section.hasOnlyAir() || !section.maybeHas(BedPlatesModule::isBed)) {
                         continue;
                     }
-                    markBeds(section,
+                    markBeds(
+                            section,
                             Math.max(minX, SectionPos.sectionToBlockCoord(chunkX)),
                             Math.max(minY, SectionPos.sectionToBlockCoord(sectionY)),
                             Math.max(minZ, SectionPos.sectionToBlockCoord(chunkZ)),
@@ -89,15 +100,21 @@ public final class BedPlatesModule extends Module {
         return state.getBlock() instanceof AbstractBedBlock;
     }
 
-    private static void markBeds(final LevelChunkSection section, final int minX, final int minY, final int minZ,
-                                 final int maxX, final int maxY, final int maxZ) {
+    private static void markBeds(
+            final LevelChunkSection section,
+            final int minX,
+            final int minY,
+            final int minZ,
+            final int maxX,
+            final int maxY,
+            final int maxZ) {
         for (int y = minY; y <= maxY; y++) {
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     if (isBed(section.getBlockState(x & 15, y & 15, z & 15))) {
                         BlockPos pos = new BlockPos(x, y, z);
-                        MarkerManager.put(new CuboidMarker("bed_plates:" + pos.asLong(), new AABB(pos), MarkerStyle.CYAN,
-                                MARKER_LIFETIME_TICKS));
+                        MarkerManager.put(new CuboidMarker(
+                                "bed_plates:" + pos.asLong(), new AABB(pos), MarkerStyle.CYAN, MARKER_LIFETIME_TICKS));
                     }
                 }
             }

@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.List;
 
 public final class BetterBeaconsModule extends Module {
 
@@ -31,31 +30,54 @@ public final class BetterBeaconsModule extends Module {
             .build()));
 
     public BetterBeaconsModule() {
-        super("better_beacons", "Better Beacons", ModuleCategory.RENDER,
+        super(
+                "better_beacons",
+                "Better Beacons",
+                ModuleCategory.RENDER,
                 "Adds beacon payment items, range per tier, and unlockable effects to the beacon item tooltip.");
     }
 
     @Override
     public void itemTooltip(final Minecraft client, final ItemStack stack, final List<Component> lines) {
-        addBeaconTooltip(stack.is(Items.BEACON), lines, this.payments.value(), this.ranges.value(), this.effects.value());
+        addBeaconTooltip(
+                stack.is(Items.BEACON), lines, this.payments.value(), this.ranges.value(), this.effects.value());
     }
 
-    static void addBeaconTooltip(final boolean beacon, final List<Component> lines, final boolean payments,
-                                 final boolean ranges, final boolean effects) {
+    static void addBeaconTooltip(
+            final boolean beacon,
+            final List<Component> lines,
+            final boolean payments,
+            final boolean ranges,
+            final boolean effects) {
         if (!beacon) {
             return;
         }
         if (payments) {
-            lines.add(Translations.component("anarchyclient.message.better_beacons.payments_iron_gold_emerald_diamond_netherite", "Payments: iron, gold, emerald, diamond, netherite").withStyle(ChatFormatting.GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_beacons.payments_iron_gold_emerald_diamond_netherite",
+                            "Payments: iron, gold, emerald, diamond, netherite")
+                    .withStyle(ChatFormatting.GRAY));
         }
         if (ranges) {
-            lines.add(Translations.component("anarchyclient.message.better_beacons.ranges_20_30_40_50_blocks", "Ranges: 20, 30, 40, 50 blocks by tier").withStyle(ChatFormatting.GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_beacons.ranges_20_30_40_50_blocks",
+                            "Ranges: 20, 30, 40, 50 blocks by tier")
+                    .withStyle(ChatFormatting.GRAY));
         }
         if (effects) {
-            lines.add(Translations.component("anarchyclient.message.better_beacons.tier_1_speed_haste", "Tier 1: speed, haste").withStyle(ChatFormatting.DARK_GRAY));
-            lines.add(Translations.component("anarchyclient.message.better_beacons.tier_2_resistance_jump_boost", "Tier 2: resistance, jump boost").withStyle(ChatFormatting.DARK_GRAY));
-            lines.add(Translations.component("anarchyclient.message.better_beacons.tier_3_strength", "Tier 3: strength").withStyle(ChatFormatting.DARK_GRAY));
-            lines.add(Translations.component("anarchyclient.message.better_beacons.tier_4_regeneration_or_level_ii", "Tier 4: regeneration or level II primary").withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_beacons.tier_1_speed_haste", "Tier 1: speed, haste")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_beacons.tier_2_resistance_jump_boost",
+                            "Tier 2: resistance, jump boost")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component("anarchyclient.message.better_beacons.tier_3_strength", "Tier 3: strength")
+                    .withStyle(ChatFormatting.DARK_GRAY));
+            lines.add(Translations.component(
+                            "anarchyclient.message.better_beacons.tier_4_regeneration_or_level_ii",
+                            "Tier 4: regeneration or level II primary")
+                    .withStyle(ChatFormatting.DARK_GRAY));
         }
     }
 }

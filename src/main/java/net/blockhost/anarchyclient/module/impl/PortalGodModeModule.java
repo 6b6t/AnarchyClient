@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.concurrent.atomic.AtomicReference;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.minecraft.client.Minecraft;
@@ -7,8 +8,6 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 public final class PortalGodModeModule extends Module {
 
@@ -19,7 +18,10 @@ public final class PortalGodModeModule extends Module {
     private final AtomicReference<ServerboundAcceptTeleportationPacket> held = new AtomicReference<>();
 
     public PortalGodModeModule() {
-        super("portal_god_mode", "Portal God Mode", ModuleCategory.MISC,
+        super(
+                "portal_god_mode",
+                "Portal God Mode",
+                ModuleCategory.MISC,
                 "Holds back teleport confirmations, so after a dimension change the server keeps you in the "
                         + "invulnerable loading state. Turn it off to confirm the teleports and play normally.");
     }

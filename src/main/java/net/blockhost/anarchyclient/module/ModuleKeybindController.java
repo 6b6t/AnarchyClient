@@ -70,8 +70,7 @@ final class ModuleKeybindController {
                     module.enabled(press.ticksHeld() >= SMART_HOLD_TICKS ? false : !press.wasEnabled());
                 }
             }
-            case TOGGLE -> {
-            }
+            case TOGGLE -> {}
         }
     }
 

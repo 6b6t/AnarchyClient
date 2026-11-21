@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.setting;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
+import java.util.List;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class RegistryListSettingTest {
@@ -30,10 +29,8 @@ class RegistryListSettingTest {
 
     @Test
     void blockListReadsJsonArraysAndLegacyStrings() {
-        BlockListSetting setting = BlockListSetting.from(BlockListSetting.builder()
-                .id("blocks")
-                .name("Blocks")
-                .build());
+        BlockListSetting setting = BlockListSetting.from(
+                BlockListSetting.builder().id("blocks").name("Blocks").build());
         JsonArray array = new JsonArray();
         array.add("minecraft:obsidian");
         array.add("bedrock");
@@ -47,10 +44,8 @@ class RegistryListSettingTest {
 
     @Test
     void skipsIdsThatAreNotValidInsteadOfThrowing() {
-        BlockListSetting setting = BlockListSetting.from(BlockListSetting.builder()
-                .id("blocks")
-                .name("Blocks")
-                .build());
+        BlockListSetting setting = BlockListSetting.from(
+                BlockListSetting.builder().id("blocks").name("Blocks").build());
 
         assertEquals(List.of(Blocks.STONE), setting.parse("#logs, é, stone, (dirt"));
     }

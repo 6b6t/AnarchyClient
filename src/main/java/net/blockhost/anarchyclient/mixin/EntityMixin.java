@@ -31,21 +31,20 @@ public abstract class EntityMixin {
 
     @Redirect(
             method = "getBlockSpeedFactor",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getSpeedFactor()F")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/Block;getSpeedFactor()F"))
     private float anarchyclient$noSlowSpeedFactor(final Block block) {
         return NoSlowModule.blockSpeedFactor((Entity) (Object) this, block);
     }
 
     @Redirect(
             method = "applyEffectsFromBlocks(Ljava/util/List;)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/level/block/Block;stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V"
-            )
-    )
-    private void anarchyclient$noSlowStepOn(final Block block, final Level level, final BlockPos pos,
-                                            final BlockState state, final Entity entity) {
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target =
+                                    "Lnet/minecraft/world/level/block/Block;stepOn(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;)V"))
+    private void anarchyclient$noSlowStepOn(
+            final Block block, final Level level, final BlockPos pos, final BlockState state, final Entity entity) {
         if (!NoSlowModule.shouldIgnoreStepOn(entity, state)) {
             block.stepOn(level, pos, state, entity);
         }
@@ -60,8 +59,7 @@ public abstract class EntityMixin {
 
     @Redirect(
             method = "updateFluidInteraction",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;isPushedByFluid()Z")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;isPushedByFluid()Z"))
     private boolean anarchyclient$noFluidPush(final Entity entity) {
         return !NoPushModule.shouldCancelFluidPush(Minecraft.getInstance(), entity) && entity.isPushedByFluid();
     }

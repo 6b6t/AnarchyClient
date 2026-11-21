@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -19,15 +20,10 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.RunningOnDifferentThreadException;
 import net.minecraft.sounds.SoundEvent;
 
-import java.util.Set;
-
 public final class SoundBlockerModule extends Module {
 
-    private final StringSetting sounds = this.setting(StringSetting.from(StringSetting.builder()
-            .id("sounds")
-            .name("Sounds")
-            .defaultValue("")
-            .build()));
+    private final StringSetting sounds = this.setting(StringSetting.from(
+            StringSetting.builder().id("sounds").name("Sounds").defaultValue("").build()));
     private final BooleanSetting invert = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("invert")
             .name("Invert")
@@ -42,7 +38,10 @@ public final class SoundBlockerModule extends Module {
     private volatile ParsedSounds parsedSounds = new ParsedSounds("", Set.of());
 
     public SoundBlockerModule() {
-        super("sound_blocker", "Sound Blocker", ModuleCategory.MISC,
+        super(
+                "sound_blocker",
+                "Sound Blocker",
+                ModuleCategory.MISC,
                 "Cancels selected server sounds, including entity sounds and the sound of explosions that do not push you.");
     }
 
@@ -57,14 +56,23 @@ public final class SoundBlockerModule extends Module {
             }
             // Explosions that push you are left to Velocity, which replaces those packets itself; two
             // replacements would apply the explosion twice.
-            case ClientboundExplodePacket explosion when explosion.playSound() && explosion.playerKnockback().isEmpty() -> {
+            case ClientboundExplodePacket explosion
+            when explosion.playSound() && explosion.playerKnockback().isEmpty() -> {
                 if (!this.block(client, soundId(explosion.explosionSound()))) {
                     return false;
                 }
                 // Keep the explosion itself (knockback, particles) and only drop its sound.
-                handleReplacement(connection, new ClientboundExplodePacket(explosion.center(), explosion.radius(),
-                        explosion.blockCount(), explosion.playerKnockback(), explosion.explosionParticle(),
-                        explosion.explosionSound(), explosion.blockParticles(), false));
+                handleReplacement(
+                        connection,
+                        new ClientboundExplodePacket(
+                                explosion.center(),
+                                explosion.radius(),
+                                explosion.blockCount(),
+                                explosion.playerKnockback(),
+                                explosion.explosionParticle(),
+                                explosion.explosionSound(),
+                                explosion.blockParticles(),
+                                false));
                 return true;
             }
             default -> {
@@ -80,7 +88,8 @@ public final class SoundBlockerModule extends Module {
         if (this.logBlocked.value()) {
             MainThread.run(() -> {
                 if (client.player != null) {
-                    client.player.sendSystemMessage(Translations.component("anarchyclient.message.sound_blocker.blocked_sound", "Blocked sound %s", id));
+                    client.player.sendSystemMessage(Translations.component(
+                            "anarchyclient.message.sound_blocker.blocked_sound", "Blocked sound %s", id));
                 }
             });
         }
@@ -98,7 +107,9 @@ public final class SoundBlockerModule extends Module {
     }
 
     private static Identifier soundId(final Holder<SoundEvent> sound) {
-        return sound.unwrapKey().map(ResourceKey::identifier).orElseGet(() -> sound.value().location());
+        return sound.unwrapKey()
+                .map(ResourceKey::identifier)
+                .orElseGet(() -> sound.value().location());
     }
 
     /** Hands a replacement packet to vanilla the same way {@code Connection.channelRead0} does. */
@@ -123,6 +134,5 @@ public final class SoundBlockerModule extends Module {
         return invert ? !listed : listed;
     }
 
-    private record ParsedSounds(String source, Set<Identifier> ids) {
-    }
+    private record ParsedSounds(String source, Set<Identifier> ids) {}
 }

@@ -50,8 +50,7 @@ import net.blockhost.anarchyclient.module.impl.TextFieldProtectModule;
  */
 final class MiscModules {
 
-    private MiscModules() {
-    }
+    private MiscModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new CoordLoggerModule());

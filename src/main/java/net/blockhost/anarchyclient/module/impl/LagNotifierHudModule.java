@@ -1,13 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.module.ModuleCategory;
+import java.util.List;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
-
-import java.util.List;
 
 public final class LagNotifierHudModule extends HudElementModule {
 
@@ -27,8 +25,11 @@ public final class LagNotifierHudModule extends HudElementModule {
     private volatile long lastPacketNanos = System.nanoTime();
 
     public LagNotifierHudModule() {
-        super("lag_notifier_hud", "Lag Notifier",
-                "Shows how long the server has sent no packets, by default only past a set threshold.", "Top Left");
+        super(
+                "lag_notifier_hud",
+                "Lag Notifier",
+                "Shows how long the server has sent no packets, by default only past a set threshold.",
+                "Top Left");
     }
 
     @Override

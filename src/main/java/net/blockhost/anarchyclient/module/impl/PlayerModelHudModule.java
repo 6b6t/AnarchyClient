@@ -1,17 +1,19 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 
-import java.util.List;
-import java.util.Locale;
-
 public final class PlayerModelHudModule extends HudElementModule {
 
     public PlayerModelHudModule() {
-        super("player_model_hud", "Player Model",
-                "Shows a small panel with your player model that follows the mouse.", "Bottom Left");
+        super(
+                "player_model_hud",
+                "Player Model",
+                "Shows a small panel with your player model that follows the mouse.",
+                "Bottom Left");
     }
 
     @Override
@@ -33,8 +35,7 @@ public final class PlayerModelHudModule extends HudElementModule {
                 0.0625F,
                 x + width / 2.0F,
                 y + height / 2.0F,
-                client.player
-        );
+                client.player);
     }
 
     @Override
@@ -43,7 +44,6 @@ public final class PlayerModelHudModule extends HudElementModule {
                 "Pose " + client.player.getPose().name().toLowerCase(Locale.ROOT),
                 "Yaw " + Math.round(client.player.getYRot()),
                 "Pitch " + Math.round(client.player.getXRot()),
-                "Body " + Math.round(client.player.yBodyRot)
-        );
+                "Body " + Math.round(client.player.yBodyRot));
     }
 }

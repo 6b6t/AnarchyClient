@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,13 +18,6 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 public final class AntiVanishModule extends Module {
 
@@ -40,7 +39,10 @@ public final class AntiVanishModule extends Module {
     private int timer;
 
     public AntiVanishModule() {
-        super("anti_vanish", "Anti Vanish", ModuleCategory.MISC,
+        super(
+                "anti_vanish",
+                "Anti Vanish",
+                ModuleCategory.MISC,
                 "Compares the tab list over time and warns in chat when a player disappears without a leave message.");
     }
 
@@ -70,8 +72,10 @@ public final class AntiVanishModule extends Module {
             return;
         }
         Map<UUID, String> current = onlinePlayers(listener);
-        for (String name : vanishedPlayers(this.playerCache, current, this.messageCache, this.requireLeaveMessage.value())) {
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.anti_vanish.may_have_vanished", "%s may have vanished.", name));
+        for (String name :
+                vanishedPlayers(this.playerCache, current, this.messageCache, this.requireLeaveMessage.value())) {
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.anti_vanish.may_have_vanished", "%s may have vanished.", name));
         }
         this.playerCache = current;
         this.messageCache.clear();
@@ -100,14 +104,18 @@ public final class AntiVanishModule extends Module {
         this.reset();
     }
 
-    static List<String> vanishedPlayers(final Map<UUID, String> previous, final Map<UUID, String> current,
-                                        final List<String> messages, final boolean requireMissingLeaveMessage) {
+    static List<String> vanishedPlayers(
+            final Map<UUID, String> previous,
+            final Map<UUID, String> current,
+            final List<String> messages,
+            final boolean requireMissingLeaveMessage) {
         List<String> result = new ArrayList<>();
         for (Map.Entry<UUID, String> entry : previous.entrySet()) {
             if (current.containsKey(entry.getKey()) || !validPlayerName(entry.getValue())) {
                 continue;
             }
-            if (!requireMissingLeaveMessage || messages.stream().noneMatch(message -> mentionsPlayer(message, entry.getValue()))) {
+            if (!requireMissingLeaveMessage
+                    || messages.stream().noneMatch(message -> mentionsPlayer(message, entry.getValue()))) {
                 result.add(entry.getValue());
             }
         }

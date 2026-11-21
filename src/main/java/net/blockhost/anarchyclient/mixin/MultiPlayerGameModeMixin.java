@@ -28,46 +28,53 @@ public abstract class MultiPlayerGameModeMixin {
 
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void anarchyclient$attackEntity(final Player player, final Entity target, final CallbackInfo info) {
-        AttackEntityEvent event = AnarchyClient.MODULES.call(new AttackEntityEvent(Minecraft.getInstance(), player, target));
+        AttackEntityEvent event =
+                AnarchyClient.MODULES.call(new AttackEntityEvent(Minecraft.getInstance(), player, target));
         if (event.isCancelled()) {
             info.cancel();
         }
     }
 
     @Inject(method = "startDestroyBlock", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$attackBlock(final BlockPos pos, final Direction direction,
-                                           final CallbackInfoReturnable<Boolean> info) {
-        BlockAttackEvent event = AnarchyClient.MODULES.call(new BlockAttackEvent(Minecraft.getInstance(), pos, direction));
+    private void anarchyclient$attackBlock(
+            final BlockPos pos, final Direction direction, final CallbackInfoReturnable<Boolean> info) {
+        BlockAttackEvent event =
+                AnarchyClient.MODULES.call(new BlockAttackEvent(Minecraft.getInstance(), pos, direction));
         if (event.isCancelled()) {
             info.setReturnValue(false);
         }
     }
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$useItemOn(final LocalPlayer player, final InteractionHand hand,
-                                         final BlockHitResult blockHit,
-                                         final CallbackInfoReturnable<InteractionResult> info) {
-        BlockInteractEvent event = AnarchyClient.MODULES.call(new BlockInteractEvent(Minecraft.getInstance(), hand, blockHit));
+    private void anarchyclient$useItemOn(
+            final LocalPlayer player,
+            final InteractionHand hand,
+            final BlockHitResult blockHit,
+            final CallbackInfoReturnable<InteractionResult> info) {
+        BlockInteractEvent event =
+                AnarchyClient.MODULES.call(new BlockInteractEvent(Minecraft.getInstance(), hand, blockHit));
         if (event.isCancelled()) {
             info.setReturnValue(InteractionResult.FAIL);
         }
     }
 
     @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$entityInteract(final Player player, final Entity entity,
-                                              final EntityHitResult hitResult, final InteractionHand hand,
-                                              final CallbackInfoReturnable<InteractionResult> info) {
+    private void anarchyclient$entityInteract(
+            final Player player,
+            final Entity entity,
+            final EntityHitResult hitResult,
+            final InteractionHand hand,
+            final CallbackInfoReturnable<InteractionResult> info) {
         EntityInteractEvent event = AnarchyClient.MODULES.call(
-                new EntityInteractEvent(Minecraft.getInstance(), player, entity, hitResult, hand)
-        );
+                new EntityInteractEvent(Minecraft.getInstance(), player, entity, hitResult, hand));
         if (event.isCancelled()) {
             info.setReturnValue(InteractionResult.FAIL);
         }
     }
 
     @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$useItem(final Player player, final InteractionHand hand,
-                                       final CallbackInfoReturnable<InteractionResult> info) {
+    private void anarchyclient$useItem(
+            final Player player, final InteractionHand hand, final CallbackInfoReturnable<InteractionResult> info) {
         ItemUseEvent event = AnarchyClient.MODULES.call(new ItemUseEvent(Minecraft.getInstance(), hand));
         if (event.isCancelled()) {
             info.setReturnValue(InteractionResult.FAIL);

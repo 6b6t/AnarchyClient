@@ -13,8 +13,7 @@ import net.minecraft.world.phys.Vec3;
 /** Scenarios for movement, inventory, and quality-of-life modules. */
 final class UtilityModuleScenarios {
 
-    private UtilityModuleScenarios() {
-    }
+    private UtilityModuleScenarios() {}
 
     /** Auto Totem refills the offhand after a totem pops. */
     static void autoTotemRefillsAfterPop(final ClientGameTestContext context) {
@@ -26,9 +25,14 @@ final class UtilityModuleScenarios {
             GameTestSupport.enable(context, "auto_totem", true);
             try {
                 arena.run("damage " + arena.name() + " 40 minecraft:generic");
-                arena.server().waitFor(server -> arena.serverPlayer(server).isAlive()
-                        && arena.serverPlayer(server).getOffhandItem().is(Items.TOTEM_OF_UNDYING)
-                        && count(arena.serverPlayer(server).getInventory()) == 1, 60);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server).isAlive()
+                                        && arena.serverPlayer(server)
+                                                .getOffhandItem()
+                                                .is(Items.TOTEM_OF_UNDYING)
+                                        && count(arena.serverPlayer(server).getInventory()) == 1,
+                                60);
             } finally {
                 GameTestSupport.enable(context, "auto_totem", false);
             }
@@ -49,12 +53,15 @@ final class UtilityModuleScenarios {
     static void freecam(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
-            Vec3 start = arena.server().computeOnServer(server -> arena.serverPlayer(server).position());
+            Vec3 start = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).position());
             GameTestSupport.enable(context, "freecam", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 30);
-                Vec3 camera = context.computeOnClient(client -> client.gameRenderer.mainCamera().position());
-                Vec3 server = arena.server().computeOnServer(s -> arena.serverPlayer(s).position());
+                Vec3 camera = context.computeOnClient(
+                        client -> client.gameRenderer.mainCamera().position());
+                Vec3 server = arena.server()
+                        .computeOnServer(s -> arena.serverPlayer(s).position());
                 GameTestSupport.check(camera.distanceTo(start) > 3.0, "Freecam did not move the camera");
                 GameTestSupport.check(server.distanceTo(start) < 0.1, "Freecam moved the real player to " + server);
             } finally {
@@ -77,10 +84,11 @@ final class UtilityModuleScenarios {
             Vec3 start = context.computeOnClient(client -> client.player.position());
             GameTestSupport.enable(context, "velocity", true);
             try {
-                arena.run("summon minecraft:tnt " + (arena.origin().getX() + 1.5) + " " + arena.origin().getY() + " "
-                        + (arena.origin().getZ() + 0.5) + " {fuse:1}");
+                arena.run("summon minecraft:tnt " + (arena.origin().getX() + 1.5) + " "
+                        + arena.origin().getY() + " " + (arena.origin().getZ() + 0.5) + " {fuse:1}");
                 context.waitTicks(20);
-                double moved = context.computeOnClient(client -> client.player.position().subtract(start).horizontalDistance());
+                double moved = context.computeOnClient(
+                        client -> client.player.position().subtract(start).horizontalDistance());
                 GameTestSupport.check(moved < 0.5, "Velocity let the explosion push the player " + moved + " blocks");
             } finally {
                 GameTestSupport.enable(context, "velocity", false);
@@ -93,12 +101,14 @@ final class UtilityModuleScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(2, 0, -1)) + " " + GameTestSupport.at(origin.offset(5, 0, 1)) + " stone");
+            arena.run("fill " + GameTestSupport.at(origin.offset(2, 0, -1)) + " "
+                    + GameTestSupport.at(origin.offset(5, 0, 1)) + " stone");
             context.waitTicks(5);
             GameTestSupport.enable(context, "step", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 30);
-                double y = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+                double y = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server).getY());
                 GameTestSupport.check(y >= origin.getY() + 1.0, "Step did not climb the ledge (y " + y + ")");
             } finally {
                 GameTestSupport.enable(context, "step", false);
@@ -110,11 +120,15 @@ final class UtilityModuleScenarios {
     static void speed(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
-            double startX = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX());
+            double startX = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).getX());
             GameTestSupport.enable(context, "speed", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyUp, 20);
-                double moved = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX()) - startX;
+                double moved = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getX())
+                        - startX;
                 // Walking covers about 4.3 blocks a second.
                 GameTestSupport.check(moved > 5.0, "Speed moved the player only " + moved + " blocks in a second");
             } finally {
@@ -127,13 +141,18 @@ final class UtilityModuleScenarios {
     static void flight(final ClientGameTestContext context) {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
-            double startY = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY());
+            double startY = arena.server()
+                    .computeOnServer(server -> arena.serverPlayer(server).getY());
             GameTestSupport.enable(context, "flight", true);
             try {
                 context.getInput().holdKeyFor(options -> options.keyJump, 20);
-                double risen = arena.server().computeOnServer(server -> arena.serverPlayer(server).getY()) - startY;
+                double risen = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getY())
+                        - startY;
                 GameTestSupport.check(risen > 3.0, "Flight rose only " + risen + " blocks");
-                GameTestSupport.check(context.computeOnClient(client -> client.level != null), "Flight got the player kicked");
+                GameTestSupport.check(
+                        context.computeOnClient(client -> client.level != null), "Flight got the player kicked");
             } finally {
                 GameTestSupport.enable(context, "flight", false);
             }
@@ -149,7 +168,14 @@ final class UtilityModuleScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "auto_replenish", true);
             try {
-                arena.server().waitFor(server -> arena.serverPlayer(server).getInventory().getItem(0).getCount() > 16, 60);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                                .getInventory()
+                                                .getItem(0)
+                                                .getCount()
+                                        > 16,
+                                60);
             } finally {
                 GameTestSupport.enable(context, "auto_replenish", false);
             }
@@ -164,7 +190,8 @@ final class UtilityModuleScenarios {
             try {
                 arena.run("kill " + arena.name());
                 context.waitForScreen(DeathScreen.class);
-                context.waitFor(client -> client.player != null && client.player.isAlive() && client.gui.screen() == null, 80);
+                context.waitFor(
+                        client -> client.player != null && client.player.isAlive() && client.gui.screen() == null, 80);
             } finally {
                 GameTestSupport.enable(context, "auto_respawn", false);
             }
@@ -179,7 +206,8 @@ final class UtilityModuleScenarios {
             try {
                 arena.run("tellraw " + arena.name() + " \"hello " + arena.name() + " how are you\"");
                 context.waitFor(client -> ClientChat.contains(client, "how are you"), 40);
-                GameTestSupport.check(context.computeOnClient(client -> ClientChat.contains(client, "hello You how are you")),
+                GameTestSupport.check(
+                        context.computeOnClient(client -> ClientChat.contains(client, "hello You how are you")),
                         "Name Protect did not replace the name: " + context.computeOnClient(ClientChat::messages));
             } finally {
                 GameTestSupport.enable(context, "name_protect", false);
@@ -196,9 +224,17 @@ final class UtilityModuleScenarios {
             context.waitTicks(5);
             GameTestSupport.enable(context, "inventory_cleaner", true);
             try {
-                arena.server().waitFor(server -> !arena.serverPlayer(server).getInventory().contains(stack -> stack.is(Items.ROTTEN_FLESH)), 100);
-                boolean keptDiamonds = arena.server().computeOnServer(server ->
-                        arena.serverPlayer(server).getInventory().getItem(12).is(Items.DIAMOND));
+                arena.server()
+                        .waitFor(
+                                server -> !arena.serverPlayer(server)
+                                        .getInventory()
+                                        .contains(stack -> stack.is(Items.ROTTEN_FLESH)),
+                                100);
+                boolean keptDiamonds = arena.server()
+                        .computeOnServer(server -> arena.serverPlayer(server)
+                                .getInventory()
+                                .getItem(12)
+                                .is(Items.DIAMOND));
                 GameTestSupport.check(keptDiamonds, "Inventory Cleaner dropped the diamonds too");
             } finally {
                 GameTestSupport.enable(context, "inventory_cleaner", false);
@@ -211,13 +247,16 @@ final class UtilityModuleScenarios {
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             GameTestSupport.Arena arena = GameTestSupport.arena(context, world);
             BlockPos origin = arena.origin();
-            arena.run("fill " + GameTestSupport.at(origin.offset(6, 0, -2)) + " " + GameTestSupport.at(origin.offset(6, 2, 2)) + " stone");
+            arena.run("fill " + GameTestSupport.at(origin.offset(6, 0, -2)) + " "
+                    + GameTestSupport.at(origin.offset(6, 2, 2)) + " stone");
             context.waitTicks(5);
             GameTestSupport.enable(context, "auto_walk", true);
             try {
                 context.waitFor(client -> client.player.getX() > origin.getX() + 5.0, 80);
-                context.waitFor(client -> !GameTestSupport.module("auto_walk").enabled()
-                        || client.player.getDeltaMovement().horizontalDistance() < 0.01, 40);
+                context.waitFor(
+                        client -> !GameTestSupport.module("auto_walk").enabled()
+                                || client.player.getDeltaMovement().horizontalDistance() < 0.01,
+                        40);
                 double x = context.computeOnClient(client -> client.player.getX());
                 GameTestSupport.check(x < origin.getX() + 6.0, "Auto Walk went through the wall (x " + x + ")");
             } finally {
@@ -272,7 +311,10 @@ final class UtilityModuleScenarios {
             try {
                 context.waitFor(client -> client.player.isFallFlying(), 40);
                 context.getInput().holdKeyFor(options -> options.keyUp, 20);
-                double moved = arena.server().computeOnServer(server -> arena.serverPlayer(server).getX()) - startX;
+                double moved = arena.server()
+                                .computeOnServer(
+                                        server -> arena.serverPlayer(server).getX())
+                        - startX;
                 GameTestSupport.check(moved > 10.0, "Elytra Fly moved the player only " + moved + " blocks");
             } finally {
                 GameTestSupport.enable(context, "elytra_fly", false);
@@ -290,14 +332,19 @@ final class UtilityModuleScenarios {
             context.waitTicks(10);
             GameTestSupport.enable(context, "surround", true);
             try {
-                arena.server().waitFor(server -> {
-                    for (Direction direction : Direction.Plane.HORIZONTAL) {
-                        if (!server.overworld().getBlockState(feet.relative(direction)).is(Blocks.OBSIDIAN)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }, 120);
+                arena.server()
+                        .waitFor(
+                                server -> {
+                                    for (Direction direction : Direction.Plane.HORIZONTAL) {
+                                        if (!server.overworld()
+                                                .getBlockState(feet.relative(direction))
+                                                .is(Blocks.OBSIDIAN)) {
+                                            return false;
+                                        }
+                                    }
+                                    return true;
+                                },
+                                120);
             } finally {
                 GameTestSupport.enable(context, "surround", false);
             }

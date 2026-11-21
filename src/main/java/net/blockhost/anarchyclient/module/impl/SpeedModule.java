@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -8,8 +9,6 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class SpeedModule extends Module {
 
@@ -34,7 +33,10 @@ public final class SpeedModule extends Module {
             .build()));
 
     public SpeedModule() {
-        super("speed", "Speed", ModuleCategory.MOVEMENT,
+        super(
+                "speed",
+                "Speed",
+                ModuleCategory.MOVEMENT,
                 "Sets your horizontal movement speed, with ground, low hop, bunny hop, and collision safe modes.");
     }
 
@@ -64,10 +66,10 @@ public final class SpeedModule extends Module {
         String mode = this.mode.value();
         if (player.onGround()) {
             switch (mode) {
-                case "Low Hop" -> player.setDeltaMovement(player.getDeltaMovement().x, 0.18, player.getDeltaMovement().z);
+                case "Low Hop" ->
+                    player.setDeltaMovement(player.getDeltaMovement().x, 0.18, player.getDeltaMovement().z);
                 case "BHop" -> player.jumpFromGround();
-                default -> {
-                }
+                default -> {}
             }
         }
         double multiplier = modeMultiplier(mode, player.onGround(), player.horizontalCollision);

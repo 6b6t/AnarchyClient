@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -14,11 +18,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 public final class AutoBedTrapModule extends Module {
 
@@ -60,7 +59,10 @@ public final class AutoBedTrapModule extends Module {
     private Set<Block> parsedBlocks = Set.of();
 
     public AutoBedTrapModule() {
-        super("auto_bed_trap", "Auto Bed Trap", ModuleCategory.COMBAT,
+        super(
+                "auto_bed_trap",
+                "Auto Bed Trap",
+                ModuleCategory.COMBAT,
                 "Surrounds nearby beds with configured blocks such as obsidian so they cannot be used or reached.");
     }
 
@@ -85,8 +87,7 @@ public final class AutoBedTrapModule extends Module {
                 this.verticalRange.value().intValue(),
                 BlockTargetScanner.SortMode.CLOSEST,
                 64,
-                candidate -> candidate.state().getBlock() instanceof BedBlock
-        )) {
+                candidate -> candidate.state().getBlock() instanceof BedBlock)) {
             Direction connected = BedBlock.getConnectedDirection(target.state());
             positions.addAll(trapPositions(target.pos(), target.pos().relative(connected)));
         }
@@ -102,8 +103,8 @@ public final class AutoBedTrapModule extends Module {
             }
             requests.add(new BlockPlacer.PlacementRequest(pos, stack -> matchesAny(stack, this.parsedBlocks)));
         }
-        BlockPlacer.placeBatch(client, this.id(), requests, this.blocksPerTick.value().intValue(),
-                this.rotate.value(), 70.0F);
+        BlockPlacer.placeBatch(
+                client, this.id(), requests, this.blocksPerTick.value().intValue(), this.rotate.value(), 70.0F);
     }
 
     static List<BlockPos> trapPositions(final BlockPos firstHalf, final BlockPos secondHalf) {

@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -9,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 public final class ElytraFlyModule extends Module {
 
@@ -48,7 +47,10 @@ public final class ElytraFlyModule extends Module {
             .build()));
 
     public ElytraFlyModule() {
-        super("elytra_fly", "Elytra Fly", ModuleCategory.MOVEMENT,
+        super(
+                "elytra_fly",
+                "Elytra Fly",
+                ModuleCategory.MOVEMENT,
                 "Controls elytra flight speed and height directly from movement keys, with optional auto start when falling while wearing a usable elytra.");
     }
 
@@ -60,10 +62,14 @@ public final class ElytraFlyModule extends Module {
         }
         if (!player.isFallFlying()) {
             // tryToStartFallFlying checks for a usable elytra and sets the client flag, so this sends once per start.
-            if (this.autoStart.value() && player.getDeltaMovement().y < 0.0 && !player.getAbilities().flying
-                    && client.getConnection() != null && player.tryToStartFallFlying()) {
-                client.getConnection().send(new ServerboundPlayerCommandPacket(player,
-                        ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
+            if (this.autoStart.value()
+                    && player.getDeltaMovement().y < 0.0
+                    && !player.getAbilities().flying
+                    && client.getConnection() != null
+                    && player.tryToStartFallFlying()) {
+                client.getConnection()
+                        .send(new ServerboundPlayerCommandPacket(
+                                player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
             }
             return;
         }
@@ -76,11 +82,11 @@ public final class ElytraFlyModule extends Module {
             y -= this.verticalSpeed.value();
         }
         switch (this.mode.value()) {
-            case "Boost" -> player.setDeltaMovement(
-                    player.getLookAngle().x * this.horizontalSpeed.value(),
-                    player.getLookAngle().y * this.verticalSpeed.value(),
-                    player.getLookAngle().z * this.horizontalSpeed.value()
-            );
+            case "Boost" ->
+                player.setDeltaMovement(
+                        player.getLookAngle().x * this.horizontalSpeed.value(),
+                        player.getLookAngle().y * this.verticalSpeed.value(),
+                        player.getLookAngle().z * this.horizontalSpeed.value());
             case "Pitch 40" -> player.setDeltaMovement(horizontal.x, Math.max(y, -0.02), horizontal.z);
             default -> player.setDeltaMovement(horizontal.x, y, horizontal.z);
         }

@@ -1,11 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionConstraints;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
-import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.inventory.InventorySlotRef;
+import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -13,8 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.OptionalInt;
 
 public final class AutoReplenishModule extends Module {
 
@@ -36,7 +35,10 @@ public final class AutoReplenishModule extends Module {
             .build()));
 
     public AutoReplenishModule() {
-        super("auto_replenish", "Auto Replenish", ModuleCategory.PLAYER,
+        super(
+                "auto_replenish",
+                "Auto Replenish",
+                ModuleCategory.PLAYER,
                 "Refills low hotbar stacks from matching stacks in the main inventory when they drop to the threshold.");
     }
 
@@ -46,7 +48,8 @@ public final class AutoReplenishModule extends Module {
         if (player == null || !InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
-        ReplenishMove move = findReplenishMove(player.getInventory(), this.threshold.value().intValue());
+        ReplenishMove move =
+                findReplenishMove(player.getInventory(), this.threshold.value().intValue());
         if (move == null) {
             return;
         }
@@ -60,8 +63,7 @@ public final class AutoReplenishModule extends Module {
                 InventoryActionScheduler.PRIORITY_NORMAL,
                 this.delay.value().intValue(),
                 InventoryActionConstraints.cautiousPlayerInventory(),
-                InventoryAction.pickupSwap(source, target)
-        ));
+                InventoryAction.pickupSwap(source, target)));
     }
 
     static ReplenishMove findReplenishMove(final Inventory inventory, final int threshold) {
@@ -106,6 +108,5 @@ public final class AutoReplenishModule extends Module {
         return bestSlot < 0 ? OptionalInt.empty() : OptionalInt.of(bestSlot);
     }
 
-    record ReplenishMove(int hotbarSlot, int sourceSlot) {
-    }
+    record ReplenishMove(int hotbarSlot, int sourceSlot) {}
 }

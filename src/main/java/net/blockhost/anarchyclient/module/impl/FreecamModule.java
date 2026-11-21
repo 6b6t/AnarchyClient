@@ -29,7 +29,11 @@ public final class FreecamModule extends Module {
     private Input cameraInput = Input.EMPTY;
 
     public FreecamModule() {
-        super("freecam", "Freecam", ModuleCategory.RENDER, "Detaches the camera from the player so areas can be inspected without moving the body.");
+        super(
+                "freecam",
+                "Freecam",
+                ModuleCategory.RENDER,
+                "Detaches the camera from the player so areas can be inspected without moving the body.");
     }
 
     @Override
@@ -71,8 +75,8 @@ public final class FreecamModule extends Module {
     }
 
     @Override
-    public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                           final float pitch) {
+    public CameraTransform cameraTransform(
+            final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
         if (this.position == null) {
             return new CameraTransform(position, yaw, pitch);
         }
@@ -128,6 +132,8 @@ public final class FreecamModule extends Module {
         if (input.shift()) {
             delta = delta.add(0.0, -1.0, 0.0);
         }
-        return delta.lengthSqr() == 0.0 ? position : position.add(delta.normalize().scale(speed));
+        return delta.lengthSqr() == 0.0
+                ? position
+                : position.add(delta.normalize().scale(speed));
     }
 }

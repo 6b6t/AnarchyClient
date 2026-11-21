@@ -22,8 +22,7 @@ final class ServerPortScanner {
     /** Connections attempted at once, so a 512-port range does not open 512 sockets together. */
     private static final int MAX_CONCURRENT = 64;
 
-    private ServerPortScanner() {
-    }
+    private ServerPortScanner() {}
 
     static List<PortCheck> knownPorts() {
         Map<Integer, String> ports = new LinkedHashMap<>();
@@ -48,7 +47,8 @@ final class ServerPortScanner {
         int max = Math.max(first, second);
         int count = max - min + 1;
         if (count > MAX_RANGE_SIZE) {
-            throw new IllegalArgumentException("Port range is too large: " + count + " ports, max " + MAX_RANGE_SIZE + ".");
+            throw new IllegalArgumentException(
+                    "Port range is too large: " + count + " ports, max " + MAX_RANGE_SIZE + ".");
         }
         return new PortRange(min, max);
     }
@@ -61,7 +61,8 @@ final class ServerPortScanner {
                     .map(check -> executor.submit(() -> {
                         permits.acquire();
                         try {
-                            return new PortResult(check.port(), check.label(), open(host, check.port(), DEFAULT_TIMEOUT));
+                            return new PortResult(
+                                    check.port(), check.label(), open(host, check.port(), DEFAULT_TIMEOUT));
                         } finally {
                             permits.release();
                         }
@@ -110,11 +111,9 @@ final class ServerPortScanner {
         }
     }
 
-    record PortCheck(int port, String label) {
-    }
+    record PortCheck(int port, String label) {}
 
-    record PortResult(int port, String label, boolean open) {
-    }
+    record PortResult(int port, String label, boolean open) {}
 
     record PortRange(int min, int max) {
 

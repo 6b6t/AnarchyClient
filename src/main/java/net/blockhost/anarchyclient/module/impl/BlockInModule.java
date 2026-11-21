@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -7,9 +9,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-
-import java.util.List;
-import java.util.Optional;
 
 public final class BlockInModule extends Module {
 
@@ -23,8 +22,7 @@ public final class BlockInModule extends Module {
             new BlockPos(-1, 1, 0),
             new BlockPos(0, 1, 1),
             new BlockPos(0, 1, -1),
-            new BlockPos(0, 2, 0)
-    );
+            new BlockPos(0, 2, 0));
 
     private final BooleanSetting multiPlace = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("multi_place")
@@ -61,7 +59,10 @@ public final class BlockInModule extends Module {
             .build()));
 
     public BlockInModule() {
-        super("block_in", "Block In", ModuleCategory.COMBAT,
+        super(
+                "block_in",
+                "Block In",
+                ModuleCategory.COMBAT,
                 "Snaps you to the block center and surrounds you with blocks on all sides and overhead, then turns off when done.");
     }
 
@@ -84,18 +85,25 @@ public final class BlockInModule extends Module {
                     this,
                     target,
                     this.rotate.value(),
-                    this.maxTurnDegrees.value().floatValue()
-            );
+                    this.maxTurnDegrees.value().floatValue());
             if (result == BlockPlacement.PlacementResult.WAITING && this.rotate.value()) {
                 // Later blocks would replace this rotation request before the server sees it.
                 return;
             }
-            if (result == BlockPlacement.PlacementResult.UNPLACEABLE && BlockPlacement.needsPlacement(client.level, target)) {
+            if (result == BlockPlacement.PlacementResult.UNPLACEABLE
+                    && BlockPlacement.needsPlacement(client.level, target)) {
                 // The roof has nothing to click on flat ground, so place a block it can rest against first.
-                Optional<BlockPos> support = CombatPlacementPlanner.viableSupport(client, player, target,
+                Optional<BlockPos> support = CombatPlacementPlanner.viableSupport(
+                        client,
+                        player,
+                        target,
                         CombatPlacementPlanner.Options.of(1, this.rotate.value(), player.blockInteractionRange()));
                 if (support.isPresent()) {
-                    result = BlockPlacement.place(client, this, support.orElseThrow(), this.rotate.value(),
+                    result = BlockPlacement.place(
+                            client,
+                            this,
+                            support.orElseThrow(),
+                            this.rotate.value(),
                             this.maxTurnDegrees.value().floatValue());
                     if (result == BlockPlacement.PlacementResult.WAITING && this.rotate.value()) {
                         return;
@@ -106,7 +114,8 @@ public final class BlockInModule extends Module {
                 }
                 complete = false;
             }
-            if (result == BlockPlacement.PlacementResult.WAITING || result == BlockPlacement.PlacementResult.UNPLACEABLE) {
+            if (result == BlockPlacement.PlacementResult.WAITING
+                    || result == BlockPlacement.PlacementResult.UNPLACEABLE) {
                 complete = false;
             }
             if (result == BlockPlacement.PlacementResult.PLACED && !this.multiPlace.value()) {
@@ -119,9 +128,7 @@ public final class BlockInModule extends Module {
     }
 
     static List<BlockPos> targetPositions(final BlockPos base) {
-        return OFFSETS.stream()
-                .map(base::offset)
-                .toList();
+        return OFFSETS.stream().map(base::offset).toList();
     }
 
     private static void centerPlayer(final LocalPlayer player) {

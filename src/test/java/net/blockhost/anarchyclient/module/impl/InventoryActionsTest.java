@@ -1,27 +1,29 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.blockhost.anarchyclient.inventory.InventorySlots;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class InventoryActionsTest {
 
     @Test
     void mapsHotbarSlotsToUseRowSlots() {
         assertEquals(InventoryMenu.USE_ROW_SLOT_START, InventoryActions.toInventoryMenuSlot(0));
-        assertEquals(InventoryMenu.USE_ROW_SLOT_START + Inventory.getSelectionSize() - 1,
+        assertEquals(
+                InventoryMenu.USE_ROW_SLOT_START + Inventory.getSelectionSize() - 1,
                 InventoryActions.toInventoryMenuSlot(Inventory.getSelectionSize() - 1));
     }
 
     @Test
     void mapsMainInventorySlotsToInventoryMenuSlots() {
         assertEquals(InventoryMenu.INV_SLOT_START, InventoryActions.toInventoryMenuSlot(Inventory.getSelectionSize()));
-        assertEquals(InventoryMenu.INV_SLOT_START + 26, InventoryActions.toInventoryMenuSlot(Inventory.INVENTORY_SIZE - 1));
+        assertEquals(
+                InventoryMenu.INV_SLOT_START + 26, InventoryActions.toInventoryMenuSlot(Inventory.INVENTORY_SIZE - 1));
     }
 
     @Test
@@ -35,10 +37,14 @@ class InventoryActionsTest {
 
     @Test
     void resolvesTypedStorageSlots() {
-        assertEquals(InventoryMenu.USE_ROW_SLOT_START,
+        assertEquals(
+                InventoryMenu.USE_ROW_SLOT_START,
                 InventorySlots.storageSlot(0).orElseThrow().menuSlot());
-        assertEquals(InventoryMenu.INV_SLOT_START,
-                InventorySlots.storageSlot(Inventory.getSelectionSize()).orElseThrow().menuSlot());
+        assertEquals(
+                InventoryMenu.INV_SLOT_START,
+                InventorySlots.storageSlot(Inventory.getSelectionSize())
+                        .orElseThrow()
+                        .menuSlot());
         assertTrue(InventorySlots.storageSlot(Inventory.INVENTORY_SIZE).isEmpty());
     }
 }

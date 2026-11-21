@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -21,14 +28,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.Predicate;
-
 /**
  * Places pistons that face a chosen direction and the redstone blocks that power them.
  *
@@ -48,10 +47,10 @@ final class PistonPlacement {
      * a click in the same server tick as the rotation packet still uses the old facing.
      */
     static final int HEAD_TURN_TICKS = 2;
+
     private static final Map<String, Integer> SETTLED_TICKS = new HashMap<>();
 
-    private PistonPlacement() {
-    }
+    private PistonPlacement() {}
 
     /** Returns the rotation that makes a newly placed piston face {@code facing}. */
     static Rotation rotationFor(final Direction facing) {
@@ -82,8 +81,8 @@ final class PistonPlacement {
      */
     static List<BlockPos> powerPositions(final BlockPos piston, final Direction facing, final List<BlockPos> excluded) {
         List<BlockPos> positions = new ArrayList<>();
-        for (Direction direction : List.of(Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST,
-                Direction.EAST, Direction.DOWN)) {
+        for (Direction direction : List.of(
+                Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST, Direction.DOWN)) {
             if (direction == facing) {
                 continue;
             }
@@ -109,8 +108,12 @@ final class PistonPlacement {
      * Places a piston at {@code pos} that faces {@code facing}. Returns {@link Result#WAITING} until
      * the rotation reached the server, so call it every tick until it returns another result.
      */
-    static Result placePiston(final Minecraft client, final Module owner, final BlockPos pos, final Direction facing,
-                              final double range) {
+    static Result placePiston(
+            final Minecraft client,
+            final Module owner,
+            final BlockPos pos,
+            final Direction facing,
+            final double range) {
         LocalPlayer player = client.player;
         ClientLevel level = client.level;
         if (player == null || level == null || client.gameMode == null) {
@@ -131,14 +134,16 @@ final class PistonPlacement {
         if (slot.isEmpty()) {
             // A piston in the hotbar that cannot go here means the cell is obstructed (a player or crystal stands
             // in it), not that pistons ran out.
-            return WorldInteraction.hasHotbarItem(player.getInventory(), PISTONS) ? Result.BLOCKED : Result.MISSING_ITEM;
+            return WorldInteraction.hasHotbarItem(player.getInventory(), PISTONS)
+                    ? Result.BLOCKED
+                    : Result.MISSING_ITEM;
         }
         if (!SilentHotbar.select(player, owner.id(), slot.orElseThrow(), SilentHotbar.PRIORITY_COMBAT, 3, true)) {
             return Result.WAITING;
         }
         Rotation rotation = rotationFor(facing);
-        RotationManager.request(new RotationRequest(owner.id(), rotation, 80, 180.0F, 3, ROTATION_TOLERANCE,
-                RotationTurnMode.INSTANT, true));
+        RotationManager.request(new RotationRequest(
+                owner.id(), rotation, 80, 180.0F, 3, ROTATION_TOLERANCE, RotationTurnMode.INSTANT, true));
         RotationManager.apply(player);
         if (RotationManager.serverRotation(player).angleTo(rotation) > ROTATION_TOLERANCE) {
             SETTLED_TICKS.remove(owner.id());
@@ -149,7 +154,8 @@ final class PistonPlacement {
         }
         SETTLED_TICKS.remove(owner.id());
         BlockPlacer.PlacementTarget placement = target.orElseThrow();
-        if (BlockPlacer.useItemOn(client, player, placement.hitResult(), placement.sneak()).consumesAction()) {
+        if (BlockPlacer.useItemOn(client, player, placement.hitResult(), placement.sneak())
+                .consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return Result.PLACED;
         }
@@ -162,8 +168,8 @@ final class PistonPlacement {
     }
 
     /** Places a redstone block on the first open power position next to the piston. */
-    static Result placePower(final Minecraft client, final Module owner, final List<BlockPos> positions,
-                             final boolean rotate) {
+    static Result placePower(
+            final Minecraft client, final Module owner, final List<BlockPos> positions, final boolean rotate) {
         ClientLevel level = client.level;
         LocalPlayer player = client.player;
         if (level == null || player == null) {
@@ -173,7 +179,8 @@ final class PistonPlacement {
             return Result.PRESENT;
         }
         for (BlockPos pos : positions) {
-            if (!BlockPlacer.needsPlacement(level, pos) || !CombatTargets.canReachBlock(player, pos)
+            if (!BlockPlacer.needsPlacement(level, pos)
+                    || !CombatTargets.canReachBlock(player, pos)
                     || CombatPlacementPlanner.playerInside(player, pos)) {
                 continue;
             }

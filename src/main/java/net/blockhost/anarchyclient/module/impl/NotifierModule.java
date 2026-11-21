@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,11 +21,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public final class NotifierModule extends Module {
 
@@ -52,7 +51,10 @@ public final class NotifierModule extends Module {
     private boolean visibleInitialized;
 
     public NotifierModule() {
-        super("notifier", "Notifier", ModuleCategory.MISC,
+        super(
+                "notifier",
+                "Notifier",
+                ModuleCategory.MISC,
                 "Posts chat messages when players join or leave, enter or leave visual range, or pop totems.");
     }
 
@@ -91,7 +93,8 @@ public final class NotifierModule extends Module {
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
         if (packet instanceof ClientboundEntityEventPacket event
-                && (event.getEventId() == EntityEvent.DEATH || event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH)) {
+                && (event.getEventId() == EntityEvent.DEATH
+                        || event.getEventId() == EntityEvent.PROTECTED_FROM_DEATH)) {
             MainThread.run(() -> this.handleEntityEvent(client, event));
         }
         return false;
@@ -166,8 +169,8 @@ public final class NotifierModule extends Module {
         this.visibleInitialized = true;
     }
 
-    private static Map<UUID, String> onlinePlayers(final ClientPacketListener listener, final Player self,
-                                                   final boolean ignoreFriends) {
+    private static Map<UUID, String> onlinePlayers(
+            final ClientPacketListener listener, final Player self, final boolean ignoreFriends) {
         Map<UUID, String> players = new LinkedHashMap<>();
         for (PlayerInfo info : listener.getOnlinePlayers()) {
             UUID id = info.getProfile().id();
@@ -205,7 +208,9 @@ public final class NotifierModule extends Module {
     }
 
     private static boolean shouldIgnore(final Player player, final Player self, final boolean ignoreFriends) {
-        return player == self || player.isSpectator() || ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName());
+        return player == self
+                || player.isSpectator()
+                || ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName());
     }
 
     private static void notifyPlayer(final Minecraft client, final String message) {

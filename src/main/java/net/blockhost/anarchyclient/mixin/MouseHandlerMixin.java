@@ -18,18 +18,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MouseHandlerMixin {
 
     @Inject(method = "onButton", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$mouseClick(final long window, final MouseButtonInfo buttonInfo, final int action,
-                                          final CallbackInfo info) {
-        MouseClickEvent event = AnarchyClient.MODULES.call(new MouseClickEvent(Minecraft.getInstance(), buttonInfo, action));
+    private void anarchyclient$mouseClick(
+            final long window, final MouseButtonInfo buttonInfo, final int action, final CallbackInfo info) {
+        MouseClickEvent event =
+                AnarchyClient.MODULES.call(new MouseClickEvent(Minecraft.getInstance(), buttonInfo, action));
         if (event.isCancelled()) {
             info.cancel();
         }
     }
 
     @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$mouseScroll(final long window, final double xOffset, final double yOffset,
-                                           final CallbackInfo info) {
-        MouseScrollInputEvent event = AnarchyClient.MODULES.call(new MouseScrollInputEvent(Minecraft.getInstance(), xOffset, yOffset));
+    private void anarchyclient$mouseScroll(
+            final long window, final double xOffset, final double yOffset, final CallbackInfo info) {
+        MouseScrollInputEvent event =
+                AnarchyClient.MODULES.call(new MouseScrollInputEvent(Minecraft.getInstance(), xOffset, yOffset));
         if (event.isCancelled()) {
             info.cancel();
         }
@@ -37,8 +39,7 @@ public abstract class MouseHandlerMixin {
 
     @Redirect(
             method = "turnPlayer",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V")
-    )
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"))
     private void anarchyclient$freeLookTurn(final LocalPlayer player, final double xOffset, final double yOffset) {
         if (!FreeLookModule.handleTurn(Minecraft.getInstance(), player, xOffset, yOffset)) {
             player.turn(xOffset, yOffset);

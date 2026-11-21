@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Set;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,8 +18,6 @@ import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ItemContainerContents;
 
-import java.util.Set;
-
 public final class AutoRenameModule extends Module {
 
     private final StringSetting items = this.setting(StringSetting.from(StringSetting.builder()
@@ -27,11 +26,8 @@ public final class AutoRenameModule extends Module {
             .defaultValue("")
             .description("Comma-separated item ids.")
             .build()));
-    private final StringSetting name = this.setting(StringSetting.from(StringSetting.builder()
-            .id("name")
-            .name("Name")
-            .defaultValue("")
-            .build()));
+    private final StringSetting name = this.setting(StringSetting.from(
+            StringSetting.builder().id("name").name("Name").defaultValue("").build()));
     private final BooleanSetting labelShulkers = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("label_shulkers")
             .name("Shulkers")
@@ -53,7 +49,10 @@ public final class AutoRenameModule extends Module {
     private int cooldown;
 
     public AutoRenameModule() {
-        super("auto_rename", "Auto Rename", ModuleCategory.PLAYER,
+        super(
+                "auto_rename",
+                "Auto Rename",
+                ModuleCategory.PLAYER,
                 "Renames items in an open anvil to a set name, or labels shulkers and bundles after their first item, and takes the results.");
     }
 
@@ -71,7 +70,10 @@ public final class AutoRenameModule extends Module {
         if (menu.getSlot(AnvilMenu.RESULT_SLOT).hasItem()) {
             if (!canTakeResult(player.hasInfiniteMaterials(), player.experienceLevel, menu.getCost())) {
                 // Retrying would never succeed, and the same item would be put back in after moving it out.
-                player.sendSystemMessage(Translations.component("anarchyclient.message.auto_rename.auto_rename_stopped_the_rename_costs", "Auto Rename stopped: the rename costs %s levels.", menu.getCost()));
+                player.sendSystemMessage(Translations.component(
+                        "anarchyclient.message.auto_rename.auto_rename_stopped_the_rename_costs",
+                        "Auto Rename stopped: the rename costs %s levels.",
+                        menu.getCost()));
                 this.enabled(false);
                 return;
             }
@@ -80,10 +82,16 @@ public final class AutoRenameModule extends Module {
             return;
         }
         if (menu.getSlot(AnvilMenu.INPUT_SLOT).hasItem()) {
-            String targetName = targetName(menu.getSlot(AnvilMenu.INPUT_SLOT).getItem(), this.name.value(),
-                    this.labelShulkers.value(), this.labelBundles.value());
+            String targetName = targetName(
+                    menu.getSlot(AnvilMenu.INPUT_SLOT).getItem(),
+                    this.name.value(),
+                    this.labelShulkers.value(),
+                    this.labelBundles.value());
             if (!targetName.isBlank()
-                    && !targetName.equals(menu.getSlot(AnvilMenu.INPUT_SLOT).getItem().getHoverName().getString())) {
+                    && !targetName.equals(menu.getSlot(AnvilMenu.INPUT_SLOT)
+                            .getItem()
+                            .getHoverName()
+                            .getString())) {
                 if (menu.setItemName(targetName) && player.connection != null) {
                     player.connection.send(new ServerboundRenameItemPacket(targetName));
                     this.cooldown = this.delayTicks.value().intValue();
@@ -94,7 +102,9 @@ public final class AutoRenameModule extends Module {
         Set<Item> targets = ItemScan.parseItems(this.items.value());
         for (int slot = 3; slot < menu.slots.size(); slot++) {
             ItemStack stack = menu.getSlot(slot).getItem();
-            if (!stack.isEmpty() && shouldRename(stack, targets, this.name.value(), this.labelShulkers.value(), this.labelBundles.value())) {
+            if (!stack.isEmpty()
+                    && shouldRename(
+                            stack, targets, this.name.value(), this.labelShulkers.value(), this.labelBundles.value())) {
                 ContainerActions.quickMove(client, menu, slot);
                 this.cooldown = this.delayTicks.value().intValue();
                 return;
@@ -107,20 +117,30 @@ public final class AutoRenameModule extends Module {
         return cost > 0 && (infiniteMaterials || experienceLevel >= cost);
     }
 
-    static boolean shouldRename(final ItemStack stack, final Set<Item> targets, final String name,
-                                final boolean labelShulkers, final boolean labelBundles) {
+    static boolean shouldRename(
+            final ItemStack stack,
+            final Set<Item> targets,
+            final String name,
+            final boolean labelShulkers,
+            final boolean labelBundles) {
         if (stack.isEmpty()) {
             return false;
         }
-        if ((labelShulkers || labelBundles) && !targetName(stack, name, labelShulkers, labelBundles).isBlank()
+        if ((labelShulkers || labelBundles)
+                && !targetName(stack, name, labelShulkers, labelBundles).isBlank()
                 && !stack.has(DataComponents.CUSTOM_NAME)) {
             return true;
         }
-        return !name.isBlank() && targets.contains(stack.getItem()) && !name.equals(stack.getHoverName().getString());
+        return !name.isBlank()
+                && targets.contains(stack.getItem())
+                && !name.equals(stack.getHoverName().getString());
     }
 
-    static String targetName(final ItemStack stack, final String configuredName,
-                             final boolean labelShulkers, final boolean labelBundles) {
+    static String targetName(
+            final ItemStack stack,
+            final String configuredName,
+            final boolean labelShulkers,
+            final boolean labelBundles) {
         if (labelShulkers) {
             ItemContainerContents container = stack.get(DataComponents.CONTAINER);
             if (container != null) {

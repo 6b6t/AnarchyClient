@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BlockListSetting;
@@ -9,8 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.BlockHitResult;
-
-import java.util.List;
 
 public final class NoBlockInteractModule extends Module {
 
@@ -42,12 +41,14 @@ public final class NoBlockInteractModule extends Module {
                     Blocks.SHULKER_BOX,
                     Blocks.CRAFTING_TABLE,
                     Blocks.FURNACE,
-                    Blocks.ANVIL
-            ))
+                    Blocks.ANVIL))
             .build()));
 
     public NoBlockInteractModule() {
-        super("no_block_interact", "No Block Interact", ModuleCategory.PLAYER,
+        super(
+                "no_block_interact",
+                "No Block Interact",
+                ModuleCategory.PLAYER,
                 "Blocks right-click use on listed or unlisted blocks, such as chests and furnaces, for the chosen hand.");
     }
 
@@ -55,11 +56,11 @@ public final class NoBlockInteractModule extends Module {
     public boolean blockInteract(final Minecraft client, final InteractionHand hand, final BlockHitResult hitResult) {
         return client.level != null
                 && NoInteractModule.matchesHand(this.hand.value(), hand)
-                && (!this.requirePlaceable.value() || client.player != null && AirPlaceModule.placeable(client.player.getItemInHand(hand)))
+                && (!this.requirePlaceable.value()
+                        || client.player != null && AirPlaceModule.placeable(client.player.getItemInHand(hand)))
                 && NoInteractModule.matchesList(
-                this.mode.value(),
-                this.blocks.value(),
-                client.level.getBlockState(hitResult.getBlockPos()).getBlock()
-        );
+                        this.mode.value(),
+                        this.blocks.value(),
+                        client.level.getBlockState(hitResult.getBlockPos()).getBlock());
     }
 }

@@ -45,7 +45,10 @@ public final class SpawnProoferModule extends Module {
     private int cooldownTicks;
 
     public SpawnProoferModule() {
-        super("spawn_proofer", "Spawn Proofer", ModuleCategory.WORLD,
+        super(
+                "spawn_proofer",
+                "Spawn Proofer",
+                ModuleCategory.WORLD,
                 "Places torches from your hotbar on dark, solid blocks around you so mobs cannot spawn there.");
     }
 
@@ -59,7 +62,10 @@ public final class SpawnProoferModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        BlockPos target = findTarget(client, player.blockPosition(), this.range.value().intValue(),
+        BlockPos target = findTarget(
+                client,
+                player.blockPosition(),
+                this.range.value().intValue(),
                 this.lightThreshold.value().intValue());
         if (target == null) {
             return;
@@ -70,22 +76,23 @@ public final class SpawnProoferModule extends Module {
                 target,
                 Direction.UP,
                 stack -> stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH),
-                this.rotate.value()
-        );
+                this.rotate.value());
         // A refused torch also waits out the delay instead of clicking the same spot every tick.
         if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {
             this.cooldownTicks = this.delay.value().intValue();
         }
     }
 
-    static BlockPos findTarget(final Minecraft client, final BlockPos center, final int radius, final int lightThreshold) {
+    static BlockPos findTarget(
+            final Minecraft client, final BlockPos center, final int radius, final int lightThreshold) {
         for (int y = center.getY() - 2; y <= center.getY() + 2; y++) {
             for (int x = center.getX() - radius; x <= center.getX() + radius; x++) {
                 for (int z = center.getZ() - radius; z <= center.getZ() + radius; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockPos above = pos.above();
                     if (!client.level.isLoaded(pos)
-                            || client.player == null || !CombatTargets.canReachBlock(client.player, pos)
+                            || client.player == null
+                            || !CombatTargets.canReachBlock(client.player, pos)
                             || client.level.getBlockState(pos).is(Blocks.TORCH)
                             || client.level.getBlockState(pos).is(Blocks.SOUL_TORCH)
                             || !client.level.getBlockState(pos).isFaceSturdy(client.level, pos, Direction.UP)

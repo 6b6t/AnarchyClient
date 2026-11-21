@@ -1,13 +1,13 @@
 package net.blockhost.anarchyclient.render;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MarkerManagerTest {
 
@@ -53,7 +53,6 @@ class MarkerManagerTest {
         }
 
         @Override
-        public void render(final LevelRenderContext context, final Vec3 camera) {
-        }
+        public void render(final LevelRenderContext context, final Vec3 camera) {}
     }
 }

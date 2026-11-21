@@ -19,14 +19,18 @@ public final class InventoryTrackerModule extends Module {
             .build()));
 
     public InventoryTrackerModule() {
-        super("inventory_tracker", "Inventory Tracker", ModuleCategory.MISC,
+        super(
+                "inventory_tracker",
+                "Inventory Tracker",
+                ModuleCategory.MISC,
                 "Records the held items, armor, and health of nearby players. View them with /ac tracked [player].");
     }
 
     @Override
     public void tick(final Minecraft client) {
         InventoryTracker.recordVisiblePlayers(client);
-        InventoryTracker.pruneOlderThan(System.currentTimeMillis() - this.retentionSeconds.value().longValue() * 1000L);
+        InventoryTracker.pruneOlderThan(
+                System.currentTimeMillis() - this.retentionSeconds.value().longValue() * 1000L);
     }
 
     @Override

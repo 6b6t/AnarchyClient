@@ -1,9 +1,17 @@
 package net.blockhost.anarchyclient.command;
 
+import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
+import static net.blockhost.anarchyclient.command.CommandSupport.requireCreative;
+import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
+
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
@@ -16,27 +24,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static net.blockhost.anarchyclient.command.CommandSupport.SUCCESS;
-import static net.blockhost.anarchyclient.command.CommandSupport.requireCreative;
-import static net.blockhost.anarchyclient.command.CommandSupport.requireInGame;
-import static net.blockhost.anarchyclient.command.CommandSupport.suggestOnlinePlayers;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.argument;
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
-
 /**
  * Registers and handles the {@code give}, {@code heads}, {@code drop}, {@code inventory}, {@code peek}, and {@code nbt} subcommands.
  */
 final class ItemCommands {
 
-    private ItemCommands() {
-    }
+    private ItemCommands() {}
 
     static void register(final LiteralArgumentBuilder<FabricClientCommandSource> root) {
-        root
-                .then(literal("give")
+        root.then(literal("give")
                         .then(literal("head")
                                 .then(argument("player", StringArgumentType.word())
                                         .suggests(CommandSupport::suggestOnlinePlayers)
@@ -50,27 +46,22 @@ final class ItemCommands {
                         .then(literal("random")
                                 .executes(context -> giveRandom(context, 1))
                                 .then(argument("count", IntegerArgumentType.integer(1, 64))
-                                        .executes(context -> giveRandom(context, IntegerArgumentType.getInteger(context, "count"))))))
+                                        .executes(context -> giveRandom(
+                                                context, IntegerArgumentType.getInteger(context, "count"))))))
                 .then(literal("heads")
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(CommandSupport::suggestOnlinePlayers)
                                 .executes(ItemCommands::giveHead)))
                 .then(literal("drop")
                         .executes(context -> dropSelected(context, true))
-                        .then(literal("hand")
-                                .executes(context -> dropSelected(context, true)))
-                        .then(literal("one")
-                                .executes(context -> dropSelected(context, false))))
+                        .then(literal("hand").executes(context -> dropSelected(context, true)))
+                        .then(literal("one").executes(context -> dropSelected(context, false))))
                 .then(literal("inventory")
                         .executes(ItemCommands::inventorySummary)
-                        .then(literal("hotbar")
-                                .executes(context -> inventorySummary(context, InventoryView.HOTBAR)))
-                        .then(literal("armor")
-                                .executes(context -> inventorySummary(context, InventoryView.ARMOR))))
-                .then(literal("peek")
-                        .executes(ItemCommands::peekHeldItem))
-                .then(literal("nbt")
-                        .executes(ItemCommands::heldItemNbt));
+                        .then(literal("hotbar").executes(context -> inventorySummary(context, InventoryView.HOTBAR)))
+                        .then(literal("armor").executes(context -> inventorySummary(context, InventoryView.ARMOR))))
+                .then(literal("peek").executes(ItemCommands::peekHeldItem))
+                .then(literal("nbt").executes(ItemCommands::heldItemNbt));
     }
 
     private static int giveHead(final CommandContext<FabricClientCommandSource> context) {
@@ -78,19 +69,24 @@ final class ItemCommands {
         // The profile in the item is encoded with a 16-character name limit; a longer name throws while the
         // packet is written, and the client disconnects.
         if (!StringUtil.isValidPlayerName(player)) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.item.invalid_player_name",
-                    "%s is not a valid player name.", player));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.item.invalid_player_name",
+                            "%s is not a valid player name.",
+                            player));
             return 0;
         }
         return giveCreativeStack(context, CreativeItemFactory.playerHead(player));
     }
 
     private static int giveHologram(final CommandContext<FabricClientCommandSource> context) {
-        return giveCreativeStack(context, CreativeItemFactory.hologramArmorStand(StringArgumentType.getString(context, "text")));
+        return giveCreativeStack(
+                context, CreativeItemFactory.hologramArmorStand(StringArgumentType.getString(context, "text")));
     }
 
     private static int giveBossbar(final CommandContext<FabricClientCommandSource> context) {
-        return giveCreativeStack(context, CreativeItemFactory.bossbarEgg(StringArgumentType.getString(context, "text")));
+        return giveCreativeStack(
+                context, CreativeItemFactory.bossbarEgg(StringArgumentType.getString(context, "text")));
     }
 
     private static int giveRandom(final CommandContext<FabricClientCommandSource> context, final int count) {
@@ -101,25 +97,32 @@ final class ItemCommands {
         int given = 0;
         for (int index = 0; index < count; index++) {
             // Each item goes to its own slot; once the inventory is full, stop instead of overwriting.
-            int slot = index == 0 ? targetInventorySlot(client.player.getInventory()) : client.player.getInventory().getFreeSlot();
+            int slot = index == 0
+                    ? targetInventorySlot(client.player.getInventory())
+                    : client.player.getInventory().getFreeSlot();
             if (slot < 0) {
                 break;
             }
             giveToSlot(client, slot, CreativeItemFactory.randomItem(index));
             given++;
         }
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_random_items", "Random items given: %s.", given));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.item.gave_random_items", "Random items given: %s.", given));
         return SUCCESS;
     }
 
-    private static int giveCreativeStack(final CommandContext<FabricClientCommandSource> context, final ItemStack stack) {
+    private static int giveCreativeStack(
+            final CommandContext<FabricClientCommandSource> context, final ItemStack stack) {
         Minecraft client = requireCreative(context);
         if (client == null || client.getConnection() == null) {
             return 0;
         }
         giveToSlot(client, targetInventorySlot(client.player.getInventory()), stack);
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.gave_creative_item", "Gave creative item: ")
-                .append(stack.getHoverName()));
+        context.getSource()
+                .sendFeedback(
+                        Translations.component("anarchyclient.message.item.gave_creative_item", "Gave creative item: ")
+                                .append(stack.getHoverName()));
         return SUCCESS;
     }
 
@@ -154,12 +157,20 @@ final class ItemCommands {
         }
         if (client.gameMode != null && !client.player.getMainHandItem().isEmpty()) {
             client.gameMode.dropItem(client.player, all);
-            context.getSource().sendFeedback(all
-                    ? Translations.component("anarchyclient.message.item.dropped_selected_stack", "Dropped the selected stack.")
-                    : Translations.component("anarchyclient.message.item.dropped_selected_item", "Dropped one selected item."));
+            context.getSource()
+                    .sendFeedback(
+                            all
+                                    ? Translations.component(
+                                            "anarchyclient.message.item.dropped_selected_stack",
+                                            "Dropped the selected stack.")
+                                    : Translations.component(
+                                            "anarchyclient.message.item.dropped_selected_item",
+                                            "Dropped one selected item."));
             return SUCCESS;
         }
-        context.getSource().sendError(Translations.component("anarchyclient.message.item.no_selected_item_to_drop", "No selected item to drop."));
+        context.getSource()
+                .sendError(Translations.component(
+                        "anarchyclient.message.item.no_selected_item_to_drop", "No selected item to drop."));
         return 0;
     }
 
@@ -167,13 +178,15 @@ final class ItemCommands {
         return inventorySummary(context, InventoryView.SELECTED);
     }
 
-    private static int inventorySummary(final CommandContext<FabricClientCommandSource> context, final InventoryView view) {
+    private static int inventorySummary(
+            final CommandContext<FabricClientCommandSource> context, final InventoryView view) {
         Minecraft client = requireInGame(context);
         if (client == null) {
             return 0;
         }
         List<String> lines = switch (view) {
-            case SELECTED -> List.of("Selected: " + stackSummary(client.player.getInventory().getSelectedItem()));
+            case SELECTED ->
+                List.of("Selected: " + stackSummary(client.player.getInventory().getSelectedItem()));
             case HOTBAR -> hotbarSummary(client.player);
             case ARMOR -> armorSummary(client.player);
         };
@@ -190,10 +203,17 @@ final class ItemCommands {
         }
         ItemStack stack = client.player.getMainHandItem();
         if (stack.isEmpty()) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
             return 0;
         }
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.components", "%s | components: %s", stackSummary(stack), stack.getComponents().size()));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                        "anarchyclient.message.item.components",
+                        "%s | components: %s",
+                        stackSummary(stack),
+                        stack.getComponents().size()));
         return SUCCESS;
     }
 
@@ -204,12 +224,16 @@ final class ItemCommands {
         }
         ItemStack stack = client.player.getMainHandItem();
         if (stack.isEmpty()) {
-            context.getSource().sendError(Translations.component("anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
+            context.getSource()
+                    .sendError(Translations.component(
+                            "anarchyclient.message.item.you_are_not_holding_an_item", "You are not holding an item."));
             return 0;
         }
         String data = stack.getComponents().toString();
-        context.getSource().sendFeedback(Translations.component("anarchyclient.message.item.held_item_components", "Held item components: ")
-                .append(CommandFeedback.copyable("[copy]", data)));
+        context.getSource()
+                .sendFeedback(Translations.component(
+                                "anarchyclient.message.item.held_item_components", "Held item components: ")
+                        .append(CommandFeedback.copyable("[copy]", data)));
         return SUCCESS;
     }
 
@@ -227,8 +251,7 @@ final class ItemCommands {
                 "Chest: " + stackSummary(player.getItemBySlot(EquipmentSlot.CHEST)),
                 "Legs: " + stackSummary(player.getItemBySlot(EquipmentSlot.LEGS)),
                 "Feet: " + stackSummary(player.getItemBySlot(EquipmentSlot.FEET)),
-                "Offhand: " + stackSummary(player.getItemBySlot(EquipmentSlot.OFFHAND))
-        );
+                "Offhand: " + stackSummary(player.getItemBySlot(EquipmentSlot.OFFHAND)));
     }
 
     private static String stackSummary(final ItemStack stack) {

@@ -27,7 +27,10 @@ public final class VehicleControlModule extends Module {
             .build()));
 
     public VehicleControlModule() {
-        super("vehicle_control", "Vehicle Control", ModuleCategory.MOVEMENT,
+        super(
+                "vehicle_control",
+                "Vehicle Control",
+                ModuleCategory.MOVEMENT,
                 "Steers your vehicle with your movement keys at a set speed and can move it up and down with jump and sneak.");
     }
 
@@ -49,7 +52,8 @@ public final class VehicleControlModule extends Module {
         Vec3 horizontal = MovementVelocity.fromKeys(client, client.player.getYRot(), this.speed.value());
         double y = vehicle.getDeltaMovement().y;
         if (this.vertical.value()) {
-            y = client.options.keyJump.isDown() ? this.speed.value() * 0.5
+            y = client.options.keyJump.isDown()
+                    ? this.speed.value() * 0.5
                     : client.options.keyShift.isDown() ? -this.speed.value() * 0.5 : y;
         }
         vehicle.setDeltaMovement(horizontal.x, y, horizontal.z);

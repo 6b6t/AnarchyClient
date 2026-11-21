@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BlockListSetting;
@@ -7,8 +8,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
-
-import java.util.List;
 
 public final class InfinityMinerModule extends Module {
 
@@ -29,7 +28,10 @@ public final class InfinityMinerModule extends Module {
     private final SingleBlockMiner miner = new SingleBlockMiner(this);
 
     public InfinityMinerModule() {
-        super("infinity_miner", "Infinity Miner", ModuleCategory.WORLD,
+        super(
+                "infinity_miner",
+                "Infinity Miner",
+                ModuleCategory.WORLD,
                 "Mines the closest listed blocks around you automatically, such as stone, deepslate, and netherrack.");
     }
 
@@ -39,8 +41,12 @@ public final class InfinityMinerModule extends Module {
             this.miner.stop(client);
             return;
         }
-        if (this.miner.continueCurrent(client, pos -> this.blocks.value().contains(client.level.getBlockState(pos).getBlock())
-                && CombatTargets.canReachBlock(client.player, pos))) {
+        if (this.miner.continueCurrent(
+                client,
+                pos -> this.blocks
+                                .value()
+                                .contains(client.level.getBlockState(pos).getBlock())
+                        && CombatTargets.canReachBlock(client.player, pos))) {
             return;
         }
         for (BlockTargetScanner.BlockTarget target : BlockTargetScanner.scan(
@@ -50,8 +56,7 @@ public final class InfinityMinerModule extends Module {
                 BlockTargetScanner.SortMode.CLOSEST,
                 8,
                 candidate -> this.blocks.value().contains(candidate.state().getBlock())
-                        && CombatTargets.canReachBlock(client.player, candidate.pos())
-        )) {
+                        && CombatTargets.canReachBlock(client.player, candidate.pos()))) {
             if (this.miner.start(client, target.pos(), Direction.UP) == SingleBlockMiner.Step.MINING) {
                 return;
             }

@@ -1,26 +1,25 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
-import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
-import net.minecraft.network.protocol.game.ServerboundPunchPacket;
-import net.blockhost.anarchyclient.render.RenderSuppression;
-import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
-import net.minecraft.world.level.block.Blocks;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Map;
+import net.blockhost.anarchyclient.render.RenderSuppression;
+import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
+import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
+import net.minecraft.world.level.block.Blocks;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class LiquidBouncePlanModulesTest {
@@ -58,9 +57,9 @@ class LiquidBouncePlanModulesTest {
     @Test
     void exploitAndZoneHelpersHandleInvalidInput() {
         assertEquals("null packet", AntiExploitModule.exploitReason(null, 1024, 64));
-        assertNull(AntiExploitModule.exploitReason(ServerboundPunchPacket.INSTANCE,
-                1024, 64));
-        assertEquals(List.of(new BlockPos(1, 64, -2), new BlockPos(5, 70, 5)),
+        assertNull(AntiExploitModule.exploitReason(ServerboundPunchPacket.INSTANCE, 1024, 64));
+        assertEquals(
+                List.of(new BlockPos(1, 64, -2), new BlockPos(5, 70, 5)),
                 ProtectionZonesModule.parseZones("1,64,-2; nope; 5,70,5"));
     }
 
@@ -68,8 +67,7 @@ class LiquidBouncePlanModulesTest {
     void exploitCheckNeverDropsRegistrySync() {
         // Dropping registry or tag sync leaves the client without biomes, and the next world join dies
         // with "Missing element minecraft:plains" instead of loading.
-        var registryPacket = new ClientboundRegistryDataPacket(
-                Registries.BIOME, List.of());
+        var registryPacket = new ClientboundRegistryDataPacket(Registries.BIOME, List.of());
         var tagsPacket = new ClientboundUpdateTagsPacket(Map.of());
         var otherPacket = ServerboundPunchPacket.INSTANCE;
 

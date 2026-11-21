@@ -6,13 +6,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import net.blockhost.anarchyclient.AnarchyClient;
-import net.blockhost.anarchyclient.config.ConfigFiles;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.core.BlockPos;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -24,6 +17,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import net.blockhost.anarchyclient.AnarchyClient;
+import net.blockhost.anarchyclient.config.ConfigFiles;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.core.BlockPos;
 
 public final class WaypointStore {
 
@@ -41,7 +40,8 @@ public final class WaypointStore {
     }
 
     public static Path defaultPath() {
-        return FabricLoader.getInstance().getConfigDir()
+        return FabricLoader.getInstance()
+                .getConfigDir()
                 .resolve("anarchyclient")
                 .resolve("waypoints.json");
     }
@@ -62,7 +62,8 @@ public final class WaypointStore {
                 return;
             }
             for (JsonElement entry : entries) {
-                readWaypoint(entry).ifPresent(waypoint -> this.waypoints.put(key(waypoint.world(), waypoint.name()), waypoint));
+                readWaypoint(entry)
+                        .ifPresent(waypoint -> this.waypoints.put(key(waypoint.world(), waypoint.name()), waypoint));
             }
         } catch (IOException | RuntimeException exception) {
             AnarchyClient.LOGGER.warn("Failed to load AnarchyClient waypoints from {}", this.path, exception);
@@ -73,7 +74,8 @@ public final class WaypointStore {
 
     public synchronized void save() {
         if (this.saveBlocked) {
-            AnarchyClient.LOGGER.warn("Not saving AnarchyClient waypoints: {} could not be read or backed up", this.path);
+            AnarchyClient.LOGGER.warn(
+                    "Not saving AnarchyClient waypoints: {} could not be read or backed up", this.path);
             return;
         }
         JsonObject root = new JsonObject();
@@ -128,7 +130,9 @@ public final class WaypointStore {
         if (client == null) {
             return "unknown";
         }
-        String dimension = client.level == null ? "unknown" : client.level.dimension().identifier().toString();
+        String dimension = client.level == null
+                ? "unknown"
+                : client.level.dimension().identifier().toString();
         ServerData server = client.getCurrentServer();
         if (server != null) {
             return "server:" + safe(server.ip) + "|" + dimension;
@@ -138,7 +142,8 @@ public final class WaypointStore {
 
     private List<Waypoint> sorted() {
         return this.waypoints.values().stream()
-                .sorted(Comparator.comparing(Waypoint::world).thenComparing(Waypoint::name, String.CASE_INSENSITIVE_ORDER))
+                .sorted(Comparator.comparing(Waypoint::world)
+                        .thenComparing(Waypoint::name, String.CASE_INSENSITIVE_ORDER))
                 .toList();
     }
 
@@ -172,11 +177,14 @@ public final class WaypointStore {
                 continue;
             }
             try {
-                result.add(new Waypoint(world, parts[0], new BlockPos(
-                        Integer.parseInt(parts[1].trim()),
-                        Integer.parseInt(parts[2].trim()),
-                        Integer.parseInt(parts[3].trim())
-                ), DEFAULT_COLOR));
+                result.add(new Waypoint(
+                        world,
+                        parts[0],
+                        new BlockPos(
+                                Integer.parseInt(parts[1].trim()),
+                                Integer.parseInt(parts[2].trim()),
+                                Integer.parseInt(parts[3].trim())),
+                        DEFAULT_COLOR));
             } catch (NumberFormatException exception) {
                 AnarchyClient.LOGGER.warn("Skipping legacy waypoint '{}' with invalid coordinates", token);
             }

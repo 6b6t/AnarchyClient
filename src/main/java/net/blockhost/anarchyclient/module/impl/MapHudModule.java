@@ -1,20 +1,21 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.render.WorldLineRenderer2D;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
-import java.util.List;
-
 public final class MapHudModule extends HudElementModule {
 
     public MapHudModule() {
-        super("map_hud", "Map HUD",
-                "Shows a minimap of nearby entities with your heading, chunk coordinates, and biome.", "Top Left");
+        super(
+                "map_hud",
+                "Map HUD",
+                "Shows a minimap of nearby entities with your heading, chunk coordinates, and biome.",
+                "Top Left");
     }
 
     @Override
@@ -68,7 +69,9 @@ public final class MapHudModule extends HudElementModule {
         WorldLineRenderer2D.line(graphics, x + center, y + center, arrowX, arrowY, HudText.textColor());
 
         String chunk = "Chunk " + Math.floorDiv(playerPos.getX(), 16) + ", " + Math.floorDiv(playerPos.getZ(), 16);
-        String biome = client.level.getBiome(playerPos).unwrapKey()
+        String biome = client.level
+                .getBiome(playerPos)
+                .unwrapKey()
                 .map(key -> key.identifier().toString())
                 .orElse("unknown");
         graphics.text(client.font, chunk, x + 5, y + size + 4, this.color(client), true);
@@ -81,7 +84,11 @@ public final class MapHudModule extends HudElementModule {
         return List.of(
                 "Chunk " + Math.floorDiv(pos.getX(), 16) + ", " + Math.floorDiv(pos.getZ(), 16),
                 "Region " + Math.floorDiv(pos.getX(), 512) + ", " + Math.floorDiv(pos.getZ(), 512),
-                "Biome " + client.level.getBiome(pos).unwrapKey().map(key -> key.identifier().toString()).orElse("unknown")
-        );
+                "Biome "
+                        + client.level
+                                .getBiome(pos)
+                                .unwrapKey()
+                                .map(key -> key.identifier().toString())
+                                .orElse("unknown"));
     }
 }

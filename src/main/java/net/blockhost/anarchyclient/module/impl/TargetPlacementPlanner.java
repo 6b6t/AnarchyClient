@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -9,14 +12,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 public final class TargetPlacementPlanner {
 
-    private TargetPlacementPlanner() {
-    }
+    private TargetPlacementPlanner() {}
 
     /**
      * Scores crystal positions around the target that the player can reach with the default
@@ -27,8 +25,7 @@ public final class TargetPlacementPlanner {
             final LocalPlayer self,
             final LivingEntity target,
             final int radius,
-            final ExplosionPlacementScorer scorer
-    ) {
+            final ExplosionPlacementScorer scorer) {
         return explosionPlacements(client, self, target, radius, scorer, self.blockInteractionRange());
     }
 
@@ -42,8 +39,7 @@ public final class TargetPlacementPlanner {
             final LivingEntity target,
             final int radius,
             final ExplosionPlacementScorer scorer,
-            final double placeRange
-    ) {
+            final double placeRange) {
         if (client.level == null) {
             return List.of();
         }
@@ -63,7 +59,8 @@ public final class TargetPlacementPlanner {
                 }
             }
         }
-        scores.sort(Comparator.comparingDouble(ExplosionPlacementScorer.PlacementScore::value).reversed());
+        scores.sort(Comparator.comparingDouble(ExplosionPlacementScorer.PlacementScore::value)
+                .reversed());
         return List.copyOf(scores);
     }
 

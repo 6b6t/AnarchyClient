@@ -24,11 +24,8 @@ public abstract class ConnectionHandshakeMixin {
         if (!(packet instanceof ClientIntentionPacket) || PacketEventSilencer.silent()) {
             return packet;
         }
-        PacketSendEvent event = AnarchyClient.MODULES.call(new PacketSendEvent(
-                Minecraft.getInstance(),
-                (Connection) (Object) this,
-                packet
-        ));
+        PacketSendEvent event = AnarchyClient.MODULES.call(
+                new PacketSendEvent(Minecraft.getInstance(), (Connection) (Object) this, packet));
         return event.packet();
     }
 }

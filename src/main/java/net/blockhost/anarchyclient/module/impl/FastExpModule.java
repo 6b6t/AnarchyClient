@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Optional;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,17 +19,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
 
-import java.util.List;
-import java.util.Optional;
-
 public final class FastExpModule extends Module {
 
-    private static final List<EquipmentSlot> ARMOR_SLOTS = List.of(
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
-    );
+    private static final List<EquipmentSlot> ARMOR_SLOTS =
+            List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
 
     private final NumberSetting minDurabilityPercent = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("min_durability_percent")
@@ -67,7 +62,11 @@ public final class FastExpModule extends Module {
     private int throwsThisRun;
 
     public FastExpModule() {
-        super("fast_exp", "Fast EXP", ModuleCategory.PLAYER, "Throws experience bottles at your feet to repair mending armor, up to a set number of throws until the armor is repaired.");
+        super(
+                "fast_exp",
+                "Fast EXP",
+                ModuleCategory.PLAYER,
+                "Throws experience bottles at your feet to repair mending armor, up to a set number of throws until the armor is repaired.");
     }
 
     @Override
@@ -91,23 +90,23 @@ public final class FastExpModule extends Module {
         if (this.throwsThisRun >= this.maxThrows.value().intValue()) {
             return;
         }
-        if (SilentHotbar.selectMatching(player, this.id(), stack -> stack.is(Items.EXPERIENCE_BOTTLE),
-                SilentHotbar.PRIORITY_LIFE, 3, true).isEmpty()) {
+        if (SilentHotbar.selectMatching(
+                        player,
+                        this.id(),
+                        stack -> stack.is(Items.EXPERIENCE_BOTTLE),
+                        SilentHotbar.PRIORITY_LIFE,
+                        3,
+                        true)
+                .isEmpty()) {
             return;
         }
         RotationManager.request(new RotationRequest(
-                this.id(),
-                new Rotation(player.getYRot(), 90.0F),
-                80,
-                90.0F,
-                2,
-                2.0F,
-                RotationTurnMode.STEPPED,
-                true
-        ));
+                this.id(), new Rotation(player.getYRot(), 90.0F), 80, 90.0F, 2, 2.0F, RotationTurnMode.STEPPED, true));
         Optional<Rotation> applied = RotationManager.apply(player);
         // The use packet carries the current rotation, so throw only once the player looks down.
-        if (!RotationManager.isActiveOwner(this.id()) || applied.isEmpty() || applied.orElseThrow().pitch() < 88.0F) {
+        if (!RotationManager.isActiveOwner(this.id())
+                || applied.isEmpty()
+                || applied.orElseThrow().pitch() < 88.0F) {
             return;
         }
         client.gameMode.useItem(player, InteractionHand.MAIN_HAND);
@@ -123,7 +122,8 @@ public final class FastExpModule extends Module {
         RotationManager.clear(this.id());
     }
 
-    static boolean needsRepair(final LocalPlayer player, final double minDurabilityPercent, final boolean requireMending) {
+    static boolean needsRepair(
+            final LocalPlayer player, final double minDurabilityPercent, final boolean requireMending) {
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack stack = player.getItemBySlot(slot);
             if (stack.isDamageableItem()

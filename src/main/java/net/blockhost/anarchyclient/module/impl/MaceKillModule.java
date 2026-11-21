@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -10,8 +11,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
-
-import java.util.Comparator;
 
 public final class MaceKillModule extends Module {
 
@@ -33,22 +32,30 @@ public final class MaceKillModule extends Module {
             .build()));
 
     public MaceKillModule() {
-        super("mace_kill", "Mace Kill", ModuleCategory.COMBAT,
+        super(
+                "mace_kill",
+                "Mace Kill",
+                ModuleCategory.COMBAT,
                 "Attacks the closest target with your mace after a long enough fall at full attack charge.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || client.level == null || client.gameMode == null
+        if (player == null
+                || client.level == null
+                || client.gameMode == null
                 || !player.getMainHandItem().is(Items.MACE)
                 || player.fallDistance < this.minFall.value()
                 || player.getAttackStrengthScale(0.0F) < 1.0F) {
             return;
         }
-        TargetQuery.closest(client.level.entitiesForRendering(), player,
-                TargetPolicy.of(true, true, false, true, true, true, true),
-                this.range.value(), Comparator.comparingDouble(player::distanceToSqr))
+        TargetQuery.closest(
+                        client.level.entitiesForRendering(),
+                        player,
+                        TargetPolicy.of(true, true, false, true, true, true, true),
+                        this.range.value(),
+                        Comparator.comparingDouble(player::distanceToSqr))
                 .ifPresent(target -> {
                     client.gameMode.attack(player, target);
                     player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);

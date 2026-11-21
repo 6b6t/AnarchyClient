@@ -1,11 +1,11 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
+import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_DIVIDER;
+
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.math.Size;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.DIVIDER;
-import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_DIVIDER;
 
 final class DockDivider extends Component {
 

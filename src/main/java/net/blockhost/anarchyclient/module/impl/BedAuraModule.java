@@ -1,39 +1,38 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.google.gson.JsonObject;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import net.blockhost.anarchyclient.config.ModuleConfigMigration;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.CuboidMarker;
 import net.blockhost.anarchyclient.render.MarkerManager;
 import net.blockhost.anarchyclient.render.MarkerStyle;
+import net.blockhost.anarchyclient.rotation.Rotation;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
-import net.blockhost.anarchyclient.rotation.Rotation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.Level;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import net.minecraft.world.phys.shapes.Shapes;
 
 public final class BedAuraModule extends Module implements ModuleConfigMigration {
 
@@ -92,7 +91,11 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
     private int cooldown;
 
     public BedAuraModule() {
-        super("bed_aura", "Bed Aura", ModuleCategory.COMBAT, "Places and detonates beds within reach near targets outside the Overworld. Damage values are in HP.");
+        super(
+                "bed_aura",
+                "Bed Aura",
+                ModuleCategory.COMBAT,
+                "Places and detonates beds within reach near targets outside the Overworld. Damage values are in HP.");
     }
 
     /** Moves configs saved with the old defaults to the current ones. */
@@ -107,7 +110,10 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.level == null || client.gameMode == null || client.level.dimension() == Level.OVERWORLD) {
+        if (client.player == null
+                || client.level == null
+                || client.gameMode == null
+                || client.level.dimension() == Level.OVERWORLD) {
             return;
         }
         if (this.cooldown > 0) {
@@ -121,7 +127,9 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
         double minDamage = minimumDamage(target, this.minDamage.value(), this.facePlaceHealth.value());
         ScoredBed bed = bestBed(client, target, this.range.value().intValue(), this.maxSelfDamage.value(), minDamage);
         if (bed != null) {
-            InteractionResult result = client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND,
+            InteractionResult result = client.gameMode.useItemOn(
+                    client.player,
+                    InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(bed.clickPos()), Direction.UP, bed.clickPos(), false));
             if (result.consumesAction()) {
                 client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
@@ -136,8 +144,8 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
         }
         ScoredBed placement = bestBedPlacement(client, target, this.maxSelfDamage.value(), minDamage);
         if (placement != null) {
-            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, placement.clickPos().below(),
-                    Direction.UP, stack -> stack.is(ItemTags.BEDS), true);
+            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
+                    client, this, placement.clickPos().below(), Direction.UP, stack -> stack.is(ItemTags.BEDS), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.cooldown = this.delay.value().intValue();
                 this.mark(placement.head());
@@ -162,8 +170,12 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
         return null;
     }
 
-    private static ScoredBed bestBed(final Minecraft client, final Player target, final int radius,
-                                     final double maxSelfDamage, final double minDamage) {
+    private static ScoredBed bestBed(
+            final Minecraft client,
+            final Player target,
+            final int radius,
+            final double maxSelfDamage,
+            final double minDamage) {
         if (client.level == null || client.player == null) {
             return null;
         }
@@ -175,10 +187,13 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockState state = client.level.getBlockState(pos);
                     // The explosion happens at the head, whichever half is clicked.
-                    if (state.getBlock() instanceof BedBlock && state.getValue(BedBlock.PART) == BedPart.HEAD
+                    if (state.getBlock() instanceof BedBlock
+                            && state.getValue(BedBlock.PART) == BedPart.HEAD
                             && CombatTargets.canReachBlock(client.player, pos)) {
-                        BlockPos foot = pos.relative(state.getValue(BedBlock.FACING).getOpposite());
-                        score(client, target, pos, pos, foot, maxSelfDamage, minDamage).ifPresent(scores::add);
+                        BlockPos foot =
+                                pos.relative(state.getValue(BedBlock.FACING).getOpposite());
+                        score(client, target, pos, pos, foot, maxSelfDamage, minDamage)
+                                .ifPresent(scores::add);
                     }
                 }
             }
@@ -191,8 +206,8 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
      * head one block further in the direction the player faces, so the head position follows from
      * the rotation the placement will use.
      */
-    private static ScoredBed bestBedPlacement(final Minecraft client, final Player target,
-                                              final double maxSelfDamage, final double minDamage) {
+    private static ScoredBed bestBedPlacement(
+            final Minecraft client, final Player target, final double maxSelfDamage, final double minDamage) {
         LocalPlayer player = client.player;
         if (client.level == null || player == null) {
             return null;
@@ -215,7 +230,8 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
                             || !client.level.isUnobstructed(null, Shapes.block().move(foot))) {
                         continue;
                     }
-                    score(client, target, foot, head, foot, maxSelfDamage, minDamage).ifPresent(scores::add);
+                    score(client, target, foot, head, foot, maxSelfDamage, minDamage)
+                            .ifPresent(scores::add);
                 }
             }
         }
@@ -240,14 +256,20 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
         return Optional.of(facing);
     }
 
-    private static Optional<ScoredBed> score(final Minecraft client, final Player target, final BlockPos clickPos,
-                                             final BlockPos head, final BlockPos foot, final double maxSelfDamage,
-                                             final double minDamage) {
+    private static Optional<ScoredBed> score(
+            final Minecraft client,
+            final Player target,
+            final BlockPos clickPos,
+            final BlockPos head,
+            final BlockPos foot,
+            final double maxSelfDamage,
+            final double minDamage) {
         Vec3 explosion = DamageEstimator.blockCenter(head);
         // Vanilla removes both bed halves before the explosion, so the bed does not shield anyone.
         Set<BlockPos> removed = Set.of(head.immutable(), foot.immutable());
         double targetDamage = DamageEstimator.explosionDamage(target, explosion, DamageEstimator.BED_POWER, removed);
-        double selfDamage = DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.BED_POWER, removed);
+        double selfDamage =
+                DamageEstimator.explosionDamage(client.player, explosion, DamageEstimator.BED_POWER, removed);
         double selfHealth = client.player.getHealth() + client.player.getAbsorptionAmount();
         if (targetDamage < minDamage || selfDamage > maxSelfDamage || selfDamage >= selfHealth) {
             return Optional.empty();
@@ -256,9 +278,7 @@ public final class BedAuraModule extends Module implements ModuleConfigMigration
     }
 
     private static ScoredBed best(final List<ScoredBed> scores) {
-        return scores.stream()
-                .max(Comparator.comparingDouble(ScoredBed::value))
-                .orElse(null);
+        return scores.stream().max(Comparator.comparingDouble(ScoredBed::value)).orElse(null);
     }
 
     private static double minimumDamage(final Player target, final double minDamage, final double facePlaceHealth) {

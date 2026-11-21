@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,8 +24,7 @@ final class CoordinateArgument implements ArgumentType<String> {
             new SimpleCommandExceptionType(new LiteralMessage("Expected a coordinate"));
     private static final Collection<String> EXAMPLES = List.of("0", "~", "~-2", "12.5");
 
-    private CoordinateArgument() {
-    }
+    private CoordinateArgument() {}
 
     static CoordinateArgument coordinate() {
         return new CoordinateArgument();
@@ -50,8 +48,8 @@ final class CoordinateArgument implements ArgumentType<String> {
     }
 
     @Override
-    public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context,
-                                                              final SuggestionsBuilder builder) {
+    public <S> CompletableFuture<Suggestions> listSuggestions(
+            final CommandContext<S> context, final SuggestionsBuilder builder) {
         if (builder.getRemaining().isEmpty()) {
             builder.suggest("~");
         }

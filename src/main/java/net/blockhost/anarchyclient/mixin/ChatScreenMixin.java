@@ -26,7 +26,8 @@ public abstract class ChatScreenMixin {
     public abstract String normalizeChatMessage(String message);
 
     @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$runPrefixCommand(final String message, final boolean addToRecent, final CallbackInfo info) {
+    private void anarchyclient$runPrefixCommand(
+            final String message, final boolean addToRecent, final CallbackInfo info) {
         char prefix = CommandPrefix.first();
         String normalized = normalizeChatMessage(message);
         if (prefix == '/' || normalized.isEmpty() || normalized.charAt(0) != prefix) {

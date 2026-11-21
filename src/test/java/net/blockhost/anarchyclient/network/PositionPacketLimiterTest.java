@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.network;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundClientTickEndPacket;
@@ -7,11 +12,6 @@ import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class PositionPacketLimiterTest {
@@ -24,7 +24,8 @@ class PositionPacketLimiterTest {
     @Test
     void allowsOnePositionPacketPerClientTick() {
         ServerboundMovePlayerPacket first = new ServerboundMovePlayerPacket.Pos(1.0, 64.0, 1.0, true, false);
-        ServerboundMovePlayerPacket second = new ServerboundMovePlayerPacket.PosRot(2.0, 65.0, 2.0, 90.0F, 10.0F, false, false);
+        ServerboundMovePlayerPacket second =
+                new ServerboundMovePlayerPacket.PosRot(2.0, 65.0, 2.0, 90.0F, 10.0F, false, false);
 
         assertSame(first, PositionPacketLimiter.limit(first));
         Packet<?> stripped = PositionPacketLimiter.limit(second);
@@ -48,7 +49,8 @@ class PositionPacketLimiterTest {
     void extraPositionOnlyPacketsKeepTheirGroundState() {
         PositionPacketLimiter.limit(new ServerboundMovePlayerPacket.Pos(1.0, 64.0, 1.0, true, false));
 
-        Packet<?> stripped = PositionPacketLimiter.limit(new ServerboundMovePlayerPacket.Pos(1.0, 70.0, 1.0, true, true));
+        Packet<?> stripped =
+                PositionPacketLimiter.limit(new ServerboundMovePlayerPacket.Pos(1.0, 70.0, 1.0, true, true));
 
         ServerboundMovePlayerPacket status = assertInstanceOf(ServerboundMovePlayerPacket.StatusOnly.class, stripped);
         assertEquals(true, status.isOnGround());

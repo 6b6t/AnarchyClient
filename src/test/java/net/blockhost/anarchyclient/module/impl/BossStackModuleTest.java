@@ -1,5 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+import java.util.UUID;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
@@ -7,11 +11,6 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.world.BossEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class BossStackModuleTest {
@@ -44,8 +43,11 @@ class BossStackModuleTest {
     private static BossStackModule moduleWithBoss() {
         BossStackModule module = new BossStackModule();
         module.enabled(true);
-        ServerBossEvent boss = new ServerBossEvent(UUID.randomUUID(), Component.literal("Wither"),
-                BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS);
+        ServerBossEvent boss = new ServerBossEvent(
+                UUID.randomUUID(),
+                Component.literal("Wither"),
+                BossEvent.BossBarColor.PURPLE,
+                BossEvent.BossBarOverlay.PROGRESS);
         module.receivePacket(null, null, ClientboundBossEventPacket.createAddPacket(boss));
         return module;
     }

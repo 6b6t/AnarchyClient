@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BlockListSetting;
@@ -14,8 +15,6 @@ import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.List;
 
 public final class NukerModule extends Module {
 
@@ -38,8 +37,7 @@ public final class NukerModule extends Module {
             .addAllOptions(List.of(
                     BlockTargetScanner.SortMode.CLOSEST.label(),
                     BlockTargetScanner.SortMode.FARTHEST.label(),
-                    BlockTargetScanner.SortMode.RANDOM.label()
-            ))
+                    BlockTargetScanner.SortMode.RANDOM.label()))
             .build()));
     private final NumberSetting radius = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("radius")
@@ -81,7 +79,10 @@ public final class NukerModule extends Module {
     private final SingleBlockMiner miner = new SingleBlockMiner(this);
 
     public NukerModule() {
-        super("nuker", "Nuker", ModuleCategory.WORLD,
+        super(
+                "nuker",
+                "Nuker",
+                ModuleCategory.WORLD,
                 "Breaks blocks around the player in a sphere, cube, or floor shape, with allow and deny lists. "
                         + "Legit mines one block at a time; Packet only breaks blocks the server accepts in one tick.");
     }
@@ -97,7 +98,8 @@ public final class NukerModule extends Module {
         BlockPos center = player.blockPosition();
         if (packet) {
             this.miner.stop(client);
-        } else if (this.miner.continueCurrent(client, pos -> this.accepts(player, pos, client.level.getBlockState(pos), center))) {
+        } else if (this.miner.continueCurrent(
+                client, pos -> this.accepts(player, pos, client.level.getBlockState(pos), center))) {
             return;
         }
         int actions = 0;
@@ -108,10 +110,10 @@ public final class NukerModule extends Module {
                 BlockTargetScanner.SortMode.fromSetting(this.sort.value()),
                 this.blocksPerTick.value().intValue() * 5,
                 candidate -> this.accepts(player, candidate.pos(), candidate.state(), center)
-                        && (!packet || breaksInOnePacket(player, candidate.pos(), candidate.state()))
-        )) {
+                        && (!packet || breaksInOnePacket(player, candidate.pos(), candidate.state())))) {
             if (packet) {
-                if (packetBreak(client, target.pos()) && ++actions >= this.blocksPerTick.value().intValue()) {
+                if (packetBreak(client, target.pos())
+                        && ++actions >= this.blocksPerTick.value().intValue()) {
                     break;
                 }
                 continue;
@@ -121,7 +123,8 @@ public final class NukerModule extends Module {
                 // Starting another block would abort this one.
                 break;
             }
-            if (step == SingleBlockMiner.Step.BROKEN && ++actions >= this.blocksPerTick.value().intValue()) {
+            if (step == SingleBlockMiner.Step.BROKEN
+                    && ++actions >= this.blocksPerTick.value().intValue()) {
                 break;
             }
         }
@@ -133,7 +136,8 @@ public final class NukerModule extends Module {
         this.miner.stop(Minecraft.getInstance());
     }
 
-    private boolean accepts(final LocalPlayer player, final BlockPos pos, final BlockState state, final BlockPos center) {
+    private boolean accepts(
+            final LocalPlayer player, final BlockPos pos, final BlockState state, final BlockPos center) {
         return !state.isAir()
                 && SingleBlockMiner.canEverBreak(player, player.level(), pos, state)
                 && CombatTargets.canReachBlock(player, pos)
@@ -153,16 +157,12 @@ public final class NukerModule extends Module {
         if (client.player == null || client.getConnection() == null) {
             return false;
         }
-        client.getConnection().send(new ServerboundPlayerActionPacket(
-                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
-                pos,
-                Direction.UP
-        ));
-        client.getConnection().send(new ServerboundPlayerActionPacket(
-                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK,
-                pos,
-                Direction.UP
-        ));
+        client.getConnection()
+                .send(new ServerboundPlayerActionPacket(
+                        ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+        client.getConnection()
+                .send(new ServerboundPlayerActionPacket(
+                        ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, Direction.UP));
         client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         return true;
     }

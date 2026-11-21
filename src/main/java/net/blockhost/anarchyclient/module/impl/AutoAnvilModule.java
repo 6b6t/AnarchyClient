@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.placement.BlockPlacer;
@@ -12,9 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class AutoAnvilModule extends Module {
 
@@ -65,31 +64,47 @@ public final class AutoAnvilModule extends Module {
             .build()));
 
     public AutoAnvilModule() {
-        super("auto_anvil", "Auto Anvil", ModuleCategory.COMBAT,
+        super(
+                "auto_anvil",
+                "Auto Anvil",
+                ModuleCategory.COMBAT,
                 "Places an anvil above the nearest enemy or yourself so it falls on them, with an optional side support block and face trap.");
         this.range.visibleWhen(() -> "Enemy".equals(this.targetMode.value()));
     }
 
     @Override
     public void tick(final Minecraft client) {
-        Player target = "Self".equals(this.targetMode.value()) ? client.player : CombatTargets.nearestEnemy(client, this.range.value());
+        Player target = "Self".equals(this.targetMode.value())
+                ? client.player
+                : CombatTargets.nearestEnemy(client, this.range.value());
         if (target == null || client.player == null || client.level == null || client.gameMode == null) {
             return;
         }
         BlockPos base = target.blockPosition();
         Direction side = supportSide(base, client.player.position());
-        List<BlockPos> supports = supportPositions(base, this.dropHeight.value().intValue(), this.faceTrap.value(), side);
+        List<BlockPos> supports =
+                supportPositions(base, this.dropHeight.value().intValue(), this.faceTrap.value(), side);
         int placed = 0;
         if (this.support.value()) {
-            placed += CombatPlacementPlanner.placeBatch(client, this, supports, CombatPlacementPlanner.HARD_BLOCKS,
+            placed += CombatPlacementPlanner.placeBatch(
+                    client,
+                    this,
+                    supports,
+                    CombatPlacementPlanner.HARD_BLOCKS,
                     CombatPlacementPlanner.Options.of(this.blocksPerTick.value().intValue(), this.rotate.value(), 6.0)
                             .withSupport(true)
                             .withAvoidSelf(true));
         }
         if (placed < this.blocksPerTick.value().intValue()) {
             BlockPos anvil = base.above(this.dropHeight.value().intValue());
-            BlockPlacer.PlacementResult result = BlockPlacer.place(client, this.id(), anvil, this.rotate.value(), 70.0F,
-                    stack -> stack.is(Items.ANVIL), BlockPlacer.PlacementOptions.ANY_BLOCK_ITEM);
+            BlockPlacer.PlacementResult result = BlockPlacer.place(
+                    client,
+                    this.id(),
+                    anvil,
+                    this.rotate.value(),
+                    70.0F,
+                    stack -> stack.is(Items.ANVIL),
+                    BlockPlacer.PlacementOptions.ANY_BLOCK_ITEM);
             if (result == BlockPlacer.PlacementResult.PLACED) {
                 placed++;
             }
@@ -98,8 +113,8 @@ public final class AutoAnvilModule extends Module {
         this.debugValue("placed", placed);
     }
 
-    static List<BlockPos> supportPositions(final BlockPos base, final int dropHeight, final boolean faceTrap,
-                                           final Direction side) {
+    static List<BlockPos> supportPositions(
+            final BlockPos base, final int dropHeight, final boolean faceTrap, final Direction side) {
         List<BlockPos> positions = new ArrayList<>();
         // Support the anvil from the side so the column below it stays open and it can fall.
         positions.add(base.above(dropHeight).relative(side));

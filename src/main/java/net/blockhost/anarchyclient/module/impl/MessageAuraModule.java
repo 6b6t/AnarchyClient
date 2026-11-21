@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -8,10 +11,6 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class MessageAuraModule extends Module {
 
@@ -44,7 +43,10 @@ public final class MessageAuraModule extends Module {
     private final Map<UUID, Integer> cooldowns = new HashMap<>();
 
     public MessageAuraModule() {
-        super("message_aura", "Message Aura", ModuleCategory.MISC,
+        super(
+                "message_aura",
+                "Message Aura",
+                ModuleCategory.MISC,
                 "Sends a chat message to each player who comes within range, with a cooldown per player.");
     }
 
@@ -53,18 +55,26 @@ public final class MessageAuraModule extends Module {
         this.cooldowns.replaceAll((ignored, value) -> value - 1);
         // Expired entries are dropped so the map does not grow with every player ever seen.
         this.cooldowns.values().removeIf(value -> value <= 0);
-        if (client.player == null || client.level == null || client.getConnection() == null || client.gui.screen() != null) {
+        if (client.player == null
+                || client.level == null
+                || client.getConnection() == null
+                || client.gui.screen() != null) {
             return;
         }
         double rangeSqr = this.range.value() * this.range.value();
         for (Player player : client.level.players()) {
-            if (player == client.player || player.distanceToSqr(client.player) > rangeSqr
-                    || this.ignoreFriends.value() && AnarchyClient.FRIENDS.isFriend(player.getName().getString())
+            if (player == client.player
+                    || player.distanceToSqr(client.player) > rangeSqr
+                    || this.ignoreFriends.value()
+                            && AnarchyClient.FRIENDS.isFriend(player.getName().getString())
                     || this.cooldowns.getOrDefault(player.getUUID(), 0) > 0) {
                 continue;
             }
-            ChatActions.send(client, this.message.value().replace("{player}", player.getName().getString()));
-            this.cooldowns.put(player.getUUID(), Math.max(20, this.cooldownSeconds.value().intValue() * 20));
+            ChatActions.send(
+                    client,
+                    this.message.value().replace("{player}", player.getName().getString()));
+            this.cooldowns.put(
+                    player.getUUID(), Math.max(20, this.cooldownSeconds.value().intValue() * 20));
             return;
         }
     }

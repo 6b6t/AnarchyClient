@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
+import java.util.Locale;
 import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -15,9 +17,6 @@ import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
-
-import java.util.List;
-import java.util.Locale;
 
 public final class ServerSpoofModule extends Module {
 
@@ -59,7 +58,10 @@ public final class ServerSpoofModule extends Module {
             .build()));
 
     public ServerSpoofModule() {
-        super("server_spoof", "Server Spoof", ModuleCategory.MISC,
+        super(
+                "server_spoof",
+                "Server Spoof",
+                ModuleCategory.MISC,
                 "Hides client details from the server by spoofing the handshake host and brand, blocking mod channels, and faking resource pack loading.");
         this.host.visibleWhen(this.spoofHost::value);
         this.brand.visibleWhen(this.spoofBrand::value);
@@ -77,8 +79,7 @@ public final class ServerSpoofModule extends Module {
                     intention.protocolVersion(),
                     spoofedHost(intention.hostName(), this.host.value()),
                     intention.port(),
-                    intention.intention()
-            );
+                    intention.intention());
             return spoofed;
         }
         if (this.spoofBrand.value()
@@ -114,9 +115,12 @@ public final class ServerSpoofModule extends Module {
             return false;
         }
         PacketEventSilencer.runSilently(() -> {
-            connection.send(new ServerboundResourcePackPacket(push.id(), ServerboundResourcePackPacket.Action.ACCEPTED));
-            connection.send(new ServerboundResourcePackPacket(push.id(), ServerboundResourcePackPacket.Action.DOWNLOADED));
-            connection.send(new ServerboundResourcePackPacket(push.id(), ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED));
+            connection.send(
+                    new ServerboundResourcePackPacket(push.id(), ServerboundResourcePackPacket.Action.ACCEPTED));
+            connection.send(
+                    new ServerboundResourcePackPacket(push.id(), ServerboundResourcePackPacket.Action.DOWNLOADED));
+            connection.send(new ServerboundResourcePackPacket(
+                    push.id(), ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED));
         });
         return true;
     }
@@ -127,7 +131,8 @@ public final class ServerSpoofModule extends Module {
         }
         String normalizedChannel = channel.toLowerCase(Locale.ROOT);
         for (String filter : filters) {
-            if (filter != null && !filter.isBlank()
+            if (filter != null
+                    && !filter.isBlank()
                     && normalizedChannel.contains(filter.trim().toLowerCase(Locale.ROOT))) {
                 return true;
             }

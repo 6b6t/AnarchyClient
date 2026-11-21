@@ -1,6 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -17,9 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public final class WaypointsModule extends Module {
 
     private final StringSetting points = this.setting(StringSetting.from(StringSetting.builder()
@@ -32,7 +31,11 @@ public final class WaypointsModule extends Module {
     private List<Waypoint> legacy = List.of();
 
     public WaypointsModule() {
-        super("waypoints", "Waypoints", ModuleCategory.RENDER, "Renders saved locations with labels and distance cues so routes are easier to follow.");
+        super(
+                "waypoints",
+                "Waypoints",
+                ModuleCategory.RENDER,
+                "Renders saved locations with labels and distance cues so routes are easier to follow.");
     }
 
     @Override
@@ -58,7 +61,9 @@ public final class WaypointsModule extends Module {
             WorldLineRenderer.Color color = lineColor(waypoint.color());
             AABB box = new AABB(pos).inflate(0.08).move(camera.scale(-1));
             WorldLineRenderer.boxNoDepth(matrices, submits, box, color);
-            WorldLineRenderer.lineNoDepth(matrices, submits,
+            WorldLineRenderer.lineNoDepth(
+                    matrices,
+                    submits,
                     new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5).subtract(camera),
                     new Vec3(pos.getX() + 0.5, pos.getY() + 2.0, pos.getZ() + 0.5).subtract(camera),
                     color);

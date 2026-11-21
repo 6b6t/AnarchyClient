@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.UUID;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -18,12 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.phys.EntityHitResult;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalInt;
-import java.util.UUID;
-import java.util.function.Predicate;
 
 public final class AutoTameModule extends Module {
 
@@ -52,7 +51,10 @@ public final class AutoTameModule extends Module {
     private int cooldown;
 
     public AutoTameModule() {
-        super("auto_tame", "Auto Tame", ModuleCategory.WORLD,
+        super(
+                "auto_tame",
+                "Auto Tame",
+                ModuleCategory.WORLD,
                 "Feeds untamed wolves, cats, and parrots near you with their taming item from your hotbar until they are tamed.");
     }
 
@@ -72,13 +74,18 @@ public final class AutoTameModule extends Module {
         TamableAnimal best = null;
         double bestDistance = Double.MAX_VALUE;
         for (Entity entity : client.level.entitiesForRendering()) {
-            if (!(entity instanceof TamableAnimal animal) || animal.isTame() || !animal.isAlive()
-                    || this.triedAt.containsKey(animal.getUUID()) || !CombatTargets.canReachEntity(player, animal)) {
+            if (!(entity instanceof TamableAnimal animal)
+                    || animal.isTame()
+                    || !animal.isAlive()
+                    || this.triedAt.containsKey(animal.getUUID())
+                    || !CombatTargets.canReachEntity(player, animal)) {
                 continue;
             }
             double distance = animal.distanceToSqr(player);
-            if (distance > rangeSqr || distance >= bestDistance
-                    || InventoryActions.findHotbarSlot(player.getInventory(), tamingItem(animal)).isEmpty()) {
+            if (distance > rangeSqr
+                    || distance >= bestDistance
+                    || InventoryActions.findHotbarSlot(player.getInventory(), tamingItem(animal))
+                            .isEmpty()) {
                 continue;
             }
             best = animal;
@@ -89,7 +96,8 @@ public final class AutoTameModule extends Module {
         }
         OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), tamingItem(best));
         InventoryActions.selectHotbarSlot(player, slot.orElseThrow());
-        InteractionResult result = client.gameMode.interact(player, best, new EntityHitResult(best), InteractionHand.MAIN_HAND);
+        InteractionResult result =
+                client.gameMode.interact(player, best, new EntityHitResult(best), InteractionHand.MAIN_HAND);
         if (result.consumesAction()) {
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }

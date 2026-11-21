@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -12,10 +15,6 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.world.level.GameType;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class GamemodeNotifierModule extends Module {
 
@@ -43,7 +42,10 @@ public final class GamemodeNotifierModule extends Module {
     private final Map<UUID, GameType> knownModes = new HashMap<>();
 
     public GamemodeNotifierModule() {
-        super("gamemode_notifier", "Gamemode Notifier", ModuleCategory.MISC,
+        super(
+                "gamemode_notifier",
+                "Gamemode Notifier",
+                ModuleCategory.MISC,
                 "Sends a chat message when a player switches to one of the selected gamemodes.");
     }
 
@@ -85,11 +87,18 @@ public final class GamemodeNotifierModule extends Module {
         for (ClientboundPlayerInfoUpdatePacket.Entry entry : update.entries()) {
             GameType previous = this.knownModes.put(entry.profileId(), entry.gameMode());
             PlayerInfo current = listener.getPlayerInfo(entry.profileId());
-            if (previous == null || current == null || previous == entry.gameMode() || !shouldNotify(entry.gameMode())) {
+            if (previous == null
+                    || current == null
+                    || previous == entry.gameMode()
+                    || !shouldNotify(entry.gameMode())) {
                 continue;
             }
             String name = current.getProfile().name();
-            client.player.sendSystemMessage(Translations.component("anarchyclient.message.gamemode_notifier.changed_gamemode_to", "%s changed gamemode to %s.", name, entry.gameMode().getName()));
+            client.player.sendSystemMessage(Translations.component(
+                    "anarchyclient.message.gamemode_notifier.changed_gamemode_to",
+                    "%s changed gamemode to %s.",
+                    name,
+                    entry.gameMode().getName()));
         }
     }
 

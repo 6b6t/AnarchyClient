@@ -34,7 +34,10 @@ public final class BoostModule extends Module {
     private int timer;
 
     public BoostModule() {
-        super("boost", "Boost", ModuleCategory.MOVEMENT,
+        super(
+                "boost",
+                "Boost",
+                ModuleCategory.MOVEMENT,
                 "Pushes you forward in your look direction once, or repeatedly on a timer with Auto Boost.");
         this.intervalTicks.visibleWhen(this.autoBoost::value);
     }

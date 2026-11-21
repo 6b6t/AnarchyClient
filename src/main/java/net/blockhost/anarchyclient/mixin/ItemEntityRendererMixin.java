@@ -37,9 +37,12 @@ public abstract class ItemEntityRendererMixin {
     private boolean anarchyclient$scalePushed;
 
     @Inject(method = SUBMIT, at = @At("HEAD"))
-    private void anarchyclient$beginItemPhysics(final ItemEntityRenderState state, final PoseStack poseStack,
-                                                final SubmitNodeCollector submitNodeCollector,
-                                                final CameraRenderState cameraRenderState, final CallbackInfo info) {
+    private void anarchyclient$beginItemPhysics(
+            final ItemEntityRenderState state,
+            final PoseStack poseStack,
+            final SubmitNodeCollector submitNodeCollector,
+            final CameraRenderState cameraRenderState,
+            final CallbackInfo info) {
         this.anarchyclient$state = state;
         double scale = ItemPhysicsModule.activeTransform().scale();
         if (scale != 1.0) {
@@ -49,8 +52,9 @@ public abstract class ItemEntityRendererMixin {
         }
     }
 
-    @Redirect(method = SUBMIT, at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 0))
+    @Redirect(
+            method = SUBMIT,
+            at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;translate(FFF)V", ordinal = 0))
     private void anarchyclient$replaceBob(final PoseStack poseStack, final float x, final float y, final float z) {
         ItemEntityRenderState state = this.anarchyclient$state;
         String mode = ItemPhysicsModule.activeTransform().mode();
@@ -71,8 +75,13 @@ public abstract class ItemEntityRendererMixin {
         }
     }
 
-    @Redirect(method = SUBMIT, at = @At(value = "INVOKE",
-            target = "Lcom/mojang/blaze3d/vertex/PoseStack;rotate(Lcom/mojang/math/Axis;F)V", ordinal = 0))
+    @Redirect(
+            method = SUBMIT,
+            at =
+                    @At(
+                            value = "INVOKE",
+                            target = "Lcom/mojang/blaze3d/vertex/PoseStack;rotate(Lcom/mojang/math/Axis;F)V",
+                            ordinal = 0))
     private void anarchyclient$replaceSpin(final PoseStack poseStack, final Axis axis, final float spin) {
         ItemEntityRenderState state = this.anarchyclient$state;
         ItemPhysicsModule.PhysicsTransform transform = ItemPhysicsModule.activeTransform();
@@ -90,9 +99,12 @@ public abstract class ItemEntityRendererMixin {
     }
 
     @Inject(method = SUBMIT, at = @At("RETURN"))
-    private void anarchyclient$endItemPhysics(final ItemEntityRenderState state, final PoseStack poseStack,
-                                              final SubmitNodeCollector submitNodeCollector,
-                                              final CameraRenderState cameraRenderState, final CallbackInfo info) {
+    private void anarchyclient$endItemPhysics(
+            final ItemEntityRenderState state,
+            final PoseStack poseStack,
+            final SubmitNodeCollector submitNodeCollector,
+            final CameraRenderState cameraRenderState,
+            final CallbackInfo info) {
         if (this.anarchyclient$scalePushed) {
             poseStack.popPose();
             this.anarchyclient$scalePushed = false;

@@ -1,8 +1,7 @@
 package net.blockhost.anarchyclient.module;
 
-import net.blockhost.anarchyclient.i18n.Translations;
-
 import java.util.Locale;
+import net.blockhost.anarchyclient.i18n.Translations;
 
 public enum ModuleCategory {
     COMBAT("Combat"),

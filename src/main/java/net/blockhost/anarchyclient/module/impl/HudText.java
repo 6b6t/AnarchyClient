@@ -1,15 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.ui.GlassTheme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
-import java.util.List;
-
 final class HudText {
 
-    private HudText() {
-    }
+    private HudText() {}
 
     /** Default HUD text color: the global text token, so every element matches the menu. */
     static int textColor() {
@@ -34,12 +32,18 @@ final class HudText {
     }
 
     static int[] panelSize(final int textWidth, final int lineCount) {
-        return new int[]{textWidth + 2 * PADDING, lineCount * 10 + PADDING + 1};
+        return new int[] {textWidth + 2 * PADDING, lineCount * 10 + PADDING + 1};
     }
 
     /** Draw a text panel with its top-left corner at {@code (x, y)}. Positioning is owned by the caller. */
-    static void panelAt(final Minecraft client, final GuiGraphicsExtractor graphics, final List<String> lines,
-                        final int x, final int y, final int color, final boolean background) {
+    static void panelAt(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final List<String> lines,
+            final int x,
+            final int y,
+            final int color,
+            final boolean background) {
         if (lines.isEmpty()) {
             return;
         }
@@ -53,8 +57,12 @@ final class HudText {
     }
 
     /** Legacy corner-anchored panel, still used by non-HUD-editor overlays such as Nametags. */
-    static void panel(final Minecraft client, final GuiGraphicsExtractor graphics, final List<String> lines,
-                      final String corner, final int color) {
+    static void panel(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final List<String> lines,
+            final String corner,
+            final int color) {
         if (lines.isEmpty()) {
             return;
         }

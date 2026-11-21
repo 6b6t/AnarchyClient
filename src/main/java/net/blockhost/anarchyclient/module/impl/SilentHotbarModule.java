@@ -1,14 +1,13 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class SilentHotbarModule extends HudElementModule {
 
@@ -32,8 +31,11 @@ public final class SilentHotbarModule extends HudElementModule {
             .build()));
 
     public SilentHotbarModule() {
-        super("silent_hotbar", "Silent Hotbar",
-                "Shows the selected slot and which module holds a silent switch, and can hold a chosen slot.", "Bottom Left");
+        super(
+                "silent_hotbar",
+                "Silent Hotbar",
+                "Shows the selected slot and which module holds a silent switch, and can hold a chosen slot.",
+                "Bottom Left");
     }
 
     @Override
@@ -42,8 +44,13 @@ public final class SilentHotbarModule extends HudElementModule {
         if (player == null || !this.holdSlot.value()) {
             return;
         }
-        SilentHotbar.select(player, this.id(), this.slot.value().intValue() - 1,
-                SilentHotbar.PRIORITY_NORMAL, 2, this.restore.value());
+        SilentHotbar.select(
+                player,
+                this.id(),
+                this.slot.value().intValue() - 1,
+                SilentHotbar.PRIORITY_NORMAL,
+                2,
+                this.restore.value());
     }
 
     @Override
@@ -56,10 +63,11 @@ public final class SilentHotbarModule extends HudElementModule {
         if (this.holdSlot.value()) {
             lines.add("holding " + this.slot.value().intValue());
         }
-        SilentHotbar.activeOwner().ifPresentOrElse(
-                owner -> lines.add(owner + " slot " + displaySlot(SilentHotbar.activeSlot().orElse(-1))),
-                () -> lines.add("idle")
-        );
+        SilentHotbar.activeOwner()
+                .ifPresentOrElse(
+                        owner -> lines.add(owner + " slot "
+                                + displaySlot(SilentHotbar.activeSlot().orElse(-1))),
+                        () -> lines.add("idle"));
         return lines;
     }
 

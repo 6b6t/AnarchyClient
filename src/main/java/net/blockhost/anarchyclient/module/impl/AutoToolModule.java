@@ -29,7 +29,10 @@ public final class AutoToolModule extends Module {
             .build()));
 
     public AutoToolModule() {
-        super("auto_tool", "Auto Tool", ModuleCategory.WORLD,
+        super(
+                "auto_tool",
+                "Auto Tool",
+                ModuleCategory.WORLD,
                 "Switches to the fastest correct hotbar tool for the block you are mining, skipping tools about to break.");
     }
 

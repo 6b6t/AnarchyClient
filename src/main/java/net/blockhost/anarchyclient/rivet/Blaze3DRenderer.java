@@ -1,9 +1,13 @@
 package net.blockhost.anarchyclient.rivet;
 
-import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.renderpearl.api.textures.GpuTextureView;
+import java.text.Bidi;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
@@ -28,11 +32,6 @@ import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
-
-import java.text.Bidi;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 
 public final class Blaze3DRenderer extends CheckedRenderer {
 
@@ -78,12 +77,14 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     }
 
     @Override
-    protected void doComponentBounds(final float x, final float y, final float width, final float height, final Runnable renderer) {
+    protected void doComponentBounds(
+            final float x, final float y, final float width, final float height, final Runnable renderer) {
         this.withScissor(x, y, width, height, renderer);
     }
 
     @Override
-    protected void doScissor(final float x, final float y, final float width, final float height, final Runnable renderer) {
+    protected void doScissor(
+            final float x, final float y, final float width, final float height, final Runnable renderer) {
         this.withScissor(x, y, width, height, renderer);
     }
 
@@ -106,19 +107,26 @@ public final class Blaze3DRenderer extends CheckedRenderer {
 
     @Override
     protected void doInverseStencil(final Consumer<Renderer> maskRenderer, final Runnable renderer) {
-        throw new UnsupportedOperationException("Inverse stencil rendering is not supported by the Blaze3D Rivet backend");
+        throw new UnsupportedOperationException(
+                "Inverse stencil rendering is not supported by the Blaze3D Rivet backend");
     }
 
     @Override
     public void custom(final ModifierCommand.Custom command, final Runnable renderer) {
-        throw new UnsupportedOperationException("Unsupported Rivet modifier command: " + command.getClass().getName());
+        throw new UnsupportedOperationException(
+                "Unsupported Rivet modifier command: " + command.getClass().getName());
     }
 
     @Override
-    protected void doText(final ShapedText shapedText, final float anchorX, final float anchorY,
-                          final TextOrigin.Horizontal horizontalOrigin, final TextOrigin.Vertical verticalOrigin) {
+    protected void doText(
+            final ShapedText shapedText,
+            final float anchorX,
+            final float anchorY,
+            final TextOrigin.Horizontal horizontalOrigin,
+            final TextOrigin.Vertical verticalOrigin) {
         if (!(shapedText instanceof MinecraftShapedText shaped)) {
-            throw new UnsupportedOperationException("Unsupported shaped text: " + shapedText.getClass().getName());
+            throw new UnsupportedOperationException(
+                    "Unsupported shaped text: " + shapedText.getClass().getName());
         }
         float x = shaped.alignAnchorTo(anchorX, horizontalOrigin, TextOrigin.Horizontal.LOGICAL_LEFT);
         float baselineY = shaped.alignAnchorTo(anchorY, verticalOrigin, TextOrigin.Vertical.BASELINE);
@@ -137,16 +145,38 @@ public final class Blaze3DRenderer extends CheckedRenderer {
                     continue;
                 }
                 int color = argb(segment.format().color());
-                this.graphics.text(this.client.font, segment.text(), cursorX, 0, color, segment.format().shadow());
+                this.graphics.text(
+                        this.client.font,
+                        segment.text(),
+                        cursorX,
+                        0,
+                        color,
+                        segment.format().shadow());
                 if (segment.format().bold()) {
-                    this.graphics.text(this.client.font, segment.text(), cursorX + 1, 0, color, segment.format().shadow());
+                    this.graphics.text(
+                            this.client.font,
+                            segment.text(),
+                            cursorX + 1,
+                            0,
+                            color,
+                            segment.format().shadow());
                 }
                 int width = this.client.font.width(segment.text());
                 if (segment.format().underlined()) {
-                    this.fill(cursorX, this.client.font.lineHeight - 1, width, 1, segment.format().color());
+                    this.fill(
+                            cursorX,
+                            this.client.font.lineHeight - 1,
+                            width,
+                            1,
+                            segment.format().color());
                 }
                 if (segment.format().strikethrough()) {
-                    this.fill(cursorX, this.client.font.lineHeight / 2F, width, 1, segment.format().color());
+                    this.fill(
+                            cursorX,
+                            this.client.font.lineHeight / 2F,
+                            width,
+                            1,
+                            segment.format().color());
                 }
                 cursorX += width;
             }
@@ -176,20 +206,33 @@ public final class Blaze3DRenderer extends CheckedRenderer {
             int color = argb(segment.format().color());
             alpha = Math.min(alpha, ARGB.alpha(color));
             shadow |= segment.format().shadow();
-            line.append(Component.literal(segment.text()).withStyle(Style.EMPTY
-                    .withColor(color & 0xFFFFFF)
-                    .withBold(segment.format().bold())
-                    .withUnderlined(segment.format().underlined())
-                    .withStrikethrough(segment.format().strikethrough())));
+            line.append(Component.literal(segment.text())
+                    .withStyle(Style.EMPTY
+                            .withColor(color & 0xFFFFFF)
+                            .withBold(segment.format().bold())
+                            .withUnderlined(segment.format().underlined())
+                            .withStrikethrough(segment.format().strikethrough())));
         }
-        this.graphics.text(this.client.font, Language.getInstance().getVisualOrder(line), 0, 0,
-                ARGB.color(alpha, 0xFFFFFF), shadow);
+        this.graphics.text(
+                this.client.font,
+                Language.getInstance().getVisualOrder(line),
+                0,
+                0,
+                ARGB.color(alpha, 0xFFFFFF),
+                shadow);
     }
 
     @Override
-    protected void doImage(final Texture image, final float x, final float y, final float width, final float height, final Color color) {
+    protected void doImage(
+            final Texture image,
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final Color color) {
         if (!(image instanceof MinecraftTexture texture)) {
-            throw new UnsupportedOperationException("Unsupported texture: " + image.getClass().getName());
+            throw new UnsupportedOperationException(
+                    "Unsupported texture: " + image.getClass().getName());
         }
         this.graphics.blit(
                 RenderPipelines.GUI_TEXTURED,
@@ -202,8 +245,7 @@ public final class Blaze3DRenderer extends CheckedRenderer {
                 Math.round(height),
                 texture.textureWidth(),
                 texture.textureHeight(),
-                argb(color)
-        );
+                argb(color));
     }
 
     @Override
@@ -220,7 +262,8 @@ public final class Blaze3DRenderer extends CheckedRenderer {
             this.drawSoftShadow(shadow);
             return;
         }
-        throw new UnsupportedOperationException("Unsupported Rivet render command: " + command.getClass().getName());
+        throw new UnsupportedOperationException(
+                "Unsupported Rivet render command: " + command.getClass().getName());
     }
 
     private void drawSoftShadow(final SoftShadowCommand shadow) {
@@ -235,8 +278,7 @@ public final class Blaze3DRenderer extends CheckedRenderer {
                 shadow.height() + margin * 2F,
                 feather,
                 AnarchyClientRenderPipelines.SDF_SHADOW,
-                shadow.color()
-        );
+                shadow.color());
     }
 
     private void drawGlassPanel(final GlassPanelCommand glass) {
@@ -246,8 +288,14 @@ public final class Blaze3DRenderer extends CheckedRenderer {
             // No captured scene (first frame, blur turned off, or a panel drawn outside a screen): the
             // same anti-aliased rounded fill at the theme's own opacity. Tessellated geometry or a
             // forced alpha here would make those panels read as a different, cruder component.
-            this.submitSdfGrid(glass.x(), glass.y(), glass.width(), glass.height(), radius,
-                    AnarchyClientRenderPipelines.SDF_FILL, glass.tint());
+            this.submitSdfGrid(
+                    glass.x(),
+                    glass.y(),
+                    glass.width(),
+                    glass.height(),
+                    radius,
+                    AnarchyClientRenderPipelines.SDF_FILL,
+                    glass.tint());
         } else {
             this.submitGlassGrid(glass, radius, scene);
         }
@@ -255,9 +303,20 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         if (design != null) {
             // Animated background design layered over the glass at low opacity.
             Color overlay = Color.fromRGBA(16, 16, 18, 96);
-            this.submitShape(GuiShapeGeometry.filledRoundedRect(
-                    glass.x(), glass.y(), glass.width(), glass.height(), radius, radius, radius, radius, argb(overlay)),
-                    design, true, TextureSetup.noTexture());
+            this.submitShape(
+                    GuiShapeGeometry.filledRoundedRect(
+                            glass.x(),
+                            glass.y(),
+                            glass.width(),
+                            glass.height(),
+                            radius,
+                            radius,
+                            radius,
+                            radius,
+                            argb(overlay)),
+                    design,
+                    true,
+                    TextureSetup.noTexture());
         }
     }
 
@@ -269,24 +328,39 @@ public final class Blaze3DRenderer extends CheckedRenderer {
      */
     private void submitGlassGrid(final GlassPanelCommand glass, final float radius, final GpuTextureView scene) {
         this.submitDistanceFieldGrid(
-                glass.x(), glass.y(), glass.width(), glass.height(), radius,
+                glass.x(),
+                glass.y(),
+                glass.width(),
+                glass.height(),
+                radius,
                 AnarchyClientRenderPipelines.GLASS_PANEL,
                 TextureSetup.singleTexture(scene, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR)),
-                argb(glass.tint())
-        );
+                argb(glass.tint()));
     }
 
-    private void submitSdfGrid(final float x, final float y, final float width, final float height,
-                               final float radius, final RenderPipeline pipeline, final Color color) {
+    private void submitSdfGrid(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float radius,
+            final RenderPipeline pipeline,
+            final Color color) {
         if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
             return;
         }
         this.submitDistanceFieldGrid(x, y, width, height, radius, pipeline, TextureSetup.noTexture(), argb(color));
     }
 
-    private void submitDistanceFieldGrid(final float x, final float y, final float width, final float height,
-                                         final float radius, final RenderPipeline pipeline,
-                                         final TextureSetup textureSetup, final int color) {
+    private void submitDistanceFieldGrid(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float radius,
+            final RenderPipeline pipeline,
+            final TextureSetup textureSetup,
+            final int color) {
         float[] xs = {x, x + width / 2F, x + width};
         float[] ys = {y, y + height / 2F, y + height};
         float[] us = {0F, width / 2F / radius, 0F};
@@ -305,23 +379,17 @@ public final class Blaze3DRenderer extends CheckedRenderer {
 
         Matrix3x2f pose = new Matrix3x2f(this.graphics.pose());
         ScreenRectangle scissorArea = this.currentScissorArea();
-        ScreenRectangle bounds = GuiShapeGeometry.bounds(
-                GuiShapeGeometry.solidRect(x, y, width, height, 0), pose, scissorArea);
+        ScreenRectangle bounds =
+                GuiShapeGeometry.bounds(GuiShapeGeometry.solidRect(x, y, width, height, 0), pose, scissorArea);
         if (bounds == null || bounds.width() <= 0 || bounds.height() <= 0) {
             return;
         }
-        this.graphics.guiRenderState.addGuiElement(new GlassPanelRenderState(
-                pipeline,
-                textureSetup,
-                pose,
-                vertices,
-                color,
-                scissorArea,
-                bounds
-        ));
+        this.graphics.guiRenderState.addGuiElement(
+                new GlassPanelRenderState(pipeline, textureSetup, pose, vertices, color, scissorArea, bounds));
     }
 
-    private void withScissor(final float x, final float y, final float width, final float height, final Runnable renderer) {
+    private void withScissor(
+            final float x, final float y, final float width, final float height, final Runnable renderer) {
         this.enableScissor(x, y, width, height);
         try {
             renderer.run();
@@ -346,8 +414,16 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     }
 
     @Override
-    protected void doFillRoundedRect(final float x, final float y, final float width, final float height,
-                                     final float rtl, final float rbl, final float rbr, final float rtr, final Color color) {
+    protected void doFillRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float rtl,
+            final float rbl,
+            final float rbr,
+            final float rtr,
+            final Color color) {
         // Uniform radii render through the anti-aliased SDF pipeline; mixed radii (unused by the
         // client UI) keep the tessellated fallback.
         if (rtl == rbl && rbl == rbr && rbr == rtr && rtl >= 1F) {
@@ -359,9 +435,17 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     }
 
     @Override
-    protected void doOutlineRoundedRect(final float x, final float y, final float width, final float height,
-                                        final float rtl, final float rbl, final float rbr, final float rtr,
-                                        final float outlineWidth, final Color color) {
+    protected void doOutlineRoundedRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float rtl,
+            final float rbl,
+            final float rbr,
+            final float rtr,
+            final float outlineWidth,
+            final Color color) {
         // sdf_outline draws a ring exactly HAIRLINE pixels wide and carries no width channel, so only
         // that one width may take it; every other width keeps the tessellated path, whose
         // stair-stepping is far less visible on a thick border anyway.
@@ -370,11 +454,18 @@ public final class Blaze3DRenderer extends CheckedRenderer {
             this.submitSdfGrid(x, y, width, height, radius, AnarchyClientRenderPipelines.SDF_OUTLINE, color);
             return;
         }
-        this.submitShape(GuiShapeGeometry.outlinedRoundedRect(x, y, width, height, rtl, rbl, rbr, rtr, outlineWidth, argb(color)));
+        this.submitShape(GuiShapeGeometry.outlinedRoundedRect(
+                x, y, width, height, rtl, rbl, rbr, rtr, outlineWidth, argb(color)));
     }
 
     @Override
-    protected void doOutlineRect(final float x, final float y, final float width, final float height, final float outlineWidth, final Color color) {
+    protected void doOutlineRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final float outlineWidth,
+            final Color color) {
         this.fill(x, y, width, outlineWidth, color);
         this.fill(x, y + height - outlineWidth, width, outlineWidth, color);
         this.fill(x, y, outlineWidth, height, color);
@@ -384,16 +475,25 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     @Override
     protected void doFillCircle(final float x, final float y, final float radius, final Color color) {
         // A square distance-field grid with radius = half size is an exact anti-aliased circle.
-        this.submitSdfGrid(x - radius, y - radius, radius * 2F, radius * 2F, radius, AnarchyClientRenderPipelines.SDF_FILL, color);
+        this.submitSdfGrid(
+                x - radius, y - radius, radius * 2F, radius * 2F, radius, AnarchyClientRenderPipelines.SDF_FILL, color);
     }
 
     @Override
-    protected void doOutlineCircle(final float x, final float y, final float radius, final float outlineWidth, final Color color) {
+    protected void doOutlineCircle(
+            final float x, final float y, final float radius, final float outlineWidth, final Color color) {
         this.outlineArc(x, y, radius, outlineWidth, 0, GuiShapeGeometry.FULL_CIRCLE, color);
     }
 
     @Override
-    protected void doFillTriangle(final float x1, final float y1, final float x2, final float y2, final float x3, final float y3, final Color color) {
+    protected void doFillTriangle(
+            final float x1,
+            final float y1,
+            final float x2,
+            final float y2,
+            final float x3,
+            final float y3,
+            final Color color) {
         this.submitShape(GuiShapeGeometry.filledTriangle(x1, y1, x2, y2, x3, y3, argb(color)));
     }
 
@@ -404,13 +504,15 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         for (int index = 1; index < points.length - 1; index++) {
             Point second = points[index];
             Point third = points[index + 1];
-            vertices.addAll(GuiShapeGeometry.filledTriangle(first.x(), first.y(), second.x(), second.y(), third.x(), third.y(), argb(color)));
+            vertices.addAll(GuiShapeGeometry.filledTriangle(
+                    first.x(), first.y(), second.x(), second.y(), third.x(), third.y(), argb(color)));
         }
         this.submitShape(vertices);
     }
 
     @Override
-    protected void doLine(final float x1, final float y1, final float x2, final float y2, final float width, final Color color) {
+    protected void doLine(
+            final float x1, final float y1, final float x2, final float y2, final float width, final Color color) {
         this.submitShape(GuiShapeGeometry.line(x1, y1, x2, y2, width, argb(color)));
     }
 
@@ -426,9 +528,17 @@ public final class Blaze3DRenderer extends CheckedRenderer {
     }
 
     @Override
-    protected void doFillGradientRect(final float x, final float y, final float width, final float height,
-                                      final Color ctl, final Color cbl, final Color cbr, final Color ctr) {
-        this.submitShape(GuiShapeGeometry.gradientRect(x, y, width, height, argb(ctl), argb(cbl), argb(cbr), argb(ctr)));
+    protected void doFillGradientRect(
+            final float x,
+            final float y,
+            final float width,
+            final float height,
+            final Color ctl,
+            final Color cbl,
+            final Color cbr,
+            final Color ctr) {
+        this.submitShape(
+                GuiShapeGeometry.gradientRect(x, y, width, height, argb(ctl), argb(cbl), argb(cbr), argb(ctr)));
     }
 
     @Override
@@ -440,23 +550,39 @@ public final class Blaze3DRenderer extends CheckedRenderer {
         if (width <= 0 || height <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        this.graphics.fill(RenderPipelines.GUI, MathUtils.floorInt(x), MathUtils.floorInt(y), MathUtils.ceilInt(x + width), MathUtils.ceilInt(y + height), argb(color));
+        this.graphics.fill(
+                RenderPipelines.GUI,
+                MathUtils.floorInt(x),
+                MathUtils.floorInt(y),
+                MathUtils.ceilInt(x + width),
+                MathUtils.ceilInt(y + height),
+                argb(color));
     }
 
-    private void outlineArc(final float x, final float y, final float radius, final float outlineWidth,
-                            final float startAngle, final float endAngle, final Color color) {
+    private void outlineArc(
+            final float x,
+            final float y,
+            final float radius,
+            final float outlineWidth,
+            final float startAngle,
+            final float endAngle,
+            final Color color) {
         if (radius <= 0 || outlineWidth <= 0 || color.getAlpha() <= 0) {
             return;
         }
-        this.submitShape(GuiShapeGeometry.ringArc(x, y, radius, Math.max(0, radius - outlineWidth), startAngle, endAngle, argb(color)));
+        this.submitShape(GuiShapeGeometry.ringArc(
+                x, y, radius, Math.max(0, radius - outlineWidth), startAngle, endAngle, argb(color)));
     }
 
     private void submitShape(final List<GuiShapeGeometry.Vertex> vertices) {
         this.submitShape(vertices, RenderPipelines.GUI, false, TextureSetup.noTexture());
     }
 
-    private void submitShape(final List<GuiShapeGeometry.Vertex> vertices, final RenderPipeline pipeline,
-                             final boolean useUv, final TextureSetup textureSetup) {
+    private void submitShape(
+            final List<GuiShapeGeometry.Vertex> vertices,
+            final RenderPipeline pipeline,
+            final boolean useUv,
+            final TextureSetup textureSetup) {
         if (vertices.isEmpty()) {
             return;
         }
@@ -468,15 +594,8 @@ public final class Blaze3DRenderer extends CheckedRenderer {
             return;
         }
 
-        this.graphics.guiRenderState.addGuiElement(new Blaze3DGuiShapeRenderState(
-                pipeline,
-                textureSetup,
-                pose,
-                vertices,
-                useUv,
-                scissorArea,
-                bounds
-        ));
+        this.graphics.guiRenderState.addGuiElement(
+                new Blaze3DGuiShapeRenderState(pipeline, textureSetup, pose, vertices, useUv, scissorArea, bounds));
     }
 
     private ScreenRectangle currentScissorArea() {

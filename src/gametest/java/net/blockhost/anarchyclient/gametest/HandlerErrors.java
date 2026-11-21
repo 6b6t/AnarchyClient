@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.gametest;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import net.blockhost.anarchyclient.event.AnarchyEventBus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Property;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Collects exceptions that module event handlers threw. The event bus only logs them, so a test
@@ -21,23 +20,22 @@ final class HandlerErrors {
     private static final Queue<String> ERRORS = new ConcurrentLinkedQueue<>();
     private static boolean installed;
 
-    private HandlerErrors() {
-    }
+    private HandlerErrors() {}
 
     static synchronized void install() {
         if (installed) {
             return;
         }
         Logger logger = (Logger) LogManager.getLogger(AnarchyEventBus.class);
-        AbstractAppender appender = new AbstractAppender("AnarchyClientHandlerErrors", null, null, true,
-                Property.EMPTY_ARRAY) {
-            @Override
-            public void append(final LogEvent event) {
-                Throwable thrown = event.getThrown();
-                ERRORS.add(event.getMessage().getFormattedMessage()
-                        + (thrown == null ? "" : ": " + thrown + stackHead(thrown)));
-            }
-        };
+        AbstractAppender appender =
+                new AbstractAppender("AnarchyClientHandlerErrors", null, null, true, Property.EMPTY_ARRAY) {
+                    @Override
+                    public void append(final LogEvent event) {
+                        Throwable thrown = event.getThrown();
+                        ERRORS.add(event.getMessage().getFormattedMessage()
+                                + (thrown == null ? "" : ": " + thrown + stackHead(thrown)));
+                    }
+                };
         appender.start();
         logger.addAppender(appender);
         installed = true;

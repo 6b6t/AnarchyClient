@@ -1,8 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.placement.BlockPlacer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
@@ -12,10 +15,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 public final class LiquidFillerModule extends Module {
 
@@ -40,11 +39,8 @@ public final class LiquidFillerModule extends Module {
             .name("Water")
             .defaultValue(true)
             .build()));
-    private final BooleanSetting lava = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("lava")
-            .name("Lava")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting lava = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("lava").name("Lava").defaultValue(true).build()));
     private final BooleanSetting preferSponge = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("sponge")
             .name("Sponge")
@@ -57,7 +53,10 @@ public final class LiquidFillerModule extends Module {
             .build()));
 
     public LiquidFillerModule() {
-        super("liquid_filler", "Liquid Filler", ModuleCategory.WORLD,
+        super(
+                "liquid_filler",
+                "Liquid Filler",
+                ModuleCategory.WORLD,
                 "Places blocks into nearby water and lava source blocks, preferring dry sponges when enabled and falling back to other blocks.");
     }
 
@@ -71,14 +70,15 @@ public final class LiquidFillerModule extends Module {
         BlockPos center = player.blockPosition();
         Predicate<ItemStack> items = this.fillItems(player);
         List<BlockPlacer.PlacementRequest> requests = new ArrayList<>();
-        for (BlockPos pos : BlockPos.betweenClosed(center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
+        for (BlockPos pos : BlockPos.betweenClosed(
+                center.offset(-radius, -radius, -radius), center.offset(radius, radius, radius))) {
             if (this.shouldFill(client.level.getFluidState(pos)) && CombatTargets.canReachBlock(player, pos)) {
                 requests.add(new BlockPlacer.PlacementRequest(pos.immutable(), items));
             }
         }
         // The batch stops at a spot that is still rotating, so it is retried next tick.
-        BlockPlacer.placeBatch(client, this.id(), requests, this.blocksPerTick.value().intValue(),
-                this.rotate.value(), 70.0F);
+        BlockPlacer.placeBatch(
+                client, this.id(), requests, this.blocksPerTick.value().intValue(), this.rotate.value(), 70.0F);
     }
 
     /** Uses dry sponges when preferred and available, otherwise any full block. */
@@ -93,6 +93,6 @@ public final class LiquidFillerModule extends Module {
     private boolean shouldFill(final FluidState fluid) {
         return fluid.isSource()
                 && (this.water.value() && fluid.getType() == Fluids.WATER
-                || this.lava.value() && fluid.getType() == Fluids.LAVA);
+                        || this.lava.value() && fluid.getType() == Fluids.LAVA);
     }
 }

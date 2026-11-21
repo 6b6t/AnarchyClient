@@ -13,8 +13,7 @@ import net.minecraft.world.entity.player.Input;
  */
 final class MovementKeys {
 
-    private MovementKeys() {
-    }
+    private MovementKeys() {}
 
     static Input input(final Minecraft client) {
         LocalPlayer player = client.player;

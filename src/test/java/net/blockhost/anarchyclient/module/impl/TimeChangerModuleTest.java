@@ -1,9 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import net.minecraft.world.clock.ClockNetworkState;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TimeChangerModuleTest {
 

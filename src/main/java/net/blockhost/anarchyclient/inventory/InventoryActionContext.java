@@ -1,10 +1,9 @@
 package net.blockhost.anarchyclient.inventory;
 
+import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.inventory.InventoryMenu;
-
-import java.util.Optional;
 
 public record InventoryActionContext(Minecraft client, LocalPlayer player) {
 

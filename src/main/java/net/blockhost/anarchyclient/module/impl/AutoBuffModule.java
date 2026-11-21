@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.inventory.ItemUseControl;
 import net.blockhost.anarchyclient.inventory.SilentHotbar;
 import net.blockhost.anarchyclient.module.Module;
@@ -13,8 +14,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
-
-import java.util.OptionalInt;
 
 public final class AutoBuffModule extends Module {
 
@@ -51,7 +50,10 @@ public final class AutoBuffModule extends Module {
     private boolean drinking;
 
     public AutoBuffModule() {
-        super("auto_buff", "Auto Buff", ModuleCategory.COMBAT,
+        super(
+                "auto_buff",
+                "Auto Buff",
+                ModuleCategory.COMBAT,
                 "Throws strength, speed, or regeneration potions at your feet, or drinks them when Splash is off, when the effect is missing.");
     }
 
@@ -63,10 +65,16 @@ public final class AutoBuffModule extends Module {
         }
         if (this.drinking) {
             // Hold the potion slot and the use until the drink finishes; both would lapse otherwise.
-            if (client.gui.screen() == null && player.isUsingItem()
+            if (client.gui.screen() == null
+                    && player.isUsingItem()
                     && player.getUsedItemHand() == InteractionHand.MAIN_HAND
-                    && SilentHotbar.select(player, this.id(), player.getInventory().getSelectedSlot(),
-                    SilentHotbar.PRIORITY_COMBAT, SLOT_HOLD_TICKS, true)) {
+                    && SilentHotbar.select(
+                            player,
+                            this.id(),
+                            player.getInventory().getSelectedSlot(),
+                            SilentHotbar.PRIORITY_COMBAT,
+                            SLOT_HOLD_TICKS,
+                            true)) {
                 ItemUseControl.use(client, this.id(), InteractionHand.MAIN_HAND);
                 return;
             }
@@ -90,8 +98,8 @@ public final class AutoBuffModule extends Module {
             return;
         }
         boolean splash = player.getInventory().getItem(slot.orElseThrow()).is(Items.SPLASH_POTION);
-        if (!SilentHotbar.select(player, this.id(), slot.orElseThrow(), SilentHotbar.PRIORITY_COMBAT,
-                SLOT_HOLD_TICKS, true)) {
+        if (!SilentHotbar.select(
+                player, this.id(), slot.orElseThrow(), SilentHotbar.PRIORITY_COMBAT, SLOT_HOLD_TICKS, true)) {
             return;
         }
         this.cooldownTicks = this.cooldown.value().intValue();

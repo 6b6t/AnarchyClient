@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.ui;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import net.lenni0451.rivet.Rivet;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.component.container.Container;
@@ -8,9 +11,6 @@ import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
 import net.lenni0451.rivet.math.Size;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LayoutTreeDumperTest {
 

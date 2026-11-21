@@ -15,9 +15,12 @@ public abstract class LevelExtractorMixin {
 
     /** Freecam moves the camera away from the player, so the player's in-wall, water, and fire overlays do not apply. */
     @Inject(method = "extractPlayerState", at = @At("TAIL"))
-    private void anarchyclient$clearFreecamOverlays(final Camera camera, final DeltaTracker deltaTracker,
-                                                    final float worldPartialTicks, final PlayerRenderState state,
-                                                    final CallbackInfo info) {
+    private void anarchyclient$clearFreecamOverlays(
+            final Camera camera,
+            final DeltaTracker deltaTracker,
+            final float worldPartialTicks,
+            final PlayerRenderState state,
+            final CallbackInfo info) {
         if (FreecamModule.detachesCamera()) {
             state.blockOverlay = null;
             state.waterOverlay = null;

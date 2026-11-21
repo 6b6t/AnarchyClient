@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
@@ -9,9 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public final class FlamethrowerModule extends Module {
 
@@ -37,7 +36,10 @@ public final class FlamethrowerModule extends Module {
     private final Map<BlockPos, Integer> refused = new HashMap<>();
 
     public FlamethrowerModule() {
-        super("flamethrower", "Flamethrower", ModuleCategory.WORLD,
+        super(
+                "flamethrower",
+                "Flamethrower",
+                ModuleCategory.WORLD,
                 "Sets fire to the tops of nearby blocks with flint and steel or fire charges, never right next to you.");
     }
 
@@ -65,20 +67,26 @@ public final class FlamethrowerModule extends Module {
                 this.range.value().intValue(),
                 BlockTargetScanner.SortMode.CLOSEST,
                 32,
-                candidate -> !candidate.state().isAir() && client.level.isEmptyBlock(candidate.pos().above())
+                candidate -> !candidate.state().isAir()
+                        && client.level.isEmptyBlock(candidate.pos().above())
                         && !this.refused.containsKey(candidate.pos())
                         && !safeZone.intersects(new AABB(candidate.pos().above()))
-                        && CombatTargets.canReachBlock(player, candidate.pos())
-        )) {
-            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, target.pos(), Direction.UP,
-                    stack -> stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.FIRE_CHARGE), true);
+                        && CombatTargets.canReachBlock(player, candidate.pos()))) {
+            WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(
+                    client,
+                    this,
+                    target.pos(),
+                    Direction.UP,
+                    stack -> stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.FIRE_CHARGE),
+                    true);
             if (result == WorldInteraction.ActionResult.REFUSED) {
                 // Fire cannot go here (water, snow, a torch); leave the block alone for a while.
                 this.refused.put(target.pos(), REFUSED_COOLDOWN_TICKS);
                 continue;
             }
             // Waiting means the rotation has not reached the server yet; retry the same block next tick.
-            if (result != WorldInteraction.ActionResult.DONE || ++used >= this.actions.value().intValue()) {
+            if (result != WorldInteraction.ActionResult.DONE
+                    || ++used >= this.actions.value().intValue()) {
                 return;
             }
         }

@@ -8,7 +8,10 @@ public final class NoMissCooldownModule extends Module {
     private static NoMissCooldownModule active;
 
     public NoMissCooldownModule() {
-        super("no_miss_cooldown", "No Miss Cooldown", ModuleCategory.COMBAT,
+        super(
+                "no_miss_cooldown",
+                "No Miss Cooldown",
+                ModuleCategory.COMBAT,
                 "Removes the short attack cooldown that vanilla adds after you click at air, so you can attack again right away.");
     }
 

@@ -1,5 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.friends.FriendManager;
 import net.blockhost.anarchyclient.module.Module;
@@ -11,12 +16,6 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class NameProtectModule extends Module {
 
@@ -35,11 +34,8 @@ public final class NameProtectModule extends Module {
             .name("Outgoing")
             .defaultValue(false)
             .build()));
-    private final BooleanSetting tab = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("tab")
-            .name("Tab")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting tab = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("tab").name("Tab").defaultValue(true).build()));
     private final BooleanSetting friends = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("friends")
             .name("Friends")
@@ -53,7 +49,10 @@ public final class NameProtectModule extends Module {
             .build()));
 
     public NameProtectModule() {
-        super("name_protect", "Name Protect", ModuleCategory.MISC,
+        super(
+                "name_protect",
+                "Name Protect",
+                ModuleCategory.MISC,
                 "Replaces your name, and optionally friend or listed names, in chat and the tab list.");
     }
 
@@ -62,7 +61,8 @@ public final class NameProtectModule extends Module {
         if (!this.incoming.value()) {
             return message;
         }
-        return replaceProtectedNames(client, message, this.replacement.value(), this.friends.value(), this.names.value());
+        return replaceProtectedNames(
+                client, message, this.replacement.value(), this.friends.value(), this.names.value());
     }
 
     @Override
@@ -70,7 +70,8 @@ public final class NameProtectModule extends Module {
         if (!this.outgoing.value() || client == null || client.getUser() == null || message == null) {
             return message;
         }
-        return replaceAll(message, protectedNames(client, this.friends.value(), this.names.value()), this.replacement.value());
+        return replaceAll(
+                message, protectedNames(client, this.friends.value(), this.names.value()), this.replacement.value());
     }
 
     @Override
@@ -85,8 +86,12 @@ public final class NameProtectModule extends Module {
         return replaceProtectedNames(client, message, replacement, false, "");
     }
 
-    static Component replaceProtectedNames(final Minecraft client, final Component message, final String replacement,
-                                           final boolean includeFriends, final String extraNames) {
+    static Component replaceProtectedNames(
+            final Minecraft client,
+            final Component message,
+            final String replacement,
+            final boolean includeFriends,
+            final String extraNames) {
         if (client == null || client.getUser() == null || message == null) {
             return message;
         }
@@ -103,10 +108,13 @@ public final class NameProtectModule extends Module {
             return message;
         }
         MutableComponent result = Component.empty();
-        message.visit((style, text) -> {
-            result.append(Component.literal(replaceAll(text, names, replacement)).withStyle(style));
-            return Optional.empty();
-        }, Style.EMPTY);
+        message.visit(
+                (style, text) -> {
+                    result.append(Component.literal(replaceAll(text, names, replacement))
+                            .withStyle(style));
+                    return Optional.empty();
+                },
+                Style.EMPTY);
         return result;
     }
 
@@ -131,10 +139,12 @@ public final class NameProtectModule extends Module {
         return result;
     }
 
-    private static List<String> protectedNames(final Minecraft client, final boolean includeFriends,
-                                               final String extraNames) {
+    private static List<String> protectedNames(
+            final Minecraft client, final boolean includeFriends, final String extraNames) {
         List<String> names = new ArrayList<>();
-        if (client != null && client.getUser() != null && !client.getUser().getName().isBlank()) {
+        if (client != null
+                && client.getUser() != null
+                && !client.getUser().getName().isBlank()) {
             names.add(client.getUser().getName());
         }
         if (includeFriends) {

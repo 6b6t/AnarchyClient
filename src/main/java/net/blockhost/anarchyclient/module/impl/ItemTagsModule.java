@@ -1,5 +1,8 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -20,10 +23,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public final class ItemTagsModule extends Module {
 
@@ -76,7 +75,10 @@ public final class ItemTagsModule extends Module {
             .build()));
 
     public ItemTagsModule() {
-        super("item_tags", "Item Tags", ModuleCategory.RENDER,
+        super(
+                "item_tags",
+                "Item Tags",
+                ModuleCategory.RENDER,
                 "Labels dropped items with name, count, and distance, and adds registry IDs to tooltips.");
         this.items.visibleWhen(() -> "Listed".equals(this.itemMode.value()));
     }
@@ -86,7 +88,9 @@ public final class ItemTagsModule extends Module {
         if (stack == null || stack.isEmpty() || !this.registryId.value()) {
             return;
         }
-        lines.add(Translations.component("anarchyclient.message.item_tags.id", "Id: %s", BuiltInRegistries.ITEM.getKey(stack.getItem())).withStyle(ChatFormatting.DARK_GRAY));
+        lines.add(Translations.component(
+                        "anarchyclient.message.item_tags.id", "Id: %s", BuiltInRegistries.ITEM.getKey(stack.getItem()))
+                .withStyle(ChatFormatting.DARK_GRAY));
     }
 
     @Override
@@ -113,10 +117,16 @@ public final class ItemTagsModule extends Module {
                 .forEach(entity -> this.renderLabel(client, graphics, client.player, entity, partialTick));
     }
 
-    private void renderLabel(final Minecraft client, final GuiGraphicsExtractor graphics, final Player player,
-                             final ItemEntity entity, final float partialTick) {
+    private void renderLabel(
+            final Minecraft client,
+            final GuiGraphicsExtractor graphics,
+            final Player player,
+            final ItemEntity entity,
+            final float partialTick) {
         double x = Mth.lerp(partialTick, entity.xo, entity.getX());
-        double y = Mth.lerp(partialTick, entity.yo, entity.getY()) + entity.getBoundingBox().getYsize() + 0.35;
+        double y = Mth.lerp(partialTick, entity.yo, entity.getY())
+                + entity.getBoundingBox().getYsize()
+                + 0.35;
         double z = Mth.lerp(partialTick, entity.zo, entity.getZ());
         Vec3 projected = client.gameRenderer.projectPointToScreen(new Vec3(x, y, z));
         if (projected.z > 1.0) {
@@ -152,7 +162,8 @@ public final class ItemTagsModule extends Module {
         if (!(entity instanceof ItemEntity itemEntity)) {
             return false;
         }
-        String id = BuiltInRegistries.ITEM.getKey(itemEntity.getItem().getItem()).getPath();
+        String id =
+                BuiltInRegistries.ITEM.getKey(itemEntity.getItem().getItem()).getPath();
         return id.contains("diamond")
                 || id.contains("netherite")
                 || id.contains("totem")

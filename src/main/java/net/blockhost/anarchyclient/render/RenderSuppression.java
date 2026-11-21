@@ -8,8 +8,7 @@ public final class RenderSuppression {
 
     private static final Map<String, EnumSet<Kind>> REQUESTS = new ConcurrentHashMap<>();
 
-    private RenderSuppression() {
-    }
+    private RenderSuppression() {}
 
     /** Replaces the owner's suppressed effects with {@code kinds}. No kinds removes the owner's request. */
     public static void enable(final String owner, final Kind... kinds) {

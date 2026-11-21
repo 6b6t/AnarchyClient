@@ -1,5 +1,6 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -15,8 +16,6 @@ import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-
-import java.util.List;
 
 public final class SpeedMineModule extends Module {
 
@@ -67,7 +66,10 @@ public final class SpeedMineModule extends Module {
     private int cooldownTicks;
 
     public SpeedMineModule() {
-        super("speed_mine", "Speed Mine", ModuleCategory.WORLD,
+        super(
+                "speed_mine",
+                "Speed Mine",
+                ModuleCategory.WORLD,
                 "Mines blocks faster by sending the finish-digging packet early, or by repeated legit breaking. "
                         + "Packet mode never stops before 70% progress, the earliest point the server accepts.");
     }
@@ -115,21 +117,17 @@ public final class SpeedMineModule extends Module {
         if (this.target == null || !this.target.matches(pos, hit.getDirection())) {
             this.reset(client);
             this.target = new MiningTarget(pos.immutable(), hit.getDirection(), 0.0F);
-            client.getConnection().send(new ServerboundPlayerActionPacket(
-                    ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK,
-                    pos,
-                    hit.getDirection()
-            ));
+            client.getConnection()
+                    .send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, hit.getDirection()));
         }
         float progress = this.target.progress() + state.getDestroyProgress(player, client.level, pos);
         this.target = new MiningTarget(pos.immutable(), hit.getDirection(), progress);
         this.debugValue("progress", Math.min(100, Math.round(progress * 100.0F)) + "%");
         if (readyToStop(progress, this.speed.value().floatValue())) {
-            client.getConnection().send(new ServerboundPlayerActionPacket(
-                    ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK,
-                    pos,
-                    hit.getDirection()
-            ));
+            client.getConnection()
+                    .send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, hit.getDirection()));
             player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.target = null;
             this.cooldownTicks = this.cooldown.value().intValue();
@@ -154,11 +152,11 @@ public final class SpeedMineModule extends Module {
     private void reset(final Minecraft client) {
         WorldInteraction.stopBreaking(client, this);
         if (this.target != null && client.getConnection() != null) {
-            client.getConnection().send(new ServerboundPlayerActionPacket(
-                    ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                    this.target.pos(),
-                    this.target.face()
-            ));
+            client.getConnection()
+                    .send(new ServerboundPlayerActionPacket(
+                            ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
+                            this.target.pos(),
+                            this.target.face()));
         }
         this.target = null;
     }

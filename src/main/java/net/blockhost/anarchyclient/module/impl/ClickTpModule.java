@@ -20,7 +20,10 @@ public final class ClickTpModule extends Module {
             .build()));
 
     public ClickTpModule() {
-        super("click_tp", "Click TP", ModuleCategory.MOVEMENT,
+        super(
+                "click_tp",
+                "Click TP",
+                ModuleCategory.MOVEMENT,
                 "Teleports on top of the targeted block when you middle-click, optionally only while sneaking. This can flag anti-cheats.");
     }
 
@@ -30,13 +33,16 @@ public final class ClickTpModule extends Module {
             return false;
         }
         LocalPlayer player = client.player;
-        if (player == null || client.getConnection() == null || client.hitResult == null
+        if (player == null
+                || client.getConnection() == null
+                || client.hitResult == null
                 || client.hitResult.getType() != HitResult.Type.BLOCK
                 || this.requireSneak.value() && !client.options.keyShift.isDown()) {
             return false;
         }
         // Stand on top of the clicked block; the raw hit point on a side face is inside the wall.
-        Vec3 target = Vec3.atBottomCenterOf(((BlockHitResult) client.hitResult).getBlockPos().above());
+        Vec3 target = Vec3.atBottomCenterOf(
+                ((BlockHitResult) client.hitResult).getBlockPos().above());
         // Move locally only: vanilla sends the position in its next tick, and a second position packet in the
         // same tick gets the player disconnected on 26.3.
         player.setPos(target);

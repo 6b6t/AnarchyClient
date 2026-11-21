@@ -18,11 +18,8 @@ public final class AntiAfkModule extends Module {
             .max(300.0)
             .step(5.0)
             .build()));
-    private final BooleanSetting jump = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("jump")
-            .name("Jump")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting jump = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("jump").name("Jump").defaultValue(true).build()));
     private final BooleanSetting rotate = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("rotate")
             .name("Rotate")
@@ -31,7 +28,10 @@ public final class AntiAfkModule extends Module {
     private int cooldownTicks;
 
     public AntiAfkModule() {
-        super("anti_afk", "Anti AFK", ModuleCategory.PLAYER,
+        super(
+                "anti_afk",
+                "Anti AFK",
+                ModuleCategory.PLAYER,
                 "Rotates your view and jumps at a set interval so the server does not mark you as idle.");
     }
 

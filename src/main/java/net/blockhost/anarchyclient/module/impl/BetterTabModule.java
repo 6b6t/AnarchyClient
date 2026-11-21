@@ -1,5 +1,11 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
@@ -15,13 +21,6 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameType;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import java.util.stream.Stream;
-
 public final class BetterTabModule extends Module {
 
     private static BetterTabModule active;
@@ -32,11 +31,8 @@ public final class BetterTabModule extends Module {
             .defaultValue("Default")
             .addAllOptions(List.of("Default", "Ping", "Name", "Name Length"))
             .build()));
-    private final BooleanSetting ping = this.setting(BooleanSetting.from(BooleanSetting.builder()
-            .id("ping")
-            .name("Ping")
-            .defaultValue(true)
-            .build()));
+    private final BooleanSetting ping = this.setting(BooleanSetting.from(
+            BooleanSetting.builder().id("ping").name("Ping").defaultValue(true).build()));
     private final BooleanSetting gamemode = this.setting(BooleanSetting.from(BooleanSetting.builder()
             .id("gamemode")
             .name("Gamemode")
@@ -65,7 +61,10 @@ public final class BetterTabModule extends Module {
             .build()));
 
     public BetterTabModule() {
-        super("better_tab", "Better Tab", ModuleCategory.RENDER,
+        super(
+                "better_tab",
+                "Better Tab",
+                ModuleCategory.RENDER,
                 "Sorts and filters the player list and marks entries with ping, game mode, and highlights for you, friends, and staff.");
     }
 
@@ -76,7 +75,9 @@ public final class BetterTabModule extends Module {
         }
         Component result = name.copy();
         String playerName = playerInfo.getProfile().name();
-        if (this.highlightSelf.value() && client != null && client.getUser() != null
+        if (this.highlightSelf.value()
+                && client != null
+                && client.getUser() != null
                 && playerName.equalsIgnoreCase(client.getUser().getName())) {
             result = Component.literal("* ").withStyle(ChatFormatting.GOLD).append(result);
         } else if (this.highlightFriends.value() && AnarchyClient.FRIENDS.isFriend(playerName)) {
@@ -119,12 +120,15 @@ public final class BetterTabModule extends Module {
         Comparator<PlayerInfo> comparator = switch (module.sort.value()) {
             case "Ping" -> Comparator.comparingInt(PlayerInfo::getLatency);
             case "Name" -> Comparator.comparing(info -> info.getProfile().name(), String.CASE_INSENSITIVE_ORDER);
-            case "Name Length" -> Comparator.comparingInt((PlayerInfo info) -> info.getProfile().name().length())
-                    .thenComparing(info -> info.getProfile().name(), String.CASE_INSENSITIVE_ORDER);
+            case "Name Length" ->
+                Comparator.comparingInt(
+                                (PlayerInfo info) -> info.getProfile().name().length())
+                        .thenComparing(info -> info.getProfile().name(), String.CASE_INSENSITIVE_ORDER);
             default -> null;
         };
         Stream<PlayerInfo> stream = infos.stream()
-                .filter(info -> hidePattern == null || !hidePattern.matcher(info.getProfile().name()).find());
+                .filter(info -> hidePattern == null
+                        || !hidePattern.matcher(info.getProfile().name()).find());
         if (comparator != null) {
             stream = stream.sorted(comparator);
         }
@@ -135,8 +139,8 @@ public final class BetterTabModule extends Module {
         String normalized = normalize(playerName);
         return !normalized.isBlank()
                 && ServerProfileStore.staffNames(ServerObserver.snapshot().rootDomain()).stream()
-                .map(BetterTabModule::normalize)
-                .anyMatch(normalized::equals);
+                        .map(BetterTabModule::normalize)
+                        .anyMatch(normalized::equals);
     }
 
     private Pattern hidePattern() {

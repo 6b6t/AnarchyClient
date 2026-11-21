@@ -1,8 +1,10 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.placement.BlockPlacer;
+import java.util.ArrayList;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.placement.BlockPlacer;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
@@ -12,9 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public final class ScaffoldModule extends Module {
 
@@ -76,7 +75,10 @@ public final class ScaffoldModule extends Module {
     private int startY = Integer.MIN_VALUE;
 
     public ScaffoldModule() {
-        super("scaffold", "Scaffold", ModuleCategory.WORLD,
+        super(
+                "scaffold",
+                "Scaffold",
+                ModuleCategory.WORLD,
                 "Places blocks under the player while walking, with optional tower, sprint, and edge protection.");
     }
 
@@ -90,7 +92,9 @@ public final class ScaffoldModule extends Module {
             input.keyPresses = InputStates.withSprint(input.keyPresses, true);
             player.setSprinting(true);
         }
-        if (this.eagle.value() && client.level != null && client.level.getBlockState(player.blockPosition().below()).canBeReplaced()) {
+        if (this.eagle.value()
+                && client.level != null
+                && client.level.getBlockState(player.blockPosition().below()).canBeReplaced()) {
             input.keyPresses = InputStates.withShift(input.keyPresses, true);
         }
         InputStates.refreshMoveVector(input);
@@ -120,9 +124,15 @@ public final class ScaffoldModule extends Module {
         }
         List<BlockPos> targets = targets(player);
         // The batch stops at a target that is still rotating, so it is retried next tick.
-        int placed = BlockPlacer.placeBatch(client, this.id(),
-                targets.stream().map(pos -> new BlockPlacer.PlacementRequest(pos, stack -> true)).toList(),
-                this.blocksPerTick.value().intValue(), this.rotate.value(), 80.0F);
+        int placed = BlockPlacer.placeBatch(
+                client,
+                this.id(),
+                targets.stream()
+                        .map(pos -> new BlockPlacer.PlacementRequest(pos, stack -> true))
+                        .toList(),
+                this.blocksPerTick.value().intValue(),
+                this.rotate.value(),
+                80.0F);
         this.debugValue("placed", placed);
         this.debugValue("targets", targets.size());
     }
@@ -153,10 +163,10 @@ public final class ScaffoldModule extends Module {
         }
         if (this.prediction.value()) {
             BlockPos predicted = BlockPos.containing(
-                    player.getX() + player.getDeltaMovement().x,
-                    player.getY(),
-                    player.getZ() + player.getDeltaMovement().z
-            ).below();
+                            player.getX() + player.getDeltaMovement().x,
+                            player.getY(),
+                            player.getZ() + player.getDeltaMovement().z)
+                    .below();
             targets.add(predicted);
             if (this.expand.value()) {
                 for (Direction direction : Direction.Plane.HORIZONTAL) {

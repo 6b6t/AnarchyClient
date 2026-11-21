@@ -26,7 +26,10 @@ public final class SafeWalkModule extends Module {
             .build()));
 
     public SafeWalkModule() {
-        super("safe_walk", "Safe Walk", ModuleCategory.MOVEMENT,
+        super(
+                "safe_walk",
+                "Safe Walk",
+                ModuleCategory.MOVEMENT,
                 "Stops the player from walking off block edges, optionally only while sneaking or holding blocks.");
     }
 

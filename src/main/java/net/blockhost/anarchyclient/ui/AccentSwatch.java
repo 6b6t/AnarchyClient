@@ -1,13 +1,13 @@
 package net.blockhost.anarchyclient.ui;
 
+import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
+
 import net.blockhost.anarchyclient.config.ClientConfig;
 import net.lenni0451.rivet.backend.render.Renderer;
 import net.lenni0451.rivet.component.Component;
 import net.lenni0451.rivet.input.mouse.MouseButton;
 import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
 import net.lenni0451.rivet.math.Size;
-
-import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
 
 final class AccentSwatch extends Component implements LayoutDebugLabel {
 
@@ -32,7 +32,8 @@ final class AccentSwatch extends Component implements LayoutDebugLabel {
             // through the anti-aliased SDF path, unlike a tessellated outline.
             renderer.fillCircle(centerX, centerY, radius + 2F, TEXT);
         }
-        renderer.fillCircle(centerX, centerY, radius, GuiThemePalette.of(this.preset).active());
+        renderer.fillCircle(
+                centerX, centerY, radius, GuiThemePalette.of(this.preset).active());
     }
 
     @Override

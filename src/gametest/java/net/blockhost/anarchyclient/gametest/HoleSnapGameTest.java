@@ -21,7 +21,12 @@ public final class HoleSnapGameTest implements GameScenario {
             GameTestSupport.enable(context, "hole_snap", true);
             try {
                 context.waitFor(client -> client.player.blockPosition().equals(hole) && client.player.onGround(), 100);
-                arena.server().waitFor(server -> arena.serverPlayer(server).blockPosition().equals(hole), 40);
+                arena.server()
+                        .waitFor(
+                                server -> arena.serverPlayer(server)
+                                        .blockPosition()
+                                        .equals(hole),
+                                40);
             } finally {
                 GameTestSupport.enable(context, "hole_snap", false);
                 GameTestSupport.setting(context, "hole_snap", "directional", new JsonPrimitive(true));

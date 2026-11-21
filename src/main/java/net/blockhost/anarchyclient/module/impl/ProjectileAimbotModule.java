@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.Comparator;
+import java.util.Optional;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.projectile.ProjectileAim;
@@ -15,9 +17,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-
-import java.util.Comparator;
-import java.util.Optional;
 
 public final class ProjectileAimbotModule extends Module {
 
@@ -36,7 +35,11 @@ public final class ProjectileAimbotModule extends Module {
             .build()));
 
     public ProjectileAimbotModule() {
-        super("projectile_aimbot", "Projectile Aimbot", ModuleCategory.COMBAT, "Leads projectile shots toward selected targets with configurable range and aim rules.");
+        super(
+                "projectile_aimbot",
+                "Projectile Aimbot",
+                ModuleCategory.COMBAT,
+                "Leads projectile shots toward selected targets with configurable range and aim rules.");
     }
 
     @Override
@@ -48,19 +51,29 @@ public final class ProjectileAimbotModule extends Module {
         }
         TargetPolicy policy = TargetPolicy.of(true, this.hostiles.value(), false, true, true, true, true);
         String type = ProjectileAim.typeOf(player.getMainHandItem());
-        Optional<LivingEntity> target = TargetQuery.closest(client.level.entitiesForRendering(), player, policy,
-                this.range.value(), Comparator.comparingDouble(player::distanceToSqr));
-        target.ifPresentOrElse(entity -> RotationManager.request(new RotationRequest(
-                this.id(),
-                ProjectileAim.viewForLaunch(ProjectileAim.rotationToHit(player.getEyePosition(), entity,
-                        ProjectileAim.throwableVelocity(type), ProjectileAim.gravity(type)), type),
-                70,
-                35.0F,
-                2,
-                2.0F,
-                RotationTurnMode.STEPPED,
-                true
-        )), () -> RotationManager.clear(this.id()));
+        Optional<LivingEntity> target = TargetQuery.closest(
+                client.level.entitiesForRendering(),
+                player,
+                policy,
+                this.range.value(),
+                Comparator.comparingDouble(player::distanceToSqr));
+        target.ifPresentOrElse(
+                entity -> RotationManager.request(new RotationRequest(
+                        this.id(),
+                        ProjectileAim.viewForLaunch(
+                                ProjectileAim.rotationToHit(
+                                        player.getEyePosition(),
+                                        entity,
+                                        ProjectileAim.throwableVelocity(type),
+                                        ProjectileAim.gravity(type)),
+                                type),
+                        70,
+                        35.0F,
+                        2,
+                        2.0F,
+                        RotationTurnMode.STEPPED,
+                        true)),
+                () -> RotationManager.clear(this.id()));
         // A request does nothing until it is applied; nothing else applies it for this module.
         RotationManager.apply(player);
     }
@@ -74,5 +87,4 @@ public final class ProjectileAimbotModule extends Module {
                 || stack.is(Items.EXPERIENCE_BOTTLE)
                 || stack.is(Items.TRIDENT);
     }
-
 }

@@ -29,8 +29,7 @@ import net.blockhost.anarchyclient.module.impl.SmartEatModule;
  */
 final class PlayerModules {
 
-    private PlayerModules() {
-    }
+    private PlayerModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new SmartEatModule());

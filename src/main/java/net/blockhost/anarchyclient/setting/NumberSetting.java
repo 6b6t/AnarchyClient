@@ -2,10 +2,9 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import net.lenni0451.commons.math.MathUtils;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import net.lenni0451.commons.math.MathUtils;
 
 public final class NumberSetting extends Setting<Double> {
 
@@ -50,9 +49,12 @@ public final class NumberSetting extends Setting<Double> {
             return MathUtils.clamp(value, this.min, this.max);
         }
         double snapped = this.min + Math.round((value - this.min) / this.step) * this.step;
-        int scale = Math.max(BigDecimal.valueOf(this.step).stripTrailingZeros().scale(),
+        int scale = Math.max(
+                BigDecimal.valueOf(this.step).stripTrailingZeros().scale(),
                 BigDecimal.valueOf(this.min).stripTrailingZeros().scale());
-        double rounded = BigDecimal.valueOf(snapped).setScale(Math.max(0, scale), RoundingMode.HALF_UP).doubleValue();
+        double rounded = BigDecimal.valueOf(snapped)
+                .setScale(Math.max(0, scale), RoundingMode.HALF_UP)
+                .doubleValue();
         return MathUtils.clamp(rounded, this.min, this.max);
     }
 

@@ -1,16 +1,15 @@
 package net.blockhost.anarchyclient.server;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ServerObserverTest {
 
@@ -28,10 +27,15 @@ class ServerObserverTest {
     @Test
     void guessesKnownAntiCheatTransactionPatterns() {
         assertEquals(Optional.of("Watchdog"), ServerObserver.guessAntiCheat("mc.hypixel.net", List.of(1, 2, 3, 4, 5)));
-        assertEquals(Optional.of("Vulcan"), ServerObserver.guessAntiCheat("test.local", List.of(-23770, -23769, -23768, -23767, -23766)));
-        assertEquals(Optional.of("Matrix"), ServerObserver.guessAntiCheat("test.local", List.of(100, 101, 102, 103, 104)));
+        assertEquals(
+                Optional.of("Vulcan"),
+                ServerObserver.guessAntiCheat("test.local", List.of(-23770, -23769, -23768, -23767, -23766)));
+        assertEquals(
+                Optional.of("Matrix"), ServerObserver.guessAntiCheat("test.local", List.of(100, 101, 102, 103, 104)));
         assertEquals(Optional.of("Grim"), ServerObserver.guessAntiCheat("test.local", List.of(-1, -2, -3, -4, -5)));
-        assertEquals(Optional.of("Intave"), ServerObserver.guessAntiCheat("test.local", List.of(-4000, -4001, -4002, -4003, -4004)));
+        assertEquals(
+                Optional.of("Intave"),
+                ServerObserver.guessAntiCheat("test.local", List.of(-4000, -4001, -4002, -4003, -4004)));
         assertEquals(Optional.empty(), ServerObserver.guessAntiCheat("test.local", List.of(1, 2, 3, 4)));
     }
 
@@ -40,22 +44,24 @@ class ServerObserverTest {
         Set<String> plugins = ServerObserver.extractPluginsFromSuggestions(List.of(
                 new ClientboundCommandSuggestionsPacket.Entry("bukkit:plugins", Optional.empty()),
                 new ClientboundCommandSuggestionsPacket.Entry("/grimac:alerts", Optional.empty()),
-                new ClientboundCommandSuggestionsPacket.Entry("help", Optional.empty())
-        ));
+                new ClientboundCommandSuggestionsPacket.Entry("help", Optional.empty())));
 
         assertEquals(Set.of("bukkit", "grimac"), plugins);
     }
 
     @Test
     void extractsPluginNamesFromChatMessages() {
-        assertEquals(Set.of("grimac", "viaversion", "worldedit"),
+        assertEquals(
+                Set.of("grimac", "viaversion", "worldedit"),
                 ServerObserver.extractPluginsFromMessage("Plugins (3): GrimAC, ViaVersion, WorldEdit"));
     }
 
     @Test
     void extractsPluginNamesFromPaperListLines() {
-        assertEquals(Set.of("luckperms", "worldedit"),
-                ServerObserver.extractPluginsFromMessage("Server Plugins (2):\nBukkit Plugins:\n - LuckPerms, WorldEdit"));
+        assertEquals(
+                Set.of("luckperms", "worldedit"),
+                ServerObserver.extractPluginsFromMessage(
+                        "Server Plugins (2):\nBukkit Plugins:\n - LuckPerms, WorldEdit"));
         assertEquals(Set.of("essentials"), ServerObserver.extractPluginsFromMessage(" - Essentials"));
         assertEquals(Set.of(), ServerObserver.extractPluginsFromMessage("Bukkit Plugins:"));
     }
@@ -75,21 +81,14 @@ class ServerObserverTest {
                 1,
                 3,
                 new ServerObserver.FlagInfo(
-                        3,
-                        ServerObserver.FlagReason.FORCE_ROTATE,
-                        Vec3.ZERO,
-                        0.0F,
-                        0.0F,
-                        "test",
-                        1L
-                ),
+                        3, ServerObserver.FlagReason.FORCE_ROTATE, Vec3.ZERO, 0.0F, 0.0F, "test", 1L),
                 4,
                 8,
                 4,
-                2
-        );
+                2);
 
-        assertEquals(Set.of("grim-like", "strict-movement", "strict-rotation", "plugin-leak", "low-tps", "tab-churn"),
+        assertEquals(
+                Set.of("grim-like", "strict-movement", "strict-rotation", "plugin-leak", "low-tps", "tab-churn"),
                 snapshot.environmentLabels());
         assertEquals(84, snapshot.safetyScore());
     }

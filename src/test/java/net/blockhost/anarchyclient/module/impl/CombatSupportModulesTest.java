@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.OptionalInt;
 import net.blockhost.anarchyclient.test.MapBlockGetter;
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.blockhost.anarchyclient.test.TestInventories;
@@ -15,14 +22,6 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.List;
-import java.util.OptionalInt;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MinecraftBootstrapExtension.class)
 class CombatSupportModulesTest {
@@ -49,8 +48,8 @@ class CombatSupportModulesTest {
                 .set(FEET.below(), Blocks.OBSIDIAN)
                 .set(FEET.north().below(), Blocks.STONE);
 
-        List<BlockPos> spots = CrystalBlockerModule.dangerousSpots(level, FEET,
-                spot -> 20.0 - spot.distSqr(FEET), 15.0);
+        List<BlockPos> spots =
+                CrystalBlockerModule.dangerousSpots(level, FEET, spot -> 20.0 - spot.distSqr(FEET), 15.0);
 
         // The player's own cell rests on obsidian too, but is never a target.
         assertEquals(List.of(FEET.east(), FEET.east(2)), spots);
@@ -67,7 +66,8 @@ class CombatSupportModulesTest {
         assertFalse(CrystalBlockerModule.isCrystalSpot(level, FEET.east()));
         // Like the End Crystal item, a block above the spot does not stop the placement.
         assertTrue(CrystalBlockerModule.isCrystalSpot(level, FEET.west()));
-        assertTrue(CrystalBlockerModule.dangerousSpots(level, FEET, spot -> 1.0, 2.0).isEmpty());
+        assertTrue(CrystalBlockerModule.dangerousSpots(level, FEET, spot -> 1.0, 2.0)
+                .isEmpty());
     }
 
     @Test
@@ -96,9 +96,12 @@ class CombatSupportModulesTest {
         Inventory inventory = TestInventories.withSlots(new ItemStack(Items.STONE), new ItemStack(Items.ARROW));
         inventory.setItem(12, new ItemStack(Items.SPECTRAL_ARROW));
 
-        assertEquals(OptionalInt.of(1), ArrowSwapModule.firstMatching(inventory, stack -> stack.is(Items.ARROW)
-                || stack.is(Items.SPECTRAL_ARROW)));
-        assertEquals(OptionalInt.of(12), ArrowSwapModule.firstMatching(inventory, stack -> stack.is(Items.SPECTRAL_ARROW)));
+        assertEquals(
+                OptionalInt.of(1),
+                ArrowSwapModule.firstMatching(
+                        inventory, stack -> stack.is(Items.ARROW) || stack.is(Items.SPECTRAL_ARROW)));
+        assertEquals(
+                OptionalInt.of(12), ArrowSwapModule.firstMatching(inventory, stack -> stack.is(Items.SPECTRAL_ARROW)));
     }
 
     @Test

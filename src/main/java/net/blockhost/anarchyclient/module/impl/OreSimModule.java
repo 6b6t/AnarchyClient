@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.render.WorldLineRenderer;
@@ -14,8 +15,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
-import java.util.List;
 
 /**
  * Shows where an ore generates by height. It does not simulate world generation, so it cannot
@@ -41,7 +40,10 @@ public final class OreSimModule extends Module {
             .build()));
 
     public OreSimModule() {
-        super("ore_sim", "Ore Sim", ModuleCategory.RENDER,
+        super(
+                "ore_sim",
+                "Ore Sim",
+                ModuleCategory.RENDER,
                 "Outlines the height band where the selected ore generates in its dimension and marks its most common layer. "
                         + "It does not predict exact ore positions.");
     }
@@ -64,11 +66,15 @@ public final class OreSimModule extends Module {
         WorldLineRenderer.Color color = DEBRIS.equals(this.target.value())
                 ? new WorldLineRenderer.Color(190, 120, 85, 210)
                 : new WorldLineRenderer.Color(105, 235, 255, 210);
-        AABB bandBox = new AABB(center.x - size, band.minY(), center.z - size,
-                center.x + size, band.maxY() + 1, center.z + size);
+        AABB bandBox = new AABB(
+                center.x - size, band.minY(), center.z - size, center.x + size, band.maxY() + 1, center.z + size);
         WorldLineRenderer.boxNoDepth(matrices, submits, bandBox.move(offset), color);
-        AABB peakLayer = new AABB(bandBox.minX, band.peakY(), bandBox.minZ, bandBox.maxX, band.peakY() + 1, bandBox.maxZ);
-        WorldLineRenderer.fillNoDepth(matrices, submits, peakLayer.move(offset),
+        AABB peakLayer =
+                new AABB(bandBox.minX, band.peakY(), bandBox.minZ, bandBox.maxX, band.peakY() + 1, bandBox.maxZ);
+        WorldLineRenderer.fillNoDepth(
+                matrices,
+                submits,
+                peakLayer.move(offset),
                 new WorldLineRenderer.Color(color.red(), color.green(), color.blue(), 40));
     }
 
@@ -84,6 +90,5 @@ public final class OreSimModule extends Module {
                 : new OreBand(Level.OVERWORLD, -64, -59, 16);
     }
 
-    record OreBand(ResourceKey<Level> dimension, int minY, int peakY, int maxY) {
-    }
+    record OreBand(ResourceKey<Level> dimension, int minY, int peakY, int maxY) {}
 }

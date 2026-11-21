@@ -48,7 +48,10 @@ public final class SkyboxModule extends Module {
             .build()));
 
     public SkyboxModule() {
-        super("skybox", "Skybox", ModuleCategory.RENDER,
+        super(
+                "skybox",
+                "Skybox",
+                ModuleCategory.RENDER,
                 "Replaces the overworld sky color with your own color or a slow rainbow, and can show stars by day. Only you see it.");
         this.skyColor.visibleWhen(() -> !this.rainbow.value());
         this.rainbowSeconds.visibleWhen(this.rainbow::value);

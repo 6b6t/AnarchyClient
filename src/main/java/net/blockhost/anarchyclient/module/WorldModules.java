@@ -33,8 +33,7 @@ import net.blockhost.anarchyclient.module.impl.VeinMinerModule;
  */
 final class WorldModules {
 
-    private WorldModules() {
-    }
+    private WorldModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new AutoToolModule());

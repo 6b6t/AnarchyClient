@@ -22,7 +22,10 @@ public final class BoatPhaseModule extends Module {
     private Entity lastVehicle;
 
     public BoatPhaseModule() {
-        super("boat_phase", "Boat Phase", ModuleCategory.MOVEMENT,
+        super(
+                "boat_phase",
+                "Boat Phase",
+                ModuleCategory.MOVEMENT,
                 "Disables collision on your ridden vehicle and steers it with movement, jump, and sneak keys so it passes through blocks.");
     }
 
@@ -49,7 +52,8 @@ public final class BoatPhaseModule extends Module {
         this.lastVehicle = vehicle;
         vehicle.noPhysics = true;
         Vec3 horizontal = MovementVelocity.fromKeys(client, client.player.getYRot(), this.speed.value());
-        vehicle.setDeltaMovement(horizontal.x,
+        vehicle.setDeltaMovement(
+                horizontal.x,
                 verticalSpeed(client.options.keyJump.isDown(), client.options.keyShift.isDown(), this.speed.value()),
                 horizontal.z);
     }

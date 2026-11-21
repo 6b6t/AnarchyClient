@@ -1,13 +1,12 @@
 package net.blockhost.anarchyclient.module.impl;
 
+import java.util.List;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-
-import java.util.List;
 
 public final class HitboxModule extends Module {
 
@@ -23,8 +22,12 @@ public final class HitboxModule extends Module {
             .build()));
 
     public HitboxModule() {
-        super("hitbox", "Hitbox", ModuleCategory.COMBAT,
-                "Enlarges living entity hitboxes for your crosshair and adds the same extra range to client targeting.", List.of("hitboxes"));
+        super(
+                "hitbox",
+                "Hitbox",
+                ModuleCategory.COMBAT,
+                "Enlarges living entity hitboxes for your crosshair and adds the same extra range to client targeting.",
+                List.of("hitboxes"));
     }
 
     @Override

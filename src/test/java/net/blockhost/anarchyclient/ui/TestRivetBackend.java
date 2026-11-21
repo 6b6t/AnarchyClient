@@ -27,8 +27,7 @@ final class TestRivetBackend implements Backend {
     }
 
     @Override
-    public void setClipboard(final String clipboard) {
-    }
+    public void setClipboard(final String clipboard) {}
 
     @Override
     public boolean isKeyDown(final Key key) {

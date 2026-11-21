@@ -22,10 +22,13 @@ public abstract class ItemInHandRendererMixin {
     private boolean anarchyclient$transformPushed;
 
     @Inject(method = "submitHandsWithItems", at = @At("HEAD"), cancellable = true)
-    private void anarchyclient$applyHandView(final float partialTick, final PoseStack poseStack,
-                                             final SubmitNodeCollector submitNodeCollector,
-                                             final PlayerRenderState playerState,
-                                             final FirstPersonHandsAndItemsRenderState state, final CallbackInfo info) {
+    private void anarchyclient$applyHandView(
+            final float partialTick,
+            final PoseStack poseStack,
+            final SubmitNodeCollector submitNodeCollector,
+            final PlayerRenderState playerState,
+            final FirstPersonHandsAndItemsRenderState state,
+            final CallbackInfo info) {
         HandViewModule.HandTransform transform = HandViewModule.activeTransform();
         // Vanilla checks the camera mode, not Camera.isDetached, so Freecam hides the hand here.
         if (transform.hidden() || FreecamModule.detachesCamera()) {
@@ -47,10 +50,13 @@ public abstract class ItemInHandRendererMixin {
     }
 
     @Inject(method = "submitHandsWithItems", at = @At("RETURN"))
-    private void anarchyclient$restoreHandView(final float partialTick, final PoseStack poseStack,
-                                               final SubmitNodeCollector submitNodeCollector,
-                                               final PlayerRenderState playerState,
-                                             final FirstPersonHandsAndItemsRenderState state, final CallbackInfo info) {
+    private void anarchyclient$restoreHandView(
+            final float partialTick,
+            final PoseStack poseStack,
+            final SubmitNodeCollector submitNodeCollector,
+            final PlayerRenderState playerState,
+            final FirstPersonHandsAndItemsRenderState state,
+            final CallbackInfo info) {
         if (this.anarchyclient$transformPushed) {
             poseStack.popPose();
             this.anarchyclient$transformPushed = false;

@@ -1,15 +1,14 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import net.blockhost.anarchyclient.module.Module;
-import net.blockhost.anarchyclient.module.ModuleCategory;
-import net.blockhost.anarchyclient.setting.StringSetting;
-import net.minecraft.network.chat.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import net.blockhost.anarchyclient.module.Module;
+import net.blockhost.anarchyclient.module.ModuleCategory;
+import net.blockhost.anarchyclient.setting.StringSetting;
+import net.minecraft.network.chat.Component;
 
 public final class TextFieldProtectModule extends Module {
 
@@ -23,7 +22,10 @@ public final class TextFieldProtectModule extends Module {
             .build()));
 
     public TextFieldProtectModule() {
-        super("text_field_protect", "Text Field Protect", ModuleCategory.MISC,
+        super(
+                "text_field_protect",
+                "Text Field Protect",
+                ModuleCategory.MISC,
                 "Masks text fields with asterisks when their label or text matches password, login, or custom patterns.");
     }
 

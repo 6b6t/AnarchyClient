@@ -14,7 +14,10 @@ public final class KeepSprintModule extends Module {
     private Vec3 motionBeforeHit;
 
     public KeepSprintModule() {
-        super("keep_sprint", "Keep Sprint", ModuleCategory.COMBAT,
+        super(
+                "keep_sprint",
+                "Keep Sprint",
+                ModuleCategory.COMBAT,
                 "Keeps your sprint and speed after a sprint hit instead of slowing down.");
     }
 

@@ -19,15 +19,22 @@ public final class StrafeModule extends Module {
             .build()));
 
     public StrafeModule() {
-        super("strafe", "Strafe", ModuleCategory.MOVEMENT,
+        super(
+                "strafe",
+                "Strafe",
+                ModuleCategory.MOVEMENT,
                 "Lets you steer freely in the air by setting your midair velocity toward the keys you hold. Does nothing while flying or gliding.");
     }
 
     @Override
     public void tick(final Minecraft client) {
         LocalPlayer player = client.player;
-        if (player == null || !MovementVelocity.moving(client) || player.onGround() || player.isFallFlying()
-                || player.getAbilities().flying || player.isPassenger()) {
+        if (player == null
+                || !MovementVelocity.moving(client)
+                || player.onGround()
+                || player.isFallFlying()
+                || player.getAbilities().flying
+                || player.isPassenger()) {
             return;
         }
         Vec3 horizontal = MovementVelocity.fromKeys(client, player.getYRot(), this.speed.value());

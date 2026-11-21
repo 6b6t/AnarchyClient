@@ -26,8 +26,7 @@ import net.blockhost.anarchyclient.module.impl.RotationModule;
  */
 final class InteractionModules {
 
-    private InteractionModules() {
-    }
+    private InteractionModules() {}
 
     static void register(final ModuleManager modules) {
         modules.register(new NoMiningTraceModule());

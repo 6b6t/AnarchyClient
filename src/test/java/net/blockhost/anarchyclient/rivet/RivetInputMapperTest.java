@@ -1,10 +1,14 @@
 package net.blockhost.anarchyclient.rivet;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.input.KeyEvent;
+import java.util.Set;
 import net.lenni0451.rivet.input.keyboard.Key;
 import net.lenni0451.rivet.input.keyboard.ModifierKey;
 import net.lenni0451.rivet.input.mouse.MouseButton;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import org.junit.jupiter.api.Test;
@@ -12,22 +16,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class RivetInputMapperTest {
 
     @Test
     void mapsKnownScancodes() {
         assertEquals(Key.A, RivetInputMapper.fromScancode(InputConstants.KEY_A).orElseThrow());
-        assertEquals(Key.KP_ENTER, RivetInputMapper.fromScancode(InputConstants.KEY_NUMPADENTER).orElseThrow());
+        assertEquals(
+                Key.KP_ENTER,
+                RivetInputMapper.fromScancode(InputConstants.KEY_NUMPADENTER).orElseThrow());
     }
 
     @Test
     void ignoresUnknownScancodes() {
-        assertTrue(RivetInputMapper.fromScancode(InputConstants.UNKNOWN.getValue()).isEmpty());
+        assertTrue(
+                RivetInputMapper.fromScancode(InputConstants.UNKNOWN.getValue()).isEmpty());
     }
 
     @ParameterizedTest

@@ -1,5 +1,12 @@
 package net.blockhost.anarchyclient.module;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
 import net.blockhost.anarchyclient.event.CameraTransformEvent;
 import net.blockhost.anarchyclient.event.GameJoinedEvent;
 import net.blockhost.anarchyclient.event.GameLeftEvent;
@@ -20,14 +27,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class ModuleManagerTest {
 
     @Test
@@ -36,9 +35,7 @@ class ModuleManagerTest {
         manager.register(new TestModule("test", ModuleCategory.COMBAT));
 
         IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> manager.register(new TestModule("test", ModuleCategory.FUN))
-        );
+                IllegalArgumentException.class, () -> manager.register(new TestModule("test", ModuleCategory.FUN)));
 
         assertEquals("Duplicate module id: test", exception.getMessage());
     }
@@ -201,9 +198,12 @@ class ModuleManagerTest {
         assertEquals("General switch", module.generalSetting.description());
         assertEquals(2, module.settingGroups().size());
         assertEquals("General", module.settingGroups().getFirst().name());
-        assertEquals(List.of(module.generalSetting), module.settingGroups().getFirst().settings());
+        assertEquals(
+                List.of(module.generalSetting),
+                module.settingGroups().getFirst().settings());
         assertEquals("Combat", module.settingGroups().get(1).name());
-        assertEquals(List.of(module.combatSetting), module.settingGroups().get(1).settings());
+        assertEquals(
+                List.of(module.combatSetting), module.settingGroups().get(1).settings());
     }
 
     @Test
@@ -213,12 +213,13 @@ class ModuleManagerTest {
         manager.register(module);
         module.enabled(true);
 
-        assertEquals("[test] hello", manager.chatMessage(null, Component.literal("hello")).getString());
+        assertEquals(
+                "[test] hello",
+                manager.chatMessage(null, Component.literal("hello")).getString());
         assertEquals("hello!", manager.sendChatMessage(null, "hello", false));
         assertEquals(95.0F, manager.fov(null, 90.0F));
 
-        CameraTransformEvent camera =
-                manager.cameraTransform(null, Vec3.ZERO, 10.0F, 20.0F);
+        CameraTransformEvent camera = manager.cameraTransform(null, Vec3.ZERO, 10.0F, 20.0F);
         assertEquals(new Vec3(1.0, 2.0, 3.0), camera.position());
         assertEquals(11.0F, camera.yaw());
         assertEquals(21.0F, camera.pitch());
@@ -283,28 +284,25 @@ class ModuleManagerTest {
         }
 
         @Override
-        public CameraTransform cameraTransform(final Minecraft client, final Vec3 position, final float yaw,
-                                               final float pitch) {
+        public CameraTransform cameraTransform(
+                final Minecraft client, final Vec3 position, final float yaw, final float pitch) {
             return new CameraTransform(new Vec3(1.0, 2.0, 3.0), yaw + 1.0F, pitch + 1.0F);
         }
 
         @Override
-        public boolean receivePacket(final Minecraft client, final Connection connection,
-                                     final Packet<?> packet) {
+        public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
             this.packetsReceived++;
             return this.cancelPackets;
         }
 
         @Override
-        public boolean sendPacket(final Minecraft client, final Connection connection,
-                                  final Packet<?> packet) {
+        public boolean sendPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
             this.packetsSending++;
             return this.cancelPackets;
         }
 
         @Override
-        public void sentPacket(final Minecraft client, final Connection connection,
-                               final Packet<?> packet) {
+        public void sentPacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
             this.packetsSent++;
         }
 
@@ -328,11 +326,13 @@ class ModuleManagerTest {
                 .description("General switch")
                 .build()));
         private final SettingGroup combat = this.settingGroup("combat", "Combat");
-        private final BooleanSetting combatSetting = this.setting(this.combat, BooleanSetting.from(BooleanSetting.builder()
-                .id("combat")
-                .name("Combat")
-                .defaultValue(false)
-                .build()));
+        private final BooleanSetting combatSetting = this.setting(
+                this.combat,
+                BooleanSetting.from(BooleanSetting.builder()
+                        .id("combat")
+                        .name("Combat")
+                        .defaultValue(false)
+                        .build()));
 
         private GroupedModule() {
             super("grouped", "Grouped", ModuleCategory.COMBAT, "Test module.");

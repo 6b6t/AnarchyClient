@@ -1,18 +1,18 @@
 package net.blockhost.anarchyclient.ui;
 
-import net.blockhost.anarchyclient.setting.BooleanSetting;
-import net.lenni0451.rivet.input.mouse.MouseButton;
-import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Size;
-
 import static net.blockhost.anarchyclient.ui.PanelStyle.SETTING_ROW_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_HEIGHT;
 import static net.blockhost.anarchyclient.ui.PanelStyle.SWITCH_WIDTH;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.padding;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.place;
+
+import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.lenni0451.rivet.input.mouse.MouseButton;
+import net.lenni0451.rivet.input.mouse.MouseButtonEvent;
+import net.lenni0451.rivet.layout.grid.GridAnchor;
+import net.lenni0451.rivet.layout.grid.GridFill;
+import net.lenni0451.rivet.math.Size;
 
 final class BooleanSettingRow extends SettingLine {
 
@@ -42,8 +42,20 @@ final class BooleanSettingRow extends SettingLine {
 
     @Override
     protected void layoutControls(final Size size) {
-        place(this.toggle, cell(3, 0, 1, 2, 0F, 1F, GridAnchor.CENTER, GridFill.NONE,
-                padding(0F, 0F, 14F, 0F), SWITCH_WIDTH, SWITCH_HEIGHT));
+        place(
+                this.toggle,
+                cell(
+                        3,
+                        0,
+                        1,
+                        2,
+                        0F,
+                        1F,
+                        GridAnchor.CENTER,
+                        GridFill.NONE,
+                        padding(0F, 0F, 14F, 0F),
+                        SWITCH_WIDTH,
+                        SWITCH_HEIGHT));
     }
 
     private void toggle() {
