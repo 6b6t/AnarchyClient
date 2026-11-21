@@ -28,26 +28,22 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background;
-    private final TextNode title;
-    private final TextNode count;
     final SearchInput search;
     // HUD editor entry point: shown top-right only on the HUD tab. Positioning moved out of the
     // per-module settings into a drag editor, so this button is how you reach it.
-    private final IconButton editHud;
     final CardGrid cards;
     final ScrollContainer scroll;
 
     ModulesPanel(final ModulePanel panel) {
         super(gridLayout(0, 0));
         this.panel = panel;
-        this.background = this.panel.glassPanel();
-        this.title = textNode(this::title, () -> TEXT);
-        this.count = textNode(this::countText, GlassTheme::accent)
+        GlassSurface background = this.panel.glassPanel();
+        TextNode title = textNode(this::title, () -> TEXT);
+        TextNode count = textNode(this::countText, GlassTheme::accent)
                 .origin(TextOrigin.Horizontal.VISUAL_RIGHT, TextOrigin.Vertical.LOGICAL_CENTER);
-        this.search = new SearchInput(
-                this.panel, Translations.text("anarchyclient.ui.search_all_modules", "Search all modules..."));
-        this.editHud = iconButton("move", GlassTheme::accent, this.panel::openHudEditor, this::showEditHud);
+        this.search =
+                new SearchInput(Translations.text("anarchyclient.ui.search_all_modules", "Search all modules..."));
+        IconButton editHud = iconButton("move", GlassTheme::accent, this.panel::openHudEditor, this::showEditHud);
         this.cards = new CardGrid(this.panel);
         this.scroll = new LayoutDebugScrollContainer(this.cards);
         this.panel.configureScroll(this.scroll);
@@ -55,9 +51,9 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
             this.panel.searchQuery = value.trim();
             this.panel.refreshModuleList();
         });
-        place(this.background, fillCell(0, 0, 2, 3));
+        place(background, fillCell(0, 0, 2, 3));
         place(
-                this.title,
+                title,
                 cell(
                         0,
                         0,
@@ -71,7 +67,7 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
                         null,
                         HEADER_HEIGHT));
         place(
-                this.count,
+                count,
                 cell(
                         1,
                         0,
@@ -85,7 +81,7 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
                         52F,
                         HEADER_HEIGHT));
         place(
-                this.editHud,
+                editHud,
                 cell(
                         1,
                         0,
@@ -126,10 +122,10 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
                         padding(PADDING, 4F, PADDING, PADDING),
                         null,
                         null));
-        this.addChild(this.background);
-        this.addChild(this.title);
-        this.addChild(this.count);
-        this.addChild(this.editHud);
+        this.addChild(background);
+        this.addChild(title);
+        this.addChild(count);
+        this.addChild(editHud);
         this.addChild(this.search);
         this.addChild(this.scroll);
     }
@@ -178,6 +174,6 @@ final class ModulesPanel extends Container implements LayoutDebugLabel {
 
     @Override
     public String layoutDebugLabel() {
-        return this.title();
+        return title();
     }
 }

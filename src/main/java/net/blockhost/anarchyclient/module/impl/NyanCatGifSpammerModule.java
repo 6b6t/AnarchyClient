@@ -236,7 +236,7 @@ public final class NyanCatGifSpammerModule extends Module {
     }
 
     private static int argbToAbgr(final int argb) {
-        return argb & 0xFF00FF00 | (argb & 0x00FF0000) >> 16 | (argb & 0x000000FF) << 16;
+        return (argb & 0xFF00FF00) | (argb & 0x00FF0000) >> 16 | (argb & 0x000000FF) << 16;
     }
 
     private static int frameDelayMillis(final IIOMetadata metadata) {

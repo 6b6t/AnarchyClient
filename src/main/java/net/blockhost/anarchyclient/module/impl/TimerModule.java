@@ -33,7 +33,7 @@ public final class TimerModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || this.movingOnly.value() && !MovementVelocity.moving(client)) {
+        if (client.player == null || (this.movingOnly.value() && !MovementVelocity.moving(client))) {
             TimerManager.clear(this.id());
             return;
         }

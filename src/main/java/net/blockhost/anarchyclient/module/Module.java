@@ -30,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Module {
 
@@ -44,7 +45,7 @@ public abstract class Module {
     private final List<SettingGroup> settingGroups = new ArrayList<>();
     private final List<SettingGroup> settingGroupsView = Collections.unmodifiableList(this.settingGroups);
     private final SettingGroup defaultSettingGroup = new SettingGroup("general", "General");
-    private ActivationListener activationListener;
+    private @Nullable ActivationListener activationListener;
     private boolean enabled;
 
     protected Module(final String id, final String name, final ModuleCategory category, final String description) {
@@ -253,7 +254,7 @@ public abstract class Module {
     public void itemStopUse(
             final Minecraft client, final InteractionHand hand, final ItemStack stack, final int remainingTicks) {}
 
-    public boolean openScreen(final Minecraft client, final Screen screen) {
+    public boolean openScreen(final Minecraft client, final @Nullable Screen screen) {
         return false;
     }
 

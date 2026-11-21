@@ -50,7 +50,7 @@ class ClientConfigTest {
         new ClientConfig(loadedModules, path).load();
 
         assertTrue(loadedModule.enabled());
-        assertEquals(false, loadedModule.enabledSetting.value());
+        assertFalse(loadedModule.enabledSetting.value());
         assertEquals(7.5, loadedModule.numberSetting.value());
         assertEquals("saved", loadedModule.stringSetting.value());
         assertEquals("Second", loadedModule.selectSetting.value());
@@ -172,7 +172,7 @@ class ClientConfigTest {
         new ClientConfig(loadedModules, path).load();
 
         assertTrue(loadedModule.enabled());
-        assertEquals(false, loadedModule.enabledSetting.value());
+        assertFalse(loadedModule.enabledSetting.value());
         assertEquals(InputConstants.KEY_R, loadedModule.keybind().key());
         assertEquals(ModuleBindAction.SMART, loadedModule.keybind().action());
     }
@@ -233,8 +233,8 @@ class ClientConfigTest {
         new ClientConfig(loadedModules, path).load();
 
         assertTrue(loadedModule.enabled());
-        assertEquals(false, loadedModule.enabledSettingOnEnable);
-        assertEquals(false, loadedModule.enabledSetting.value());
+        assertFalse(loadedModule.enabledSettingOnEnable);
+        assertFalse(loadedModule.enabledSetting.value());
         assertEquals("kept", loadedModule.stringSetting.value());
         assertEquals(1.0, loadedModule.numberSetting.value());
         assertEquals(content, Files.readString(path));
@@ -293,8 +293,8 @@ class ClientConfigTest {
 
     private static List<Path> backupFiles(final Path configPath) throws Exception {
         try (var files = Files.list(configPath.getParent())) {
-            return files.filter(path -> path.getFileName().toString().startsWith(configPath.getFileName() + "."))
-                    .filter(path -> path.getFileName().toString().endsWith(".backup.json"))
+            return files.filter(path -> path.toString().startsWith(configPath + "."))
+                    .filter(path -> path.toString().endsWith(".backup.json"))
                     .sorted(Comparator.comparing(Path::toString))
                     .toList();
         }

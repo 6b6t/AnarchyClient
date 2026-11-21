@@ -26,16 +26,15 @@ final class Dock extends Container {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background =
-            new GlassSurface(GlassTheme::glass, () -> DOCK_WIDTH / 2F, () -> BackgroundDesign.NONE);
     private final List<Component> entries = new ArrayList<>();
 
     Dock(final ModulePanel panel) {
         super(gridLayout(0, (int) DOCK_GAP));
+        GlassSurface background =
+                new GlassSurface(GlassTheme::glass, () -> DOCK_WIDTH / 2F, () -> BackgroundDesign.NONE);
         this.panel = panel;
         for (ModuleCategory category : ModuleCategory.values()) {
             this.entries.add(new DockButton(
-                    this.panel,
                     categoryIcon(category),
                     category.displayName(),
                     () -> this.panel.selectedTab == Tab.MODULES && this.panel.selectedCategory == category,
@@ -44,21 +43,18 @@ final class Dock extends Container {
         }
         this.entries.add(new DockDivider());
         this.entries.add(new DockButton(
-                this.panel,
                 "palette",
                 Translations.text("anarchyclient.ui.theme", "Theme"),
                 () -> this.panel.selectedTab == Tab.THEME,
                 () -> this.panel.selectTab(Tab.THEME),
                 () -> false));
         this.entries.add(new DockButton(
-                this.panel,
                 "users",
                 Translations.text("anarchyclient.ui.friends", "Friends"),
                 () -> this.panel.selectedTab == Tab.FRIENDS,
                 () -> this.panel.selectTab(Tab.FRIENDS),
                 () -> false));
         this.entries.add(new DockButton(
-                this.panel,
                 "layers",
                 Translations.text("anarchyclient.ui.profiles", "Profiles"),
                 () -> this.panel.selectedTab == Tab.PROFILES,
@@ -66,7 +62,6 @@ final class Dock extends Container {
                 () -> false));
         this.entries.add(new DockDivider());
         this.entries.add(new DockButton(
-                this.panel,
                 "settings",
                 Translations.text("anarchyclient.ui.settings", "Settings"),
                 () -> this.panel.drawer != Drawer.NONE,
@@ -74,8 +69,8 @@ final class Dock extends Container {
                 () -> this.panel.openDrawer(Drawer.ROOT),
                 () -> false));
 
-        place(this.background, fillCell(0, 0, 1, this.entries.size()));
-        this.addChild(this.background);
+        place(background, fillCell(0, 0, 1, this.entries.size()));
+        this.addChild(background);
         int row = 0;
         for (Component entry : this.entries) {
             float height = entry instanceof DockDivider ? DOCK_DIVIDER : DOCK_BUTTON;

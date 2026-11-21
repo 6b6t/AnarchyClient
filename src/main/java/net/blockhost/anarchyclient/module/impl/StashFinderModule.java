@@ -106,7 +106,7 @@ public final class StashFinderModule extends Module {
         List<Long> chunks = new ArrayList<>(counts.keySet());
         chunks.sort(Comparator.comparingInt((Long chunk) -> counts.get(chunk))
                 .reversed()
-                .thenComparing(chunk -> chunk));
+                .thenComparing(Comparator.naturalOrder()));
         List<Stash> stashes = new ArrayList<>();
         for (long chunk : chunks) {
             if (reported.contains(chunk)) {

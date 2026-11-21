@@ -65,8 +65,8 @@ public final class MessageAuraModule extends Module {
         for (Player player : client.level.players()) {
             if (player == client.player
                     || player.distanceToSqr(client.player) > rangeSqr
-                    || this.ignoreFriends.value()
-                            && AnarchyClient.FRIENDS.isFriend(player.getName().getString())
+                    || (this.ignoreFriends.value()
+                            && AnarchyClient.FRIENDS.isFriend(player.getName().getString()))
                     || this.cooldowns.getOrDefault(player.getUUID(), 0) > 0) {
                 continue;
             }

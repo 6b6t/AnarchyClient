@@ -181,7 +181,7 @@ public final class StorageEspModule extends Module {
         if (positions.isEmpty()) {
             return;
         }
-        Set<Long> remaining = new HashSet<>(positions.size());
+        Set<Long> remaining = HashSet.newHashSet(positions.size());
         for (BlockPos position : positions) {
             remaining.add(position.asLong());
         }

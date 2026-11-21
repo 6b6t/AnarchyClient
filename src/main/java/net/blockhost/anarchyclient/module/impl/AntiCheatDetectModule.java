@@ -43,7 +43,7 @@ public final class AntiCheatDetectModule extends Module {
         String key = snapshot.rootDomain() + "|" + antiCheat;
         if (antiCheat.isBlank()
                 || key.equals(this.lastAlert)
-                || "Unknown".equals(antiCheat) && !this.showUnknown.value()) {
+                || ("Unknown".equals(antiCheat) && !this.showUnknown.value())) {
             return;
         }
         this.lastAlert = key;

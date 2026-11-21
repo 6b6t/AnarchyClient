@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import net.blockhost.anarchyclient.test.MinecraftBootstrapExtension;
 import net.minecraft.network.protocol.Packet;
@@ -53,8 +54,8 @@ class PositionPacketLimiterTest {
                 PositionPacketLimiter.limit(new ServerboundMovePlayerPacket.Pos(1.0, 70.0, 1.0, true, true));
 
         ServerboundMovePlayerPacket status = assertInstanceOf(ServerboundMovePlayerPacket.StatusOnly.class, stripped);
-        assertEquals(true, status.isOnGround());
-        assertEquals(true, status.horizontalCollision());
+        assertTrue(status.isOnGround());
+        assertTrue(status.horizontalCollision());
     }
 
     @Test

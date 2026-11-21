@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -154,15 +155,14 @@ public final class NukerModule extends Module {
     }
 
     private static boolean packetBreak(final Minecraft client, final BlockPos pos) {
-        if (client.player == null || client.getConnection() == null) {
+        ClientPacketListener connection = client.getConnection();
+        if (client.player == null || connection == null) {
             return false;
         }
-        client.getConnection()
-                .send(new ServerboundPlayerActionPacket(
-                        ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
-        client.getConnection()
-                .send(new ServerboundPlayerActionPacket(
-                        ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, Direction.UP));
+        connection.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
+        connection.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, Direction.UP));
         client.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         return true;
     }

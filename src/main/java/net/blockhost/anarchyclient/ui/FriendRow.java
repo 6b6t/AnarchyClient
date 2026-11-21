@@ -26,26 +26,23 @@ final class FriendRow extends Container implements LayoutDebugLabel {
     private final ModulePanel panel;
 
     private final String friend;
-    private final Surface background = new Surface(() -> CARD).cornerRadius(10F);
-    private final FriendHead head;
-    private final TextNode name;
-    private final TextAction remove;
 
     FriendRow(final ModulePanel panel, final String friend) {
         super(gridLayout(0, 0));
         this.panel = panel;
         this.friend = friend;
         this.fixedSize(-1, 34);
-        this.head = new FriendHead(friend, HEAD_SIZE);
-        this.name = textNode(friend, TEXT);
-        this.remove = textAction(Translations.text("anarchyclient.ui.remove", "Remove"), MUTED, () -> {
+        Surface background = new Surface(() -> CARD).cornerRadius(10F);
+        FriendHead head = new FriendHead(friend, HEAD_SIZE);
+        TextNode name = textNode(friend, TEXT);
+        TextAction remove = textAction(Translations.text("anarchyclient.ui.remove", "Remove"), MUTED, () -> {
             if (AnarchyClient.FRIENDS.remove(this.friend)) {
                 this.panel.friendsPanel.refresh();
             }
         });
-        place(this.background, fillCell(0, 0, 3, 1));
+        place(background, fillCell(0, 0, 3, 1));
         place(
-                this.head,
+                head,
                 cell(
                         0,
                         0,
@@ -58,18 +55,16 @@ final class FriendRow extends Container implements LayoutDebugLabel {
                         padding(PADDING, 0F, 0F, 0F),
                         (float) HEAD_SIZE,
                         (float) HEAD_SIZE));
-        place(
-                this.name,
-                cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(10F, 0F, 8F, 0F), null, null));
+        place(name, cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(10F, 0F, 8F, 0F), null, null));
         // Size the action to its text (no fixed column width) so only the visible "Remove" reacts to clicks and
         // longer translations are not cut off.
         place(
-                this.remove,
+                remove,
                 cell(2, 0, 1, 1, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE, padding(0F, 0F, PADDING, 0F), null, null));
-        this.addChild(this.background);
-        this.addChild(this.head);
-        this.addChild(this.name);
-        this.addChild(this.remove);
+        this.addChild(background);
+        this.addChild(head);
+        this.addChild(name);
+        this.addChild(remove);
     }
 
     @Override

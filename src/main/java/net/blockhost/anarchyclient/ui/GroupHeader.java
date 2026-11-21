@@ -17,15 +17,14 @@ import net.lenni0451.rivet.math.Size;
 final class GroupHeader extends Container implements LayoutDebugLabel {
 
     private final String name;
-    private final TextNode label;
 
     GroupHeader(final String name) {
         super(gridLayout(0, 0));
         this.name = name;
         this.fixedSize(-1, 24);
-        this.label = textNode(name.toUpperCase(Locale.ROOT), FAINT);
+        TextNode label = textNode(name.toUpperCase(Locale.ROOT), FAINT);
         place(
-                this.label,
+                label,
                 cell(
                         0,
                         0,
@@ -38,7 +37,7 @@ final class GroupHeader extends Container implements LayoutDebugLabel {
                         padding(PADDING, 4F, PADDING, 0F),
                         null,
                         null));
-        this.addChild(this.label);
+        this.addChild(label);
     }
 
     @Override

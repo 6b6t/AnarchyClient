@@ -82,13 +82,13 @@ public final class AvoidHazardsModule extends Module {
         boolean grounded = player.onGround() && !player.getAbilities().flying;
         if (isHazard(client.level.getBlockState(next).getBlock())
                 || isHazard(client.level.getBlockState(next.below()).getBlock())
-                || this.unloadedChunks.value() && !client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4)
+                || (this.unloadedChunks.value() && !client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4))
                 // An unloaded chunk reads as void air, so only loaded columns count as void; the Unloaded Chunks
                 // setting decides about the others.
-                || this.voidEdges.value()
+                || (this.voidEdges.value()
                         && grounded
                         && client.level.hasChunk(next.getX() >> 4, next.getZ() >> 4)
-                        && isVoidColumn(client.level, next)) {
+                        && isVoidColumn(client.level, next))) {
             input.keyPresses =
                     new Input(false, false, false, false, input.keyPresses.jump(), input.keyPresses.shift(), false);
             ((ClientInputAccessor) input).anarchyclient$setMoveVector(Vec2.ZERO);

@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.inventory;
 
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,7 +38,7 @@ public final class InventoryTracker {
         return Optional.ofNullable(SNAPSHOTS.get(uuid));
     }
 
-    public static Collection<Snapshot> snapshots() {
+    public static List<Snapshot> snapshots() {
         return List.copyOf(SNAPSHOTS.values());
     }
 

@@ -66,7 +66,7 @@ class FriendManagerTest {
 
         assertEquals("Steve\n", Files.readString(path));
         try (Stream<Path> files = Files.list(this.tempDir)) {
-            Path backup = files.filter(file -> file.getFileName().toString().endsWith(".backup.txt"))
+            Path backup = files.filter(file -> file.toString().endsWith(".backup.txt"))
                     .findFirst()
                     .orElseThrow();
             assertArrayEquals(invalidUtf8, Files.readAllBytes(backup));

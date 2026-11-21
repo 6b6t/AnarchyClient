@@ -53,8 +53,8 @@ public final class InventoryMoveModule extends Module {
                 current.backward() || physicallyDown(client, client.options.keyDown),
                 current.left() || physicallyDown(client, client.options.keyLeft),
                 current.right() || physicallyDown(client, client.options.keyRight),
-                current.jump() || this.allowJump.value() && physicallyDown(client, client.options.keyJump),
-                current.shift() || this.allowSneak.value() && physicallyDown(client, client.options.keyShift),
+                current.jump() || (this.allowJump.value() && physicallyDown(client, client.options.keyJump)),
+                current.shift() || (this.allowSneak.value() && physicallyDown(client, client.options.keyShift)),
                 current.sprint() || physicallyDown(client, client.options.keySprint));
         InputStates.refreshMoveVector(input);
     }

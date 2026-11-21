@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.rivet.Blaze3DRenderer;
 import net.blockhost.anarchyclient.rivet.GlassPanelCommand;
 import net.blockhost.anarchyclient.ui.GlassTheme;
+import net.blockhost.anarchyclient.util.Enums;
 import net.lenni0451.commons.color.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -213,8 +214,7 @@ public final class ToggleNotifications {
         }
 
         public Mode next() {
-            Mode[] values = values();
-            return values[(this.ordinal() + 1) % values.length];
+            return Enums.next(this);
         }
 
         public static Mode fromName(final String name) {
@@ -246,8 +246,7 @@ public final class ToggleNotifications {
         }
 
         public Corner next() {
-            Corner[] values = values();
-            return values[(this.ordinal() + 1) % values.length];
+            return Enums.next(this);
         }
 
         public static Corner fromName(final String name) {

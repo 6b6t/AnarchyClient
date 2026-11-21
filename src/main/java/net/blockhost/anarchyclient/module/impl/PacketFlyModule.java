@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -76,8 +77,9 @@ public final class PacketFlyModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
-        if (player == null || client.getConnection() == null) {
+        if (player == null || connection == null) {
             return;
         }
         if (this.noClip.value()) {
@@ -102,7 +104,7 @@ public final class PacketFlyModule extends Module {
         }
         // A 26.3 server kicks a client that sends two position packets in one tick, so this sends one
         // per tick and alternates between the move and the follow-up packet the old version sent with it.
-        boolean followUp = this.ticks % 2 == 1;
+        boolean followUp = this.ticks % 2 != 0;
         ServerboundMovePlayerPacket packet;
         if (!followUp) {
             packet = new ServerboundMovePlayerPacket.Pos(next, false, false);
@@ -114,7 +116,7 @@ public final class PacketFlyModule extends Module {
         }
         this.sendingOwn = true;
         try {
-            client.getConnection().send(packet);
+            connection.send(packet);
         } finally {
             this.sendingOwn = false;
         }

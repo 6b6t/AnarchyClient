@@ -17,9 +17,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import net.blockhost.anarchyclient.util.MoreFiles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import org.jspecify.annotations.Nullable;
 
 final class ServerListTools {
 
@@ -42,7 +44,7 @@ final class ServerListTools {
         return List.copyOf(entries);
     }
 
-    static int addOrUpdate(final ServerList list, final String address, final String name) {
+    static int addOrUpdate(final ServerList list, final String address, final @Nullable String name) {
         ServerEntry entry = new ServerEntry(normalizeName(name, address), normalizeAddress(address));
         for (int index = 0; index < list.size(); index++) {
             ServerData existing = list.get(index);
@@ -82,9 +84,7 @@ final class ServerListTools {
     }
 
     static Path exportJson(final ServerList list, final Path path) throws IOException {
-        if (path.getParent() != null) {
-            Files.createDirectories(path.getParent());
-        }
+        MoreFiles.createParentDirectories(path);
         try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             JsonArray array = new JsonArray();
             for (ServerEntry entry : entries(list)) {
@@ -130,7 +130,7 @@ final class ServerListTools {
         return address.trim().toLowerCase(Locale.ROOT);
     }
 
-    private static String normalizeName(final String name, final String address) {
+    private static String normalizeName(final @Nullable String name, final String address) {
         if (name == null || name.isBlank()) {
             return address == null || address.isBlank() ? "Minecraft Server" : address.trim();
         }

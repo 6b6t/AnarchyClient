@@ -80,7 +80,7 @@ final class ProfileCommands {
                             "anarchyclient.message.profile.saved_profile", "Saved profile %s.", profile.name));
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -126,7 +126,7 @@ final class ProfileCommands {
         try {
             output = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
         try {
@@ -148,7 +148,7 @@ final class ProfileCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.profile.failed_to_export_profile",
                             "Failed to export profile: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -158,7 +158,7 @@ final class ProfileCommands {
         try {
             input = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
         try {
@@ -172,7 +172,7 @@ final class ProfileCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.profile.failed_to_import_profile",
                             "Failed to import profile: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }

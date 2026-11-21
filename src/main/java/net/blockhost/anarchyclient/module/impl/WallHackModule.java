@@ -87,8 +87,8 @@ public final class WallHackModule extends Module {
                 .forEach(this::removeMarker);
         for (BlockPos pos : found) {
             MarkerManager.put(new CuboidMarker(markerId(pos), new AABB(pos), MarkerStyle.CYAN, 45));
-            this.highlighted.add(pos);
         }
+        this.highlighted.addAll(found);
         this.cooldownTicks = 40;
     }
 

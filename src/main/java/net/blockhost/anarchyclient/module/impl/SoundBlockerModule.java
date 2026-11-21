@@ -47,19 +47,15 @@ public final class SoundBlockerModule extends Module {
 
     @Override
     public boolean receivePacket(final Minecraft client, final Connection connection, final Packet<?> packet) {
-        switch (packet) {
-            case ClientboundSoundPacket sound -> {
-                return this.block(client, soundId(sound.getSound()));
-            }
-            case ClientboundSoundEntityPacket sound -> {
-                return this.block(client, soundId(sound.getSound()));
-            }
+        return switch (packet) {
+            case ClientboundSoundPacket sound -> this.block(client, soundId(sound.getSound()));
+            case ClientboundSoundEntityPacket sound -> this.block(client, soundId(sound.getSound()));
             // Explosions that push you are left to Velocity, which replaces those packets itself; two
             // replacements would apply the explosion twice.
             case ClientboundExplodePacket explosion
             when explosion.playSound() && explosion.playerKnockback().isEmpty() -> {
                 if (!this.block(client, soundId(explosion.explosionSound()))) {
-                    return false;
+                    yield false;
                 }
                 // Keep the explosion itself (knockback, particles) and only drop its sound.
                 handleReplacement(
@@ -73,12 +69,10 @@ public final class SoundBlockerModule extends Module {
                                 explosion.explosionSound(),
                                 explosion.blockParticles(),
                                 false));
-                return true;
+                yield true;
             }
-            default -> {
-                return false;
-            }
-        }
+            default -> false;
+        };
     }
 
     private boolean block(final Minecraft client, final Identifier id) {

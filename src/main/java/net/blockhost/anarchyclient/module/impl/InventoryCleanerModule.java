@@ -193,13 +193,13 @@ public final class InventoryCleanerModule extends Module {
             if (stack.isEmpty()) {
                 continue;
             }
-            if (options.keepFood() && stack.has(DataComponents.FOOD)
-                    || options.keepBlocks() && stack.getItem() instanceof BlockItem
-                    || options.keepTotems() && stack.is(Items.TOTEM_OF_UNDYING)
-                    || options.keepPearls() && stack.is(Items.ENDER_PEARL)
-                    || options.keepRanged() && isRanged(stack)
-                    || options.keepPotions() && isPotion(stack)
-                    || options.keepThrowables() && isThrowable(stack)) {
+            if ((options.keepFood() && stack.has(DataComponents.FOOD))
+                    || (options.keepBlocks() && stack.getItem() instanceof BlockItem)
+                    || (options.keepTotems() && stack.is(Items.TOTEM_OF_UNDYING))
+                    || (options.keepPearls() && stack.is(Items.ENDER_PEARL))
+                    || (options.keepRanged() && isRanged(stack))
+                    || (options.keepPotions() && isPotion(stack))
+                    || (options.keepThrowables() && isThrowable(stack))) {
                 keep.add(slot);
             }
         }

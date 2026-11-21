@@ -18,6 +18,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Shared argument parsing, validation, and suggestions for the client commands.
@@ -48,7 +49,7 @@ final class CommandSupport {
         return sanitized.isBlank() ? "skin" : sanitized;
     }
 
-    static Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context) {
+    static @Nullable Minecraft requireInGame(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
         if (client.player == null) {
             context.getSource()
@@ -60,7 +61,7 @@ final class CommandSupport {
         return client;
     }
 
-    static Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
+    static @Nullable Minecraft requireCreative(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
         if (client == null || client.player == null || !client.player.getAbilities().instabuild) {
             context.getSource()

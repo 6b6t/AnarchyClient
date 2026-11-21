@@ -169,8 +169,8 @@ public final class TreeAuraModule extends Module {
                 }
                 // A refused or endlessly accepted sapling cannot grow (no room, or a lone 2x2 sapling); move on.
                 if (result == WorldInteraction.ActionResult.REFUSED
-                        || result == WorldInteraction.ActionResult.DONE
-                                && this.boneMealUses.merge(sapling, 1, Integer::sum) >= MAX_BONE_MEAL_USES) {
+                        || (result == WorldInteraction.ActionResult.DONE
+                                && this.boneMealUses.merge(sapling, 1, Integer::sum) >= MAX_BONE_MEAL_USES)) {
                     this.skipped.add(sapling);
                 }
                 if (result == WorldInteraction.ActionResult.DONE || result == WorldInteraction.ActionResult.REFUSED) {

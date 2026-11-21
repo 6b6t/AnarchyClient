@@ -78,6 +78,6 @@ public final class FastUseModule extends Module {
     }
 
     static boolean shouldApplyItem(final Item item, final String mode, final List<Item> items, final boolean blocks) {
-        return item != null && (!"Some".equals(mode) || items.contains(item) || blocks && item instanceof BlockItem);
+        return item != null && (!"Some".equals(mode) || items.contains(item) || (blocks && item instanceof BlockItem));
     }
 }

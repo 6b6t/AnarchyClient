@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.Nullable;
 
 public abstract class RegistryListSetting<T> extends Setting<List<T>> implements TextValueSetting {
 
@@ -40,14 +41,17 @@ public abstract class RegistryListSetting<T> extends Setting<List<T>> implements
                 .toList();
     }
 
+    @Override
     public final List<String> suggestions() {
         return this.suggestions;
     }
 
+    @Override
     public final String valueString() {
         return String.join(",", this.ids());
     }
 
+    @Override
     public final void valueFromString(final String value) {
         this.value(this.parse(value));
     }
@@ -57,7 +61,7 @@ public abstract class RegistryListSetting<T> extends Setting<List<T>> implements
             return List.of();
         }
         List<T> parsed = new ArrayList<>();
-        for (String token : value.split("[,;\\s]+")) {
+        for (String token : value.split("[,;\\s]+", -1)) {
             String normalized = token.trim().toLowerCase(Locale.ROOT);
             if (normalized.isEmpty()) {
                 continue;
@@ -99,7 +103,7 @@ public abstract class RegistryListSetting<T> extends Setting<List<T>> implements
     }
 
     @Override
-    public final void fromJson(final JsonElement element) {
+    public final void fromJson(final @Nullable JsonElement element) {
         if (element == null) {
             return;
         }

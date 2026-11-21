@@ -28,31 +28,27 @@ final class SearchInput extends Container implements LayoutDebugLabel {
 
     private static final float FIELD_TEXT_INSET = 6F;
 
-    private final ModulePanel panel;
-
     private final String placeholder;
-    private final Surface background = surface(FIELD)
-            .outline(() -> this.fieldFocused() ? GlassTheme.accent() : Color.TRANSPARENT, 1F)
-            .cornerRadius(9F);
-    private final IconNode icon = iconNode("search", () -> this.fieldFocused() ? MUTED : FAINT);
-    private final TextNode placeholderLabel;
     private final TextField field = textField("");
     private Consumer<String> changeListener = ignored -> {};
 
-    SearchInput(final ModulePanel panel, final String placeholder) {
+    SearchInput(final String placeholder) {
         super(gridLayout(0, 0));
-        this.panel = panel;
         this.placeholder = placeholder;
-        this.placeholderLabel = textNode(
+        Surface background = surface(FIELD)
+                .outline(() -> this.fieldFocused() ? GlassTheme.accent() : Color.TRANSPARENT, 1F)
+                .cornerRadius(9F);
+        IconNode icon = iconNode("search", () -> this.fieldFocused() ? MUTED : FAINT);
+        TextNode placeholderLabel = textNode(
                 () -> this.field.text().isEmpty() && !this.fieldFocused() ? this.placeholder : "", () -> FAINT);
-        this.field.backgroundColor().set(Color.fromRGBA(0, 0, 0, 0));
-        this.field.outlineColor().set(Color.fromRGBA(0, 0, 0, 0));
-        this.field.focusedOutlineColor().set(Color.fromRGBA(0, 0, 0, 0));
+        this.field.backgroundColor().set(Color.TRANSPARENT);
+        this.field.outlineColor().set(Color.TRANSPARENT);
+        this.field.focusedOutlineColor().set(Color.TRANSPARENT);
         this.field.innerPadding().set(new Padding(FIELD_TEXT_INSET, 0, FIELD_TEXT_INSET, 0));
         this.field.valueChangeListener().add(value -> this.changeListener.accept(value));
-        place(this.background, fillCell(0, 0, 2, 1));
+        place(background, fillCell(0, 0, 2, 1));
         place(
-                this.icon,
+                icon,
                 cell(
                         0,
                         0,
@@ -68,7 +64,7 @@ final class SearchInput extends Container implements LayoutDebugLabel {
         // The placeholder's left inset matches the field's inner text inset so the caret and
         // the placeholder text sit in exactly the same spot.
         place(
-                this.placeholderLabel,
+                placeholderLabel,
                 cell(
                         1,
                         0,
@@ -84,9 +80,9 @@ final class SearchInput extends Container implements LayoutDebugLabel {
         place(
                 this.field,
                 cell(1, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.HORIZONTAL, padding(0F, 0F, 4F, 0F), null, 18F));
-        this.addChild(this.background);
-        this.addChild(this.icon);
-        this.addChild(this.placeholderLabel);
+        this.addChild(background);
+        this.addChild(icon);
+        this.addChild(placeholderLabel);
         this.addChild(this.field);
     }
 

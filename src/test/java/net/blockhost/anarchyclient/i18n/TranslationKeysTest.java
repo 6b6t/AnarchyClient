@@ -63,8 +63,7 @@ class TranslationKeysTest {
         Map<String, String> english = read(LANG_DIR.resolve("en_us.json"));
         List<String> problems = new ArrayList<>();
         try (Stream<Path> files = Files.list(LANG_DIR)) {
-            for (Path file : files.filter(path -> !path.getFileName().toString().equals("en_us.json"))
-                    .toList()) {
+            for (Path file : files.filter(path -> !path.endsWith("en_us.json")).toList()) {
                 for (Map.Entry<String, String> entry : read(file).entrySet()) {
                     String source = english.get(entry.getKey());
                     if (source == null) {
@@ -107,10 +106,12 @@ class TranslationKeysTest {
                     sources.filter(path -> path.toString().endsWith(".java")).toList()) {
                 Matcher matcher = LOOKUP.matcher(Files.readString(source));
                 while (matcher.find()) {
-                    String previous = entries.put(matcher.group(1), unescape(matcher.group(2)));
-                    if (previous != null && !previous.equals(unescape(matcher.group(2)))) {
-                        throw new AssertionError("Key " + matcher.group(1) + " has two English texts: \"" + previous
-                                + "\" and \"" + unescape(matcher.group(2)) + "\"");
+                    String key = matcher.group(1);
+                    String text = unescape(matcher.group(2));
+                    String previous = entries.put(key, text);
+                    if (previous != null && !previous.equals(text)) {
+                        throw new AssertionError(
+                                "Key " + key + " has two English texts: \"" + previous + "\" and \"" + text + "\"");
                     }
                 }
             }

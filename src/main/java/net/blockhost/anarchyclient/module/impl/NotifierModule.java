@@ -175,7 +175,7 @@ public final class NotifierModule extends Module {
         for (PlayerInfo info : listener.getOnlinePlayers()) {
             UUID id = info.getProfile().id();
             String name = info.getProfile().name();
-            if (id.equals(self.getUUID()) || ignoreFriends && AnarchyClient.FRIENDS.isFriend(name)) {
+            if (id.equals(self.getUUID()) || (ignoreFriends && AnarchyClient.FRIENDS.isFriend(name))) {
                 continue;
             }
             players.put(id, name);
@@ -210,7 +210,7 @@ public final class NotifierModule extends Module {
     private static boolean shouldIgnore(final Player player, final Player self, final boolean ignoreFriends) {
         return player == self
                 || player.isSpectator()
-                || ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName());
+                || (ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName()));
     }
 
     private static void notifyPlayer(final Minecraft client, final String message) {

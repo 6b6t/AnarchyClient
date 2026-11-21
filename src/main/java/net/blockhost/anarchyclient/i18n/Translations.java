@@ -27,6 +27,7 @@ public final class Translations {
      * Like {@link #text}, with {@code %s} placeholders filled in. A translation whose placeholders do not match the
      * arguments falls back to English rather than throwing.
      */
+    @SuppressWarnings("AnnotateFormatMethod") // Bad formats fall back to English instead of failing.
     public static String format(final String key, final String fallback, final Object... args) {
         try {
             return String.format(Locale.ROOT, text(key, fallback), args);

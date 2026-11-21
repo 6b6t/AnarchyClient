@@ -109,7 +109,7 @@ public final class BowAimbotModule extends Module {
 
     static boolean isAiming(final LocalPlayer player) {
         ItemStack stack = player.getMainHandItem();
-        return stack.is(Items.BOW) && player.isUsingItem()
-                || stack.is(Items.CROSSBOW) && (player.isUsingItem() || CrossbowItem.isCharged(stack));
+        return (stack.is(Items.BOW) && player.isUsingItem())
+                || (stack.is(Items.CROSSBOW) && (player.isUsingItem() || CrossbowItem.isCharged(stack)));
     }
 }

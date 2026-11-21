@@ -62,6 +62,6 @@ public final class AntiSpawnpointModule extends Module {
 
     static boolean shouldCancelUse(
             final boolean overworld, final boolean nether, final boolean bed, final boolean respawnAnchor) {
-        return bed && overworld || respawnAnchor && nether;
+        return (bed && overworld) || (respawnAnchor && nether);
     }
 }

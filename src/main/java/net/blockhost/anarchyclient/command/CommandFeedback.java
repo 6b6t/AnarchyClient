@@ -11,6 +11,12 @@ final class CommandFeedback {
 
     private CommandFeedback() {}
 
+    /** The exception's message, or its type when it has none, so chat never shows "null". */
+    static String message(final Throwable exception) {
+        String message = exception.getMessage();
+        return message == null ? exception.getClass().getSimpleName() : message;
+    }
+
     static MutableComponent copyable(final String label, final String value) {
         return Component.literal(label)
                 .withStyle(style -> style.withColor(ChatFormatting.AQUA)

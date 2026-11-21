@@ -83,7 +83,7 @@ public final class AntiAimModule extends Module {
         }
         this.ticks++;
         boolean using = client.options.keyUse.isDown() || client.options.keyAttack.isDown() || player.isUsingItem();
-        if (RotationManager.hasActiveRequest() || this.pauseOnUse.value() && using) {
+        if (RotationManager.hasActiveRequest() || (this.pauseOnUse.value() && using)) {
             this.fake = null;
             return;
         }

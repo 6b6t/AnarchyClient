@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.render;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,19 +23,13 @@ public final class MarkerManager {
         return MARKERS.remove(id) != null;
     }
 
-    public static Collection<Marker> markers() {
+    public static List<Marker> markers() {
         return List.copyOf(MARKERS.values());
     }
 
     public static void tick() {
-        for (Map.Entry<String, Marker> entry : MARKERS.entrySet()) {
-            Marker ticked = entry.getValue().ticked();
-            if (ticked.expired()) {
-                MARKERS.remove(entry.getKey(), entry.getValue());
-            } else {
-                MARKERS.replace(entry.getKey(), entry.getValue(), ticked);
-            }
-        }
+        MARKERS.replaceAll((id, marker) -> marker.ticked());
+        MARKERS.values().removeIf(Marker::expired);
     }
 
     public static void render(final LevelRenderContext context) {

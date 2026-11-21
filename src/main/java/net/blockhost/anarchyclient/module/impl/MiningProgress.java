@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -45,9 +46,9 @@ final class MiningProgress {
         if (MobEffectUtil.hasDigSpeed(player)) {
             speed *= 1.0F + (MobEffectUtil.getDigSpeedAmplification(player) + 1) * 0.2F;
         }
-        if (player.hasEffect(MobEffects.MINING_FATIGUE)) {
-            speed *= (float)
-                    Math.pow(0.3, player.getEffect(MobEffects.MINING_FATIGUE).getAmplifier() + 1);
+        MobEffectInstance fatigue = player.getEffect(MobEffects.MINING_FATIGUE);
+        if (fatigue != null) {
+            speed *= (float) Math.pow(0.3, fatigue.getAmplifier() + 1);
         }
         speed *= (float) player.getAttributeValue(Attributes.BLOCK_BREAK_SPEED);
         if (player.isEyeInFluid(FluidTags.WATER)) {

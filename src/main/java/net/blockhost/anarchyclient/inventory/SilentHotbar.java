@@ -8,6 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 public final class SilentHotbar {
 
@@ -15,7 +16,7 @@ public final class SilentHotbar {
     public static final int PRIORITY_COMBAT = 50;
     public static final int PRIORITY_LIFE = 100;
 
-    private static Request active;
+    private static @Nullable Request active;
     private static int previousSlot = -1;
 
     private SilentHotbar() {}
@@ -51,7 +52,7 @@ public final class SilentHotbar {
      */
     private static boolean canTakeOver(final Request current, final int priority) {
         return priority > current.priority()
-                || priority == current.priority() && !ItemUseControl.isHolding(current.owner());
+                || (priority == current.priority() && !ItemUseControl.isHolding(current.owner()));
     }
 
     public static OptionalInt selectMatching(

@@ -29,7 +29,9 @@ import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.notification.ToggleNotifications;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.util.Enums;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +45,7 @@ public final class ClientConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     private final ModuleManager modules;
-    private final FriendManager friends;
+    private final @Nullable FriendManager friends;
     private final Path path;
     private final Map<ModuleCategory, CategoryWindowState> categoryWindows = new EnumMap<>(ModuleCategory.class);
     private final List<ModuleCategory> categoryOrder = new ArrayList<>();
@@ -53,8 +55,8 @@ public final class ClientConfig {
     private volatile long lastChangeNanos;
     // Set when an unreadable config could not be backed up. Saving would then destroy the user's config.
     private boolean saveBlocked;
-    private ModuleCategory selectedCategory;
-    private String selectedModuleId;
+    private @Nullable ModuleCategory selectedCategory;
+    private @Nullable String selectedModuleId;
     private boolean showDisabledModules = UiPreferences.DEFAULT.showDisabledModules();
     private boolean enabledModulesFirst = UiPreferences.DEFAULT.enabledModulesFirst();
     private boolean showModuleSummaries = UiPreferences.DEFAULT.showModuleSummaries();
@@ -78,7 +80,7 @@ public final class ClientConfig {
         this(modules, friends, FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + ".json"));
     }
 
-    public ClientConfig(final ModuleManager modules, final FriendManager friends, final Path path) {
+    public ClientConfig(final ModuleManager modules, final @Nullable FriendManager friends, final Path path) {
         this.modules = modules;
         this.friends = friends;
         this.path = path;
@@ -132,10 +134,6 @@ public final class ClientConfig {
         }
     }
 
-    /**
-     * Loads one module. Settings and the keybind load before the enabled state, so {@code onEnable} sees
-     * the saved settings. A bad value only skips that value and keeps the rest of the config.
-     */
     /** Format version of a saved config; files written before versioning count as version 1. */
     static int savedVersion(final JsonObject root) {
         JsonElement version = root.get("version");
@@ -500,7 +498,7 @@ public final class ClientConfig {
 
     private static boolean readBoolean(final JsonObject json, final String key, final boolean fallback) {
         JsonElement element = json.get(key);
-        return element != null && element.isJsonPrimitive() ? element.getAsBoolean() : fallback;
+        return (element != null && element.isJsonPrimitive()) ? element.getAsBoolean() : fallback;
     }
 
     private static BackgroundDesign parseBackgroundDesign(final String value) {
@@ -525,12 +523,14 @@ public final class ClientConfig {
         return Optional.empty();
     }
 
-    private static JsonObject findObject(final JsonObject json, final String key, final List<String> aliases) {
+    private static @Nullable JsonObject findObject(
+            final JsonObject json, final String key, final List<String> aliases) {
         JsonElement element = findElement(json, key, aliases);
         return element != null && element.isJsonObject() ? element.getAsJsonObject() : null;
     }
 
-    private static JsonElement findElement(final JsonObject json, final String key, final List<String> aliases) {
+    private static @Nullable JsonElement findElement(
+            final JsonObject json, final String key, final List<String> aliases) {
         JsonElement element = json.get(key);
         if (element != null) {
             return element;
@@ -637,8 +637,7 @@ public final class ClientConfig {
         }
 
         public GuiThemePreset next() {
-            GuiThemePreset[] presets = values();
-            return presets[(this.ordinal() + 1) % presets.length];
+            return Enums.next(this);
         }
 
         public static Optional<GuiThemePreset> fromKey(final String key) {

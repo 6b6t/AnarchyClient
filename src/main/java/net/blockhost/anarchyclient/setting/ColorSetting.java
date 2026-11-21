@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.jspecify.annotations.Nullable;
 
 public final class ColorSetting extends Setting<SettingColor> implements TextValueSetting {
 
@@ -33,7 +34,7 @@ public final class ColorSetting extends Setting<SettingColor> implements TextVal
     }
 
     @Override
-    public void fromJson(final JsonElement element) {
+    public void fromJson(final @Nullable JsonElement element) {
         if (element != null && element.isJsonPrimitive()) {
             this.valueFromString(element.getAsString());
         }

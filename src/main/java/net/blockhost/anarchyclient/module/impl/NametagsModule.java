@@ -17,6 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.PlayerTeam;
 
 public final class NametagsModule extends Module {
 
@@ -122,7 +123,8 @@ public final class NametagsModule extends Module {
     }
 
     private String line(final Player player, final LivingEntity entity) {
-        String team = entity.getTeam() == null ? "" : "[" + entity.getTeam().getName() + "] ";
+        PlayerTeam entityTeam = entity.getTeam();
+        String team = entityTeam == null ? "" : "[" + entityTeam.getName() + "] ";
         return "%s%s %.0fm %.1fh"
                 .formatted(
                         team, entity.getScoreboardName(), Math.sqrt(entity.distanceToSqr(player)), entity.getHealth());

@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.nio.file.Path;
+import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,11 @@ class CommandSupportTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> CommandSupport.resolveInside(
-                        base, base.getRoot().resolve("etc").resolve("passwd").toString()));
+                        base,
+                        Objects.requireNonNull(base.getRoot())
+                                .resolve("etc")
+                                .resolve("passwd")
+                                .toString()));
         assertThrows(IllegalArgumentException.class, () -> CommandSupport.resolveInside(base, "."));
     }
 

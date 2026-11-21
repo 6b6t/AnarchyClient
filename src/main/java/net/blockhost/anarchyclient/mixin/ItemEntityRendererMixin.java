@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.entity.ItemEntityRenderer;
 import net.minecraft.client.renderer.entity.state.ItemEntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,7 +32,7 @@ public abstract class ItemEntityRendererMixin {
     private static final float FLAT_GAP = 0.005F;
 
     @Unique
-    private ItemEntityRenderState anarchyclient$state;
+    private @Nullable ItemEntityRenderState anarchyclient$state;
 
     @Unique
     private boolean anarchyclient$scalePushed;

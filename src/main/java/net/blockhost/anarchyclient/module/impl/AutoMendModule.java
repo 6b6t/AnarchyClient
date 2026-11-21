@@ -73,7 +73,7 @@ public final class AutoMendModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        if (this.protectTotem.value() && protectedTotem(player, this.totemHealth.value())
+        if ((this.protectTotem.value() && protectedTotem(player, this.totemHealth.value()))
                 || AutoTotemModule.ownsOffhand(player)) {
             return;
         }
@@ -134,7 +134,7 @@ public final class AutoMendModule extends Module {
             }
             double percent = EXPThrowerModule.durabilityPercent(stack);
             int damage = stack.getDamageValue();
-            if (percent < bestPercent || percent == bestPercent && damage > highestDamage) {
+            if (percent < bestPercent || (percent == bestPercent && damage > highestDamage)) {
                 bestSlot = slot;
                 bestPercent = percent;
                 highestDamage = damage;

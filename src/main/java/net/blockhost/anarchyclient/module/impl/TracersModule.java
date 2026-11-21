@@ -137,10 +137,10 @@ public final class TracersModule extends Module {
 
     @Override
     public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
-        if (!"Screen".equals(this.mode.value())
-                || client.player == null
+        if (client.player == null
                 || client.level == null
-                || client.gui.screen() instanceof AnarchyClientScreen) {
+                || client.gui.screen() instanceof AnarchyClientScreen
+                || !"Screen".equals(this.mode.value())) {
             return;
         }
         Player player = client.gameRenderer.mainCamera().entity() instanceof Player cameraPlayer ? cameraPlayer : null;

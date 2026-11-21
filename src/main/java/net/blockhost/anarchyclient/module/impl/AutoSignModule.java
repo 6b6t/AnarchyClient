@@ -42,7 +42,7 @@ public final class AutoSignModule extends Module {
             .defaultValue(true)
             .build()));
     private volatile ClientboundOpenSignEditorPacket pendingEditor;
-    // Read on the network thread.
+    // Read on the network thread. Only the client thread writes it.
     private volatile int placementTicks;
 
     public AutoSignModule() {
@@ -80,8 +80,9 @@ public final class AutoSignModule extends Module {
             // The sign's block entity has not arrived yet; try again next tick.
             this.pendingEditor = editor;
         }
-        if (this.placementTicks > 0) {
-            this.placementTicks--;
+        int ticks = this.placementTicks;
+        if (ticks > 0) {
+            this.placementTicks = ticks - 1;
         }
     }
 
@@ -95,9 +96,9 @@ public final class AutoSignModule extends Module {
     protected void onDisable() {
         // A request taken over but not handled yet still has to open the editor.
         ClientboundOpenSignEditorPacket editor = this.pendingEditor;
-        Minecraft client = Minecraft.getInstance();
-        if (editor != null && client.getConnection() != null) {
-            client.getConnection().handleOpenSignEditor(editor);
+        ClientPacketListener connection = Minecraft.getInstance().getConnection();
+        if (editor != null && connection != null) {
+            connection.handleOpenSignEditor(editor);
         }
         this.pendingEditor = null;
         this.placementTicks = 0;

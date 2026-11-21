@@ -7,6 +7,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 record Blaze3DGuiShapeRenderState(
         RenderPipeline pipeline,
@@ -14,7 +15,7 @@ record Blaze3DGuiShapeRenderState(
         Matrix3x2fc pose,
         List<GuiShapeGeometry.Vertex> vertices,
         boolean useUv,
-        ScreenRectangle scissorArea,
+        @Nullable ScreenRectangle scissorArea,
         ScreenRectangle bounds)
         implements GuiElementRenderState {
 

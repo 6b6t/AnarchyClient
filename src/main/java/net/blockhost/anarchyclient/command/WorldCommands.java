@@ -19,7 +19,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,13 +26,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import net.blockhost.anarchyclient.command.CommandSupport.BlockArea;
 import net.blockhost.anarchyclient.i18n.Translations;
+import net.blockhost.anarchyclient.util.MoreFiles;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -155,7 +156,7 @@ final class WorldCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.world.failed_to_read_seeds",
                             "Failed to read seeds: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -184,7 +185,7 @@ final class WorldCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.world.failed_to_save_seed",
                             "Failed to save seed: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -208,7 +209,7 @@ final class WorldCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.world.failed_to_read_seeds",
                             "Failed to read seeds: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -242,14 +243,15 @@ final class WorldCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.world.failed_to_delete_seed",
                             "Failed to delete seed: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
 
     private static int locateSlimeChunk(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
         try {
@@ -262,7 +264,7 @@ final class WorldCommands {
                 return 0;
             }
             long seed = numericSeed(record.seed());
-            BlockPos playerPos = client.player.blockPosition();
+            BlockPos playerPos = player.blockPosition();
             BlockPos result = closestSlimeChunk(
                     seed, Math.floorDiv(playerPos.getX(), 16), Math.floorDiv(playerPos.getZ(), 16), 128);
             String coords = result.getX() + ", " + result.getZ();
@@ -277,14 +279,16 @@ final class WorldCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.world.failed_to_read_seeds",
                             "Failed to read seeds: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
 
     private static int terrainExport(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = Minecraft.getInstance();
-        if (client.player == null || client.level == null) {
+        LocalPlayer player = client.player;
+        ClientLevel level = client.level;
+        if (player == null || level == null) {
             context.getSource()
                     .sendError(Translations.component(
                             "anarchyclient.message.world.you_must_be_in_game_to",
@@ -292,50 +296,33 @@ final class WorldCommands {
             return 0;
         }
         int distance = IntegerArgumentType.getInteger(context, "distance");
-        BlockPos center = client.player.blockPosition();
+        BlockPos center = player.blockPosition();
         Path output = terrainExportPath(center, distance);
-        List<String> lines = terrainLines(client, center, distance);
+        List<String> lines = terrainLines(level, center, distance);
         FabricClientCommandSource source = context.getSource();
         source.sendFeedback(Translations.component(
                 "anarchyclient.message.world.exporting_blocks", "Exporting %s blocks...", (lines.size() - 1)));
         // Write off the render thread, then report back on it.
-        CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                Files.createDirectories(output.getParent());
-                                Files.write(output, lines, StandardCharsets.UTF_8);
-                            } catch (IOException exception) {
-                                throw new UncheckedIOException(exception);
-                            }
-                        },
-                        Util.ioPool())
-                .whenCompleteAsync(
-                        (ignored, error) -> {
-                            if (error == null) {
-                                source.sendFeedback(Translations.component(
-                                        "anarchyclient.message.world.exported_terrain_to",
-                                        "Exported terrain to %s",
-                                        output));
-                                return;
-                            }
-                            Throwable cause = error instanceof CompletionException && error.getCause() != null
-                                    ? error.getCause()
-                                    : error;
-                            if (cause instanceof UncheckedIOException unchecked) {
-                                cause = unchecked.getCause();
-                            }
-                            source.sendError(Translations.component(
-                                    "anarchyclient.message.world.failed_to_export_terrain",
-                                    "Failed to export terrain: %s",
-                                    cause.getMessage()));
-                        },
-                        client);
+        Util.ioPool().execute(() -> {
+            try {
+                MoreFiles.createParentDirectories(output);
+                Files.write(output, lines, StandardCharsets.UTF_8);
+                client.execute(() -> source.sendFeedback(Translations.component(
+                        "anarchyclient.message.world.exported_terrain_to", "Exported terrain to %s", output)));
+            } catch (IOException exception) {
+                client.execute(() -> source.sendError(Translations.component(
+                        "anarchyclient.message.world.failed_to_export_terrain",
+                        "Failed to export terrain: %s",
+                        CommandFeedback.message(exception))));
+            }
+        });
         return SUCCESS;
     }
 
     private static int setBlock(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.level == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.level == null) {
             return 0;
         }
         try {
@@ -343,19 +330,20 @@ final class WorldCommands {
                     getCoordinate(context, "x"),
                     getCoordinate(context, "y"),
                     getCoordinate(context, "z"),
-                    client.player.position());
+                    player.position());
             client.level.setBlockAndUpdate(
                     pos, parseBlock(getToken(context, "block")).defaultBlockState());
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
     }
 
     private static int fill(final CommandContext<FabricClientCommandSource> context, final boolean replaceOnly) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.level == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.level == null) {
             return 0;
         }
         try {
@@ -364,12 +352,12 @@ final class WorldCommands {
                             getCoordinate(context, "from_x"),
                             getCoordinate(context, "from_y"),
                             getCoordinate(context, "from_z"),
-                            client.player.position()),
+                            player.position()),
                     parseBlockPosition(
                             getCoordinate(context, "to_x"),
                             getCoordinate(context, "to_y"),
                             getCoordinate(context, "to_z"),
-                            client.player.position()),
+                            player.position()),
                     MAX_FILL_BLOCKS);
             BlockState state = parseBlock(getToken(context, "block")).defaultBlockState();
             Block filter = replaceOnly ? parseBlock(getToken(context, "filter")) : null;
@@ -394,7 +382,7 @@ final class WorldCommands {
                             changed));
             return SUCCESS;
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -405,22 +393,21 @@ final class WorldCommands {
                 BuiltInRegistries.BLOCK.keySet().stream().map(Identifier::toString), builder);
     }
 
-    private static List<String> terrainLines(final Minecraft client, final BlockPos center, final int distance) {
+    private static List<String> terrainLines(final ClientLevel level, final BlockPos center, final int distance) {
         List<String> lines = new ArrayList<>();
         lines.add("dx,dy,dz,block");
         for (int y = center.getY() - distance; y <= center.getY() + distance; y++) {
-            if (y < client.level.getMinY() || y >= client.level.getMinY() + client.level.getHeight()) {
+            if (y < level.getMinY() || y >= level.getMinY() + level.getHeight()) {
                 continue;
             }
             for (int x = center.getX() - distance; x <= center.getX() + distance; x++) {
                 for (int z = center.getZ() - distance; z <= center.getZ() + distance; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    if (!client.level.isLoaded(pos)) {
+                    if (!level.isLoaded(pos)) {
                         continue;
                     }
-                    BlockState state = client.level.getBlockState(pos);
-                    if (state.isAir()
-                            || state.getCollisionShape(client.level, pos).isEmpty()) {
+                    BlockState state = level.getBlockState(pos);
+                    if (state.isAir() || state.getCollisionShape(level, pos).isEmpty()) {
                         continue;
                     }
                     lines.add((x - center.getX()) + "," + (y - center.getY()) + "," + (z - center.getZ()) + ","

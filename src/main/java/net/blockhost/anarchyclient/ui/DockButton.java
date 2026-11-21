@@ -16,8 +16,6 @@ import net.lenni0451.rivet.math.Size;
 
 final class DockButton extends Component implements LayoutDebugLabel {
 
-    private final ModulePanel panel;
-
     private final String icon;
     private final String name;
     private final BooleanSupplier selected;
@@ -27,13 +25,11 @@ final class DockButton extends Component implements LayoutDebugLabel {
     private boolean hovered;
 
     DockButton(
-            final ModulePanel panel,
             final String icon,
             final String name,
             final BooleanSupplier selected,
             final Runnable action,
             final BooleanSupplier activeDot) {
-        this.panel = panel;
         this.icon = icon;
         this.name = name;
         this.selected = selected;

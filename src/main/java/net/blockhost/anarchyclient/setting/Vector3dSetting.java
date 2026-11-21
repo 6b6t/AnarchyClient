@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 public final class Vector3dSetting extends Setting<Vec3> implements TextValueSetting {
 
@@ -36,7 +37,7 @@ public final class Vector3dSetting extends Setting<Vec3> implements TextValueSet
     }
 
     @Override
-    public void fromJson(final JsonElement element) {
+    public void fromJson(final @Nullable JsonElement element) {
         if (element == null) {
             return;
         }

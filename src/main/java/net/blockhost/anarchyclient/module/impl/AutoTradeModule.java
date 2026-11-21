@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.ItemListSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.world.entity.player.Inventory;
@@ -50,10 +51,11 @@ public final class AutoTradeModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
         if (player == null
                 || client.gameMode == null
-                || client.getConnection() == null
+                || connection == null
                 || !(player.containerMenu instanceof MerchantMenu menu)) {
             this.cooldown = 0;
             return;
@@ -80,7 +82,7 @@ public final class AutoTradeModule extends Module {
         }
         menu.setSelectionHint(index);
         menu.tryMoveItems(index);
-        client.getConnection().send(new ServerboundSelectTradePacket(index));
+        connection.send(new ServerboundSelectTradePacket(index));
         this.debugValue("trade", index);
     }
 

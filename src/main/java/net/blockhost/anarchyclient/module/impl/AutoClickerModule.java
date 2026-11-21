@@ -92,8 +92,8 @@ public final class AutoClickerModule extends Module {
         return (!this.weaponsOnly.value() || isWeapon(player.getMainHandItem()))
                 && (!this.requireCooldown.value() || player.getAttackStrengthScale(0.0F) >= 1.0F)
                 && (!this.holdRequired.value()
-                        || this.shouldAttack(client) && client.options.keyAttack.isDown()
-                        || this.shouldUse(client) && client.options.keyUse.isDown());
+                        || (this.shouldAttack(client) && client.options.keyAttack.isDown())
+                        || (this.shouldUse(client) && client.options.keyUse.isDown()));
     }
 
     private boolean shouldAttack(final Minecraft client) {

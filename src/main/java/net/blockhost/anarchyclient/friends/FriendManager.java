@@ -100,7 +100,7 @@ public final class FriendManager {
             return List.of();
         }
         List<String> names = new ArrayList<>();
-        for (String token : NAME_SPLIT.split(value)) {
+        for (String token : NAME_SPLIT.split(value, -1)) {
             String displayName = displayName(token);
             if (!displayName.isEmpty()) {
                 names.add(displayName);

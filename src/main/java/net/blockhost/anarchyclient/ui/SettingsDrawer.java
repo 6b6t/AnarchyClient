@@ -33,32 +33,27 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background;
-    private final Surface headerDivider;
-    private final IconButton backIcon;
-    private final TextNode title;
-    private final IconButton closeIcon;
     private final Container body;
 
     SettingsDrawer(final ModulePanel panel) {
         super(gridLayout(0, 4));
         this.panel = panel;
-        this.background = this.panel.glassDeepPanel();
-        this.headerDivider = surface(DIVIDER);
-        this.backIcon = iconButton(
+        GlassSurface background = this.panel.glassDeepPanel();
+        Surface headerDivider = surface(DIVIDER);
+        IconButton backIcon = iconButton(
                 "chevron-left",
                 () -> MUTED,
                 this.panel::openRootDrawer,
                 () -> this.panel.drawer != Drawer.ROOT && this.panel.drawer != Drawer.NONE);
-        this.title = textNode(this::title, () -> TEXT);
-        this.closeIcon = iconButton("x", () -> FAINT, () -> {
+        TextNode title = textNode(this::title, () -> TEXT);
+        IconButton closeIcon = iconButton("x", () -> FAINT, () -> {
             this.panel.drawer = Drawer.NONE;
             this.panel.requestFrame();
         });
         this.body = new Container(new VerticalListLayout(0, true));
-        place(this.background, fillCell(0, 0, 1, 2));
+        place(background, fillCell(0, 0, 1, 2));
         place(
-                this.headerDivider,
+                headerDivider,
                 cell(
                         0,
                         0,
@@ -72,7 +67,7 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
                         null,
                         1F));
         place(
-                this.backIcon,
+                backIcon,
                 cell(
                         0,
                         0,
@@ -86,7 +81,7 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
                         ICON_BUTTON_SIZE,
                         ICON_BUTTON_SIZE));
         place(
-                this.title,
+                title,
                 cell(
                         0,
                         0,
@@ -100,7 +95,7 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
                         null,
                         HEADER_HEIGHT));
         place(
-                this.closeIcon,
+                closeIcon,
                 cell(
                         0,
                         0,
@@ -116,11 +111,11 @@ final class SettingsDrawer extends Container implements LayoutDebugLabel {
         place(
                 this.body,
                 cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 0F, 0F, PADDING), null, null));
-        this.addChild(this.background);
-        this.addChild(this.headerDivider);
-        this.addChild(this.backIcon);
-        this.addChild(this.title);
-        this.addChild(this.closeIcon);
+        this.addChild(background);
+        this.addChild(headerDivider);
+        this.addChild(backIcon);
+        this.addChild(title);
+        this.addChild(closeIcon);
         this.addChild(this.body);
     }
 

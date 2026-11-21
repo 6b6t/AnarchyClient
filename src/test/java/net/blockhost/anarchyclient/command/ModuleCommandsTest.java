@@ -2,6 +2,7 @@ package net.blockhost.anarchyclient.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
@@ -22,7 +23,7 @@ class ModuleCommandsTest {
 
         ModuleCommands.setSettingValue(setting, "true");
 
-        assertEquals(true, setting.value());
+        assertTrue(setting.value());
         assertThrows(IllegalArgumentException.class, () -> ModuleCommands.setSettingValue(setting, "yes"));
     }
 

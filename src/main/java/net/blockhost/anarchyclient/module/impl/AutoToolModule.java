@@ -69,8 +69,8 @@ public final class AutoToolModule extends Module {
         for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
             var stack = inventory.getItem(slot);
             if (stack.isEmpty()
-                    || !ignoreDurability && stack.isDamageableItem() && stack.nextDamageWillBreak()
-                    || state.requiresCorrectToolForDrops() && !stack.isCorrectToolForDrops(state)) {
+                    || (!ignoreDurability && stack.isDamageableItem() && stack.nextDamageWillBreak())
+                    || (state.requiresCorrectToolForDrops() && !stack.isCorrectToolForDrops(state))) {
                 continue;
             }
             float speed = stack.getDestroySpeed(state);

@@ -2,15 +2,14 @@ package net.blockhost.anarchyclient.module;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Set;
 
 final class ModuleKeybindController {
 
     private static final int SMART_HOLD_TICKS = 4;
 
-    private final Map<Module, Boolean> previousPressed = new IdentityHashMap<>();
-    private final Map<Module, SmartPress> smartPresses = new IdentityHashMap<>();
+    private final IdentityHashMap<Module, Boolean> previousPressed = new IdentityHashMap<>();
+    private final IdentityHashMap<Module, SmartPress> smartPresses = new IdentityHashMap<>();
     // Presses that started while input was allowed. A key typed into chat is never accepted, so its
     // release must not turn off a HOLD module.
     private final Set<Module> acceptedPresses = Collections.newSetFromMap(new IdentityHashMap<>());

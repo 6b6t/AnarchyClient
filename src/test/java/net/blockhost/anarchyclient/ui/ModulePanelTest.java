@@ -33,7 +33,7 @@ class ModulePanelTest {
         ModulePanel panel = new ModulePanel(modules, new ClientConfig(modules, this.tempDir.resolve("config.json")));
         new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, SIZE).root().addChild(panel);
 
-        Module module = modules.all().iterator().next();
+        Module module = modules.all().getFirst();
         panel.inspectModule(module);
         panel.computeLayout(SIZE);
         assertTrue(panel.layoutDebugLabel().contains("module=" + module.id()));
@@ -61,7 +61,7 @@ class ModulePanelTest {
         ModuleRegistry.registerDefaults(modules);
         ModulePanel panel = new ModulePanel(modules, new ClientConfig(modules, this.tempDir.resolve("config.json")));
         new Rivet(new TestRivetBackend(), AbsoluteLayout.INSTANCE, SIZE).root().addChild(panel);
-        Module module = modules.all().iterator().next();
+        Module module = modules.all().getFirst();
         panel.inspectModule(module);
 
         panel.startKeybindListening(module);

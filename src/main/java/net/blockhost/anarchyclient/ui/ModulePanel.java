@@ -3,7 +3,6 @@ package net.blockhost.anarchyclient.ui;
 import static net.blockhost.anarchyclient.ui.PanelStyle.DOCK_WIDTH;
 import static net.blockhost.anarchyclient.ui.PanelStyle.MUTED;
 import static net.blockhost.anarchyclient.ui.PanelStyle.TEXT;
-import static net.blockhost.anarchyclient.ui.PanelWidgets.cell;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.drawText;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.textWidth;
 import static net.blockhost.anarchyclient.ui.PanelWidgets.wrapText;
@@ -24,6 +23,7 @@ import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.rivet.BackgroundDesign;
 import net.blockhost.anarchyclient.rivet.SoftShadowCommand;
 import net.blockhost.anarchyclient.setting.Setting;
+import net.blockhost.anarchyclient.util.Enums;
 import net.fabricmc.loader.api.FabricLoader;
 import net.lenni0451.commons.color.Color;
 import net.lenni0451.commons.math.MathUtils;
@@ -33,9 +33,6 @@ import net.lenni0451.rivet.component.container.Container;
 import net.lenni0451.rivet.component.container.ScrollContainer;
 import net.lenni0451.rivet.layout.absolute.AbsoluteLayout;
 import net.lenni0451.rivet.layout.absolute.AbsoluteOptions;
-import net.lenni0451.rivet.layout.grid.GridAnchor;
-import net.lenni0451.rivet.layout.grid.GridFill;
-import net.lenni0451.rivet.math.Padding;
 import net.lenni0451.rivet.math.Size;
 import net.lenni0451.rivet.text.model.TextOrigin;
 import net.minecraft.client.Minecraft;
@@ -503,8 +500,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
     }
 
     void cycleBackgroundDesign() {
-        BackgroundDesign[] designs = BackgroundDesign.values();
-        this.backgroundDesign = designs[(this.backgroundDesign.ordinal() + 1) % designs.length];
+        this.backgroundDesign = Enums.next(this.backgroundDesign);
         this.saveUiPreferences();
         this.requestFrame();
     }
@@ -572,8 +568,7 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
         });
         if (!query.isEmpty()) {
             result.sort(
-                    Comparator.comparing((Module module) -> module.category().ordinal())
-                            .thenComparing(Module::name, String.CASE_INSENSITIVE_ORDER));
+                    Comparator.comparing(Module::category).thenComparing(Module::name, String.CASE_INSENSITIVE_ORDER));
         }
         if (this.enabledFirst) {
             result.sort(Comparator.comparing((Module module) -> Boolean.valueOf(module.enabled()))
@@ -651,31 +646,6 @@ public final class ModulePanel extends Container implements LayoutDebugLabel {
 
     private static float clamp(final float value, final float min, final float max) {
         return (float) MathUtils.clamp(value, min, max);
-    }
-
-    private static GridCell weightedCell(final int column, final int row, final float weightX, final float weightY) {
-        return cell(column, row, 1, 1, weightX, weightY, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null);
-    }
-
-    private static GridCell weightedCell(
-            final int column,
-            final int row,
-            final int columnSpan,
-            final int rowSpan,
-            final float weightX,
-            final float weightY) {
-        return cell(
-                column,
-                row,
-                columnSpan,
-                rowSpan,
-                weightX,
-                weightY,
-                GridAnchor.CENTER,
-                GridFill.BOTH,
-                Padding.EMPTY,
-                null,
-                null);
     }
 
     GlassSurface glassPanel() {

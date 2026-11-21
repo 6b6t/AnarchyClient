@@ -67,8 +67,8 @@ public final class ProtectionZonesModule extends Module {
         if (value == null || value.isBlank()) {
             return positions;
         }
-        for (String entry : value.split("[;|]")) {
-            String[] parts = entry.trim().split(",");
+        for (String entry : value.split("[;|]", -1)) {
+            String[] parts = entry.trim().split(",", -1);
             if (parts.length != 3) {
                 continue;
             }

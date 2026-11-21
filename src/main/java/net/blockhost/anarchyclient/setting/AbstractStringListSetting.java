@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.Nullable;
 
 abstract class AbstractStringListSetting extends Setting<List<String>> implements TextValueSetting {
 
@@ -74,7 +75,7 @@ abstract class AbstractStringListSetting extends Setting<List<String>> implement
     }
 
     @Override
-    public final void fromJson(final JsonElement element) {
+    public final void fromJson(final @Nullable JsonElement element) {
         if (element == null) {
             return;
         }
@@ -116,7 +117,7 @@ abstract class AbstractStringListSetting extends Setting<List<String>> implement
             return List.of();
         }
         List<String> parsed = new ArrayList<>();
-        for (String token : this.separator().split(value)) {
+        for (String token : this.separator().split(value, -1)) {
             String normalized = this.normalize(token);
             if (!normalized.isBlank()) {
                 parsed.add(normalized);

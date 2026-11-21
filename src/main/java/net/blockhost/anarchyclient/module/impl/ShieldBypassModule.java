@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.MouseButtonInfo;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.tags.ItemTags;
@@ -49,6 +50,7 @@ public final class ShieldBypassModule extends Module {
 
     @Override
     public boolean mouseClick(final Minecraft client, final MouseButtonInfo buttonInfo, final int action) {
+        ClientPacketListener connection = client.getConnection();
         if (buttonInfo.button() != InputConstants.MOUSE_BUTTON_LEFT || action != InputConstants.PRESS) {
             return false;
         }
@@ -56,7 +58,7 @@ public final class ShieldBypassModule extends Module {
         if (player == null
                 || client.level == null
                 || client.gameMode == null
-                || client.getConnection() == null
+                || connection == null
                 || client.gui.screen() != null
                 || player.isUsingItem()) {
             return false;
@@ -78,13 +80,11 @@ public final class ShieldBypassModule extends Module {
         if (!client.level.noCollision(player, player.getBoundingBox().move(bypass.subtract(original)))) {
             return false;
         }
-        client.getConnection()
-                .send(new ServerboundMovePlayerPacket.Pos(bypass, player.onGround(), player.horizontalCollision));
+        connection.send(new ServerboundMovePlayerPacket.Pos(bypass, player.onGround(), player.horizontalCollision));
         client.gameMode.attack(player, target);
         player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         player.resetAttackStrengthTicker();
-        client.getConnection()
-                .send(new ServerboundMovePlayerPacket.Pos(original, player.onGround(), player.horizontalCollision));
+        connection.send(new ServerboundMovePlayerPacket.Pos(original, player.onGround(), player.horizontalCollision));
         return true;
     }
 

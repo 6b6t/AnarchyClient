@@ -37,7 +37,7 @@ public final class ClickTpModule extends Module {
                 || client.getConnection() == null
                 || client.hitResult == null
                 || client.hitResult.getType() != HitResult.Type.BLOCK
-                || this.requireSneak.value() && !client.options.keyShift.isDown()) {
+                || (this.requireSneak.value() && !client.options.keyShift.isDown())) {
             return false;
         }
         // Stand on top of the clicked block; the raw hit point on a side face is inside the wall.

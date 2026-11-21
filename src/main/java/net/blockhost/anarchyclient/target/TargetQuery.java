@@ -11,6 +11,7 @@ import net.blockhost.anarchyclient.module.impl.TeamsModule;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.PlayerTeam;
 
 public final class TargetQuery {
 
@@ -28,10 +29,8 @@ public final class TargetQuery {
                 && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName())) {
             return false;
         }
-        if (policy.ignoreTeams()
-                && entity.getTeam() != null
-                && player.getTeam() != null
-                && entity.getTeam().isAlliedTo(player.getTeam())) {
+        PlayerTeam entityTeam = entity.getTeam();
+        if (policy.ignoreTeams() && entityTeam != null && entityTeam.isAlliedTo(player.getTeam())) {
             return false;
         }
         if (policy.antiBot()

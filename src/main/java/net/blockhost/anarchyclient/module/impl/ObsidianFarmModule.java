@@ -64,7 +64,7 @@ public final class ObsidianFarmModule extends Module {
             return;
         }
         if (this.lockedUntilNether
-                || this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem())
+                || (this.protectEating.value() && isConsuming(player.getUseItem(), player.isUsingItem()))
                 || !WorldInteraction.hasHotbarItem(player.getInventory(), ObsidianFarmModule::isPickaxe)) {
             this.miner.stop(client);
             return;

@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.phys.Vec3;
@@ -56,6 +57,7 @@ public final class ElytraFlyModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
         if (player == null) {
             return;
@@ -65,11 +67,10 @@ public final class ElytraFlyModule extends Module {
             if (this.autoStart.value()
                     && player.getDeltaMovement().y < 0.0
                     && !player.getAbilities().flying
-                    && client.getConnection() != null
+                    && connection != null
                     && player.tryToStartFallFlying()) {
-                client.getConnection()
-                        .send(new ServerboundPlayerCommandPacket(
-                                player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
+                connection.send(new ServerboundPlayerCommandPacket(
+                        player, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
             }
             return;
         }

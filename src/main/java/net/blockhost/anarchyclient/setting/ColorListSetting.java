@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 public final class ColorListSetting extends Setting<List<SettingColor>> implements TextValueSetting {
 
@@ -63,7 +64,7 @@ public final class ColorListSetting extends Setting<List<SettingColor>> implemen
 
     private static List<String> split(final String value, final String separator) {
         List<String> tokens = new ArrayList<>();
-        for (String token : value.split(separator)) {
+        for (String token : value.split(separator, -1)) {
             String cleaned = token.trim();
             if (cleaned.endsWith(",")) {
                 cleaned = cleaned.substring(0, cleaned.length() - 1).trim();
@@ -99,7 +100,7 @@ public final class ColorListSetting extends Setting<List<SettingColor>> implemen
     }
 
     @Override
-    public void fromJson(final JsonElement element) {
+    public void fromJson(final @Nullable JsonElement element) {
         if (element == null) {
             return;
         }

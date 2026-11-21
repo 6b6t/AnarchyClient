@@ -1,6 +1,5 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -22,11 +21,13 @@ import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringListSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.component.SwingAnimation;
@@ -88,7 +89,7 @@ public final class NotebotModule extends Module {
     private final BooleanSetting loop = this.setting(BooleanSetting.from(
             BooleanSetting.builder().id("loop").name("Loop").defaultValue(true).build()));
     private Stage stage = Stage.PREPARE;
-    private ParsedSong parsedSong = ParsedSong.EMPTY;
+    private NotebotSong parsedSong = NotebotSong.EMPTY;
     private final Map<Integer, List<BlockPos>> blocksByNote = new HashMap<>();
     private final Map<BlockPos, Integer> targetNotes = new HashMap<>();
     private final SequencedMap<BlockPos, Integer> tuneHits = new LinkedHashMap<>();
@@ -139,13 +140,14 @@ public final class NotebotModule extends Module {
         if (this.targetNotes.isEmpty()) {
             return;
         }
-        if (!SoundScan.soundId(packet).toString().startsWith("minecraft:block.note_block.")) {
+        Identifier sound = SoundScan.soundId(packet);
+        if (!"minecraft".equals(sound.getNamespace()) || !sound.getPath().startsWith("block.note_block.")) {
             return;
         }
         Vec3 position = new Vec3(packet.getX(), packet.getY(), packet.getZ());
         for (BlockPos pos : this.targetNotes.keySet()) {
             if (Vec3.atCenterOf(pos).distanceToSqr(position) <= 1.0) {
-                this.observedNotes.put(pos, pitchToNote(packet.getPitch()));
+                this.observedNotes.put(pos, NotebotSong.pitchToNote(packet.getPitch()));
                 return;
             }
         }
@@ -159,12 +161,12 @@ public final class NotebotModule extends Module {
 
     private boolean prepare(final Minecraft client, final LocalPlayer player) {
         this.resetRuntime();
-        this.parsedSong = parseSong(this.songText());
+        this.parsedSong = NotebotSong.parse(this.songText());
         if (this.parsedSong.empty()) {
             this.debugStatus("No notes configured");
             return false;
         }
-        List<ScannedNoteBlock> scannedBlocks = this.scanNoteBlocks(client, player);
+        List<NoteBlockPlan.ScannedNoteBlock> scannedBlocks = this.scanNoteBlocks(client, player);
         NoteBlockPlan plan = NoteBlockPlan.create(this.parsedSong, scannedBlocks);
         if (!plan.possible()) {
             this.debugStatus("Need " + plan.requiredBlocks() + " note blocks, found " + scannedBlocks.size());
@@ -226,6 +228,10 @@ public final class NotebotModule extends Module {
     }
 
     private void playSongTick(final Minecraft client, final LocalPlayer player) {
+        ClientPacketListener connection = client.getConnection();
+        if (connection == null) {
+            return;
+        }
         if (this.songTick > this.parsedSong.lastTick()) {
             if (!this.loop.value()) {
                 this.enabled(false);
@@ -243,7 +249,7 @@ public final class NotebotModule extends Module {
             if (this.rotate.value() && usedBlocks.isEmpty()) {
                 rotateToward(this, player, Vec3.atCenterOf(pos));
             }
-            client.getConnection()
+            connection
                     .getConnection()
                     .send(new ServerboundPlayerActionPacket(
                             ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, Direction.UP));
@@ -269,8 +275,8 @@ public final class NotebotModule extends Module {
         return null;
     }
 
-    private List<ScannedNoteBlock> scanNoteBlocks(final Minecraft client, final LocalPlayer player) {
-        List<ScannedNoteBlock> blocks = new ArrayList<>();
+    private List<NoteBlockPlan.ScannedNoteBlock> scanNoteBlocks(final Minecraft client, final LocalPlayer player) {
+        List<NoteBlockPlan.ScannedNoteBlock> blocks = new ArrayList<>();
         int radius = (int) Math.ceil(this.range.value());
         BlockPos center = player.blockPosition();
         for (int y = -radius; y <= radius; y++) {
@@ -284,14 +290,14 @@ public final class NotebotModule extends Module {
                     if (!state.getValue(NoteBlock.INSTRUMENT).isTunable()) {
                         continue;
                     }
-                    blocks.add(new ScannedNoteBlock(
+                    blocks.add(new NoteBlockPlan.ScannedNoteBlock(
                             pos.immutable(),
                             state.getValue(NoteBlock.NOTE),
                             player.distanceToSqr(Vec3.atCenterOf(pos))));
                 }
             }
         }
-        blocks.sort(Comparator.comparingDouble(ScannedNoteBlock::distanceSq));
+        blocks.sort(Comparator.comparingDouble(NoteBlockPlan.ScannedNoteBlock::distanceSq));
         return blocks;
     }
 
@@ -324,7 +330,7 @@ public final class NotebotModule extends Module {
 
     private void resetRuntime() {
         this.stage = Stage.PREPARE;
-        this.parsedSong = ParsedSong.EMPTY;
+        this.parsedSong = NotebotSong.EMPTY;
         this.blocksByNote.clear();
         this.targetNotes.clear();
         this.tuneHits.clear();
@@ -337,111 +343,6 @@ public final class NotebotModule extends Module {
         this.debugValue("stage", this.stage.name().toLowerCase(Locale.ROOT));
         this.debugValue("status", status);
         this.debugValue("blocks", this.targetNotes.size());
-    }
-
-    static int parseNote(final String value) {
-        try {
-            return parseNoteToken(value);
-        } catch (RuntimeException exception) {
-            return 0;
-        }
-    }
-
-    static float pitch(final int note) {
-        return (float) Math.pow(2.0, (Math.max(0, Math.min(24, note)) - 12) / 12.0);
-    }
-
-    static int pitchToNote(final float pitch) {
-        if (pitch <= 0.0F || !Float.isFinite(pitch)) {
-            return 0;
-        }
-        return Math.max(0, Math.min(24, Math.round(12.0F + 12.0F * (float) (Math.log(pitch) / Math.log(2.0)))));
-    }
-
-    static int tuneClicks(final int from, final int to) {
-        int safeFrom = Math.max(0, Math.min(24, from));
-        int safeTo = Math.max(0, Math.min(24, to));
-        return safeFrom <= safeTo ? safeTo - safeFrom : 25 - safeFrom + safeTo;
-    }
-
-    static ParsedSong parseSong(final String text) {
-        if (text == null || text.isBlank()) {
-            return ParsedSong.EMPTY;
-        }
-        Map<Integer, List<Integer>> notes = new LinkedHashMap<>();
-        int nextTick = 0;
-        for (String token : text.split("[,;\\s]+")) {
-            if (token.isBlank()) {
-                continue;
-            }
-            String noteToken = token.trim();
-            int tick = nextTick;
-            int colon = noteToken.indexOf(':');
-            if (colon >= 0) {
-                try {
-                    tick = Math.max(
-                            0, Integer.parseInt(noteToken.substring(0, colon).trim()));
-                    noteToken = noteToken.substring(colon + 1);
-                } catch (RuntimeException exception) {
-                    continue;
-                }
-            }
-            List<Integer> tickNotes = notes.computeIfAbsent(tick, ignored -> new ArrayList<>());
-            for (String part : noteToken.split("\\+")) {
-                if (!part.isBlank()) {
-                    tickNotes.add(parseNote(part));
-                }
-            }
-            nextTick = tick + 1;
-        }
-        notes.entrySet().removeIf(entry -> entry.getValue().isEmpty());
-        if (notes.isEmpty()) {
-            return ParsedSong.EMPTY;
-        }
-        int lastTick = notes.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-        Map<Integer, List<Integer>> immutableNotes = new LinkedHashMap<>();
-        for (Map.Entry<Integer, List<Integer>> entry : notes.entrySet()) {
-            immutableNotes.put(entry.getKey(), List.copyOf(entry.getValue()));
-        }
-        return new ParsedSong(Map.copyOf(immutableNotes), lastTick, requirements(immutableNotes));
-    }
-
-    private static Map<Integer, Integer> requirements(final Map<Integer, List<Integer>> notesByTick) {
-        Map<Integer, Integer> requirements = new HashMap<>();
-        for (List<Integer> notes : notesByTick.values()) {
-            Map<Integer, Integer> counts = new HashMap<>();
-            for (int note : notes) {
-                counts.merge(note, 1, Integer::sum);
-            }
-            counts.forEach((note, count) -> requirements.merge(note, count, Math::max));
-        }
-        return Map.copyOf(requirements);
-    }
-
-    private static int parseNoteToken(final String value) {
-        String token = value.trim().toLowerCase(Locale.ROOT);
-        if (token.isEmpty()) {
-            return 0;
-        }
-        try {
-            return Math.max(0, Math.min(24, Integer.parseInt(token)));
-        } catch (NumberFormatException ignored) {
-            return switch (token) {
-                case "c", "c4" -> 6;
-                case "c#", "db", "c#4", "db4" -> 7;
-                case "d", "d4" -> 8;
-                case "d#", "eb", "d#4", "eb4" -> 9;
-                case "e", "e4" -> 10;
-                case "f", "f4" -> 11;
-                case "f#", "gb", "f#4", "gb4" -> 12;
-                case "g", "g4" -> 13;
-                case "g#", "ab", "g#4", "ab4" -> 14;
-                case "a", "a4" -> 15;
-                case "a#", "bb", "a#4", "bb4" -> 16;
-                case "b", "b4" -> 17;
-                default -> 0;
-            };
-        }
     }
 
     private static void rotateToward(final Module owner, final LocalPlayer player, final Vec3 target) {
@@ -463,90 +364,5 @@ public final class NotebotModule extends Module {
         PLAY
     }
 
-    record ParsedSong(
-            Map<Integer, List<Integer>> notesByTick, int lastTick, Map<Integer, Integer> requiredBlocksByNote) {
-
-        private static final ParsedSong EMPTY = new ParsedSong(Map.of(), 0, Map.of());
-
-        boolean empty() {
-            return this.notesByTick.isEmpty();
-        }
-    }
-
     record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {}
-
-    record NoteBlockPlan(
-            boolean possible,
-            int requiredBlocks,
-            Map<Integer, List<BlockPos>> blocksByNote,
-            Map<BlockPos, Integer> targetNotes,
-            Map<BlockPos, Integer> observedNotes,
-            SequencedMap<BlockPos, Integer> tuneHits) {
-
-        static NoteBlockPlan create(final ParsedSong song, final List<ScannedNoteBlock> scannedBlocks) {
-            int requiredBlocks = song.requiredBlocksByNote().values().stream()
-                    .mapToInt(Integer::intValue)
-                    .sum();
-            if (scannedBlocks.size() < requiredBlocks) {
-                return impossible(requiredBlocks);
-            }
-            Map<Integer, List<BlockPos>> blocksByNote = new HashMap<>();
-            Map<BlockPos, Integer> targetNotes = new HashMap<>();
-            Map<BlockPos, Integer> observedNotes = new HashMap<>();
-            SequencedMap<BlockPos, Integer> tuneHits = new LinkedHashMap<>();
-            ArrayDeque<ScannedNoteBlock> availableBlocks = new ArrayDeque<>(scannedBlocks);
-
-            List<Integer> notes =
-                    song.requiredBlocksByNote().keySet().stream().sorted().toList();
-            for (int note : notes) {
-                int required = song.requiredBlocksByNote().get(note);
-                for (int index = 0; index < required; index++) {
-                    ScannedNoteBlock block = removeBestBlock(availableBlocks, note);
-                    if (block == null) {
-                        return impossible(requiredBlocks);
-                    }
-                    blocksByNote
-                            .computeIfAbsent(note, ignored -> new ArrayList<>())
-                            .add(block.pos());
-                    targetNotes.put(block.pos(), note);
-                    observedNotes.put(block.pos(), block.note());
-                    int clicks = tuneClicks(block.note(), note);
-                    if (clicks > 0) {
-                        tuneHits.put(block.pos(), clicks);
-                    }
-                }
-            }
-            Map<Integer, List<BlockPos>> immutableBlocksByNote = new HashMap<>();
-            blocksByNote.forEach((note, blocks) -> immutableBlocksByNote.put(note, List.copyOf(blocks)));
-            return new NoteBlockPlan(
-                    true,
-                    requiredBlocks,
-                    Map.copyOf(immutableBlocksByNote),
-                    Map.copyOf(targetNotes),
-                    Map.copyOf(observedNotes),
-                    new LinkedHashMap<>(tuneHits));
-        }
-
-        private static ScannedNoteBlock removeBestBlock(
-                final ArrayDeque<ScannedNoteBlock> blocks, final int targetNote) {
-            ScannedNoteBlock best = null;
-            for (ScannedNoteBlock block : blocks) {
-                int blockClicks = tuneClicks(block.note(), targetNote);
-                int bestClicks = best == null ? Integer.MAX_VALUE : tuneClicks(best.note(), targetNote);
-                if (best == null
-                        || blockClicks < bestClicks
-                        || blockClicks == bestClicks && block.distanceSq() < best.distanceSq()) {
-                    best = block;
-                }
-            }
-            if (best != null) {
-                blocks.remove(best);
-            }
-            return best;
-        }
-
-        private static NoteBlockPlan impossible(final int requiredBlocks) {
-            return new NoteBlockPlan(false, requiredBlocks, Map.of(), Map.of(), Map.of(), new LinkedHashMap<>());
-        }
-    }
 }

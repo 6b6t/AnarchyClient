@@ -51,7 +51,7 @@ public final class AutoShopModule extends Module {
         LocalPlayer player = client.player;
         if (player == null
                 || client.gameMode == null
-                || this.screenOnly.value() && !(client.gui.screen() instanceof AbstractContainerScreen<?>)) {
+                || (this.screenOnly.value() && !(client.gui.screen() instanceof AbstractContainerScreen<?>))) {
             this.cooldownTicks = 0;
             return;
         }

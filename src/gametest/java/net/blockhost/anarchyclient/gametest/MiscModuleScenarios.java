@@ -122,8 +122,8 @@ final class MiscModuleScenarios {
             try {
                 arena.run("execute in minecraft:the_nether run tp " + arena.name() + " 0.5 120 0.5");
                 context.waitFor(
-                        client ->
-                                client.level.dimension().identifier().getPath().equals("the_nether"),
+                        client -> "the_nether"
+                                .equals(client.level.dimension().identifier().getPath()),
                         200);
                 context.waitTicks(20);
                 arena.run("damage " + arena.name() + " 6 minecraft:generic");

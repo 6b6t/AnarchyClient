@@ -6,6 +6,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.world.item.ItemStack;
 
@@ -37,7 +38,8 @@ public final class ItemGeneratorModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.getConnection() == null || !client.player.getAbilities().instabuild) {
+        ClientPacketListener connection = client.getConnection();
+        if (client.player == null || connection == null || !client.player.getAbilities().instabuild) {
             if (this.autoDisable.value()) {
                 this.enabled(false);
             }
@@ -51,7 +53,7 @@ public final class ItemGeneratorModule extends Module {
         ItemStack stack = CreativeItemFactory.randomItem(this.generated++);
         // The server does not echo creative slot changes back, so set the slot locally as the creative screen does.
         client.player.getInventory().setItem(selected, stack.copy());
-        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(36 + selected, stack));
+        connection.send(new ServerboundSetCreativeModeSlotPacket(36 + selected, stack));
     }
 
     @Override

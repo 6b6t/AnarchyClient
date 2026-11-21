@@ -84,7 +84,6 @@ public final class PacketMineModule extends Module {
             .defaultValue(true)
             .build()));
     private int cooldownTicks;
-    private BlockPos lastTarget;
     private Target target;
     private int lastSelectedSlot = -1;
 
@@ -137,7 +136,6 @@ public final class PacketMineModule extends Module {
         send(client, ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, pos, direction);
         send(client, ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, direction);
         this.swing(player);
-        this.lastTarget = pos;
         this.cooldownTicks = this.delay.value().intValue();
     }
 
@@ -156,7 +154,7 @@ public final class PacketMineModule extends Module {
             return;
         }
         BlockState state = client.level.getBlockState(current.pos());
-        if (state.isAir() || !state.getFluidState().isEmpty() && state.canBeReplaced()) {
+        if (state.isAir() || (!state.getFluidState().isEmpty() && state.canBeReplaced())) {
             this.target = null;
             return;
         }
@@ -201,18 +199,17 @@ public final class PacketMineModule extends Module {
         }
         send(client, ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, current.pos(), current.face());
         this.swing(player);
-        this.lastTarget = current.pos();
         this.target = null;
     }
 
     @Override
     public boolean attackBlock(final Minecraft client, final BlockPos pos, final Direction direction) {
         LocalPlayer player = client.player;
-        if (!PROGRESS.equals(this.mode.value())
-                || player == null
+        if (player == null
                 || client.level == null
                 || client.getConnection() == null
-                || player.getAbilities().instabuild) {
+                || player.getAbilities().instabuild
+                || !PROGRESS.equals(this.mode.value())) {
             return false;
         }
         if (this.target != null && this.target.pos().equals(pos)) {
@@ -289,7 +286,6 @@ public final class PacketMineModule extends Module {
                     this.target.face());
         }
         this.cooldownTicks = 0;
-        this.lastTarget = null;
         this.target = null;
         RotationManager.clear(this.id());
         SilentHotbar.clear(this.id());

@@ -33,11 +33,11 @@ public enum InventoryActionConstraint {
         boolean allows(final InventoryActionContext context) {
             var input = context.player().input;
             return input == null
-                    || !input.keyPresses.forward()
+                    || (!input.keyPresses.forward()
                             && !input.keyPresses.backward()
                             && !input.keyPresses.left()
                             && !input.keyPresses.right()
-                            && !input.keyPresses.jump();
+                            && !input.keyPresses.jump());
         }
     },
     NO_ACTIVE_ROTATION {

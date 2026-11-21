@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public final class DebugRecorderModule extends Module {
             return;
         }
         Path dir = FabricLoader.getInstance().getConfigDir().resolve(AnarchyClient.MOD_ID + "-debug");
-        Path file = dir.resolve(FILE_TIME.format(LocalDateTime.now()) + "-" + reason + ".log");
+        Path file = dir.resolve(FILE_TIME.format(LocalDateTime.now(ZoneId.systemDefault())) + "-" + reason + ".log");
         try {
             Files.createDirectories(dir);
             Files.write(file, new ArrayList<>(this.records), StandardCharsets.UTF_8);

@@ -70,11 +70,11 @@ class PistonModulesTest {
         MapBlockGetter level = holeAround(FEET);
         level.set(FEET.east(), Blocks.STONE);
 
-        List<Direction> directions = PistonCrystalModule.candidates(level, FEET, Vec3.atCenterOf(FEET.west(4)));
+        List<Direction> directions = PistonCrystalPlan.candidates(level, FEET, Vec3.atCenterOf(FEET.west(4)));
 
         assertFalse(directions.contains(Direction.EAST));
         assertEquals(Direction.WEST, directions.getFirst());
-        PistonCrystalModule.Plan plan = PistonCrystalModule.Plan.of(FEET, Direction.WEST);
+        PistonCrystalPlan plan = PistonCrystalPlan.of(FEET, Direction.WEST);
         assertEquals(FEET.above().west(), plan.crystal());
         assertEquals(FEET.above().west(2), plan.piston());
         assertEquals(Direction.EAST, plan.pistonFacing());
@@ -88,12 +88,12 @@ class PistonModulesTest {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             level.set(FEET.above(2).relative(direction), Blocks.STONE);
         }
-        assertFalse(PistonCrystalModule.candidates(level, FEET, Vec3.ZERO).isEmpty());
+        assertFalse(PistonCrystalPlan.candidates(level, FEET, Vec3.ZERO).isEmpty());
 
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             level.set(FEET.above().relative(direction), Blocks.STONE);
         }
-        assertTrue(PistonCrystalModule.candidates(level, FEET, Vec3.ZERO).isEmpty());
+        assertTrue(PistonCrystalPlan.candidates(level, FEET, Vec3.ZERO).isEmpty());
     }
 
     private static MapBlockGetter holeAround(final BlockPos feet) {

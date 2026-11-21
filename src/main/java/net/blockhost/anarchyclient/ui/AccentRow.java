@@ -19,14 +19,11 @@ final class AccentRow extends Container implements LayoutDebugLabel {
 
     static final float SWATCH_BOX = 26F;
 
-    private final ModulePanel panel;
-
     AccentRow(final ModulePanel panel) {
         super(gridLayout(4, 0));
-        this.panel = panel;
         ClientConfig.GuiThemePreset[] presets = ClientConfig.GuiThemePreset.values();
         for (int index = 0; index < presets.length; index++) {
-            AccentSwatch swatch = new AccentSwatch(this.panel, presets[index]);
+            AccentSwatch swatch = new AccentSwatch(panel, presets[index]);
             place(
                     swatch,
                     cell(

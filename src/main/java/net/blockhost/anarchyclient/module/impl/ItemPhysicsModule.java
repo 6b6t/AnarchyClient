@@ -116,7 +116,7 @@ public final class ItemPhysicsModule extends Module {
         }
 
         public boolean identityTransform() {
-            return "Vanilla".equals(this.mode) && this.scale == 1.0;
+            return this.scale == 1.0 && "Vanilla".equals(this.mode);
         }
     }
 }

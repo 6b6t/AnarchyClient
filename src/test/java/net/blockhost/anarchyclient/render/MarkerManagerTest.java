@@ -24,7 +24,7 @@ class MarkerManagerTest {
         MarkerManager.put(new TestMarker("one", 0, 10));
 
         assertEquals(1, MarkerManager.markers().size());
-        assertEquals("one", MarkerManager.markers().iterator().next().id());
+        assertEquals("one", MarkerManager.markers().getFirst().id());
     }
 
     @Test
@@ -32,7 +32,7 @@ class MarkerManagerTest {
         MarkerManager.put(new TestMarker("timed", 0, 2));
 
         MarkerManager.tick();
-        Marker marker = MarkerManager.markers().iterator().next();
+        Marker marker = MarkerManager.markers().getFirst();
 
         assertEquals(1, marker.ageTicks());
         assertTrue(MarkerManager.remove("timed"));

@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ class NetworkModulesTest {
         double start = AnimationsModule.transform("Slide", 10.0, 1.0, 0.25).x();
         double halfway = AnimationsModule.transform("Slide", 10.5, 1.0, 0.25).x();
 
-        assertEquals(false, start == halfway);
+        assertNotEquals(start, halfway);
         assertEquals(AnimationsModule.AnimationTransform.identity(), AnimationsModule.transform("None", 3.0, 1.0, 1.0));
     }
 }

@@ -70,7 +70,7 @@ public final class HoleSnapModule extends Module {
                 || player.isFallFlying()
                 || player.getAbilities().flying
                 || player.isPassenger()
-                || this.pauseSneaking.value() && player.isShiftKeyDown()) {
+                || (this.pauseSneaking.value() && player.isShiftKeyDown())) {
             return;
         }
         BlockPos feet = player.blockPosition();
@@ -92,7 +92,7 @@ public final class HoleSnapModule extends Module {
     }
 
     private boolean isHoleCell(final BlockGetter level, final BlockPos pos) {
-        return HoleManager.isHole(level, pos) || this.doubleHoles.value() && HoleManager.isDoubleHoleCell(level, pos);
+        return HoleManager.isHole(level, pos) || (this.doubleHoles.value() && HoleManager.isDoubleHoleCell(level, pos));
     }
 
     private Optional<BlockPos> findHole(

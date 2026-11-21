@@ -14,7 +14,6 @@ import com.mojang.brigadier.context.CommandContext;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import net.blockhost.anarchyclient.event.PacketEventSilencer;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -28,9 +27,12 @@ import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Registers and handles the {@code reconnect}, {@code server-info}, {@code server-list}, and {@code kick} subcommands.
@@ -115,7 +117,8 @@ final class ServerCommands {
         return SUCCESS;
     }
 
-    private static int serverListAdd(final CommandContext<FabricClientCommandSource> context, final String name) {
+    private static int serverListAdd(
+            final CommandContext<FabricClientCommandSource> context, final @Nullable String name) {
         Minecraft client = Minecraft.getInstance();
         ServerList list = ServerListTools.load(client);
         String address = getToken(context, "address");
@@ -161,7 +164,7 @@ final class ServerCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.server.failed_to_export_servers",
                             "Failed to export servers: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -172,7 +175,7 @@ final class ServerCommands {
         try {
             path = CommandSupport.resolveGamePath(StringArgumentType.getString(context, "path"));
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
         try {
@@ -191,7 +194,7 @@ final class ServerCommands {
                     .sendError(Translations.component(
                             "anarchyclient.message.server.failed_to_import_servers",
                             "Failed to import servers: %s",
-                            exception.getMessage()));
+                            CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -207,7 +210,7 @@ final class ServerCommands {
             ServerPortScanner.PortRange range = ServerPortScanner.range(first, second);
             return scanServerPorts(context, range.checks(), "ports " + range.min() + "-" + range.max());
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
     }
@@ -239,13 +242,14 @@ final class ServerCommands {
                 .sendFeedback(Translations.component(
                         "anarchyclient.message.server.scanning_on", "Scanning %s on %s...", label, host));
         // Resolve like a real connection (SRV records included) off the client thread, then scan that host.
-        CompletableFuture.supplyAsync(() -> ServerPortScanner.scan(
-                        ServerNameResolver.DEFAULT
-                                .resolveAddress(address)
-                                .map(ResolvedServerAddress::getHostIp)
-                                .orElse(host),
-                        ports))
-                .thenAccept(results -> client.execute(() -> sendPortResults(context, results)));
+        Util.ioPool().execute(() -> {
+            String ip = ServerNameResolver.DEFAULT
+                    .resolveAddress(address)
+                    .map(ResolvedServerAddress::getHostIp)
+                    .orElse(host);
+            List<ServerPortScanner.PortResult> results = ServerPortScanner.scan(ip, ports);
+            client.execute(() -> sendPortResults(context, results));
+        });
         return SUCCESS;
     }
 
@@ -264,27 +268,23 @@ final class ServerCommands {
 
     private static int kickDisconnect(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        ClientPacketListener connection = client == null ? null : client.getConnection();
+        if (connection == null) {
             return 0;
         }
-        client.getConnection()
-                .handleDisconnect(new ClientboundDisconnectPacket(Translations.component(
-                        "anarchyclient.message.server.disconnected_by_anarchyclient",
-                        "Disconnected by AnarchyClient.")));
+        connection.handleDisconnect(new ClientboundDisconnectPacket(Translations.component(
+                "anarchyclient.message.server.disconnected_by_anarchyclient", "Disconnected by AnarchyClient.")));
         return SUCCESS;
     }
 
     private static int kickPosition(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
         ServerboundMovePlayerPacket packet = new ServerboundMovePlayerPacket.Pos(
-                Double.NaN,
-                Double.POSITIVE_INFINITY,
-                Double.NaN,
-                client.player.onGround(),
-                client.player.horizontalCollision);
+                Double.NaN, Double.POSITIVE_INFINITY, Double.NaN, player.onGround(), player.horizontalCollision);
         // Skip module packet hooks: Anti Packet Kick exists to drop exactly this packet, and the user asked for it.
         ClientPacketListener connection = client.getConnection();
         PacketEventSilencer.runSilently(() -> connection.send(packet));

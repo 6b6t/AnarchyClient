@@ -13,6 +13,7 @@ import net.blockhost.anarchyclient.setting.StringSetting;
 import net.blockhost.anarchyclient.util.PlaceholderFormatter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
 
 public final class ChatBotModule extends Module {
@@ -93,7 +94,7 @@ public final class ChatBotModule extends Module {
         if (value == null || value.isBlank()) {
             return result;
         }
-        for (String line : value.split("\\R|\\\\n")) {
+        for (String line : value.split("\\R|\\\\n", -1)) {
             int equals = line.indexOf('=');
             if (equals <= 0) {
                 continue;
@@ -121,6 +122,7 @@ public final class ChatBotModule extends Module {
     }
 
     private static Map<String, String> placeholders(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         Map<String, String> placeholders = new LinkedHashMap<>();
         if (client.player != null) {
             placeholders.put("player.name", client.player.getScoreboardName());
@@ -139,14 +141,13 @@ public final class ChatBotModule extends Module {
         if (client.level != null) {
             placeholders.put("dimension", client.level.dimension().identifier().toString());
         }
-        if (client.getCurrentServer() != null) {
-            placeholders.put("server.address", client.getCurrentServer().ip);
+        ServerData server = client.getCurrentServer();
+        if (server != null) {
+            placeholders.put("server.address", server.ip);
         }
         placeholders.put(
                 "server.brand",
-                client.getConnection() == null || client.getConnection().serverBrand() == null
-                        ? "unknown"
-                        : client.getConnection().serverBrand());
+                connection == null || connection.serverBrand() == null ? "unknown" : connection.serverBrand());
         return placeholders;
     }
 

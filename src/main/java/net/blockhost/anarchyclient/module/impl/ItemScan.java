@@ -16,7 +16,7 @@ final class ItemScan {
             return Set.of();
         }
         Set<Item> items = new LinkedHashSet<>();
-        for (String token : value.split("[,|\\s]+")) {
+        for (String token : value.split("[,|\\s]+", -1)) {
             String id = token.trim().toLowerCase(Locale.ROOT);
             if (id.isEmpty()) {
                 continue;

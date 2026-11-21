@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +40,9 @@ public final class BoatGlitchModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.getConnection() == null || client.player.getVehicle() == null) {
+        ClientPacketListener connection = client.getConnection();
+        Entity vehicle = client.player == null ? null : client.player.getVehicle();
+        if (connection == null || vehicle == null) {
             this.ticks = 0;
             return;
         }
@@ -47,13 +50,10 @@ public final class BoatGlitchModule extends Module {
             return;
         }
         this.ticks = 0;
-        Entity vehicle = client.player.getVehicle();
         Vec3 pos = vehicle.position();
-        client.getConnection()
-                .send(new ServerboundMoveVehiclePacket(
-                        PositionAndRotation.of(
-                                pos.add(0.0, this.offset.value(), 0.0), vehicle.getYRot(), vehicle.getXRot()),
-                        false));
-        client.getConnection().send(ServerboundMoveVehiclePacket.fromEntity(vehicle));
+        connection.send(new ServerboundMoveVehiclePacket(
+                PositionAndRotation.of(pos.add(0.0, this.offset.value(), 0.0), vehicle.getYRot(), vehicle.getXRot()),
+                false));
+        connection.send(ServerboundMoveVehiclePacket.fromEntity(vehicle));
     }
 }

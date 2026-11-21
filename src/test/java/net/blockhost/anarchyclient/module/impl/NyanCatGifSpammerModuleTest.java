@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -43,8 +44,8 @@ class NyanCatGifSpammerModuleTest {
 
     @Test
     void autoEatTriggersForLowHungerOrHealth() {
-        assertTrue(SmartEatModule.shouldEat(10, 20.0F, 14.0, 10.0));
-        assertTrue(SmartEatModule.shouldEat(20, 8.0F, 14.0, 10.0));
-        assertEquals(false, SmartEatModule.shouldEat(20, 20.0F, 14.0, 10.0));
+        assertTrue(FoodSelection.shouldEat(10, 20.0F, 14.0, 10.0));
+        assertTrue(FoodSelection.shouldEat(20, 8.0F, 14.0, 10.0));
+        assertFalse(FoodSelection.shouldEat(20, 20.0F, 14.0, 10.0));
     }
 }

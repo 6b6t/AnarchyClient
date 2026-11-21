@@ -15,6 +15,8 @@ import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.util.StringUtil;
@@ -91,15 +93,16 @@ final class ItemCommands {
 
     private static int giveRandom(final CommandContext<FabricClientCommandSource> context, final int count) {
         Minecraft client = requireCreative(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
         int given = 0;
         for (int index = 0; index < count; index++) {
             // Each item goes to its own slot; once the inventory is full, stop instead of overwriting.
             int slot = index == 0
-                    ? targetInventorySlot(client.player.getInventory())
-                    : client.player.getInventory().getFreeSlot();
+                    ? targetInventorySlot(player.getInventory())
+                    : player.getInventory().getFreeSlot();
             if (slot < 0) {
                 break;
             }
@@ -115,10 +118,11 @@ final class ItemCommands {
     private static int giveCreativeStack(
             final CommandContext<FabricClientCommandSource> context, final ItemStack stack) {
         Minecraft client = requireCreative(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
-        giveToSlot(client, targetInventorySlot(client.player.getInventory()), stack);
+        giveToSlot(client, targetInventorySlot(player.getInventory()), stack);
         context.getSource()
                 .sendFeedback(
                         Translations.component("anarchyclient.message.item.gave_creative_item", "Gave creative item: ")
@@ -146,17 +150,23 @@ final class ItemCommands {
 
     /** Updates the client inventory too, so the item shows up without waiting for a server resync. */
     private static void giveToSlot(final Minecraft client, final int inventorySlot, final ItemStack stack) {
-        client.player.getInventory().setItem(inventorySlot, stack.copy());
-        client.getConnection().send(new ServerboundSetCreativeModeSlotPacket(creativeMenuSlot(inventorySlot), stack));
+        LocalPlayer player = client.player;
+        ClientPacketListener connection = client.getConnection();
+        if (player == null || connection == null) {
+            return;
+        }
+        player.getInventory().setItem(inventorySlot, stack.copy());
+        connection.send(new ServerboundSetCreativeModeSlotPacket(creativeMenuSlot(inventorySlot), stack));
     }
 
     private static int dropSelected(final CommandContext<FabricClientCommandSource> context, final boolean all) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        if (client.gameMode != null && !client.player.getMainHandItem().isEmpty()) {
-            client.gameMode.dropItem(client.player, all);
+        if (client.gameMode != null && !player.getMainHandItem().isEmpty()) {
+            client.gameMode.dropItem(player, all);
             context.getSource()
                     .sendFeedback(
                             all
@@ -181,14 +191,15 @@ final class ItemCommands {
     private static int inventorySummary(
             final CommandContext<FabricClientCommandSource> context, final InventoryView view) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
         List<String> lines = switch (view) {
             case SELECTED ->
-                List.of("Selected: " + stackSummary(client.player.getInventory().getSelectedItem()));
-            case HOTBAR -> hotbarSummary(client.player);
-            case ARMOR -> armorSummary(client.player);
+                List.of("Selected: " + stackSummary(player.getInventory().getSelectedItem()));
+            case HOTBAR -> hotbarSummary(player);
+            case ARMOR -> armorSummary(player);
         };
         for (String line : lines) {
             context.getSource().sendFeedback(Component.literal(line));
@@ -198,10 +209,11 @@ final class ItemCommands {
 
     private static int peekHeldItem(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        ItemStack stack = client.player.getMainHandItem();
+        ItemStack stack = player.getMainHandItem();
         if (stack.isEmpty()) {
             context.getSource()
                     .sendError(Translations.component(
@@ -219,10 +231,11 @@ final class ItemCommands {
 
     private static int heldItemNbt(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        ItemStack stack = client.player.getMainHandItem();
+        ItemStack stack = player.getMainHandItem();
         if (stack.isEmpty()) {
             context.getSource()
                     .sendError(Translations.component(

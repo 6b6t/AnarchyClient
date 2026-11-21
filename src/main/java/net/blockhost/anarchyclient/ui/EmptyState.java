@@ -17,16 +17,15 @@ import net.lenni0451.rivet.text.model.TextOrigin;
 final class EmptyState extends Container implements LayoutDebugLabel {
 
     private final String message;
-    private final TextNode label;
 
     EmptyState(final String message) {
         super(gridLayout(0, 0));
         this.message = message;
         this.fixedSize(-1, 64);
-        this.label = textNode(message, FAINT);
-        this.label.origin(TextOrigin.Horizontal.VISUAL_CENTER, TextOrigin.Vertical.LOGICAL_CENTER);
+        TextNode label = textNode(message, FAINT);
+        label.origin(TextOrigin.Horizontal.VISUAL_CENTER, TextOrigin.Vertical.LOGICAL_CENTER);
         place(
-                this.label,
+                label,
                 cell(
                         0,
                         0,
@@ -39,7 +38,7 @@ final class EmptyState extends Container implements LayoutDebugLabel {
                         padding(PADDING, 0F, PADDING, 0F),
                         null,
                         null));
-        this.addChild(this.label);
+        this.addChild(label);
     }
 
     @Override

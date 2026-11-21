@@ -53,8 +53,8 @@ public final class AutoWalkModule extends Module {
         if (this.stopOnCollision.value() && player.horizontalCollision) {
             return;
         }
-        if ("Forward".equals(this.direction.value()) && input.keyPresses.backward()
-                || "Backward".equals(this.direction.value()) && input.keyPresses.forward()) {
+        if (("Forward".equals(this.direction.value()) && input.keyPresses.backward())
+                || ("Backward".equals(this.direction.value()) && input.keyPresses.forward())) {
             return;
         }
 

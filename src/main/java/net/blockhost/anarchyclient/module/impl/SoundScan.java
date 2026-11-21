@@ -6,6 +6,7 @@ import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 
 final class SoundScan {
 
@@ -16,7 +17,7 @@ final class SoundScan {
             return Set.of();
         }
         Set<Identifier> sounds = new LinkedHashSet<>();
-        for (String token : value.split("[,|\\s]+")) {
+        for (String token : value.split("[,|\\s]+", -1)) {
             String id = token.trim().toLowerCase(Locale.ROOT);
             if (id.isEmpty()) {
                 continue;
@@ -32,7 +33,7 @@ final class SoundScan {
     static Identifier soundId(final ClientboundSoundPacket packet) {
         return packet.getSound()
                 .unwrapKey()
-                .map(key -> key.identifier())
-                .orElse(packet.getSound().value().location());
+                .map(ResourceKey::identifier)
+                .orElseGet(() -> packet.getSound().value().location());
     }
 }

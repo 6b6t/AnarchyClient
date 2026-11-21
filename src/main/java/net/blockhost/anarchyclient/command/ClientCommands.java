@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Makes the chat {@link CommandPrefix} (default {@code .}) expose the exact same commands as {@code
@@ -32,8 +33,8 @@ public final class ClientCommands {
 
     private static final String ROOT = "anarchyclient";
 
-    private static CommandDispatcher<FabricClientCommandSource> cachedActive;
-    private static CommandDispatcher<ClientSuggestionProvider> cachedMirror;
+    private static @Nullable CommandDispatcher<FabricClientCommandSource> cachedActive;
+    private static @Nullable CommandDispatcher<ClientSuggestionProvider> cachedMirror;
 
     private ClientCommands() {}
 
@@ -64,18 +65,18 @@ public final class ClientCommands {
     }
 
     /** Run a prefix command (prefix already stripped), e.g. {@code "toggle killaura"}. */
-    public static void execute(final ClientPacketListener connection, final String input) {
+    public static void execute(final @Nullable ClientPacketListener connection, final String input) {
         if (connection == null || input.isBlank()) {
             return;
         }
         try {
             dispatcher().execute(input, connection.getSuggestionsProvider());
         } catch (CommandSyntaxException exception) {
-            error(exception.getMessage());
+            error(CommandFeedback.message(exception));
         } catch (Exception exception) {
             // A command threw at runtime: report it instead of crashing the key handler / chat screen.
             AnarchyClient.LOGGER.error("Error running client command '{}'", input, exception);
-            error("Error running command: " + exception.getMessage());
+            error("Error running command: " + CommandFeedback.message(exception));
         }
     }
 

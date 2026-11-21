@@ -127,7 +127,7 @@ public final class AutoLoginModule extends Module {
             return Map.of();
         }
         Map<String, String> entries = new LinkedHashMap<>();
-        for (String entry : value.split("[;\\n]+")) {
+        for (String entry : value.split("[;\\n]+", -1)) {
             int separator = entry.indexOf('=');
             if (separator <= 0 || separator == entry.length() - 1) {
                 continue;

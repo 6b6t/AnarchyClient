@@ -39,7 +39,7 @@ Use the checked-in Gradle wrapper.
 ./gradlew build
 ```
 
-Compiles the mod with Error Prone, processes resources, validates the access widener, checks formatting, runs tests, and produces build artifacts in `build/libs`.
+Compiles the mod with Error Prone, processes resources, validates the access widener, checks formatting, runs SpotBugs and the tests, and produces build artifacts in `build/libs`.
 
 ```bash
 ./gradlew spotlessApply
@@ -83,7 +83,7 @@ The adjacent `minecraft-merged-<hash>-26.3.jar` is the compiled merged Minecraft
 
 ## Coding Style & Naming Conventions
 
-Target Java `25`; Gradle configures UTF-8 and `--release 25`. Spotless enforces palantir-java-format, so do not format Java code by hand. Error Prone runs on every compile: its errors fail the build, and new code should not add warnings. Use idiomatic Java naming: classes and records in `PascalCase`, methods and fields in `camelCase`, constants in `UPPER_SNAKE_CASE`, and packages in lowercase under `net.blockhost.anarchyclient`.
+Target Java `25`; Gradle configures UTF-8 and `--release 25`. Spotless enforces palantir-java-format, so do not format Java code by hand. Error Prone runs on every compile, and `-Werror` makes any warning fail the build. NullAway checks every package marked `@NullMarked` in its `package-info.java`. Mark values that can be null with JSpecify's `@Nullable` there. `module/impl` and `ui` are not marked yet; when you mark one, fix what NullAway reports in it. SpotBugs, with the sb-contrib and Find Security Bugs plugins, runs in `./gradlew check`, and any finding fails the build. The HTML reports are in `build/reports/spotbugs`. Fix findings in the code. Add a pattern to `config/spotbugs/exclude.xml` only when it is wrong for the whole codebase, and say why in a comment. Use idiomatic Java naming: classes and records in `PascalCase`, methods and fields in `camelCase`, constants in `UPPER_SNAKE_CASE`, and packages in lowercase under `net.blockhost.anarchyclient`.
 
 Prefer small module classes that extend the existing module and setting abstractions. Avoid duplicate control flow when a shared helper already exists. For immutable collections, prefer `List.of()`, `Set.of()`, and `Map.of()` where they fit. Prefer `try-with-resources` for closeable resources, descriptive method names, and focused classes that match the existing package boundaries.
 
@@ -95,7 +95,7 @@ Keep module expansion state and rendered children synchronized before layout so 
 
 JUnit Jupiter is configured through Gradle. Put tests in `src/test/java` with matching package names, and name test classes after the unit under test, such as `ModuleManagerTest`.
 
-Add targeted tests when changing module registration, config serialization, settings behavior, movement or inventory helpers, targeting logic, access widener-sensitive code, or input/render bridge logic. No strict coverage gate is configured, but new behavior should have practical regression coverage. Run `./gradlew test` for focused changes and `./gradlew build` before publishing or handing off broad changes.
+Add targeted tests when changing module registration, config serialization, settings behavior, movement or inventory helpers, targeting logic, access widener-sensitive code, or input/render bridge logic. No strict coverage gate is configured, but new behavior should have practical regression coverage. `./gradlew jacocoTestReport` writes unit test coverage, and `./gradlew runClientGameTest jacocoGametestReport` writes gametest coverage, both as HTML under `build/reports/jacoco`. `ArchitectureTest` checks package boundaries with ArchUnit. Some rules are frozen: the violations recorded in `src/test/resources/archunit_store` are allowed, and only new ones fail. Fixing a violation removes it from the store, so commit the changed store. Client gametests also run in CI under a virtual display. Run `./gradlew test` for focused changes and `./gradlew build` before publishing or handing off broad changes.
 
 ## Commit & Pull Request Guidelines
 

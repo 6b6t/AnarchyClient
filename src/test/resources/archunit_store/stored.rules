@@ -1,0 +1,4 @@
+#
+#Sat Nov 21 23:14:12 CET 2026
+no\ classes\ that\ reside\ in\ a\ package\ '..module..'\ should\ depend\ on\ classes\ that\ reside\ in\ a\ package\ '..ui..'=01abd208-d731-4f3b-85de-2ca2379144e5
+slices\ matching\ 'net.blockhost.anarchyclient.(*)..'\ should\ be\ free\ of\ cycles=475ea477-8131-45af-9b89-d231a08165b6

@@ -72,8 +72,8 @@ public final class AutoSprintModule extends Module {
                 ? InputStates.moving(player.input.keyPresses)
                 : player.input.hasForwardImpulse();
         boolean blocked =
-                player.isCrouching() || player.isInWater() || !this.allowUsingItem.value() && player.isUsingItem();
-        if ((moving || this.keepSprint.value() && player.isSprinting()) && !blocked) {
+                player.isCrouching() || player.isInWater() || (!this.allowUsingItem.value() && player.isUsingItem());
+        if ((moving || (this.keepSprint.value() && player.isSprinting())) && !blocked) {
             player.setSprinting(true);
         }
     }

@@ -80,20 +80,20 @@ class MeteorExpansionModulesTest {
 
     @Test
     void notebotParsesNotesAndCalculatesPitch() {
-        assertEquals(0, NotebotModule.parseNote("bad"));
-        assertEquals(0, NotebotModule.parseNote("-4"));
-        assertEquals(24, NotebotModule.parseNote("32"));
-        assertEquals(12, NotebotModule.parseNote("f#"));
-        assertEquals(1.0F, NotebotModule.pitch(12), 1.0E-6F);
-        assertEquals(2.0F, NotebotModule.pitch(24), 1.0E-6F);
-        assertEquals(0.5F, NotebotModule.pitch(0), 1.0E-6F);
-        assertEquals(24, NotebotModule.pitchToNote(NotebotModule.pitch(24)));
-        assertEquals(3, NotebotModule.tuneClicks(22, 0));
+        assertEquals(0, NotebotSong.parseNote("bad"));
+        assertEquals(0, NotebotSong.parseNote("-4"));
+        assertEquals(24, NotebotSong.parseNote("32"));
+        assertEquals(12, NotebotSong.parseNote("f#"));
+        assertEquals(1.0F, NotebotSong.pitch(12), 1.0E-6F);
+        assertEquals(2.0F, NotebotSong.pitch(24), 1.0E-6F);
+        assertEquals(0.5F, NotebotSong.pitch(0), 1.0E-6F);
+        assertEquals(24, NotebotSong.pitchToNote(NotebotSong.pitch(24)));
+        assertEquals(3, NotebotSong.tuneClicks(22, 0));
     }
 
     @Test
     void notebotKeepsSongTimingAndDuplicateNotes() {
-        NotebotModule.ParsedSong song = NotebotModule.parseSong("0 2:4+7 2:4 3:4+4");
+        NotebotSong song = NotebotSong.parse("0 2:4+7 2:4 3:4+4");
 
         assertEquals(
                 Map.of(
@@ -149,7 +149,6 @@ class MeteorExpansionModulesTest {
 
     @Test
     void betterBeaconsAddsBeaconOnlyTooltipDetails() {
-        BetterBeaconsModule module = new BetterBeaconsModule();
         List<Component> beacon = new ArrayList<>();
         List<Component> dirt = new ArrayList<>();
 
@@ -195,8 +194,9 @@ class MeteorExpansionModulesTest {
         assertEquals("Playing AnarchyClient", discord.status());
 
         SwarmModule swarm = new SwarmModule();
-        assertTrue(swarm.status().startsWith("worker 127.0.0.1:51234"));
-        assertTrue(swarm.status().contains("peers=0"));
+        String status = swarm.status();
+        assertTrue(status.startsWith("worker 127.0.0.1:51234"));
+        assertTrue(status.contains("peers=0"));
     }
 
     private static StringSetting stringSetting(final Module module, final String id) {

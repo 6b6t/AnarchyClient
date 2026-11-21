@@ -75,7 +75,7 @@ public final class InventoryActionScheduler {
         return pending.stream()
                 .filter(chain -> !coolingDown
                         || chain.priority() > cooldownPriority
-                        || chain.priority() >= PRIORITY_LIFE && !chain.owner().equals(cooldownOwner))
+                        || (chain.priority() >= PRIORITY_LIFE && !chain.owner().equals(cooldownOwner)))
                 .sorted(Comparator.comparingInt(InventoryActionChain::priority).reversed())
                 .toList();
     }

@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -31,7 +32,8 @@ public final class NoGhostBlocksModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.getConnection() == null || this.timer-- > 0) {
+        ClientPacketListener connection = client.getConnection();
+        if (client.player == null || connection == null || this.timer-- > 0) {
             return;
         }
         if (!(client.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK) {
@@ -39,11 +41,8 @@ public final class NoGhostBlocksModule extends Module {
         }
         // One packet for the targeted block only. Sweeping a radius sent up to 15,625 packets per burst, which
         // risks a spam kick and cancels any real mining in progress.
-        client.getConnection()
-                .send(new ServerboundPlayerActionPacket(
-                        ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK,
-                        hit.getBlockPos(),
-                        hit.getDirection()));
+        connection.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, hit.getBlockPos(), hit.getDirection()));
         this.timer = this.intervalTicks.value().intValue();
     }
 }

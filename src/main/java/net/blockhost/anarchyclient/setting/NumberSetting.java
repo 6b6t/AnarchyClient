@@ -5,6 +5,7 @@ import com.google.gson.JsonPrimitive;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import net.lenni0451.commons.math.MathUtils;
+import org.jspecify.annotations.Nullable;
 
 public final class NumberSetting extends Setting<Double> {
 
@@ -73,7 +74,7 @@ public final class NumberSetting extends Setting<Double> {
     }
 
     @Override
-    public void fromJson(final JsonElement element) {
+    public void fromJson(final @Nullable JsonElement element) {
         if (element != null && element.isJsonPrimitive()) {
             this.value(element.getAsDouble());
         }

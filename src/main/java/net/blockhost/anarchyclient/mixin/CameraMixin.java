@@ -22,9 +22,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Camera.class)
 public abstract class CameraMixin {
 
+    // Mixin writes these fields of Camera itself; Camera reads them.
+    @SuppressWarnings("UnusedVariable")
     @Shadow
     private float fovModifier;
 
+    @SuppressWarnings("UnusedVariable")
     @Shadow
     private float oldFovModifier;
 

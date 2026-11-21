@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -61,7 +62,7 @@ public final class BetterChatModule extends Module {
         boolean duplicate = this.compactDuplicate(message);
         Component result = duplicate ? withCount(message, this.duplicateCount) : message;
         if (this.timestamps.value()) {
-            result = withTimestamp(result, LocalTime.now());
+            result = withTimestamp(result, LocalTime.now(ZoneId.systemDefault()));
         }
         this.replacesPrevious = duplicate;
         return result;

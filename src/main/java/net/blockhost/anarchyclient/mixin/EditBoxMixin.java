@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.mixin;
 import net.blockhost.anarchyclient.module.impl.TextFieldProtectModule;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,7 +18,7 @@ public abstract class EditBoxMixin {
     private String value;
 
     @Unique
-    private String anarchyclient$unmaskedValue;
+    private @Nullable String anarchyclient$unmaskedValue;
 
     @Inject(method = "extractWidgetRenderState", at = @At("HEAD"))
     private void anarchyclient$maskProtectedValue(

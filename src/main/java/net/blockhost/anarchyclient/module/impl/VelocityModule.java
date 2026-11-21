@@ -92,7 +92,7 @@ public final class VelocityModule extends Module {
         }
         if (packet instanceof ClientboundSetEntityMotionPacket motion) {
             boolean self = motion.id() == player.getId();
-            if (!self && !this.allEntities.value() || !this.applies(player, self)) {
+            if ((!self && !this.allEntities.value()) || !this.applies(player, self)) {
                 return false;
             }
             Vec3 movement = this.adjust(motion.movement(), self);
@@ -132,23 +132,17 @@ public final class VelocityModule extends Module {
 
     /** Returns the motion to apply instead of the server's, or {@code null} to drop it. */
     private Vec3 adjust(final Vec3 movement, final boolean self) {
-        switch (this.mode.value()) {
-            case "Cancel" -> {
-                return null;
-            }
-            case "Reverse" -> {
-                return scaleMotion(movement.reverse(), this.horizontal.value(), this.vertical.value());
-            }
+        return switch (this.mode.value()) {
+            case "Cancel" -> null;
+            case "Reverse" -> scaleMotion(movement.reverse(), this.horizontal.value(), this.vertical.value());
             case "Jump Reset" -> {
                 if (self) {
                     MainThread.run(() -> this.jumpResetTicks = 3);
                 }
-                return scaleMotion(movement, this.horizontal.value(), this.vertical.value());
+                yield scaleMotion(movement, this.horizontal.value(), this.vertical.value());
             }
-            default -> {
-                return scaleMotion(movement, this.horizontal.value(), this.vertical.value());
-            }
-        }
+            default -> scaleMotion(movement, this.horizontal.value(), this.vertical.value());
+        };
     }
 
     /**

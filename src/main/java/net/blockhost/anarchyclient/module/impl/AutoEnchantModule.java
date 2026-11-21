@@ -130,7 +130,7 @@ public final class AutoEnchantModule extends Module {
             return false;
         }
         return infiniteMaterials
-                || lapisCount >= clampedLevel && playerLevel >= clampedLevel && playerLevel >= costs[index];
+                || (lapisCount >= clampedLevel && playerLevel >= clampedLevel && playerLevel >= costs[index]);
     }
 
     static int targetLevel(final double level) {

@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.gametest;
 import com.google.gson.JsonElement;
 import com.mojang.authlib.GameProfile;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 import net.blockhost.anarchyclient.AnarchyClient;
@@ -162,7 +163,7 @@ final class GameTestSupport {
 
         private void spawnTarget(final ResourceKey<Level> dimension, final BlockPos feet, final boolean immortal) {
             this.server.runOnServer(server -> {
-                ServerLevel level = server.getLevel(dimension);
+                ServerLevel level = Objects.requireNonNull(server.getLevel(dimension), "No level for " + dimension);
                 FakePlayer target = new DamageableTarget(level, new GameProfile(UUID.randomUUID(), TARGET), immortal);
                 target.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 90.0F, 0.0F);
                 server.getPlayerList()
@@ -199,7 +200,7 @@ final class GameTestSupport {
             if (immortal) {
                 // Enough health that no hit kills it. A dead player waits for a respawn, and the server
                 // makes it invulnerable until then.
-                this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(IMMORTAL_HEALTH);
+                Objects.requireNonNull(this.getAttribute(Attributes.MAX_HEALTH)).setBaseValue(IMMORTAL_HEALTH);
                 this.setHealth(IMMORTAL_HEALTH);
             }
         }

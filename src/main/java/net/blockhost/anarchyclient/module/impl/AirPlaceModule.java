@@ -66,7 +66,7 @@ public final class AirPlaceModule extends Module {
                 || client.level == null
                 || !matchesHand(this.hand.value(), hand)
                 || !placeable(player.getItemInHand(hand))
-                || client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS) {
+                || (client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS)) {
             return false;
         }
         // Air place cannot go through BlockPlacer: that helper needs a sturdy neighbor face to
@@ -84,7 +84,7 @@ public final class AirPlaceModule extends Module {
                 || client.level == null
                 || matrices == null
                 || submits == null
-                || client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS
+                || (client.hitResult != null && client.hitResult.getType() != HitResult.Type.MISS)
                 || !hasPlaceableHand(player, this.hand.value())) {
             return;
         }
@@ -127,8 +127,8 @@ public final class AirPlaceModule extends Module {
     }
 
     private static boolean hasPlaceableHand(final LocalPlayer player, final String mode) {
-        return matchesHand(mode, InteractionHand.MAIN_HAND) && placeable(player.getMainHandItem())
-                || matchesHand(mode, InteractionHand.OFF_HAND) && placeable(player.getOffhandItem());
+        return (matchesHand(mode, InteractionHand.MAIN_HAND) && placeable(player.getMainHandItem()))
+                || (matchesHand(mode, InteractionHand.OFF_HAND) && placeable(player.getOffhandItem()));
     }
 
     static boolean matchesHand(final String mode, final InteractionHand hand) {

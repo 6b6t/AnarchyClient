@@ -191,10 +191,10 @@ public final class PainterModule extends Module {
             final boolean hasSideSurface,
             final boolean hasBottomSurface,
             final boolean oneBlockHeight) {
-        if (!targetReplaceable || oneBlockHeight && aboveReplaceable) {
+        if (!targetReplaceable || (oneBlockHeight && aboveReplaceable)) {
             return false;
         }
-        return topSurface && hasTopSurface || sides && hasSideSurface || bottomSurface && hasBottomSurface;
+        return (topSurface && hasTopSurface) || (sides && hasSideSurface) || (bottomSurface && hasBottomSurface);
     }
 
     private static boolean paintableSurface(final BlockGetter level, final BlockPos pos, final Block selectedBlock) {

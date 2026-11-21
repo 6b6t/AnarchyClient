@@ -6,6 +6,7 @@ import java.util.List;
 import net.lenni0451.commons.math.MathUtils;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 final class GuiShapeGeometry {
 
@@ -72,6 +73,9 @@ final class GuiShapeGeometry {
             }
             VerticalSpan leftSpan = roundedRectSpanAtX(left, x, y, width, height, radii);
             VerticalSpan rightSpan = roundedRectSpanAtX(right, x, y, width, height, radii);
+            if (leftSpan == null || rightSpan == null) {
+                continue;
+            }
             addVerticalStrip(
                     vertices,
                     left,
@@ -157,6 +161,9 @@ final class GuiShapeGeometry {
 
             VerticalSpan outerLeft = roundedRectSpanAtX(left, x, y, width, height, radii);
             VerticalSpan outerRight = roundedRectSpanAtX(right, x, y, width, height, radii);
+            if (outerLeft == null || outerRight == null) {
+                continue;
+            }
             VerticalSpan innerLeft = roundedRectSpanAtX(left, innerX, innerY, innerWidth, innerHeight, innerRadii);
             VerticalSpan innerRight = roundedRectSpanAtX(right, innerX, innerY, innerWidth, innerHeight, innerRadii);
             if (innerLeft == null || innerRight == null) {
@@ -317,8 +324,8 @@ final class GuiShapeGeometry {
         return vertices;
     }
 
-    static ScreenRectangle bounds(
-            final List<Vertex> vertices, final Matrix3x2fc pose, final ScreenRectangle scissorArea) {
+    static @Nullable ScreenRectangle bounds(
+            final List<Vertex> vertices, final Matrix3x2fc pose, final @Nullable ScreenRectangle scissorArea) {
         if (vertices.isEmpty()) {
             return null;
         }
@@ -438,7 +445,7 @@ final class GuiShapeGeometry {
         }
     }
 
-    private static VerticalSpan roundedRectSpanAtX(
+    private static @Nullable VerticalSpan roundedRectSpanAtX(
             final float position,
             final float x,
             final float y,

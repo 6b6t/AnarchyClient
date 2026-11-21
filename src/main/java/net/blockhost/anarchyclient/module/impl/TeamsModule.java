@@ -3,8 +3,10 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.scores.PlayerTeam;
 
 public final class TeamsModule extends Module {
 
@@ -46,10 +48,8 @@ public final class TeamsModule extends Module {
         if (module == null || entity == null || player == null || entity == player) {
             return true;
         }
-        if (module.scoreboard.value()
-                && entity.getTeam() != null
-                && player.getTeam() != null
-                && entity.getTeam().isAlliedTo(player.getTeam())) {
+        PlayerTeam entityTeam = entity.getTeam();
+        if (module.scoreboard.value() && entityTeam != null && entityTeam.isAlliedTo(player.getTeam())) {
             return false;
         }
         // Clan tags live in the team prefix shown before the name; usernames cannot contain brackets.
@@ -57,7 +57,8 @@ public final class TeamsModule extends Module {
     }
 
     static String shownName(final Entity entity) {
-        return entity.getDisplayName().getString().strip();
+        Component name = entity.getDisplayName();
+        return name == null ? entity.getScoreboardName() : name.getString().strip();
     }
 
     static boolean samePrefix(final String first, final String second) {

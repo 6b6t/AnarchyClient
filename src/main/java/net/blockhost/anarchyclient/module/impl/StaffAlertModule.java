@@ -171,7 +171,7 @@ public final class StaffAlertModule extends Module {
         if (value == null || value.isBlank()) {
             return names;
         }
-        for (String token : value.split("[,;|\\s]+")) {
+        for (String token : value.split("[,;|\\s]+", -1)) {
             String name = normalize(token);
             if (!name.isBlank()) {
                 names.add(name);

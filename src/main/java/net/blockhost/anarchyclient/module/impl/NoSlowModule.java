@@ -139,11 +139,11 @@ public final class NoSlowModule extends Module {
     }
 
     private boolean matchesSlowBlock(final BlockState state) {
-        return this.cobweb.value() && state.is(Blocks.COBWEB)
-                || this.honey.value() && state.is(Blocks.HONEY_BLOCK)
-                || this.soulSand.value() && state.is(Blocks.SOUL_SAND)
-                || this.slime.value() && state.is(Blocks.SLIME_BLOCK)
-                || this.berryBush.value() && state.is(Blocks.SWEET_BERRY_BUSH)
-                || this.powderSnow.value() && state.is(Blocks.POWDER_SNOW);
+        return (this.cobweb.value() && state.is(Blocks.COBWEB))
+                || (this.honey.value() && state.is(Blocks.HONEY_BLOCK))
+                || (this.soulSand.value() && state.is(Blocks.SOUL_SAND))
+                || (this.slime.value() && state.is(Blocks.SLIME_BLOCK))
+                || (this.berryBush.value() && state.is(Blocks.SWEET_BERRY_BUSH))
+                || (this.powderSnow.value() && state.is(Blocks.POWDER_SNOW));
     }
 }

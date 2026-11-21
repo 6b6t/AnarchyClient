@@ -22,6 +22,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 
 public final class DiscordPresenceModule extends Module {
 
@@ -116,7 +117,8 @@ public final class DiscordPresenceModule extends Module {
     }
 
     private String renderState(final Minecraft client) {
-        String server = client.getCurrentServer() == null ? "Singleplayer" : client.getCurrentServer().ip;
+        ServerData serverData = client.getCurrentServer();
+        String server = serverData == null ? "Singleplayer" : serverData.ip;
         String player =
                 client.player == null ? "Player" : client.player.getName().getString();
         return this.state.value().replace("{server}", server).replace("{player}", player);

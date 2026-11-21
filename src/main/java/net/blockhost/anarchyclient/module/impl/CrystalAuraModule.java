@@ -224,7 +224,7 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
             double selfDamage = DamageEstimator.explosionDamage(player, explosion, DamageEstimator.CRYSTAL_POWER);
             if (selfDamage > this.maxSelfDamage.value()
                     || !isSafe(selfDamage, health)
-                    || !facePlace && targetDamage < this.minDamage.value()) {
+                    || (!facePlace && targetDamage < this.minDamage.value())) {
                 continue;
             }
             double score = targetDamage - selfDamage * 0.65;
@@ -247,7 +247,8 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
 
     /** Attacks the entity IDs the server will most likely give the crystal that was just placed. */
     private void predictAttack(final Minecraft client, final LocalPlayer player) {
-        if (this.highestEntityId == Integer.MIN_VALUE || client.getConnection() == null) {
+        ClientPacketListener connection = client.getConnection();
+        if (this.highestEntityId == Integer.MIN_VALUE || connection == null) {
             return;
         }
         for (int id :
@@ -255,7 +256,7 @@ public final class CrystalAuraModule extends Module implements ModuleConfigMigra
             if (this.attackedAt.containsKey(id)) {
                 continue;
             }
-            client.getConnection().send(new ServerboundAttackPacket(id));
+            connection.send(new ServerboundAttackPacket(id));
             this.attackedAt.put(id, this.ticks);
         }
         player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);

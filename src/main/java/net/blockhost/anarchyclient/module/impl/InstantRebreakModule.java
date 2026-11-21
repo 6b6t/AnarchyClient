@@ -4,6 +4,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -52,7 +53,8 @@ public final class InstantRebreakModule extends Module {
         if (this.cooldown > 0) {
             this.cooldown--;
         }
-        if (client.player == null || client.level == null || client.getConnection() == null) {
+        ClientPacketListener listener = client.getConnection();
+        if (client.player == null || client.level == null || listener == null) {
             return;
         }
         if (this.attacked != null && client.level.getBlockState(this.attacked).isAir()) {
@@ -68,9 +70,8 @@ public final class InstantRebreakModule extends Module {
             return;
         }
         // The server still remembers this spot as the block being mined, so a stop packet breaks it at once.
-        client.getConnection()
-                .send(new ServerboundPlayerActionPacket(
-                        ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, this.rebreakFace));
+        listener.send(new ServerboundPlayerActionPacket(
+                ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, pos, this.rebreakFace));
         client.player.swing(
                 InteractionHand.MAIN_HAND, client.player.getMainHandItem().getAttackAnimation(), false);
         client.player.connection.send(ServerboundPunchPacket.INSTANCE);

@@ -5,6 +5,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
@@ -47,31 +48,29 @@ public final class ArrowDamageModule extends Module {
     @Override
     public void itemStopUse(
             final Minecraft client, final InteractionHand hand, final ItemStack stack, final int remainingTicks) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
-        if (player == null || client.getConnection() == null || !isSupported(stack, this.tridents.value())) {
+        if (player == null || connection == null || !isSupported(stack, this.tridents.value())) {
             return;
         }
         int usedTicks = Math.max(0, stack.getUseDuration(player) - remainingTicks);
         if (usedTicks < 3) {
             return;
         }
-        client.getConnection()
-                .send(new ServerboundPlayerCommandPacket(
-                        player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
+        connection.send(
+                new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
         for (int index = 0; index < this.packets.value().intValue(); index++) {
             double y = player.getY() + this.offset.value();
-            client.getConnection()
-                    .send(new ServerboundMovePlayerPacket.Pos(
-                            player.getX(), y, player.getZ(), false, player.horizontalCollision));
-            client.getConnection()
-                    .send(new ServerboundMovePlayerPacket.Pos(
-                            player.getX(), player.getY(), player.getZ(), true, player.horizontalCollision));
+            connection.send(new ServerboundMovePlayerPacket.Pos(
+                    player.getX(), y, player.getZ(), false, player.horizontalCollision));
+            connection.send(new ServerboundMovePlayerPacket.Pos(
+                    player.getX(), player.getY(), player.getZ(), true, player.horizontalCollision));
         }
     }
 
     static boolean isSupported(final ItemStack stack, final boolean tridents) {
         return stack.getItem() == Items.BOW
                 || stack.getItem() == Items.CROSSBOW
-                || tridents && stack.getItem() == Items.TRIDENT;
+                || (tridents && stack.getItem() == Items.TRIDENT);
     }
 }

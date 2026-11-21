@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import java.util.List;
 import java.util.function.Supplier;
 import net.blockhost.anarchyclient.i18n.Translations;
+import org.jspecify.annotations.Nullable;
 
 public abstract class Setting<T> {
 
@@ -13,8 +14,8 @@ public abstract class Setting<T> {
     private final List<String> aliases;
     private final T defaultValue;
     private T value;
-    private Supplier<Boolean> visibilityCondition;
-    private String translationKey;
+    private @Nullable Supplier<Boolean> visibilityCondition;
+    private @Nullable String translationKey;
 
     protected Setting(final String id, final String name, final T defaultValue) {
         this(id, name, "", defaultValue, List.of());
@@ -73,7 +74,7 @@ public abstract class Setting<T> {
     }
 
     /** The translation key, or {@code null} for a setting that belongs to no module. */
-    public final String translationKey() {
+    public final @Nullable String translationKey() {
         return this.translationKey;
     }
 
@@ -107,5 +108,5 @@ public abstract class Setting<T> {
 
     public abstract JsonElement toJson();
 
-    public abstract void fromJson(final JsonElement element);
+    public abstract void fromJson(final @Nullable JsonElement element);
 }

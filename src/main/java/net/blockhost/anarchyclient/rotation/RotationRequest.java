@@ -1,5 +1,7 @@
 package net.blockhost.anarchyclient.rotation;
 
+import org.jspecify.annotations.Nullable;
+
 public record RotationRequest(
         String owner,
         Rotation target,
@@ -9,7 +11,7 @@ public record RotationRequest(
         float resetThreshold,
         RotationTurnMode turnMode,
         boolean pauseInInventory,
-        Runnable whenReached) {
+        @Nullable Runnable whenReached) {
 
     public RotationRequest(
             final String owner,

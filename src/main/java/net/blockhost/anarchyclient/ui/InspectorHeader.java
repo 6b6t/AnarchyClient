@@ -33,26 +33,19 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final Surface divider;
-    private final IconNode moduleIcon;
-    private final TextNode title;
-    private final TextNode category;
     private final TextNode description;
-    private final IconButton star;
-    private final ToggleSwitch toggle;
-    private final IconButton close;
 
     InspectorHeader(final ModulePanel panel) {
         super(gridLayout(0, 0));
         this.panel = panel;
-        this.divider = surface(DIVIDER);
-        this.moduleIcon = iconNode(this::moduleIcon, this::moduleIconColor);
-        this.title = textNode(
+        Surface divider = surface(DIVIDER);
+        IconNode moduleIcon = iconNode(this::moduleIcon, this::moduleIconColor);
+        TextNode title = textNode(
                 () -> this.panel.inspectedModule == null
                         ? Translations.text("anarchyclient.ui.no_module", "No module")
                         : this.panel.inspectedModule.name(),
                 () -> this.panel.inspectedModule == null ? MUTED : TEXT);
-        this.category = textNode(
+        TextNode category = textNode(
                 () -> this.panel.inspectedModule == null
                         ? ""
                         : this.panel.inspectedModule.category().displayName(),
@@ -61,12 +54,12 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         () -> this.panel.inspectedModule == null ? "" : this.panel.inspectedModule.description(),
                         () -> FAINT)
                 .maxLines(Integer.MAX_VALUE);
-        this.star = iconButton("star", this::starColor, () -> {
+        IconButton star = iconButton("star", this::starColor, () -> {
             if (this.panel.inspectedModule != null) {
                 this.panel.toggleFavorite(this.panel.inspectedModule);
             }
         });
-        this.toggle = new ToggleSwitch(
+        ToggleSwitch toggle = new ToggleSwitch(
                 () -> this.panel.inspectedModule != null,
                 () -> this.panel.inspectedModule != null && this.panel.inspectedModule.enabled(),
                 () -> {
@@ -74,9 +67,9 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         this.panel.toggleModule(this.panel.inspectedModule);
                     }
                 });
-        this.close = iconButton("x", () -> FAINT, this.panel::closeInspector);
+        IconButton close = iconButton("x", () -> FAINT, this.panel::closeInspector);
         place(
-                this.divider,
+                divider,
                 cell(
                         0,
                         3,
@@ -90,7 +83,7 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         null,
                         1F));
         place(
-                this.moduleIcon,
+                moduleIcon,
                 cell(
                         0,
                         0,
@@ -103,18 +96,14 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         padding(PADDING, 0F, 0F, 0F),
                         ICON_BOX,
                         ICON_BOX));
-        place(
-                this.title,
-                cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(8F, 10F, 8F, 0F), null, 20F));
-        place(
-                this.category,
-                cell(1, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(8F, 0F, 8F, 0F), null, 16F));
+        place(title, cell(1, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(8F, 10F, 8F, 0F), null, 20F));
+        place(category, cell(1, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(8F, 0F, 8F, 0F), null, 16F));
         place(
                 this.description,
                 cell(1, 2, 2, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(8F, 0F, 8F, 8F), null, null));
-        place(this.star, fixedCell(2, 0, 1, 2, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
+        place(star, fixedCell(2, 0, 1, 2, ICON_BUTTON_SIZE, ICON_BUTTON_SIZE, GridAnchor.CENTER));
         place(
-                this.toggle,
+                toggle,
                 cell(
                         3,
                         0,
@@ -128,7 +117,7 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         SWITCH_WIDTH,
                         SWITCH_HEIGHT));
         place(
-                this.close,
+                close,
                 cell(
                         4,
                         0,
@@ -141,14 +130,14 @@ final class InspectorHeader extends Container implements LayoutDebugLabel {
                         padding(0F, 0F, 6F, 0F),
                         ICON_BUTTON_SIZE,
                         ICON_BUTTON_SIZE));
-        this.addChild(this.divider);
-        this.addChild(this.moduleIcon);
-        this.addChild(this.title);
-        this.addChild(this.category);
+        this.addChild(divider);
+        this.addChild(moduleIcon);
+        this.addChild(title);
+        this.addChild(category);
         this.addChild(this.description);
-        this.addChild(this.star);
-        this.addChild(this.toggle);
-        this.addChild(this.close);
+        this.addChild(star);
+        this.addChild(toggle);
+        this.addChild(close);
     }
 
     @Override

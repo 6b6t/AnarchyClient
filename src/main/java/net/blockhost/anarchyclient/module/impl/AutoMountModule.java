@@ -84,7 +84,7 @@ public final class AutoMountModule extends Module {
                     || !canRide(entity)
                     || !CombatTargets.canReachEntity(player, entity)
                     // Holding the animal's food would feed it instead of mounting it.
-                    || entity instanceof Animal animal && animal.isFood(player.getMainHandItem())) {
+                    || (entity instanceof Animal animal && animal.isFood(player.getMainHandItem()))) {
                 continue;
             }
             double distance = entity.distanceToSqr(player);

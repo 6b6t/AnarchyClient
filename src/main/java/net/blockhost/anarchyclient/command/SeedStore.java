@@ -18,6 +18,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.world.level.storage.LevelResource;
+import org.jspecify.annotations.Nullable;
 
 final class SeedStore {
 
@@ -34,7 +35,7 @@ final class SeedStore {
                 .toList();
     }
 
-    static SeedRecord get(final Path path, final String world) throws IOException {
+    static @Nullable SeedRecord get(final Path path, final String world) throws IOException {
         JsonElement entry = read(path).get(world);
         if (entry == null || !entry.isJsonObject()) {
             return null;

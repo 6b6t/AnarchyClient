@@ -9,6 +9,7 @@ import net.blockhost.anarchyclient.ui.HudEditorScreen;
 import net.blockhost.anarchyclient.ui.HudLayout;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -64,6 +65,7 @@ public final class CoordinatesHudModule extends Module {
     }
 
     List<String> lines(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         List<String> lines = new ArrayList<>();
         if (client.player == null) {
             return lines;
@@ -88,8 +90,8 @@ public final class CoordinatesHudModule extends Module {
         if (this.showFps.value()) {
             lines.add(client.getFps() + " FPS");
         }
-        if (this.showPing.value() && client.getConnection() != null) {
-            PlayerInfo info = client.getConnection().getPlayerInfo(client.player.getUUID());
+        if (this.showPing.value() && connection != null) {
+            PlayerInfo info = connection.getPlayerInfo(client.player.getUUID());
             if (info != null) {
                 lines.add(info.getLatency() + " ms");
             }

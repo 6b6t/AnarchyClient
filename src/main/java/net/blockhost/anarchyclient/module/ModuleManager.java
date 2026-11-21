@@ -2,7 +2,6 @@ package net.blockhost.anarchyclient.module;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,7 +70,7 @@ public final class ModuleManager {
         return Optional.empty();
     }
 
-    public Collection<Module> all() {
+    public List<Module> all() {
         return List.copyOf(this.modules.values());
     }
 

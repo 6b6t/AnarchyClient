@@ -51,20 +51,20 @@ public final class TargetClassifier {
 
     public static boolean isHostile(final Entity entity) {
         return entity instanceof Enemy
-                || entity instanceof Mob mob && mob.getType().getCategory() == MobCategory.MONSTER;
+                || (entity instanceof Mob mob && mob.getType().getCategory() == MobCategory.MONSTER);
     }
 
     public static boolean isPassive(final Entity entity) {
         return entity instanceof Bat
                 || entity instanceof Allay
-                || entity instanceof Mob mob && mob.getType().getCategory().isFriendly();
+                || (entity instanceof Mob mob && mob.getType().getCategory().isFriendly());
     }
 
     public static boolean isValidLivingTarget(final Entity entity, final Player player, final boolean allowDead) {
         return entity instanceof LivingEntity living
                 && entity != player
                 && !(entity instanceof ArmorStand)
-                && (allowDead || living.isAlive() && !living.isDeadOrDying())
+                && (allowDead || (living.isAlive() && !living.isDeadOrDying()))
                 && !living.isSpectator();
     }
 
@@ -79,7 +79,7 @@ public final class TargetClassifier {
     }
 
     public static boolean isFriend(final Entity entity) {
-        return entity != null && entity instanceof Player && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName());
+        return entity instanceof Player && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName());
     }
 
     public static boolean isKnownStaffName(final String name) {

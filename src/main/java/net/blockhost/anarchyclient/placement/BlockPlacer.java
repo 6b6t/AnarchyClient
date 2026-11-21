@@ -12,6 +12,8 @@ import net.blockhost.anarchyclient.rotation.RotationRequest;
 import net.blockhost.anarchyclient.rotation.RotationTurnMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -182,9 +184,14 @@ public final class BlockPlacer {
      */
     public static InteractionResult useItemOn(
             final Minecraft client, final LocalPlayer player, final BlockHitResult hitResult, final boolean sneak) {
+        ClientPacketListener connection = client.getConnection();
+        MultiPlayerGameMode gameMode = client.gameMode;
+        if (gameMode == null) {
+            return InteractionResult.FAIL;
+        }
         Input previous = player.input.keyPresses;
-        if (!sneak || previous.shift() || client.getConnection() == null) {
-            return client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
+        if (!sneak || previous.shift() || connection == null) {
+            return gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
         }
         Input sneaking = new Input(
                 previous.forward(),
@@ -194,13 +201,13 @@ public final class BlockPlacer {
                 previous.jump(),
                 true,
                 previous.sprint());
-        client.getConnection().send(new ServerboundPlayerInputPacket(sneaking));
+        connection.send(new ServerboundPlayerInputPacket(sneaking));
         player.input.keyPresses = sneaking;
         try {
-            return client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
+            return gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hitResult);
         } finally {
             player.input.keyPresses = previous;
-            client.getConnection().send(new ServerboundPlayerInputPacket(player.getLastSentInput()));
+            connection.send(new ServerboundPlayerInputPacket(player.getLastSentInput()));
         }
     }
 
@@ -263,10 +270,10 @@ public final class BlockPlacer {
         Block block = blockItem.getBlock();
         BlockState state = block.defaultBlockState();
         if (!needsPlacement(level, target)
-                || options.requireFullBlock() && !Block.isShapeFullBlock(state.getCollisionShape(level, target))
-                || !options.allowFallingBlocks()
+                || (options.requireFullBlock() && !Block.isShapeFullBlock(state.getCollisionShape(level, target)))
+                || (!options.allowFallingBlocks()
                         && block instanceof FallingBlock
-                        && FallingBlock.isFree(level.getBlockState(target.below()))) {
+                        && FallingBlock.isFree(level.getBlockState(target.below())))) {
             return false;
         }
         return level.isUnobstructed(state, target, CollisionContext.placementContext(player));

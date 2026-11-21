@@ -105,7 +105,7 @@ public final class LogoutSpotsModule extends Module {
             LogoutSpot spot = this.lastSeen.get(id);
             if (spot == null
                     || id.equals(client.player.getUUID())
-                    || this.ignoreFriends.value() && AnarchyClient.FRIENDS.isFriend(spot.name())) {
+                    || (this.ignoreFriends.value() && AnarchyClient.FRIENDS.isFriend(spot.name()))) {
                 continue;
             }
             this.spots.put(id, spot.withAge(0));
@@ -160,7 +160,7 @@ public final class LogoutSpotsModule extends Module {
                     || player == self
                     || player.isSpectator()
                     || !player.isAlive()
-                    || ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName())) {
+                    || (ignoreFriends && AnarchyClient.FRIENDS.isFriend(player.getScoreboardName()))) {
                 continue;
             }
             players.put(player.getUUID(), capture(player));

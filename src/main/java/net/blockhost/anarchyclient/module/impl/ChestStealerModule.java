@@ -116,8 +116,8 @@ public final class ChestStealerModule extends Module {
     static boolean fits(final ItemStack stack, final List<ItemStack> slots) {
         for (ItemStack target : slots) {
             if (target.isEmpty()
-                    || ItemStack.isSameItemSameComponents(target, stack)
-                            && target.getCount() < target.getMaxStackSize()) {
+                    || (ItemStack.isSameItemSameComponents(target, stack)
+                            && target.getCount() < target.getMaxStackSize())) {
                 return true;
             }
         }

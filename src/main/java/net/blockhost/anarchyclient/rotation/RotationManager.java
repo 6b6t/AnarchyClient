@@ -49,10 +49,11 @@ public final class RotationManager {
         };
         player.setYRot(next.yaw());
         player.setXRot(next.pitch());
+        Runnable whenReached = request.whenReached();
         if (next.angleTo(request.target()) <= request.resetThreshold()
-                && request.whenReached() != null
+                && whenReached != null
                 && REACHED_OWNERS.add(request.owner())) {
-            request.whenReached().run();
+            whenReached.run();
         }
         return Optional.of(next);
     }

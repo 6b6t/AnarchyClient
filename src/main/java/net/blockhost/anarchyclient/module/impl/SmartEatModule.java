@@ -1,12 +1,9 @@
 package net.blockhost.anarchyclient.module.impl;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import net.blockhost.anarchyclient.inventory.InventoryAction;
 import net.blockhost.anarchyclient.inventory.InventoryActionChain;
 import net.blockhost.anarchyclient.inventory.InventoryActionScheduler;
@@ -21,24 +18,9 @@ import net.blockhost.anarchyclient.setting.SelectSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.CraftingTableBlock;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 
 public final class SmartEatModule extends Module {
 
@@ -173,12 +155,12 @@ public final class SmartEatModule extends Module {
             this.cooldownTicks--;
             return;
         }
-        if (player.isUsingItem() || !this.allowDuringCombat.value() && player.getAttackStrengthScale(0.0F) < 1.0F) {
+        if (player.isUsingItem() || (!this.allowDuringCombat.value() && player.getAttackStrengthScale(0.0F) < 1.0F)) {
             return;
         }
 
-        Set<String> blacklistedItems = parseBlacklist(this.blacklist.value());
-        FoodPriority priority = FoodPriority.fromSetting(this.foodPriority.value());
+        Set<String> blacklistedItems = FoodSelection.parseBlacklist(this.blacklist.value());
+        FoodSelection.FoodPriority priority = FoodSelection.FoodPriority.fromSetting(this.foodPriority.value());
         ConsumableChoice choice = this.pickChoice(player, blacklistedItems);
         if (choice == null) {
             return;
@@ -186,11 +168,12 @@ public final class SmartEatModule extends Module {
         if (choice.kind() == ConsumableKind.SOUP
                 && this.avoidClickable.value()
                 && client.level != null
-                && isClickable(client.hitResult, client.level)) {
+                && FoodSelection.isClickable(client.hitResult, client.level)) {
             return;
         }
 
-        InteractionHand hand = consumableHand(player.getMainHandItem(), player.getOffhandItem(), choice.predicate());
+        InteractionHand hand =
+                FoodSelection.consumableHand(player.getMainHandItem(), player.getOffhandItem(), choice.predicate());
         if (hand == null && this.selectHotbarFood.value()) {
             OptionalInt slot = this.findHotbarSlot(player.getInventory(), choice, priority);
             if (slot.isPresent()) {
@@ -244,46 +227,51 @@ public final class SmartEatModule extends Module {
         float health = player.getHealth();
         // Vanilla refuses most food at full hunger; picking it anyway would swap slots back and forth.
         if (this.allowSoup.value() && health <= this.soupHealth.value() && player.canEat(false)) {
-            return new ConsumableChoice(ConsumableKind.SOUP, SmartEatModule::isSoup);
+            return new ConsumableChoice(ConsumableKind.SOUP, FoodSelection::isSoup);
         }
         if (this.allowGapples.value() && health <= this.gappleHealth.value()) {
-            return new ConsumableChoice(ConsumableKind.GAPPLE, SmartEatModule::isGapple);
+            return new ConsumableChoice(ConsumableKind.GAPPLE, FoodSelection::isGapple);
         }
-        if (shouldEat(
+        if (FoodSelection.shouldEat(
                 player.getFoodData().getFoodLevel(),
                 health,
                 this.hungerThreshold.value(),
                 this.healthThreshold.value(),
-                ThresholdMode.fromSetting(this.thresholdMode.value()))) {
+                FoodSelection.ThresholdMode.fromSetting(this.thresholdMode.value()))) {
             return new ConsumableChoice(
                     ConsumableKind.FOOD,
-                    stack -> isFood(stack, false, blacklist) && canEatNow(player.canEat(false), stack));
+                    stack -> FoodSelection.isFood(stack, false, blacklist)
+                            && FoodSelection.canEatNow(player.canEat(false), stack));
         }
         return null;
     }
 
     private OptionalInt findHotbarSlot(
-            final Inventory inventory, final ConsumableChoice choice, final FoodPriority priority) {
+            final Inventory inventory, final ConsumableChoice choice, final FoodSelection.FoodPriority priority) {
         return switch (choice.kind()) {
-            case SOUP -> findSoupSlot(inventory, 0, Inventory.getSelectionSize() - 1);
+            case SOUP -> FoodSelection.findSoupSlot(inventory, 0, Inventory.getSelectionSize() - 1);
             case GAPPLE ->
-                bestGappleSlot(inventory, 0, Inventory.getSelectionSize() - 1, this.preferEnchantedGapples.value());
-            case FOOD -> findBestFoodSlot(inventory, 0, Inventory.getSelectionSize() - 1, choice.predicate(), priority);
+                FoodSelection.bestGappleSlot(
+                        inventory, 0, Inventory.getSelectionSize() - 1, this.preferEnchantedGapples.value());
+            case FOOD ->
+                FoodSelection.findBestFoodSlot(
+                        inventory, 0, Inventory.getSelectionSize() - 1, choice.predicate(), priority);
         };
     }
 
     private OptionalInt findInventorySlot(
-            final Inventory inventory, final ConsumableChoice choice, final FoodPriority priority) {
+            final Inventory inventory, final ConsumableChoice choice, final FoodSelection.FoodPriority priority) {
         return switch (choice.kind()) {
-            case SOUP -> findSoupSlot(inventory, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE - 1);
+            case SOUP ->
+                FoodSelection.findSoupSlot(inventory, Inventory.getSelectionSize(), Inventory.INVENTORY_SIZE - 1);
             case GAPPLE ->
-                bestGappleSlot(
+                FoodSelection.bestGappleSlot(
                         inventory,
                         Inventory.getSelectionSize(),
                         Inventory.INVENTORY_SIZE - 1,
                         this.preferEnchantedGapples.value());
             case FOOD ->
-                findBestFoodSlot(
+                FoodSelection.findBestFoodSlot(
                         inventory,
                         Inventory.getSelectionSize(),
                         Inventory.INVENTORY_SIZE - 1,
@@ -296,12 +284,12 @@ public final class SmartEatModule extends Module {
             final Minecraft client,
             final LocalPlayer player,
             final ConsumableChoice choice,
-            final FoodPriority priority) {
+            final FoodSelection.FoodPriority priority) {
         if (!InventoryActionScheduler.canUseInventoryMenu(client, player)) {
             return;
         }
         OptionalInt sourceSlot = this.findInventorySlot(player.getInventory(), choice, priority);
-        OptionalInt targetSlot = findEmptyHotbarSlot(player.getInventory());
+        OptionalInt targetSlot = FoodSelection.findEmptyHotbarSlot(player.getInventory());
         if (sourceSlot.isEmpty() || targetSlot.isEmpty()) {
             return;
         }
@@ -314,218 +302,6 @@ public final class SmartEatModule extends Module {
         }
         InventoryActionScheduler.schedule(InventoryActionChain.single(
                 this.id(), InventoryActionScheduler.PRIORITY_LIFE, 2, InventoryAction.pickupSwap(source, target)));
-    }
-
-    /** Whether vanilla lets the player start eating {@code stack}, given whether they are hungry at all. */
-    static boolean canEatNow(final boolean hungry, final ItemStack stack) {
-        FoodProperties food = stack.get(DataComponents.FOOD);
-        return food != null && (hungry || food.canAlwaysEat());
-    }
-
-    static boolean shouldEat(
-            final int hunger, final float health, final double hungerThreshold, final double healthThreshold) {
-        return shouldEat(hunger, health, hungerThreshold, healthThreshold, ThresholdMode.ANY);
-    }
-
-    static boolean shouldEat(
-            final int hunger,
-            final float health,
-            final double hungerThreshold,
-            final double healthThreshold,
-            final ThresholdMode mode) {
-        boolean hungerLow = hunger <= hungerThreshold;
-        boolean healthLow = health <= healthThreshold;
-        return mode.test(healthLow, hungerLow);
-    }
-
-    static OptionalInt bestGappleSlot(final Inventory inventory, final boolean preferEnchanted) {
-        return bestGappleSlot(inventory, 0, Inventory.getSelectionSize() - 1, preferEnchanted);
-    }
-
-    private static OptionalInt bestGappleSlot(
-            final Inventory inventory, final int start, final int end, final boolean preferEnchanted) {
-        OptionalInt enchanted = findSlot(inventory, start, end, stack -> stack.is(Items.ENCHANTED_GOLDEN_APPLE));
-        OptionalInt golden = findSlot(inventory, start, end, stack -> stack.is(Items.GOLDEN_APPLE));
-        if (preferEnchanted && enchanted.isPresent()) {
-            return enchanted;
-        }
-        return golden.isPresent() ? golden : enchanted;
-    }
-
-    static OptionalInt findSoupSlot(final Inventory inventory, final int start, final int end) {
-        return findSlot(inventory, start, end, SmartEatModule::isSoup);
-    }
-
-    static InteractionHand soupHand(final ItemStack mainHand, final ItemStack offHand) {
-        return consumableHand(mainHand, offHand, SmartEatModule::isSoup);
-    }
-
-    static boolean isSoup(final ItemStack stack) {
-        return !stack.isEmpty()
-                && isSoupItemId(BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
-    }
-
-    static boolean isSoupItemId(final String itemId) {
-        return "mushroom_stew".equals(itemId)
-                || "rabbit_stew".equals(itemId)
-                || "beetroot_soup".equals(itemId)
-                || "suspicious_stew".equals(itemId);
-    }
-
-    static boolean isClickable(final HitResult hitResult, final Level level) {
-        if (hitResult instanceof EntityHitResult entityHitResult) {
-            Entity entity = entityHitResult.getEntity();
-            return entity instanceof Villager || entity instanceof TamableAnimal;
-        }
-        if (hitResult instanceof BlockHitResult blockHitResult && hitResult.getType() == HitResult.Type.BLOCK) {
-            BlockPos pos = blockHitResult.getBlockPos();
-            Block block = level.getBlockState(pos).getBlock();
-            return block instanceof BaseEntityBlock || block instanceof CraftingTableBlock;
-        }
-        return false;
-    }
-
-    static double foodScore(final ItemStack stack, final FoodPriority priority) {
-        FoodProperties food = stack.get(DataComponents.FOOD);
-        if (food == null) {
-            return 0.0;
-        }
-        return foodScore(food, priority);
-    }
-
-    static double foodScore(final FoodProperties food, final FoodPriority priority) {
-        return switch (priority) {
-            case HUNGER -> food.nutrition();
-            case SATURATION -> food.saturation();
-            case COMBINED -> food.nutrition() + food.saturation();
-        };
-    }
-
-    static Set<String> parseBlacklist(final String value) {
-        if (value == null || value.isBlank()) {
-            return Set.of();
-        }
-        return Arrays.stream(value.split("[,;|\\s]+"))
-                .map(String::trim)
-                .filter(token -> !token.isEmpty())
-                .map(token -> token.toLowerCase(Locale.ROOT))
-                .collect(Collectors.toUnmodifiableSet());
-    }
-
-    static boolean isBlacklisted(final ItemStack stack, final Set<String> blacklist) {
-        return isBlacklisted(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), blacklist);
-    }
-
-    static boolean isBlacklisted(final String itemId, final Set<String> blacklist) {
-        String id = itemId.toLowerCase(Locale.ROOT);
-        String path = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
-        return blacklist.contains(path) || blacklist.contains(id);
-    }
-
-    private static OptionalInt findBestFoodSlot(
-            final Inventory inventory,
-            final int start,
-            final int end,
-            final Predicate<ItemStack> predicate,
-            final FoodPriority priority) {
-        int bestSlot = -1;
-        double bestScore = -1;
-        for (int slot = start; slot <= end; slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (!predicate.test(stack)) {
-                continue;
-            }
-            double score = foodScore(stack, priority);
-            if (score > bestScore) {
-                bestScore = score;
-                bestSlot = slot;
-            }
-        }
-        return bestSlot < 0 ? OptionalInt.empty() : OptionalInt.of(bestSlot);
-    }
-
-    private static OptionalInt findSlot(
-            final Inventory inventory, final int start, final int end, final Predicate<ItemStack> predicate) {
-        for (int slot = start; slot <= end; slot++) {
-            ItemStack stack = inventory.getItem(slot);
-            if (!stack.isEmpty() && predicate.test(stack)) {
-                return OptionalInt.of(slot);
-            }
-        }
-        return OptionalInt.empty();
-    }
-
-    private static OptionalInt findEmptyHotbarSlot(final Inventory inventory) {
-        for (int slot = 0; slot < Inventory.getSelectionSize(); slot++) {
-            if (inventory.getItem(slot).isEmpty()) {
-                return OptionalInt.of(slot);
-            }
-        }
-        return OptionalInt.empty();
-    }
-
-    private static InteractionHand consumableHand(
-            final ItemStack mainHand, final ItemStack offHand, final Predicate<ItemStack> predicate) {
-        if (predicate.test(mainHand)) {
-            return InteractionHand.MAIN_HAND;
-        }
-        if (predicate.test(offHand)) {
-            return InteractionHand.OFF_HAND;
-        }
-        return null;
-    }
-
-    private static boolean isFood(final ItemStack stack, final boolean allowGoldenApples, final Set<String> blacklist) {
-        if (!stack.has(DataComponents.FOOD)) {
-            return false;
-        }
-        if (!allowGoldenApples && isGapple(stack)) {
-            return false;
-        }
-        return !isBlacklisted(stack, blacklist);
-    }
-
-    private static boolean isGapple(final ItemStack stack) {
-        return stack.is(Items.GOLDEN_APPLE) || stack.is(Items.ENCHANTED_GOLDEN_APPLE);
-    }
-
-    enum ThresholdMode {
-        HEALTH,
-        HUNGER,
-        ANY,
-        BOTH;
-
-        private boolean test(final boolean healthLow, final boolean hungerLow) {
-            return switch (this) {
-                case HEALTH -> healthLow;
-                case HUNGER -> hungerLow;
-                case BOTH -> healthLow && hungerLow;
-                case ANY -> healthLow || hungerLow;
-            };
-        }
-
-        private static ThresholdMode fromSetting(final String value) {
-            return switch (value) {
-                case "Health" -> HEALTH;
-                case "Hunger" -> HUNGER;
-                case "Both" -> BOTH;
-                default -> ANY;
-            };
-        }
-    }
-
-    enum FoodPriority {
-        SATURATION,
-        HUNGER,
-        COMBINED;
-
-        private static FoodPriority fromSetting(final String value) {
-            return switch (value) {
-                case "Hunger" -> HUNGER;
-                case "Combined" -> COMBINED;
-                default -> SATURATION;
-            };
-        }
     }
 
     private enum ConsumableKind {

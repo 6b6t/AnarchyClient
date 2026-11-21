@@ -282,10 +282,10 @@ public final class NoInteractModule extends Module {
             final String babyMode,
             final String nametaggedMode) {
         return matchesList(listMode, entityTypes, entity.getType())
-                || matchesInteractMode(friendMode, action)
+                || (matchesInteractMode(friendMode, action)
                         && entity instanceof Player
-                        && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName())
-                || matchesInteractMode(babyMode, action) && entity instanceof Animal animal && animal.isBaby()
-                || matchesInteractMode(nametaggedMode, action) && entity.hasCustomName();
+                        && AnarchyClient.FRIENDS.isFriend(entity.getScoreboardName()))
+                || (matchesInteractMode(babyMode, action) && entity instanceof Animal animal && animal.isBaby())
+                || (matchesInteractMode(nametaggedMode, action) && entity.hasCustomName());
     }
 }

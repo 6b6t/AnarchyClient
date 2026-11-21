@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ final class LayoutTreeDumper {
 
     static Path writeSnapshot(final Rivet rivet, final Path directory) throws IOException {
         Files.createDirectories(directory);
-        Path file = directory.resolve("layout-" + FILE_TIME.format(LocalDateTime.now()) + ".txt");
+        Path file = directory.resolve("layout-" + FILE_TIME.format(LocalDateTime.now(ZoneId.systemDefault())) + ".txt");
         Files.writeString(file, snapshot(rivet), StandardCharsets.UTF_8);
         return file;
     }

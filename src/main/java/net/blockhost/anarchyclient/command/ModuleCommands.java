@@ -28,9 +28,11 @@ import net.blockhost.anarchyclient.setting.Setting;
 import net.blockhost.anarchyclient.setting.TextValueSetting;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import org.jspecify.annotations.Nullable;
 import org.lwjgl.sdl.SDLScancode;
 
 /**
@@ -165,11 +167,12 @@ final class ModuleCommands {
 
     private static int notebotPlayNote(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
         int note = IntegerArgumentType.getInteger(context, "note");
-        client.player.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 2.0F, notePitch(note));
+        player.playSound(SoundEvents.NOTE_BLOCK_HARP.value(), 2.0F, notePitch(note));
         context.getSource()
                 .sendFeedback(
                         Translations.component("anarchyclient.message.module.played_note", "Played note %s.", note));
@@ -208,7 +211,7 @@ final class ModuleCommands {
         return sent > 0 ? SUCCESS : 0;
     }
 
-    private static SwarmModule swarmModule() {
+    private static @Nullable SwarmModule swarmModule() {
         Module module = AnarchyClient.MODULES.find("swarm").orElse(null);
         return module instanceof SwarmModule swarm ? swarm : null;
     }
@@ -272,8 +275,8 @@ final class ModuleCommands {
 
     private static int showSetting(final CommandContext<FabricClientCommandSource> context) {
         Module module = findModule(context);
-        Setting<?> setting = findSetting(context, module);
-        if (setting == null) {
+        Setting<?> setting = module == null ? null : findSetting(context, module);
+        if (module == null || setting == null) {
             return 0;
         }
         context.getSource()
@@ -284,15 +287,15 @@ final class ModuleCommands {
 
     private static int setSetting(final CommandContext<FabricClientCommandSource> context) {
         Module module = findModule(context);
-        Setting<?> setting = findSetting(context, module);
-        if (setting == null) {
+        Setting<?> setting = module == null ? null : findSetting(context, module);
+        if (module == null || setting == null) {
             return 0;
         }
         String value = StringArgumentType.getString(context, "value");
         try {
             setSettingValue(setting, value);
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
         AnarchyClient.CONFIG.save();
@@ -307,7 +310,7 @@ final class ModuleCommands {
             if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
                 throw new IllegalArgumentException("Expected true or false.");
             }
-            bool.value(Boolean.parseBoolean(value));
+            bool.value(Boolean.valueOf(value));
             return;
         }
         if (setting instanceof NumberSetting number) {
@@ -344,7 +347,7 @@ final class ModuleCommands {
         return String.valueOf(setting.value());
     }
 
-    private static Module findModule(final CommandContext<FabricClientCommandSource> context) {
+    private static @Nullable Module findModule(final CommandContext<FabricClientCommandSource> context) {
         String id = StringArgumentType.getString(context, "module");
         Module module = AnarchyClient.MODULES.find(id).orElse(null);
         if (module == null) {
@@ -355,11 +358,8 @@ final class ModuleCommands {
         return module;
     }
 
-    private static Setting<?> findSetting(
+    private static @Nullable Setting<?> findSetting(
             final CommandContext<FabricClientCommandSource> context, final Module module) {
-        if (module == null) {
-            return null;
-        }
         String id = StringArgumentType.getString(context, "setting");
         for (Setting<?> setting : module.settings()) {
             if (setting.id().equals(id) || setting.aliases().contains(id)) {

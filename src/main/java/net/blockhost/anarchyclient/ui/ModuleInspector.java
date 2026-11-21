@@ -27,28 +27,25 @@ final class ModuleInspector extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background;
-    private final InspectorHeader header;
     private final Container settings;
-    private final ScrollContainer scroll;
 
     ModuleInspector(final ModulePanel panel) {
         super(gridLayout(0, 0));
         this.panel = panel;
-        this.background = this.panel.glassDeepPanel();
-        this.header = new InspectorHeader(this.panel);
+        GlassSurface background = this.panel.glassDeepPanel();
+        InspectorHeader header = new InspectorHeader(this.panel);
         this.settings = new Container(new VerticalListLayout(0, true));
-        this.scroll = new LayoutDebugScrollContainer(this.settings);
-        this.panel.configureScroll(this.scroll);
-        place(this.background, fillCell(0, 0, 1, 2));
+        ScrollContainer scroll = new LayoutDebugScrollContainer(this.settings);
+        this.panel.configureScroll(scroll);
+        place(background, fillCell(0, 0, 1, 2));
         // No fixed height: the header grows when the module description folds onto a second line.
-        place(this.header, cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null));
+        place(header, cell(0, 0, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, Padding.EMPTY, null, null));
         place(
-                this.scroll,
+                scroll,
                 cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 0F, 0F, PADDING), null, null));
-        this.addChild(this.background);
-        this.addChild(this.header);
-        this.addChild(this.scroll);
+        this.addChild(background);
+        this.addChild(header);
+        this.addChild(scroll);
     }
 
     void refresh() {

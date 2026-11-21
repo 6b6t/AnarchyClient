@@ -8,6 +8,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
@@ -87,15 +88,16 @@ public final class AutoRenameModule extends Module {
                     this.name.value(),
                     this.labelShulkers.value(),
                     this.labelBundles.value());
-            if (!targetName.isBlank()
+            ClientPacketListener connection = player.connection;
+            if (connection != null
+                    && !targetName.isBlank()
                     && !targetName.equals(menu.getSlot(AnvilMenu.INPUT_SLOT)
                             .getItem()
                             .getHoverName()
-                            .getString())) {
-                if (menu.setItemName(targetName) && player.connection != null) {
-                    player.connection.send(new ServerboundRenameItemPacket(targetName));
-                    this.cooldown = this.delayTicks.value().intValue();
-                }
+                            .getString())
+                    && menu.setItemName(targetName)) {
+                connection.send(new ServerboundRenameItemPacket(targetName));
+                this.cooldown = this.delayTicks.value().intValue();
             }
             return;
         }

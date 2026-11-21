@@ -168,15 +168,14 @@ public final class EspModule extends Module {
                 yield new WorldLineRenderer.Color(red, green, 80, alpha);
             }
             case "Aqua" -> new WorldLineRenderer.Color(0, 212, 170, alpha);
-            default -> {
-                yield switch (TargetClassifier.kind(entity)) {
+            default ->
+                switch (TargetClassifier.kind(entity)) {
                     case PLAYER -> new WorldLineRenderer.Color(0, 212, 170, alpha);
                     case HOSTILE -> new WorldLineRenderer.Color(255, 86, 86, alpha);
                     case NEUTRAL -> new WorldLineRenderer.Color(255, 162, 72, alpha);
                     case PASSIVE, WATER_CREATURE -> new WorldLineRenderer.Color(245, 205, 92, alpha);
                     case UNKNOWN -> new WorldLineRenderer.Color(190, 190, 190, alpha);
                 };
-            }
         };
     }
 

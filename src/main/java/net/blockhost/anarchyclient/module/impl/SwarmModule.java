@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
@@ -62,7 +63,7 @@ public final class SwarmModule extends Module {
     private volatile Socket workerSocket;
     private volatile boolean running;
     /** Bumped on every start and stop, so a thread from an earlier service stops even after a quick restart. */
-    private volatile int generation;
+    private final AtomicInteger generation = new AtomicInteger();
 
     private volatile long retryAfterMillis;
     private Thread serviceThread;
@@ -131,7 +132,7 @@ public final class SwarmModule extends Module {
             return;
         }
         this.running = true;
-        int serviceGeneration = ++this.generation;
+        int serviceGeneration = this.generation.incrementAndGet();
         this.lastStatus = "starting";
         if ("Host".equals(this.role.value())) {
             this.serviceThread =
@@ -145,7 +146,7 @@ public final class SwarmModule extends Module {
 
     private synchronized void stopService() {
         this.running = false;
-        this.generation++;
+        this.generation.incrementAndGet();
         if (this.serviceThread != null) {
             this.serviceThread.interrupt();
         }
@@ -162,7 +163,7 @@ public final class SwarmModule extends Module {
     }
 
     private boolean isCurrent(final int serviceGeneration) {
-        return this.running && this.generation == serviceGeneration;
+        return this.running && this.generation.get() == serviceGeneration;
     }
 
     private void runHost(final int serviceGeneration) {
@@ -187,7 +188,7 @@ public final class SwarmModule extends Module {
         } finally {
             synchronized (this) {
                 // Only the current host may mark the service stopped; a newer one may already be running.
-                if (this.generation == serviceGeneration) {
+                if (this.generation.get() == serviceGeneration) {
                     this.running = false;
                 }
             }

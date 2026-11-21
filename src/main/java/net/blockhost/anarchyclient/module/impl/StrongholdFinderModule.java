@@ -26,7 +26,7 @@ public final class StrongholdFinderModule extends Module {
     private static final double MIN_TRAVEL = 2.0;
 
     private final List<EyeSample> samples = new ArrayList<>();
-    private final Map<EyeOfEnder, Vec3> flyingEyes = new IdentityHashMap<>();
+    private final IdentityHashMap<EyeOfEnder, Vec3> flyingEyes = new IdentityHashMap<>();
     private Level level;
 
     public StrongholdFinderModule() {

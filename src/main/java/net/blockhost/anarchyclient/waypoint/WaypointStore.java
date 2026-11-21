@@ -170,8 +170,8 @@ public final class WaypointStore {
             return List.of();
         }
         List<Waypoint> result = new ArrayList<>();
-        for (String token : value.split(";")) {
-            String[] parts = token.trim().split(":");
+        for (String token : value.split(";", -1)) {
+            String[] parts = token.trim().split(":", -1);
             if (parts.length != 4) {
                 AnarchyClient.LOGGER.warn("Skipping malformed legacy waypoint '{}'", token);
                 continue;

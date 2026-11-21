@@ -72,8 +72,8 @@ public final class ExcavatorModule extends Module {
             SingleBlockMiner.Step step = this.miner.start(client, target.pos(), Direction.UP);
             // A block that takes several ticks must be finished before the next one starts.
             if (step == SingleBlockMiner.Step.MINING
-                    || step == SingleBlockMiner.Step.BROKEN
-                            && ++actions >= this.blocksPerTick.value().intValue()) {
+                    || (step == SingleBlockMiner.Step.BROKEN
+                            && ++actions >= this.blocksPerTick.value().intValue())) {
                 return;
             }
         }

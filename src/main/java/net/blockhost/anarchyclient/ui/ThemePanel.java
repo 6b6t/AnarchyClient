@@ -25,22 +25,19 @@ final class ThemePanel extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background;
-    private final TextNode title;
     private final Container rows;
-    private final ScrollContainer scroll;
 
     ThemePanel(final ModulePanel panel) {
         super(gridLayout(0, 0));
         this.panel = panel;
-        this.background = this.panel.glassPanel();
-        this.title = textNode(Translations.text("anarchyclient.ui.theme", "Theme"), TEXT);
+        GlassSurface background = this.panel.glassPanel();
+        TextNode title = textNode(Translations.text("anarchyclient.ui.theme", "Theme"), TEXT);
         this.rows = new Container(new VerticalListLayout(0, true));
-        this.scroll = new LayoutDebugScrollContainer(this.rows);
-        this.panel.configureScroll(this.scroll);
-        place(this.background, fillCell(0, 0, 1, 2));
+        ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
+        this.panel.configureScroll(scroll);
+        place(background, fillCell(0, 0, 1, 2));
         place(
-                this.title,
+                title,
                 cell(
                         0,
                         0,
@@ -54,11 +51,11 @@ final class ThemePanel extends Container implements LayoutDebugLabel {
                         null,
                         30F));
         place(
-                this.scroll,
+                scroll,
                 cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 2F, 0F, PADDING), null, null));
-        this.addChild(this.background);
-        this.addChild(this.title);
-        this.addChild(this.scroll);
+        this.addChild(background);
+        this.addChild(title);
+        this.addChild(scroll);
     }
 
     void refresh() {

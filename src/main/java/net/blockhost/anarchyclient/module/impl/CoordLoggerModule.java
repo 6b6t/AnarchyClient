@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -188,10 +189,12 @@ public final class CoordLoggerModule extends Module {
                 formatPosition(playerPos));
     }
 
+    private static final List<String> CARDINALS =
+            List.of("south", "south-west", "west", "north-west", "north", "north-east", "east", "south-east");
+
     static String cardinal(final float yaw) {
         float wrapped = ((yaw % 360.0F) + 360.0F) % 360.0F;
-        String[] names = {"south", "south-west", "west", "north-west", "north", "north-east", "east", "south-east"};
-        return names[Math.round(wrapped / 45.0F) % names.length];
+        return CARDINALS.get(Math.round(wrapped / 45.0F) % CARDINALS.size());
     }
 
     static String worldEventName(final int eventType) {

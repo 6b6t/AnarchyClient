@@ -12,6 +12,7 @@ import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
@@ -59,9 +60,10 @@ public final class BookBotModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
         List<String> configuredPages = parsePages(this.pages.value());
-        if (player == null || client.getConnection() == null || configuredPages.isEmpty()) {
+        if (player == null || connection == null || configuredPages.isEmpty()) {
             return;
         }
         if (this.cooldownTicks > 0) {
@@ -86,8 +88,7 @@ public final class BookBotModule extends Module {
         List<String> bookPages = sanitizePages(configuredPages);
         Optional<String> bookTitle =
                 this.sign.value() ? Optional.of(sanitizeTitle(this.title.value())) : Optional.empty();
-        client.getConnection()
-                .send(new ServerboundEditBookPacket(target.orElseThrow().packetSlot(), bookPages, bookTitle));
+        connection.send(new ServerboundEditBookPacket(target.orElseThrow().packetSlot(), bookPages, bookTitle));
         this.booksWritten++;
         this.debugValue("status", this.sign.value() ? "signed" : "written");
         this.debugValue("books", this.booksWritten);

@@ -12,6 +12,7 @@ import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.server.ServerObserver;
+import net.blockhost.anarchyclient.util.MoreFiles;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -74,7 +75,7 @@ public final class NameCollectorModule extends Module {
                 .resolve(AnarchyClient.MOD_ID + "-name-captures")
                 .resolve(fileName);
         try {
-            Files.createDirectories(file.getParent());
+            MoreFiles.createParentDirectories(file);
             Set<String> merged = new TreeSet<>(this.names);
             if (Files.exists(file)) {
                 merged.addAll(Files.readAllLines(file, StandardCharsets.UTF_8).stream()

@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.module.impl;
 
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.StringSetting;
@@ -30,7 +31,7 @@ public final class WelcomerHudModule extends HudElementModule {
     protected List<String> lines(final Minecraft client) {
         String name = client.getUser().getName();
         String greeting = this.timeGreeting.value()
-                ? timeGreeting(LocalTime.now()) + ", " + name
+                ? timeGreeting(LocalTime.now(ZoneId.systemDefault())) + ", " + name
                 : this.text.value().replace("{name}", name);
         return greeting.isBlank() ? List.of() : List.of(greeting);
     }

@@ -79,7 +79,7 @@ public final class PistonPushModule extends Module {
         }
         double reach = Math.min(this.range.value(), player.blockInteractionRange());
         Player target = CombatTargets.nearestEnemy(client, this.range.value() + 2.0);
-        if (target == null || this.onlyHoles.value() && !inHole(level, target.blockPosition())) {
+        if (target == null || (this.onlyHoles.value() && !inHole(level, target.blockPosition()))) {
             this.debugValue("state", "no target");
             return;
         }

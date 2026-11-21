@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.blockhost.anarchyclient.AnarchyClient;
 import net.minecraft.client.Minecraft;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Captures a blurred copy of the game framebuffer for glass panels while the client menu is open.
@@ -21,9 +22,9 @@ import net.minecraft.client.Minecraft;
 public final class GlassBackdrop {
 
     private static boolean active;
-    private static GpuTexture sharpTexture;
-    private static GpuTexture blurredTexture;
-    private static GpuTextureView blurredView;
+    private static @Nullable GpuTexture sharpTexture;
+    private static @Nullable GpuTexture blurredTexture;
+    private static @Nullable GpuTextureView blurredView;
     private static boolean capturedThisFrame;
     // Resources retired on resize. Closed one frame later so draws recorded against the old view finish first.
     private static final List<AutoCloseable> retired = new ArrayList<>();
@@ -58,7 +59,7 @@ public final class GlassBackdrop {
     /**
      * The blurred game scene, sized to the main render target, or {@code null} before the first capture.
      */
-    public static GpuTextureView blurredView() {
+    public static @Nullable GpuTextureView blurredView() {
         return capturedThisFrame ? blurredView : null;
     }
 
@@ -71,9 +72,13 @@ public final class GlassBackdrop {
         }
         closeRetired();
         ensureTextures(mainTarget);
+        GpuTexture sharp = sharpTexture;
+        if (sharp == null) {
+            return;
+        }
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         encoder.copyTextureToTexture(
-                mainTarget.getColorTexture(), sharpTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+                mainTarget.getColorTexture(), sharp, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
     }
 
     /**
@@ -81,7 +86,9 @@ public final class GlassBackdrop {
      * and restores the sharp frame so the game stays visible behind the menu.
      */
     public static void onBlurEnd(final RenderTarget mainTarget) {
-        if (!active || sharpTexture == null || mainTarget.getColorTexture() == null) {
+        GpuTexture sharp = sharpTexture;
+        GpuTexture blurred = blurredTexture;
+        if (!active || sharp == null || blurred == null || mainTarget.getColorTexture() == null) {
             return;
         }
         // Vanilla just blurred the main target (strength = the menu-blur video setting, which the
@@ -90,14 +97,17 @@ public final class GlassBackdrop {
         // ring buffer cannot be re-submitted within the same frame and trips a GPU fence assert.
         CommandEncoder encoder = RenderSystem.getDevice().createCommandEncoder();
         encoder.copyTextureToTexture(
-                mainTarget.getColorTexture(), blurredTexture, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+                mainTarget.getColorTexture(), blurred, 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
         encoder.copyTextureToTexture(
-                sharpTexture, mainTarget.getColorTexture(), 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
+                sharp, mainTarget.getColorTexture(), 0, 0, 0, 0, 0, mainTarget.width, mainTarget.height);
         capturedThisFrame = true;
     }
 
     private static void ensureTextures(final RenderTarget mainTarget) {
         GpuTexture color = mainTarget.getColorTexture();
+        if (color == null) {
+            return;
+        }
         if (sharpTexture != null
                 && sharpTexture.getWidth(0) == color.getWidth(0)
                 && sharpTexture.getHeight(0) == color.getHeight(0)

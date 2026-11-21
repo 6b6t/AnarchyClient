@@ -134,6 +134,7 @@ final class EquipmentScorer {
         FIRE(Enchantments.FIRE_PROTECTION),
         PROJECTILE(Enchantments.PROJECTILE_PROTECTION);
 
+        @SuppressWarnings("ImmutableEnumChecker") // Resource keys are immutable.
         private final ResourceKey<Enchantment> enchantment;
 
         ProtectionPreference(final ResourceKey<Enchantment> enchantment) {

@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import org.slf4j.Logger;
@@ -66,12 +67,11 @@ public final class ConfigFiles {
     }
 
     private static Path backupPath(final Path path) {
-        String fileName = path.getFileName() == null
-                ? "anarchyclient"
-                : path.getFileName().toString();
+        Path name = path.getFileName();
+        String fileName = name == null ? "anarchyclient" : name.toString();
         int dot = fileName.lastIndexOf('.');
         String extension = dot > 0 ? fileName.substring(dot) : "";
-        String timestamp = LocalDateTime.now().format(BACKUP_TIMESTAMP_FORMAT);
+        String timestamp = LocalDateTime.now(ZoneId.systemDefault()).format(BACKUP_TIMESTAMP_FORMAT);
         Path backup = path.resolveSibling(fileName + "." + timestamp + ".backup" + extension);
         int copy = 1;
         while (Files.exists(backup)) {

@@ -40,11 +40,11 @@ public final class BoatPhaseModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.player.getVehicle() == null) {
+        Entity vehicle = client.player == null ? null : client.player.getVehicle();
+        if (vehicle == null) {
             clearVehicle();
             return;
         }
-        Entity vehicle = client.player.getVehicle();
         if (vehicle != this.lastVehicle) {
             // Switching straight to another vehicle never passes through "no vehicle"; restore the old one.
             clearVehicle();

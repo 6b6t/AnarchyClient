@@ -59,7 +59,7 @@ public final class TickBaseModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || this.groundOnly.value() && !client.player.onGround()) {
+        if (client.player == null || (this.groundOnly.value() && !client.player.onGround())) {
             TimerManager.clear(this.id());
             return;
         }

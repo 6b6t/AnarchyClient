@@ -1,0 +1,2132 @@
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  6. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.loadProfile(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.config.ClientConfig.save()> in (ProfileCommands.java:97)\
+    (7 further dependencies have been omitted...)\
+  2. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  7. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  3. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  3. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  3. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  7. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  4. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  4. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  7. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ModuleCommands.bindModule(com.mojang.brigadier.context.CommandContext, net.blockhost.anarchyclient.module.ModuleBindAction)> has parameter of type <net.blockhost.anarchyclient.module.ModuleBindAction> in (ModuleCommands.java:0)\
+    (46 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  7. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  7. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  6. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  7. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  4. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  4. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  7. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  4. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  4. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  7. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  8. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  4. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  5. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  4. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  5. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  7. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  8. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.ProfileCommands.listProfiles(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.profile.ProfileManager.summaries()> in (ProfileCommands.java:54)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  3. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  5. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  7. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.set(java.lang.String)> in (ClientConfig.java:419)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  5. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  6. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.ThemePanel.refresh()> references method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ThemePanel.java:132)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  6. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  7. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  6. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  7. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.ChatActions.send(net.minecraft.client.Minecraft, java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.get()> in (ChatActions.java:38)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice command -> \
+                Slice waypoint -> \
+                Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice mixin -> \
+                Slice command\
+  1. Dependencies of Slice command\
+    - Method <net.blockhost.anarchyclient.command.WaypointCommands.listWaypoints(com.mojang.brigadier.context.CommandContext)> calls method <net.blockhost.anarchyclient.waypoint.WaypointStore.currentWorld(net.minecraft.client.Minecraft)> in (WaypointCommands.java:46)\
+    (11 further dependencies have been omitted...)\
+  2. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)\
+  3. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  4. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  5. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  6. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  7. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)\
+  8. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.ChatScreenMixin.anarchyclient$runPrefixCommand(java.lang.String, boolean, org.spongepowered.asm.mixin.injection.callback.CallbackInfo)> calls method <net.blockhost.anarchyclient.command.CommandPrefix.first()> in (ChatScreenMixin.java:31)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.friends.FriendManager)> has parameter of type <net.blockhost.anarchyclient.friends.FriendManager> in (ClientConfig.java:0)\
+    (4 further dependencies have been omitted...)\
+  2. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  3. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  4. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  5. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  3. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  3. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  4. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Constructor <net.blockhost.anarchyclient.config.ClientConfig.<init>(net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ClientConfig.java:0)\
+    (40 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  3. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AccentSwatch.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset)> has parameter of type <net.blockhost.anarchyclient.config.ClientConfig$GuiThemePreset> in (AccentSwatch.java:0)\
+    (81 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.FriendRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, java.lang.String)> calls method <net.blockhost.anarchyclient.friends.FriendManager.remove(java.lang.String)> in (FriendRow.java:39)\
+    (3 further dependencies have been omitted...)\
+  4. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  5. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  5. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  5. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  6. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  5. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  6. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)\
+  4. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  5. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ProfileManager.java:72)\
+    (3 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Class <net.blockhost.anarchyclient.module.impl.AnchorAuraModule> implements interface <net.blockhost.anarchyclient.config.ModuleConfigMigration> in (AnchorAuraModule.java:0)\
+    (11 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.CombatHudModule.nearestEnemy(net.minecraft.client.Minecraft)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (CombatHudModule.java:50)\
+    (18 further dependencies have been omitted...)\
+  6. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  6. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice friends -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  6. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.friends.FriendManager.isFriend(java.lang.String)> in (TargetQuery.java:29)\
+    (1 further dependencies have been omitted...)\
+  7. Dependencies of Slice friends\
+    - Method <net.blockhost.anarchyclient.friends.FriendManager.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (FriendManager.java:46)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  6. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  7. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (ServerProfileStore.java:53)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice config -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module -> \
+                Slice waypoint -> \
+                Slice config\
+  1. Dependencies of Slice config\
+    - Method <net.blockhost.anarchyclient.config.ClientConfig.loadUi(com.google.gson.JsonObject)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (ClientConfig.java:421)\
+    (12 further dependencies have been omitted...)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)\
+  5. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.WaypointsModule.legacy> has generic type <java.util.List<net.blockhost.anarchyclient.waypoint.Waypoint>> with type argument depending on <net.blockhost.anarchyclient.waypoint.Waypoint> in (WaypointsModule.java:0)\
+    (12 further dependencies have been omitted...)\
+  6. Dependencies of Slice waypoint\
+    - Method <net.blockhost.anarchyclient.waypoint.WaypointStore.load()> calls method <net.blockhost.anarchyclient.config.ConfigFiles.backUpUnreadable(java.nio.file.Path)> in (WaypointStore.java:71)\
+    (1 further dependencies have been omitted...)
+Cycle detected: Slice mixin -> \
+                Slice module -> \
+                Slice mixin\
+  1. Dependencies of Slice mixin\
+    - Method <net.blockhost.anarchyclient.mixin.EntityPickRadiusMixin.anarchyclient$expandHitbox(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable)> calls method <net.blockhost.anarchyclient.module.impl.HitboxModule.pickRadiusBonus(net.minecraft.world.entity.Entity)> in (EntityPickRadiusMixin.java:15)\
+    (95 further dependencies have been omitted...)\
+  2. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.NoJumpDelayModule.tick(net.minecraft.client.Minecraft)> checks instanceof <net.blockhost.anarchyclient.mixin.LivingEntityAccessor> in (NoJumpDelayModule.java:20)\
+    (11 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice notification -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.ModuleManager.onActivationChanged(net.blockhost.anarchyclient.module.Module, boolean)> calls method <net.blockhost.anarchyclient.notification.ToggleNotifications.push(java.lang.String, boolean)> in (ModuleManager.java:163)\
+  2. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  3. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  4. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice server -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.AutoConfigModule.applySafety(net.blockhost.anarchyclient.server.ServerObserver$Snapshot)> has parameter of type <net.blockhost.anarchyclient.server.ServerObserver$Snapshot> in (AutoConfigModule.java:0)\
+    (95 further dependencies have been omitted...)\
+  2. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.apply(net.blockhost.anarchyclient.module.ModuleManager, java.lang.String)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ServerProfileStore.java:0)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice target -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  2. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetQuery.allowed(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player, net.blockhost.anarchyclient.target.TargetPolicy)> calls method <net.blockhost.anarchyclient.module.impl.TeamsModule.allows(net.minecraft.world.entity.Entity, net.minecraft.world.entity.player.Player)> in (TargetQuery.java:42)\
+    (2 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice target -> \
+                Slice server -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Field <net.blockhost.anarchyclient.module.impl.CombatTargets.ENEMY_PLAYERS> has type <net.blockhost.anarchyclient.target.TargetPolicy> in (CombatTargets.java:0)\
+    (86 further dependencies have been omitted...)\
+  2. Dependencies of Slice target\
+    - Method <net.blockhost.anarchyclient.target.TargetClassifier.isKnownStaffName(java.lang.String)> calls method <net.blockhost.anarchyclient.server.ServerObserver$Snapshot.rootDomain()> in (TargetClassifier.java:90)\
+    (2 further dependencies have been omitted...)\
+  3. Dependencies of Slice server\
+    - Method <net.blockhost.anarchyclient.server.ServerProfileStore.apply(net.blockhost.anarchyclient.module.ModuleManager, java.lang.String)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ServerProfileStore.java:0)\
+    (5 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice ui -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  2. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.AnarchyClientScreen.<init>(net.blockhost.anarchyclient.module.ModuleManager, net.blockhost.anarchyclient.config.ClientConfig)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (AnarchyClientScreen.java:0)\
+    (102 further dependencies have been omitted...)
+Cycle detected: Slice module -> \
+                Slice ui -> \
+                Slice profile -> \
+                Slice module\
+  1. Dependencies of Slice module\
+    - Method <net.blockhost.anarchyclient.module.impl.HudText.textColor()> gets field <net.blockhost.anarchyclient.ui.GlassTheme.TEXT> in (HudText.java:14)\
+    (18 further dependencies have been omitted...)\
+  2. Dependencies of Slice ui\
+    - Constructor <net.blockhost.anarchyclient.ui.ProfileRow.<init>(net.blockhost.anarchyclient.ui.ModulePanel, net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary)> has parameter of type <net.blockhost.anarchyclient.profile.ProfileManager$ProfileSummary> in (ProfileRow.java:0)\
+    (11 further dependencies have been omitted...)\
+  3. Dependencies of Slice profile\
+    - Method <net.blockhost.anarchyclient.profile.ProfileManager.apply(java.lang.String, net.blockhost.anarchyclient.module.ModuleManager)> has parameter of type <net.blockhost.anarchyclient.module.ModuleManager> in (ProfileManager.java:0)\
+    (17 further dependencies have been omitted...)
+Cycle detected: Slice notification -> \
+                Slice ui -> \
+                Slice notification\
+  1. Dependencies of Slice notification\
+    - Method <net.blockhost.anarchyclient.notification.ToggleNotifications.sendChat(java.lang.String, boolean)> calls method <net.blockhost.anarchyclient.ui.GlassTheme.accent()> in (ToggleNotifications.java:106)\
+    (4 further dependencies have been omitted...)\
+  2. Dependencies of Slice ui\
+    - Method <net.blockhost.anarchyclient.ui.SettingsDrawer.buildNotifications()> references method <net.blockhost.anarchyclient.notification.ToggleNotifications.enabled()> in (SettingsDrawer.java:264)\
+    (16 further dependencies have been omitted...)

@@ -25,6 +25,7 @@ import net.blockhost.anarchyclient.module.Module;
 import net.blockhost.anarchyclient.module.ModuleManager;
 import net.blockhost.anarchyclient.setting.Setting;
 import net.fabricmc.loader.api.FabricLoader;
+import org.jspecify.annotations.Nullable;
 
 public final class ProfileManager {
 
@@ -146,9 +147,8 @@ public final class ProfileManager {
             if (profile == null) {
                 throw new IOException("Profile file is empty.");
             }
-            String fallback = input.getFileName() == null
-                    ? "imported"
-                    : input.getFileName().toString().replaceFirst("\\.json$", "");
+            Path name = input.getFileName();
+            String fallback = name == null ? "imported" : name.toString().replaceFirst("\\.json$", "");
             profile = profile.normalized(fallback);
             profile.updatedAt = Instant.now().toString();
             // Copy before storing: if anything in the file is still unusable, nothing is kept or saved.
@@ -214,8 +214,8 @@ public final class ProfileManager {
      * Runs the module's config migration over settings from a profile saved by an older build, so applying it
      * does not bring back defaults the client config already moved past.
      */
-    static Map<String, JsonElement> migratedSettings(
-            final Module module, final Map<String, JsonElement> settings, final int savedVersion) {
+    static @Nullable Map<String, JsonElement> migratedSettings(
+            final Module module, final @Nullable Map<String, JsonElement> settings, final int savedVersion) {
         if (settings == null
                 || savedVersion >= ModuleConfigMigration.CURRENT_VERSION
                 || !(module instanceof ModuleConfigMigration migration)) {

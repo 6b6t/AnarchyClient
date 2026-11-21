@@ -58,9 +58,9 @@ public final class AutoSmelterModule extends Module {
         RecipePropertySet inputs = client.level.recipeAccess().propertySet(inputSet(menu));
         // Each move only happens when its target slot can take the stack, so nothing bounces between
         // the inventory and the hotbar and a full fuel slot never blocks loading the input.
-        boolean moved = menu.getSlot(OUTPUT_SLOT).hasItem()
+        boolean moved = (menu.getSlot(OUTPUT_SLOT).hasItem()
                         && hasRoomFor(menu, menu.getSlot(OUTPUT_SLOT).getItem())
-                        && ContainerActions.quickMove(client, menu, OUTPUT_SLOT)
+                        && ContainerActions.quickMove(client, menu, OUTPUT_SLOT))
                 || this.load(client, menu, FUEL_SLOT, AutoSmelterModule::isFuel)
                 || this.load(client, menu, INPUT_SLOT, stack -> !isFuel(stack) && inputs.test(stack));
         if (moved) {
@@ -95,7 +95,8 @@ public final class AutoSmelterModule extends Module {
     /** Returns whether {@code stack} can be added to a slot that holds {@code current}. */
     static boolean canStackInto(final ItemStack current, final ItemStack stack) {
         return current.isEmpty()
-                || ItemStack.isSameItemSameComponents(current, stack) && current.getCount() < current.getMaxStackSize();
+                || (ItemStack.isSameItemSameComponents(current, stack)
+                        && current.getCount() < current.getMaxStackSize());
     }
 
     /** Returns whether a shift-click could move {@code output} into one of the player's inventory slots. */

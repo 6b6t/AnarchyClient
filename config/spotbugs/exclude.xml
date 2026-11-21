@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs patterns that do not fit this project. Each entry says why. Add a pattern here only when it is
+  wrong for the whole codebase; fix single findings in the code instead.
+-->
+<FindBugsFilter
+        xmlns="https://github.com/spotbugs/filter/3.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/4.10.5/spotbugs/etc/findbugsfilter.xsd">
+
+    <!-- Mixin classes are merged into Minecraft classes at runtime. Casts of `this` to the target, handler
+         parameters fixed by the injection point, and @Shadow fields look wrong to a bytecode checker. -->
+    <Match>
+        <Package name="~net\.blockhost\.anarchyclient(\.gametest)?\.mixin(\..*)?"/>
+        <Bug pattern="BC_IMPOSSIBLE_CAST,BC_IMPOSSIBLE_INSTANCEOF,EC_UNRELATED_TYPES_USING_POINTER_EQUALITY,URF_UNREAD_FIELD,PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    </Match>
+
+    <!-- Casts to accessor and invoker interfaces, which Mixin adds to Minecraft classes at runtime. -->
+    <Match>
+        <Bug pattern="BC_UNCONFIRMED_CAST"/>
+    </Match>
+
+    <!-- Error Prone's UnusedVariable already checks parameters, and it knows when a method reference fixes
+         the signature, for example a Brigadier suggestion provider. -->
+    <Match>
+        <Bug pattern="UP_UNUSED_PARAMETER"/>
+    </Match>
+
+    <!-- Minecraft shares mutable objects (stacks, positions, packets) by design. Defensive copies would
+         break identity checks and cost allocations every tick. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,MS_EXPOSE_REP"/>
+    </Match>
+
+    <!-- Modules are singletons that set static flags for mixins to read. -->
+    <Match>
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+    </Match>
+
+    <!-- Handlers for packets, entities, and screens dispatch on instanceof, because the Minecraft types are
+         not ours to extend. -->
+    <Match>
+        <Bug pattern="ITC_INHERITANCE_TYPE_CHECKING"/>
+    </Match>
+
+    <!-- Module and setting base classes have empty hooks that subclasses override when they need them. -->
+    <Match>
+        <Bug pattern="ACEM_ABSTRACT_CLASS_EMPTY_METHODS,MRC_METHOD_RETURNS_CONSTANT"/>
+    </Match>
+
+    <!-- A null enum field means "nothing selected" or "not active". -->
+    <Match>
+        <Bug pattern="ENMI_NULL_ENUM_VALUE,ENMI_ONE_ENUM_VALUE"/>
+    </Match>
+
+    <!-- Boxing that generics require: Optional.orElse(false), ThreadLocal<Boolean>, Map.getOrDefault. -->
+    <Match>
+        <Bug pattern="NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION"/>
+    </Match>
+
+    <!-- Fires on any class with a volatile field. These writes all happen on the client thread. -->
+    <Match>
+        <Bug pattern="AT_STALE_THREAD_WRITE_OF_PRIMITIVE"/>
+    </Match>
+
+    <!-- Static synchronized methods are only a risk when untrusted code can lock the class. -->
+    <Match>
+        <Bug pattern="USO_UNSAFE_STATIC_METHOD_SYNCHRONIZATION"/>
+    </Match>
+
+    <!-- Style opinions that would mean wide churn for little gain. -->
+    <Match>
+        <Bug pattern="OCP_OVERLY_CONCRETE_PARAMETER,OCP_OVERLY_CONCRETE_COLLECTION_PARAMETER,CLI_CONSTANT_LIST_INDEX,PSC_PRESIZE_COLLECTIONS,CE_CLASS_ENVY"/>
+    </Match>
+
+    <!-- The UI panels and the module manager reference each other on purpose. Breaking those cycles is a
+         larger refactor than this check is worth. -->
+    <Match>
+        <Bug pattern="FCCD_FIND_CLASS_CIRCULAR_DEPENDENCY"/>
+    </Match>
+
+    <!-- Key code tables are long switches by nature. -->
+    <Match>
+        <Or>
+            <Class name="net.blockhost.anarchyclient.module.LegacyKeyCodes"/>
+            <Class name="~net\.blockhost\.anarchyclient\.rivet\.RivetInputMapper.*"/>
+        </Or>
+        <Bug pattern="CC_CYCLOMATIC_COMPLEXITY"/>
+    </Match>
+
+    <!-- Setting groups are fields because the settings declared after them use them in their initializers. -->
+    <Match>
+        <Field type="net.blockhost.anarchyclient.setting.SettingGroup"/>
+        <Bug pattern="FCBL_FIELD_COULD_BE_LOCAL"/>
+    </Match>
+
+    <!-- Game randomness, the port scanner, and the LAN swarm need no cryptographic strength or TLS. -->
+    <Match>
+        <Bug pattern="PREDICTABLE_RANDOM,UNENCRYPTED_SOCKET,UNENCRYPTED_SERVER_SOCKET"/>
+    </Match>
+
+    <!-- Patterns that are deliberate here:
+         - CFS: setting() returns its argument so modules can declare settings in one line.
+         - STT: profile timestamps are stored as ISO strings, and shaped text measures substrings of its text.
+         - MOM: static helpers share the name of the hook they compute, so tests read like the module.
+         - BL: packet handlers return early per packet type.
+         - USBR: a local can carry @SuppressWarnings for a single deprecated call.
+         - EXS: config helpers log an IO failure and report it by return value, so the game keeps running. -->
+    <Match>
+        <Bug pattern="CFS_CONFUSING_FUNCTION_SEMANTICS,STT_TOSTRING_STORED_IN_FIELD,STT_STRING_PARSING_A_FIELD,MOM_MISLEADING_OVERLOAD_MODEL,BL_BURYING_LOGIC,USBR_UNNECESSARY_STORE_BEFORE_RETURN,EXS_EXCEPTION_SOFTENING_RETURN_FALSE"/>
+    </Match>
+
+    <!-- A module has a handful of setting groups; the list keeps their order for the UI. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.module.Module"/>
+        <Bug pattern="DLC_DUBIOUS_LIST_COLLECTION"/>
+    </Match>
+
+    <!-- Brigadier syntax exceptions cannot carry a cause. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.command.CoordinateArgument"/>
+        <Bug pattern="LEST_LOST_EXCEPTION_STACK_TRACE"/>
+    </Match>
+
+    <!-- Same sampling loop as vanilla's Explosion.getSeenPercent, so the estimate matches the server. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.module.impl.DamageEstimator"/>
+        <Method name="seenPercent"/>
+        <Bug pattern="FL_FLOATS_AS_LOOP_COUNTERS"/>
+    </Match>
+
+    <!-- The note name table is a long switch by nature. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.module.impl.NotebotSong"/>
+        <Method name="parseNoteToken"/>
+        <Bug pattern="CC_CYCLOMATIC_COMPLEXITY"/>
+    </Match>
+
+    <!-- Discord's Windows IPC pipe has a fixed path; only the pipe number varies. -->
+    <Match>
+        <Class name="~net\.blockhost\.anarchyclient\.module\.impl\.DiscordPresenceModule.*"/>
+        <Method name="openPipe"/>
+        <Bug pattern="PATH_TRAVERSAL_IN"/>
+    </Match>
+
+    <!-- Swarm workers on other machines connect to the host, so it listens on every interface. Workers only
+         keep the connection open; the host never reads commands from them. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.module.impl.SwarmModule"/>
+        <Bug pattern="MDM_PROMISCUOUS_SERVERSOCKET,RV_DONT_JUST_NULL_CHECK_READLINE"/>
+    </Match>
+
+    <!-- Server profiles are saved as JSON, which reads this field. -->
+    <Match>
+        <Class name="~net\.blockhost\.anarchyclient\.server\.ServerProfileStore.*"/>
+        <Field name="lastSafetyScore"/>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
+
+    <!-- The reference slime chunk check copies vanilla's arithmetic, overflow included. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.command.WorldCommandsTest"/>
+        <Method name="referenceSlimeChunk"/>
+        <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE,ICAST_INTEGER_MULTIPLY_CAST_TO_LONG"/>
+    </Match>
+
+    <!-- The gametest listens to the event bus logger on purpose. -->
+    <Match>
+        <Class name="~net\.blockhost\.anarchyclient\.gametest\.HandlerErrors.*"/>
+        <Bug pattern="LO_SUSPECT_LOG_CLASS"/>
+    </Match>
+
+    <!-- Bounded collections: at most eight toasts, and one entry per missing icon name. -->
+    <Match>
+        <Or>
+            <Field name="TOASTS"/>
+            <Field name="MISSING_ICONS"/>
+        </Or>
+        <Bug pattern="PMB_POSSIBLE_MEMORY_BLOAT"/>
+    </Match>
+
+    <!-- A Set.of constant that is only read; the check takes Set.of for a write. -->
+    <Match>
+        <Class name="net.blockhost.anarchyclient.placement.BlockPlacer"/>
+        <Field name="USE_METHODS"/>
+        <Bug pattern="WOC_WRITE_ONLY_COLLECTION_FIELD"/>
+    </Match>
+
+    <!-- Tests call the same getter again after changing state. -->
+    <Match>
+        <Class name="~.*Test"/>
+        <Bug pattern="PRMC_POSSIBLY_REDUNDANT_METHOD_CALLS"/>
+    </Match>
+
+    <!-- Tests compare exact doubles on purpose: the values are computed deterministically. -->
+    <Match>
+        <Class name="~.*Test"/>
+        <Bug pattern="UTAO_JUNIT_ASSERTION_ODDITIES_INEXACT_DOUBLE"/>
+    </Match>
+</FindBugsFilter>

@@ -90,8 +90,9 @@ public final class EntityOwnerModule extends Module {
     }
 
     static String ownerLabel(final @Nullable String ownerName, final UUID ownerId) {
-        String owner =
-                ownerName == null || ownerName.isBlank() ? ownerId.toString().substring(0, 8) : ownerName;
+        String owner = ownerName == null || ownerName.isBlank()
+                ? "%08x".formatted(ownerId.getMostSignificantBits() >>> 32)
+                : ownerName;
         return "Owner: " + owner;
     }
 

@@ -57,7 +57,7 @@ public final class NoBlockInteractModule extends Module {
         return client.level != null
                 && NoInteractModule.matchesHand(this.hand.value(), hand)
                 && (!this.requirePlaceable.value()
-                        || client.player != null && AirPlaceModule.placeable(client.player.getItemInHand(hand)))
+                        || (client.player != null && AirPlaceModule.placeable(client.player.getItemInHand(hand))))
                 && NoInteractModule.matchesList(
                         this.mode.value(),
                         this.blocks.value(),

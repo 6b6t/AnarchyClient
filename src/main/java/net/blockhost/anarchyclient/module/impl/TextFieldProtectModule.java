@@ -68,7 +68,7 @@ public final class TextFieldProtectModule extends Module {
         if (value == null || value.isBlank()) {
             return List.of();
         }
-        for (String token : value.split("[,;|]")) {
+        for (String token : value.split("[,;|]", -1)) {
             String pattern = token.trim();
             if (pattern.isEmpty()) {
                 continue;

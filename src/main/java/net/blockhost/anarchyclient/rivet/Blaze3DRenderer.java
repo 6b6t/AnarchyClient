@@ -32,6 +32,7 @@ import net.minecraft.util.ARGB;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
+import org.jspecify.annotations.Nullable;
 
 public final class Blaze3DRenderer extends CheckedRenderer {
 
@@ -598,7 +599,7 @@ public final class Blaze3DRenderer extends CheckedRenderer {
                 new Blaze3DGuiShapeRenderState(pipeline, textureSetup, pose, vertices, useUv, scissorArea, bounds));
     }
 
-    private ScreenRectangle currentScissorArea() {
+    private @Nullable ScreenRectangle currentScissorArea() {
         return this.graphics.scissorStack.peek();
     }
 

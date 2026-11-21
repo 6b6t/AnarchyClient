@@ -7,6 +7,7 @@ import net.blockhost.anarchyclient.module.ModuleCategory;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -76,6 +77,7 @@ public final class BurrowModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
+        ClientPacketListener connection = client.getConnection();
         LocalPlayer player = client.player;
         if (player == null || client.level == null || client.gameMode == null) {
             return;
@@ -119,15 +121,14 @@ public final class BurrowModule extends Module {
             return;
         }
         if (!CombatPlacementPlanner.isReplaceable(client.level, this.target)) {
-            if (this.rubberband.value() && client.getConnection() != null) {
+            if (this.rubberband.value() && connection != null) {
                 Vec3 position = player.position();
-                client.getConnection()
-                        .send(new ServerboundMovePlayerPacket.Pos(
-                                position.x,
-                                position.y + this.rubberbandHeight.value(),
-                                position.z,
-                                false,
-                                player.horizontalCollision));
+                connection.send(new ServerboundMovePlayerPacket.Pos(
+                        position.x,
+                        position.y + this.rubberbandHeight.value(),
+                        position.z,
+                        false,
+                        player.horizontalCollision));
             }
             this.enabled(false);
         }

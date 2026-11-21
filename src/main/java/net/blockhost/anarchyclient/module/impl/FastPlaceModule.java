@@ -70,6 +70,8 @@ public final class FastPlaceModule extends Module {
         if (stack.getItem() instanceof BlockItem) {
             return true;
         }
-        return !blocksOnly || xpBottles && stack.is(Items.EXPERIENCE_BOTTLE) || crystals && stack.is(Items.END_CRYSTAL);
+        return !blocksOnly
+                || (xpBottles && stack.is(Items.EXPERIENCE_BOTTLE))
+                || (crystals && stack.is(Items.END_CRYSTAL));
     }
 }

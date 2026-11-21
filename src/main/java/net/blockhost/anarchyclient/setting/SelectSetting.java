@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import java.util.List;
 import net.blockhost.anarchyclient.i18n.Translations;
+import org.jspecify.annotations.Nullable;
 
 public final class SelectSetting extends Setting<String> {
 
@@ -61,7 +62,7 @@ public final class SelectSetting extends Setting<String> {
     }
 
     @Override
-    public void fromJson(final JsonElement element) {
+    public void fromJson(final @Nullable JsonElement element) {
         if (element != null && element.isJsonPrimitive()) {
             this.value(element.getAsString());
         }

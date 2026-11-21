@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.module.impl;
 import net.blockhost.anarchyclient.command.ClientCommands;
 import net.blockhost.anarchyclient.command.CommandPrefix;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.util.StringUtil;
 
 public final class ChatActions {
@@ -26,20 +27,20 @@ public final class ChatActions {
     }
 
     private static void send(final Minecraft client, final String message, final boolean clientCommands) {
-        if (client.getConnection() == null || message == null) {
+        ClientPacketListener connection = client.getConnection();
+        if (connection == null || message == null) {
             return;
         }
         String normalized = normalize(message);
-        if (normalized.isBlank() || normalized.equals("/")) {
+        if (normalized.isBlank() || "/".equals(normalized)) {
             return;
         }
         if (clientCommands && normalized.startsWith(CommandPrefix.get())) {
-            ClientCommands.execute(
-                    client.getConnection(), normalized.substring(1).trim());
+            ClientCommands.execute(connection, normalized.substring(1).trim());
         } else if (normalized.startsWith("/")) {
-            client.getConnection().sendCommand(normalized.substring(1));
+            connection.sendCommand(normalized.substring(1));
         } else {
-            client.getConnection().sendChat(normalized);
+            connection.sendChat(normalized);
         }
     }
 

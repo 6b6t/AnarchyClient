@@ -94,7 +94,7 @@ public final class AutoDisableModule extends Module {
         if (value == null || value.isBlank()) {
             return ids;
         }
-        for (String token : value.split("[,;|\\s]+")) {
+        for (String token : value.split("[,;|\\s]+", -1)) {
             String id = token.trim().toLowerCase(Locale.ROOT);
             if (!id.isEmpty()) {
                 ids.add(id);

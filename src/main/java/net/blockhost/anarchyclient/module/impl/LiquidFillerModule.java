@@ -92,7 +92,7 @@ public final class LiquidFillerModule extends Module {
 
     private boolean shouldFill(final FluidState fluid) {
         return fluid.isSource()
-                && (this.water.value() && fluid.getType() == Fluids.WATER
-                        || this.lava.value() && fluid.getType() == Fluids.LAVA);
+                && ((this.water.value() && fluid.getType() == Fluids.WATER)
+                        || (this.lava.value() && fluid.getType() == Fluids.LAVA));
     }
 }

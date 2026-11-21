@@ -163,7 +163,6 @@ public final class XrayModule extends Module {
         private final Predicate<BlockState> wanted;
         private final int minChunkX;
         private final int maxChunkX;
-        private final int minChunkZ;
         private final int maxChunkZ;
         private final List<BlockPos> found = new ArrayList<>();
         private int nextChunkX;
@@ -176,10 +175,10 @@ public final class XrayModule extends Module {
             this.wanted = state -> blocks.contains(state.getBlock());
             this.minChunkX = SectionPos.blockToSectionCoord(center.getX() - this.horizontal);
             this.maxChunkX = SectionPos.blockToSectionCoord(center.getX() + this.horizontal);
-            this.minChunkZ = SectionPos.blockToSectionCoord(center.getZ() - this.horizontal);
+            int minChunkZ = SectionPos.blockToSectionCoord(center.getZ() - this.horizontal);
             this.maxChunkZ = SectionPos.blockToSectionCoord(center.getZ() + this.horizontal);
             this.nextChunkX = this.minChunkX;
-            this.nextChunkZ = blocks.isEmpty() ? this.maxChunkZ + 1 : this.minChunkZ;
+            this.nextChunkZ = blocks.isEmpty() ? this.maxChunkZ + 1 : minChunkZ;
         }
 
         /** Scans up to {@code columns} chunk columns. Returns whether the pass is complete. */

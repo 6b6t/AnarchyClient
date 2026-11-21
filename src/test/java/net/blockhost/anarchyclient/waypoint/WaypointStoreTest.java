@@ -47,7 +47,7 @@ class WaypointStoreTest {
         store.add(new Waypoint("w", "new", new BlockPos(0, 0, 0), WaypointStore.DEFAULT_COLOR));
 
         try (Stream<Path> files = Files.list(this.tempDir)) {
-            Path backup = files.filter(file -> file.getFileName().toString().endsWith(".backup.json"))
+            Path backup = files.filter(file -> file.toString().endsWith(".backup.json"))
                     .findFirst()
                     .orElseThrow();
             assertEquals(broken, Files.readString(backup));

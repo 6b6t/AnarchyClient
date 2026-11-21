@@ -7,6 +7,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
 import org.joml.Matrix3x2fc;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Glass panel mesh with explicit texture coordinates. Unlike {@link Blaze3DGuiShapeRenderState},
@@ -20,7 +21,7 @@ record GlassPanelRenderState(
         Matrix3x2fc pose,
         List<Vertex> vertices,
         int color,
-        ScreenRectangle scissorArea,
+        @Nullable ScreenRectangle scissorArea,
         ScreenRectangle bounds)
         implements GuiElementRenderState {
 

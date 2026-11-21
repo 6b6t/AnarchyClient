@@ -372,7 +372,7 @@ public final class ServerObserver {
             return Set.of();
         }
         Set<String> names = new LinkedHashSet<>();
-        for (String line : message.split("\\R")) {
+        for (String line : message.split("\\R", -1)) {
             String plain = line.strip();
             String list = null;
             int pluginsIndex = plain.toLowerCase(Locale.ROOT).indexOf("plugins");
@@ -385,7 +385,7 @@ public final class ServerObserver {
             if (list == null) {
                 continue;
             }
-            for (String token : list.split(",")) {
+            for (String token : list.split(",", -1)) {
                 String plugin = normalizePluginName(token);
                 if (!plugin.isBlank()) {
                     names.add(plugin);
@@ -567,7 +567,7 @@ public final class ServerObserver {
                     labels.add("matrix-like");
                 } else if (normalized.contains("verus")) {
                     labels.add("verus-like");
-                } else if (!normalized.equals("unknown")) {
+                } else if (!"unknown".equals(normalized)) {
                     labels.add("known-anticheat");
                 }
             });

@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.profile;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
@@ -36,7 +37,7 @@ class ProfileManagerTest {
 
         assertEquals(3, manager.apply("main", modules));
         assertTrue(module.enabled());
-        assertEquals(false, module.flag.value());
+        assertFalse(module.flag.value());
 
         ProfileManager reloaded = new ProfileManager(this.tempDir.resolve("profiles.json"));
         reloaded.load();
@@ -66,8 +67,8 @@ class ProfileManagerTest {
 
         assertEquals(2, manager.apply("pvp", modules));
         assertTrue(module.enabled());
-        assertEquals(false, module.flag.value());
-        assertEquals(false, module.flagOnEnable);
+        assertFalse(module.flag.value());
+        assertFalse(module.flagOnEnable);
         assertEquals(3.0, module.range.value());
     }
 
@@ -83,7 +84,7 @@ class ProfileManagerTest {
         manager.capture("fresh", modules);
 
         try (Stream<Path> files = Files.list(this.tempDir)) {
-            Path backup = files.filter(file -> file.getFileName().toString().endsWith(".backup.json"))
+            Path backup = files.filter(file -> file.toString().endsWith(".backup.json"))
                     .findFirst()
                     .orElseThrow();
             assertEquals("{ broken", Files.readString(backup));

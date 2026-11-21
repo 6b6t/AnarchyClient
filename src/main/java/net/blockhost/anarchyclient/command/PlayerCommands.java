@@ -30,17 +30,20 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
 import net.blockhost.anarchyclient.i18n.Translations;
 import net.blockhost.anarchyclient.inventory.InventoryTracker;
+import net.blockhost.anarchyclient.util.MoreFiles;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Registers and handles the {@code center}, {@code set-velocity}, {@code hclip}, {@code vclip},
@@ -209,32 +212,35 @@ final class PlayerCommands {
 
     private static int setVelocityY(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        Vec3 current = client.player.getDeltaMovement();
-        client.player.setDeltaMovement(current.x, DoubleArgumentType.getDouble(context, "value"), current.z);
+        Vec3 current = player.getDeltaMovement();
+        player.setDeltaMovement(current.x, DoubleArgumentType.getDouble(context, "value"), current.z);
         return SUCCESS;
     }
 
     private static int setVelocityXZ(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        client.player.setDeltaMovement(
+        player.setDeltaMovement(
                 DoubleArgumentType.getDouble(context, "value"),
-                client.player.getDeltaMovement().y,
+                player.getDeltaMovement().y,
                 DoubleArgumentType.getDouble(context, "second"));
         return SUCCESS;
     }
 
     private static int setVelocityXYZ(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        client.player.setDeltaMovement(
+        player.setDeltaMovement(
                 DoubleArgumentType.getDouble(context, "value"),
                 DoubleArgumentType.getDouble(context, "second"),
                 DoubleArgumentType.getDouble(context, "third"));
@@ -243,31 +249,33 @@ final class PlayerCommands {
 
     private static int hclip(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
         double distance = DoubleArgumentType.getDouble(context, "distance");
-        double yaw = Math.toRadians(client.player.getYRot());
+        double yaw = Math.toRadians(player.getYRot());
         Vec3 offset = new Vec3(-Math.sin(yaw) * distance, 0.0, Math.cos(yaw) * distance);
-        return movePlayer(context, client.player.position().add(offset));
+        return movePlayer(context, player.position().add(offset));
     }
 
     private static int vclip(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
-        return movePlayer(
-                context, client.player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
+        return movePlayer(context, player.position().add(0.0, DoubleArgumentType.getDouble(context, "distance"), 0.0));
     }
 
     private static int dismount(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
-        if (client.player.isPassenger()) {
-            client.player.stopRiding();
+        if (player.isPassenger()) {
+            player.stopRiding();
             context.getSource()
                     .sendFeedback(Translations.component("anarchyclient.message.player.dismounted", "Dismounted."));
         } else {
@@ -281,15 +289,16 @@ final class PlayerCommands {
 
     private static int movePlayer(final CommandContext<FabricClientCommandSource> context, final Vec3 target) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
-        if (!withinMoveLimit(context, client.player.position(), target)) {
+        if (!withinMoveLimit(context, player.position(), target)) {
             return 0;
         }
         // Move locally only. A second position packet before the tick ends gets the player disconnected on 26.3,
         // and vanilla sends one with the new position in its next tick.
-        client.player.absSnapTo(target.x, target.y, target.z);
+        player.absSnapTo(target.x, target.y, target.z);
         context.getSource()
                 .sendFeedback(Translations.component(
                         "anarchyclient.message.player.sent_a_move_to_the_server",
@@ -330,7 +339,8 @@ final class PlayerCommands {
     private static int teleport(
             final CommandContext<FabricClientCommandSource> context, final boolean includeRotation) {
         Minecraft client = requireInGame(context);
-        if (client == null || client.getConnection() == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null || client.getConnection() == null) {
             return 0;
         }
         Vec3 pos;
@@ -339,24 +349,24 @@ final class PlayerCommands {
                     getCoordinate(context, "x"),
                     getCoordinate(context, "y"),
                     getCoordinate(context, "z"),
-                    client.player.position());
+                    player.position());
         } catch (IllegalArgumentException exception) {
-            context.getSource().sendError(Component.literal(exception.getMessage()));
+            context.getSource().sendError(Component.literal(CommandFeedback.message(exception)));
             return 0;
         }
         double x = pos.x;
         double y = pos.y;
         double z = pos.z;
-        if (!withinMoveLimit(context, client.player.position(), pos)) {
+        if (!withinMoveLimit(context, player.position(), pos)) {
             return 0;
         }
         if (includeRotation) {
             float yaw = FloatArgumentType.getFloat(context, "yaw");
             float pitch = FloatArgumentType.getFloat(context, "pitch");
             // Vanilla's next tick sends the new position (and rotation); see movePlayer.
-            client.player.absSnapTo(x, y, z, yaw, pitch);
+            player.absSnapTo(x, y, z, yaw, pitch);
         } else {
-            client.player.absSnapTo(x, y, z);
+            player.absSnapTo(x, y, z);
         }
         return SUCCESS;
     }
@@ -366,7 +376,8 @@ final class PlayerCommands {
             final FabricClientCommandSource source,
             final String profileName,
             final String uuid) {
-        CompletableFuture.runAsync(() -> {
+        // The task reports its own errors in chat.
+        Util.ioPool().execute(() -> {
             try {
                 HttpClient http =
                         HttpClient.newBuilder().connectTimeout(HTTP_TIMEOUT).build();
@@ -394,7 +405,7 @@ final class PlayerCommands {
                     throw new IOException("skin request returned HTTP " + skinResponse.statusCode());
                 }
                 Path output = skinPath(profileName);
-                Files.createDirectories(output.getParent());
+                MoreFiles.createParentDirectories(output);
                 Files.write(output, skinResponse.body());
                 client.execute(() -> source.sendFeedback(Translations.component(
                         "anarchyclient.message.player.saved_skin_to", "Saved skin to %s", output)));
@@ -404,7 +415,7 @@ final class PlayerCommands {
                 client.execute(() -> source.sendError(Translations.component(
                         "anarchyclient.message.player.failed_to_save_skin",
                         "Failed to save skin: %s",
-                        exception.getMessage())));
+                        CommandFeedback.message(exception))));
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
                 client.execute(() -> source.sendError(Translations.component(
@@ -414,7 +425,7 @@ final class PlayerCommands {
         });
     }
 
-    static String skinUrl(final String profileJson) {
+    static @Nullable String skinUrl(final String profileJson) {
         JsonObject root = JsonParser.parseString(profileJson).getAsJsonObject();
         JsonArray properties = root.getAsJsonArray("properties");
         if (properties == null) {

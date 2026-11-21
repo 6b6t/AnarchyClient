@@ -60,7 +60,7 @@ final class PanelWidgets {
         }
         return RivetInputMapper.fromScancode(scancode)
                 .map(Key::name)
-                .orElse(Translations.format("anarchyclient.ui.unknown_key", "Key %s", scancode));
+                .orElseGet(() -> Translations.format("anarchyclient.ui.unknown_key", "Key %s", scancode));
     }
 
     static List<SettingGroup> visibleSettingGroups(final Module module) {
@@ -331,7 +331,7 @@ final class PanelWidgets {
 
     /**
      * Draws a Lucide icon centered on {@code (centerX, centerY)}. The X axis is centered exactly
-     * using the measured glyph width; the Y axis uses the single {@link #ICON_TEXT_Y_FROM_CENTER}
+     * using the measured glyph width; the Y axis uses the single {@link PanelStyle#ICON_TEXT_Y_FROM_CENTER}
      * calibration so every icon sits the same way instead of each call site guessing.
      */
     static void drawIcon(

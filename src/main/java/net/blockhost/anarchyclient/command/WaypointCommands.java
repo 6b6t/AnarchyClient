@@ -18,6 +18,7 @@ import net.blockhost.anarchyclient.waypoint.Waypoint;
 import net.blockhost.anarchyclient.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -61,12 +62,13 @@ final class WaypointCommands {
 
     private static int addWaypoint(final CommandContext<FabricClientCommandSource> context) {
         Minecraft client = requireInGame(context);
-        if (client == null) {
+        LocalPlayer player = client == null ? null : client.player;
+        if (client == null || player == null) {
             return 0;
         }
         String name = StringArgumentType.getString(context, "name");
         String world = WaypointStore.currentWorld(client);
-        BlockPos pos = client.player.blockPosition();
+        BlockPos pos = player.blockPosition();
         AnarchyClient.WAYPOINTS.add(new Waypoint(world, name, pos, WaypointStore.DEFAULT_COLOR));
         context.getSource()
                 .sendFeedback(Translations.component(

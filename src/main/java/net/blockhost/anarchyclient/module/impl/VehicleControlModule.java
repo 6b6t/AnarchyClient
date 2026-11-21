@@ -45,10 +45,10 @@ public final class VehicleControlModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.player.getVehicle() == null) {
+        Entity vehicle = client.player == null ? null : client.player.getVehicle();
+        if (vehicle == null) {
             return;
         }
-        Entity vehicle = client.player.getVehicle();
         Vec3 horizontal = MovementVelocity.fromKeys(client, client.player.getYRot(), this.speed.value());
         double y = vehicle.getDeltaMovement().y;
         if (this.vertical.value()) {

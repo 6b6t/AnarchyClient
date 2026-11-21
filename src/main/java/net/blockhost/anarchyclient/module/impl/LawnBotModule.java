@@ -83,7 +83,7 @@ public final class LawnBotModule extends Module {
             return;
         }
         if (!WorldInteraction.hasHotbarItem(player.getInventory(), stack -> stack.is(Items.GRASS_BLOCK))
-                || this.useShovel.value() && !WorldInteraction.hasHotbarItem(player.getInventory(), this.tools())) {
+                || (this.useShovel.value() && !WorldInteraction.hasHotbarItem(player.getInventory(), this.tools()))) {
             return;
         }
         if (this.placePendingGrass(client)) {
@@ -116,7 +116,7 @@ public final class LawnBotModule extends Module {
             return false;
         }
         this.pendingGrass.removeIf(
-                pos -> !client.level.isLoaded(pos) || !client.level.isEmptyBlock(pos) && !isReplaceable(client, pos));
+                pos -> !client.level.isLoaded(pos) || (!client.level.isEmptyBlock(pos) && !isReplaceable(client, pos)));
         Iterator<BlockPos> iterator = this.pendingGrass.iterator();
         while (iterator.hasNext()) {
             BlockPos pos = iterator.next();

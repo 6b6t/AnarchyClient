@@ -10,6 +10,7 @@ import net.blockhost.anarchyclient.server.ServerProfileStore;
 import net.blockhost.anarchyclient.setting.BooleanSetting;
 import net.blockhost.anarchyclient.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
 
@@ -65,7 +66,8 @@ public final class PluginScannerModule extends Module {
 
     @Override
     public void tick(final Minecraft client) {
-        if (client.player == null || client.getConnection() == null) {
+        ClientPacketListener listener = client.getConnection();
+        if (client.player == null || listener == null) {
             this.notify(client, "Plugin Scanner needs a multiplayer connection.");
             this.enabled(false);
             return;
@@ -103,7 +105,7 @@ public final class PluginScannerModule extends Module {
                     return;
                 }
                 int id = ServerObserver.beginCommandSuggestionPluginScan(this.timeoutMillis());
-                client.getConnection().send(new ServerboundCommandSuggestionPacket(id, "/"));
+                listener.send(new ServerboundCommandSuggestionPacket(id, "/"));
                 this.waitFor(ScanStage.SUGGESTIONS_WAIT);
             }
             case SUGGESTIONS_WAIT ->

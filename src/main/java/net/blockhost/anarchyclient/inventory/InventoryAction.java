@@ -1,6 +1,7 @@
 package net.blockhost.anarchyclient.inventory;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
@@ -59,33 +60,16 @@ public sealed interface InventoryAction
 
         @Override
         public boolean execute(final InventoryActionContext context) {
-            if (!this.canExecute(context)) {
+            MultiPlayerGameMode gameMode = context.client().gameMode;
+            if (gameMode == null || !this.canExecute(context)) {
                 return false;
             }
-            context.client()
-                    .gameMode
-                    .handleContainerInput(
-                            InventoryMenu.CONTAINER_ID,
-                            this.sourceMenuSlot,
-                            0,
-                            ContainerInput.PICKUP,
-                            context.player());
-            context.client()
-                    .gameMode
-                    .handleContainerInput(
-                            InventoryMenu.CONTAINER_ID,
-                            this.targetMenuSlot,
-                            0,
-                            ContainerInput.PICKUP,
-                            context.player());
-            context.client()
-                    .gameMode
-                    .handleContainerInput(
-                            InventoryMenu.CONTAINER_ID,
-                            this.sourceMenuSlot,
-                            0,
-                            ContainerInput.PICKUP,
-                            context.player());
+            gameMode.handleContainerInput(
+                    InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            gameMode.handleContainerInput(
+                    InventoryMenu.CONTAINER_ID, this.targetMenuSlot, 0, ContainerInput.PICKUP, context.player());
+            gameMode.handleContainerInput(
+                    InventoryMenu.CONTAINER_ID, this.sourceMenuSlot, 0, ContainerInput.PICKUP, context.player());
             return true;
         }
     }
@@ -99,17 +83,16 @@ public sealed interface InventoryAction
 
         @Override
         public boolean execute(final InventoryActionContext context) {
-            if (!this.canExecute(context)) {
+            MultiPlayerGameMode gameMode = context.client().gameMode;
+            if (gameMode == null || !this.canExecute(context)) {
                 return false;
             }
-            context.client()
-                    .gameMode
-                    .handleContainerInput(
-                            InventoryMenu.CONTAINER_ID,
-                            this.sourceMenuSlot,
-                            this.fullStack ? 1 : 0,
-                            ContainerInput.THROW,
-                            context.player());
+            gameMode.handleContainerInput(
+                    InventoryMenu.CONTAINER_ID,
+                    this.sourceMenuSlot,
+                    this.fullStack ? 1 : 0,
+                    ContainerInput.THROW,
+                    context.player());
             return true;
         }
     }
@@ -145,13 +128,14 @@ public sealed interface InventoryAction
 
         @Override
         public boolean execute(final InventoryActionContext context) {
-            if (!this.canExecute(context)) {
+            MultiPlayerGameMode gameMode = context.client().gameMode;
+            if (gameMode == null || !this.canExecute(context)) {
                 return false;
             }
             LocalPlayer player = context.player();
             int previousSlot = player.getInventory().getSelectedSlot();
             player.getInventory().setSelectedSlot(this.inventorySlot);
-            context.client().gameMode.useItem(player, InteractionHand.MAIN_HAND);
+            gameMode.useItem(player, InteractionHand.MAIN_HAND);
             if (this.restoreSlot) {
                 player.getInventory().setSelectedSlot(previousSlot);
             }

@@ -26,51 +26,45 @@ final class ProfileRow extends Container implements LayoutDebugLabel {
     private final ModulePanel panel;
 
     private final ProfileManager.ProfileSummary profile;
-    private final Surface background = new Surface(() -> CARD).cornerRadius(10F);
-    private final TextNode name;
-    private final TextNode modules;
-    private final TextAction apply;
-    private final TextAction delete;
 
     ProfileRow(final ModulePanel panel, final ProfileManager.ProfileSummary profile) {
         super(gridLayout(0, 0));
         this.panel = panel;
         this.profile = profile;
         this.fixedSize(-1, 44);
-        this.name = textNode(profile.name(), TEXT);
-        this.modules = textNode(
+        Surface background = new Surface(() -> CARD).cornerRadius(10F);
+        TextNode name = textNode(profile.name(), TEXT);
+        TextNode modules = textNode(
                 Translations.format("anarchyclient.ui.profile_module_count", "%s modules", profile.modules()), FAINT);
-        this.apply = textAction(Translations.text("anarchyclient.ui.apply", "Apply"), GlassTheme::accent, () -> {
+        TextAction apply = textAction(Translations.text("anarchyclient.ui.apply", "Apply"), GlassTheme::accent, () -> {
             AnarchyClient.PROFILES.apply(this.profile.name(), this.panel.modules);
             this.panel.config.save();
             this.panel.refreshModuleList();
             this.panel.inspector.refresh();
         });
-        this.delete = textAction(Translations.text("anarchyclient.ui.delete", "Delete"), MUTED, () -> {
+        TextAction delete = textAction(Translations.text("anarchyclient.ui.delete", "Delete"), MUTED, () -> {
             if (AnarchyClient.PROFILES.delete(this.profile.name())) {
                 this.panel.profilesPanel.refresh();
             }
         });
-        place(this.background, fillCell(0, 0, 3, 2));
+        place(background, fillCell(0, 0, 3, 2));
         place(
-                this.name,
+                name,
                 cell(0, 0, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(PADDING, 0F, 8F, 0F), null, 18F));
         place(
-                this.modules,
+                modules,
                 cell(0, 1, 1, 1, 1F, 1F, GridAnchor.CENTER, GridFill.BOTH, padding(PADDING, 0F, 8F, 0F), null, 18F));
         // Size each action to its text (no fixed column width): a click on the empty space next to "Apply" used to
         // land on "Delete", and fixed widths cut off longer translations.
+        place(apply, cell(1, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE, padding(0F, 0F, 10F, 0F), null, null));
         place(
-                this.apply,
-                cell(1, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE, padding(0F, 0F, 10F, 0F), null, null));
-        place(
-                this.delete,
+                delete,
                 cell(2, 0, 1, 2, 0F, 1F, GridAnchor.RIGHT, GridFill.NONE, padding(0F, 0F, PADDING, 0F), null, null));
-        this.addChild(this.background);
-        this.addChild(this.name);
-        this.addChild(this.modules);
-        this.addChild(this.apply);
-        this.addChild(this.delete);
+        this.addChild(background);
+        this.addChild(name);
+        this.addChild(modules);
+        this.addChild(apply);
+        this.addChild(delete);
     }
 
     @Override

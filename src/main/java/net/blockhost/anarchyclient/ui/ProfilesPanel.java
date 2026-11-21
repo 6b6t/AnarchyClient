@@ -29,28 +29,24 @@ final class ProfilesPanel extends Container implements LayoutDebugLabel {
 
     private final ModulePanel panel;
 
-    private final GlassSurface background;
-    private final TextNode title;
     private final TextField nameField;
-    private final Button saveButton;
     private final Container rows;
-    private final ScrollContainer scroll;
 
     ProfilesPanel(final ModulePanel panel) {
         super(gridLayout(8, 4));
         this.panel = panel;
-        this.background = this.panel.glassPanel();
-        this.title = textNode(Translations.text("anarchyclient.ui.profiles", "Profiles"), TEXT);
+        GlassSurface background = this.panel.glassPanel();
+        TextNode title = textNode(Translations.text("anarchyclient.ui.profiles", "Profiles"), TEXT);
         this.nameField = textField("");
-        this.saveButton =
+        Button saveButton =
                 button(Translations.text("anarchyclient.ui.capture", "Capture"), TEXT, ignored -> this.capture());
         this.rows = new Container(new VerticalListLayout(4, true));
-        this.scroll = new LayoutDebugScrollContainer(this.rows);
-        this.panel.configureScroll(this.scroll);
+        ScrollContainer scroll = new LayoutDebugScrollContainer(this.rows);
+        this.panel.configureScroll(scroll);
         onEnter(this.nameField, this::capture);
-        place(this.background, fillCell(0, 0, 2, 3));
+        place(background, fillCell(0, 0, 2, 3));
         place(
-                this.title,
+                title,
                 cell(
                         0,
                         0,
@@ -67,10 +63,10 @@ final class ProfilesPanel extends Container implements LayoutDebugLabel {
                 this.nameField,
                 cell(0, 1, 1, 1, 1F, 0F, GridAnchor.CENTER, GridFill.BOTH, padding(PADDING, 0F, 0F, 0F), null, null));
         place(
-                this.saveButton,
+                saveButton,
                 cell(1, 1, 1, 1, 0F, 0F, GridAnchor.CENTER, GridFill.BOTH, padding(0F, 0F, PADDING, 0F), 84F, 28F));
         place(
-                this.scroll,
+                scroll,
                 cell(
                         0,
                         2,
@@ -83,11 +79,11 @@ final class ProfilesPanel extends Container implements LayoutDebugLabel {
                         padding(PADDING, 4F, PADDING, PADDING),
                         null,
                         null));
-        this.addChild(this.background);
-        this.addChild(this.title);
+        this.addChild(background);
+        this.addChild(title);
         this.addChild(this.nameField);
-        this.addChild(this.saveButton);
-        this.addChild(this.scroll);
+        this.addChild(saveButton);
+        this.addChild(scroll);
     }
 
     void refresh() {

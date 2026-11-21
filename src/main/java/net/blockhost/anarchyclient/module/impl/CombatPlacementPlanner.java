@@ -61,9 +61,8 @@ final class CombatPlacementPlanner {
             }
             requests.add(new BlockPlacer.PlacementRequest(pos, itemPredicate));
         }
-        int placed = BlockPlacer.placeBatch(
+        return BlockPlacer.placeBatch(
                 client, owner.id(), requests, options.blocksPerTick(), options.rotate(), options.maxTurnDegrees());
-        return placed;
     }
 
     static List<BlockPos> unique(final Iterable<BlockPos> positions) {

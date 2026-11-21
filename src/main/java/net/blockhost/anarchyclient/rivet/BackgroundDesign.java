@@ -3,6 +3,7 @@ package net.blockhost.anarchyclient.rivet;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import java.util.List;
 import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Animated backdrop applied to the client menu panels. Each design maps to a render pipeline, except
@@ -18,9 +19,11 @@ public enum BackgroundDesign {
     SIMPLEX_FLOW("Simplex Flow", AnarchyClientRenderPipelines.SIMPLEX_FLOW_PANEL);
 
     private final String displayName;
-    private final RenderPipeline pipeline;
 
-    BackgroundDesign(final String displayName, final RenderPipeline pipeline) {
+    @SuppressWarnings("ImmutableEnumChecker") // Render pipelines are not changed after creation.
+    private final @Nullable RenderPipeline pipeline;
+
+    BackgroundDesign(final String displayName, final @Nullable RenderPipeline pipeline) {
         this.displayName = displayName;
         this.pipeline = pipeline;
     }
@@ -29,7 +32,7 @@ public enum BackgroundDesign {
         return this.displayName;
     }
 
-    public RenderPipeline pipeline() {
+    public @Nullable RenderPipeline pipeline() {
         return this.pipeline;
     }
 

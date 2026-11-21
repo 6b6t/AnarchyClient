@@ -29,7 +29,7 @@ public record SettingColor(int red, int green, int blue, int alpha) {
                 throw new IllegalArgumentException("Expected #RRGGBB or #RRGGBBAA.", exception);
             }
         }
-        String[] parts = normalized.split("[,;\\s]+");
+        String[] parts = normalized.split("[,;\\s]+", -1);
         if (parts.length == 3 || parts.length == 4) {
             try {
                 return new SettingColor(
