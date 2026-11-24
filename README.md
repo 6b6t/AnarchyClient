@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository has moved to **[git.6b6t.org/6b6t/AnarchyClient](https://git.6b6t.org/6b6t/AnarchyClient)**. This GitHub copy is archived and no longer updated.
+
 # AnarchyClient
 
 [![Build](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml/badge.svg)](https://github.com/6b6t/AnarchyClient/actions/workflows/ci.yml)
